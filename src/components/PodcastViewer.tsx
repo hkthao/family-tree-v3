@@ -90,7 +90,7 @@ export function PodcastViewer({
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4 lg:flex-row lg:items-center lg:justify-center lg:gap-6 lg:overflow-hidden lg:px-8">
         {/* Sân video: cao bao nhiêu thì bề ngang theo đó, giữ đúng 9:16. */}
-        <div className="flex shrink-0 justify-center">
+        <div className="flex shrink-0 flex-col items-center gap-2">
           <div className="aspect-[9/16] h-[58dvh] max-h-[76vh] w-auto overflow-hidden rounded-xl bg-black lg:h-[76dvh]">
             <iframe
               src={facebookEmbedUrl(episode.permalink_url, { withText: false })}
@@ -100,6 +100,16 @@ export function PodcastViewer({
               allowFullScreen
             />
           </div>
+          {/* Facebook có thể từ chối nhúng một tập ("This video can't be embedded"): người tạo video tắt cho phép
+              nhúng, hoặc video dính bản quyền nhạc. Không đo được lỗi này từ iframe khác miền, nên luôn có lối thoát. */}
+          <a
+            href={episode.permalink_url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-white/70 underline underline-offset-2 hover:text-white"
+          >
+            {t`Video không phát được? Xem trên Facebook`}
+          </a>
         </div>
 
         {/* Cột thông tin — chữ của mình, màu của mình. */}
