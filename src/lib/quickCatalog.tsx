@@ -37,7 +37,6 @@ export const CORE_QUICK_KEYS = ["tree", "people", "relations", "events"] as cons
 const DEFAULT_ORDER = [
   "people/new",
   "todo",
-  "tro-ly",
   "graves",
   "board",
   "memory-room",

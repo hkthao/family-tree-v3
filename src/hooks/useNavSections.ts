@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useSyncExternalStore } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
-import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useAuth } from "@/hooks/useAuth";
 import { buildSections, toDrawerSections } from "@/lib/navModel";
 import { getClanDetail } from "@/lib/queries/clan-detail";
@@ -31,7 +30,6 @@ export function useNavSections() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const { clanId } = useParams<{ clanId?: string }>();
-  const aiEnabled = useAiEnabled();
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.myProfile(userId),
@@ -96,7 +94,6 @@ export function useNavSections() {
     pendingContribCount ?? 0,
     pendingInlawCount ?? 0,
     todoCount ?? 0,
-    aiEnabled,
   );
   const sections = baseSections.map((sec) => ({
     ...sec,

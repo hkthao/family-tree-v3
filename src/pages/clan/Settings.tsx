@@ -230,15 +230,7 @@ export default function Settings() {
               <p className="text-sm text-muted-foreground">
                 Chuẩn trao đổi dữ liệu phả hệ (5.5.1) — đem dữ liệu đi nơi khác
                 hoặc nạp từ phần mềm khác. Giữ được cả các trường tiếng Việt
-                (tên tự / húy / thụy, ngày âm, ngày giỗ, chi). Chưa có file?
-                {t`Dùng`}{" "}
-                <Link
-                  to={`/clans/${clan.id}/ai-generate`}
-                  className="underline"
-                >
-                  trang sinh prompt AI
-                </Link>{" "}
-                để tạo file GEDCOM từ mô tả tự do.
+                (tên tự / húy / thụy, ngày âm, ngày giỗ, chi).
               </p>
             </div>
             <GedcomButtons clan={clan} />

@@ -17,9 +17,9 @@ const clan = {
   public_show_heritage: true,
 } as unknown as ClanDetail;
 const profile = { is_platform_admin: false } as unknown as MyProfile;
-const sections = (c = clan, ai = true) => buildSections("c1", c, profile, 0, 0, 0, ai);
-const keys = (c = clan, ai = true, canEdit = true, isMember = true) =>
-  buildQuickCatalog(sections(c, ai), { clanId: "c1", canEdit, isMember }).map((e) => e.key);
+const sections = (c = clan) => buildSections("c1", c, profile, 0, 0, 0);
+const keys = (c = clan, canEdit = true, isMember = true) =>
+  buildQuickCatalog(sections(c), { clanId: "c1", canEdit, isMember }).map((e) => e.key);
 
 describe("buildQuickCatalog", () => {
   it("bốn mục lõi đứng đầu theo đúng thứ tự, không có ô Tổng quan", () => {
@@ -41,20 +41,15 @@ describe("buildQuickCatalog", () => {
     expect(k).not.toContain("board");
     expect(k).not.toContain("memory-room");
     const viewer = { ...clan, myRole: "viewer" } as unknown as ClanDetail;
-    const kv = keys(viewer, true, false, true);
+    const kv = keys(viewer, false, true);
     expect(kv).not.toContain("settings");
     expect(kv).not.toContain("import");
     expect(kv).not.toContain("people/new");
   });
 
-  it("Trợ lý AI chỉ có khi nền tảng bật", () => {
-    expect(keys(clan, true)).toContain("tro-ly");
-    expect(keys(clan, false)).not.toContain("tro-ly");
-  });
-
   it("thêm người cần quyền sửa; xuất PDF cần là thành viên", () => {
-    expect(keys(clan, true, false, true)).not.toContain("people/new");
-    expect(keys(clan, true, true, false)).not.toContain("pdf");
+    expect(keys(clan, false, true)).not.toContain("people/new");
+    expect(keys(clan, true, false)).not.toContain("pdf");
     expect(keys()).toContain("pdf");
   });
 

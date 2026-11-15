@@ -7,9 +7,7 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { BOOK_TEMPLATES, fillTemplate } from "@/lib/bookTemplates";
-import { askAssistant } from "@/lib/queries/aiChat";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { Select } from "@/components/ui/select";
 import {
@@ -90,10 +88,7 @@ export function BookTextsSection({
 }) {
   const controlled = value !== undefined && !!onChange;
   const confirm = useConfirm();
-  const aiEnabled = useAiEnabled();
   const [tplPick, setTplPick] = useState<Record<string, string>>({});
-  const [aiDesc, setAiDesc] = useState<Record<string, string>>({});
-  const [aiBusy, setAiBusy] = useState<string | null>(null);
 
   async function applyTemplate(field: TextKey) {
     const id = tplPick[field] ?? BOOK_TEMPLATES[0].id;
@@ -108,45 +103,6 @@ export function BookTextsSection({
       if (!ok) return;
     }
     setForm((f) => ({ ...f, [field]: fillTemplate(tpl, clanName)[field] }));
-  }
-
-  async function aiDraft(field: TextKey, label: string) {
-    const desc = (aiDesc[field] ?? "").trim();
-    if (!desc) {
-      toast.error(t`Bạn mô tả vài ý trước nhé`);
-      return;
-    }
-    if (form[field]?.trim()) {
-      const ok = await confirm({
-        title: t`Thay "${label}" đang có bằng bản AI soạn?`,
-        confirmLabel: "Thay",
-        destructive: true,
-      });
-      if (!ok) return;
-    }
-    setAiBusy(field);
-    try {
-      // Giới hạn câu hỏi của trợ lý là 1000 ký tự nên mô tả bị cắt ở 650.
-      const question =
-        `Soạn phần "${label}" cho gia phả họ ${clanName.replace(/\s*\([^)]*\)\s*$/, "")}, ` +
-        `văn trang trọng, tiếng Việt, chỉ dùng ý dưới đây, chỗ chưa biết để […], ` +
-        t`không bịa tên người/năm. Chỉ trả về nội dung bài, không giải thích. Ý của tôi: ${desc.slice(0, 650)}`;
-      const res = await askAssistant({
-        clanId: clanId!,
-        question,
-        history: [],
-      });
-      if (res.quotaExhausted) {
-        toast.error(t`Hết lượt AI tháng này`);
-      } else {
-        setForm((f) => ({ ...f, [field]: res.answer.trim() }));
-        toast.success(t`AI đã soạn xong, bạn đọc lại và sửa trước khi lưu`);
-      }
-    } catch (e) {
-      toast.error(t`AI chưa soạn được`, { description: friendlyError(e) });
-    } finally {
-      setAiBusy(null);
-    }
   }
 
   const templatePicker = (field: TextKey) =>
@@ -245,32 +201,6 @@ export function BookTextsSection({
           />
           <p className="text-xs text-muted-foreground">{f.hint}</p>
           {templatePicker(f.key)}
-          {canEdit && aiEnabled && clanId ? (
-            <div className="space-y-1.5 rounded-md border border-dashed p-3">
-              <Label htmlFor={`ai-${f.key}`} className="text-xs">
-                {t`Nhờ AI soạn: mô tả vài ý (nguồn gốc, quê quán, nghề nghiệp, truyền thống…)`}
-              </Label>
-              <Textarea
-                id={`ai-${f.key}`}
-                rows={3}
-                maxLength={650}
-                placeholder={t`Vd: Họ tôi gốc ở làng…, tổ khai khẩn từ khoảng…, làm nghề…, có nhà thờ họ ở…, truyền thống hiếu học…`}
-                value={aiDesc[f.key] ?? ""}
-                onChange={(e) =>
-                  setAiDesc({ ...aiDesc, [f.key]: e.target.value })
-                }
-              />
-              <Button
-                size="sm"
-                type="button"
-                variant="outline"
-                disabled={aiBusy !== null}
-                onClick={() => aiDraft(f.key, f.label)}
-              >
-                {aiBusy === f.key ? t`AI đang soạn…` : t`AI soạn theo mô tả`}
-              </Button>
-            </div>
-          ) : null}
         </div>
       ))}
       {canEdit && !controlled ? (

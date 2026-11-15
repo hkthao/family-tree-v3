@@ -3,7 +3,6 @@ import { useSidebarHidden } from "@/lib/sidebarHidden";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
-import { usePanel } from "@/components/panel/usePanel";
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
 import {
@@ -50,7 +49,6 @@ interface Props {
  */
 export function AppDrawer({ open, onClose }: Props) {
   const [sidebarHidden] = useSidebarHidden();
-  const { open: openPanel } = usePanel();
   const { user } = useAuth();
   const { profile, sections, drawerSections } = useNavSections();
 
@@ -232,19 +230,7 @@ export function AppDrawer({ open, onClose }: Props) {
                         <NavLink
                           to={item.to}
                           end={item.end ?? false}
-                          onClick={(e) => {
-                            if (
-                              item.panel &&
-                              e.button === 0 &&
-                              !e.metaKey &&
-                              !e.ctrlKey &&
-                              !e.shiftKey
-                            ) {
-                              e.preventDefault();
-                              openPanel(item.panel);
-                            }
-                            pick();
-                          }}
+                          onClick={() => pick()}
                           className={({ isActive }) =>
                             cn(
                               "flex items-center gap-3 px-4 py-2.5 text-sm",

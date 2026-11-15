@@ -33,7 +33,7 @@ const PATHS = [
   `/clans/${CLAN}/inlaws`, `/clans/${CLAN}/inlaws/new`, `/clans/${CLAN}/fund`,
   `/clans/${CLAN}/honors`, `/clans/${CLAN}/todo`, `/clans/${CLAN}/import`,
   `/clans/${CLAN}/audit`, `/clans/${CLAN}/qr-export`, `/clans/${CLAN}/merge`,
-  `/clans/${CLAN}/kinship`, `/clans/${CLAN}/ai-generate`, `/clans/${CLAN}/memory-rooms`,
+  `/clans/${CLAN}/kinship`, `/clans/${CLAN}/memory-rooms`,
   // trang chi tiết — nơi có nhiều hàng nút nhất
   `/clans/${CLAN}/people/05fd7d3b-9d74-4cb1-8b48-918bfa323e68`,
   `/clans/${CLAN}/people/05fd7d3b-9d74-4cb1-8b48-918bfa323e68/edit`,

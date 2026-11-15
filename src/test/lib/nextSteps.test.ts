@@ -27,7 +27,6 @@ const base = (o: Partial<NextStepInput> = {}): NextStepInput => ({
   customEvents: 1,
   canEdit: true,
   isEnabled: () => false,
-  aiOn: false,
   ...o,
 });
 
@@ -97,7 +96,6 @@ describe("computeNextSteps", () => {
     const s = computeNextSteps(
       base({
         isEnabled: () => true,
-        aiOn: true,
         persons: Array.from({ length: 12 }, (_, i) =>
           P({ is_root: i === 0, is_living: false, photo_path: null }),
         ),
@@ -136,11 +134,9 @@ describe("gợi ý khám phá tính năng", () => {
     expect(all.some((x) => x.kind === "discover")).toBe(true);
   });
 
-  it("không mời tính năng đã bị dòng họ tắt; trợ lý AI cần nền tảng bật", () => {
+  it("không mời tính năng đã bị dòng họ tắt", () => {
     expect(disc({ isEnabled: () => false })).not.toContain("memory");
     expect(disc({ isEnabled: () => true })).toContain("memory");
-    expect(disc({ isEnabled: () => true, aiOn: false })).not.toContain("ai");
-    expect(disc({ isEnabled: () => true, aiOn: true })).toContain("ai");
   });
 
   it("việc bổ sung dữ liệu luôn đứng trước lời mời khám phá", () => {
@@ -156,7 +152,6 @@ describe("xáo ngẫu nhiên", () => {
   const input = base({
     persons: [P(), ...six, P({ is_living: false })], // người mất chưa có giỗ → có 1 việc bổ sung dữ liệu
     isEnabled: () => true,
-    aiOn: true,
   });
   const ids = (rng?: () => number) => computeNextSteps(input, rng).map((x) => x.id);
 
@@ -188,7 +183,6 @@ describe("trọng số theo ngữ cảnh", () => {
   const withGap = base({
     persons: [...six, P({ is_living: false })], // 1 việc bổ sung dữ liệu (giỗ)
     isEnabled: () => true,
-    aiOn: true,
   });
   /** Tỉ lệ id đứng đầu qua nhiều hạt giống. */
   const topRate = (input: NextStepInput, id: string, n = 600) => {

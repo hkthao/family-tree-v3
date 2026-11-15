@@ -12,7 +12,6 @@ import { useToast } from "@/components/Toast";
 import {
   IconBell,
   IconCheck,
-  IconClock,
   IconLock,
   IconLogOut,
   IconMail,
@@ -34,7 +33,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useAuth } from "@/hooks/useAuth";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { clearAllCache } from "@/lib/queryClient";
@@ -62,7 +60,6 @@ import { lazyMessages } from "@/lib/i18n/lazy";
 export default function Account() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
-  const aiEnabled = useAiEnabled();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -102,33 +99,6 @@ export default function Account() {
                 <Link to="/admin">
                   <IconShield className="h-4 w-4 mr-1.5" />
                   {t`Mở trang quản trị`}
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        )}
-
-        {aiEnabled && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t`Lượt hỏi trợ lý`}</CardTitle>
-              <CardDescription>
-                <Trans>
-                  <Trans>
-                    <Trans>
-                      Xem đã dùng bao nhiêu lượt, còn lại bao nhiêu. Sổ này
-                      không hiện nội dung câu hỏi — muốn đọc lại thì mở khung
-                      trò chuyện.
-                    </Trans>
-                  </Trans>
-                </Trans>
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link to="/account/luot-dung">
-                  <IconClock className="h-4 w-4 mr-1.5" />
-                  {t`Lịch sử sử dụng`}
                 </Link>
               </Button>
             </CardFooter>

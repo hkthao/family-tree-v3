@@ -9,7 +9,6 @@ import {
   IconScroll,
   IconSettings,
   IconShield,
-  IconSparkles,
   IconUsers,
 } from "@/components/icons";
 import { msg } from "@lingui/core/macro";
@@ -88,28 +87,12 @@ export const ADMIN_SCREENS: AdminScreen[] = lazyMessages([
     legacyTab: "feedback",
   },
   {
-    slug: "tro-ly-ai",
-    label: msg`Trợ lý AI`,
-    description: msg`Lượt hỏi, chi phí, độ trễ, hạn mức đang dùng.`,
-    icon: <IconSparkles className={ic} />,
-    area: "report",
-    legacyTab: "ai_usage",
-  },
-  {
     slug: "cau-hinh",
     label: msg`Cấu hình nền tảng`,
     description: msg`Linh vật, dòng họ demo.`,
     icon: <IconSettings className={ic} />,
     area: "settings",
     legacyTab: "config",
-  },
-  {
-    slug: "cau-hinh-ai",
-    label: msg`Cấu hình trợ lý AI`,
-    description: msg`Bật/tắt, chọn model, khoá API, hạn mức và trần chi phí.`,
-    icon: <IconSparkles className={ic} />,
-    area: "settings",
-    legacyTab: "ai",
   },
   {
     slug: "ket-noi-ai",

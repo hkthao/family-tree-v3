@@ -163,14 +163,6 @@ msgstr " • repeats every year"
 msgid " Cần chọn chế độ Công khai ở trên trước."
 msgstr " You need to choose Public mode above first."
 
-#: src/components/ai/ChatThread.tsx
-msgid " được gửi tới {provider}"
-msgstr " is sent to {provider}"
-
-#: src/components/ai/ChatThread.tsx
-msgid " được gửi tới một dịch vụ AI bên ngoài"
-msgstr " is sent to an external AI service"
-
 #. placeholder {0}: new Date(feed.last_fetched_at).toLocaleString(currentIntlTag())
 #: src/components/CalendarFeedPanel.tsx
 msgid " Lịch được lấy gần nhất lúc {0}."
@@ -429,42 +421,21 @@ msgstr "{0} generations — not yet reaching the founding ancestor"
 msgid "{0} ghi âm"
 msgstr "{0} recordings"
 
-#. placeholder {0}: res.imported_families
-#. placeholder {1}: res.imported_branches
-#: src/pages/clan/AiGenerate.tsx
-msgid "{0} gia đình, {1} chi."
-msgstr "{0} families, {1} branches."
-
 #. placeholder {0}: Math.round(res.bytes / 1024)
 #: src/components/PhotoUploadField.tsx
 msgid "{0} KB sau khi nén."
 msgstr "{0} KB after compression."
-
-#. placeholder {0}: quota.data.balance
-#: src/pages/CreditHistory.tsx
-msgid "{0} lượt"
-msgstr "{0} requests"
-
-#. placeholder {0}: r.requests
-#. placeholder {1}: r.failed
-#. placeholder {2}: formatUsd(r.cost_usd)
-#: src/components/admin/AiUsageTab.tsx
-msgid "{0} lượt · {1} lỗi · {2}"
-msgstr "{0} requests · {1} errors · {2}"
-
-#. placeholder {0}: o.rated
-#: src/components/admin/AiUsageTab.tsx
-msgid "{0} lượt được chấm"
-msgstr "{0} rated requests"
 
 #. placeholder {0}: -offset
 #: src/components/TodayHubCard.tsx
 msgid "{0} ngày trước"
 msgstr "{0} days ago"
 
+#. placeholder {0}: c.person_count
 #. placeholder {0}: clan.person_count
 #. placeholder {0}: clan.person_count.toLocaleString(currentIntlTag())
-#. placeholder {0}: i.people_count
+#: src/components/ClanPicker.tsx
+#: src/components/ClanPicker.tsx
 #: src/components/HistoricalClansSection.tsx
 #: src/pages/admin/Clans.tsx
 #: src/pages/clan/Heritage.tsx
@@ -517,11 +488,6 @@ msgstr "{0} members • "
 #: src/pages/Account.tsx
 msgid "{0} thiết bị nhận được{1}."
 msgstr "{0} devices received it{1}."
-
-#. placeholder {0}: formatTokens(o.input_tokens)
-#: src/components/admin/AiUsageTab.tsx
-msgid "{0} token vào"
-msgstr "{0} input tokens"
 
 #. placeholder {0}: focal.lifespan_years
 #: src/pages/clan/Relations.tsx
@@ -597,6 +563,10 @@ msgstr "{count} unread"
 msgid "{count} thông báo chưa đọc"
 msgstr "{count} unread notifications"
 
+#: src/components/ApiTokenPanels.tsx
+msgid "{d} ngày"
+msgstr "{d} days"
+
 #: src/pages/clan/EditPerson.tsx
 msgid "{days} ngày trước"
 msgstr "{days} days ago"
@@ -668,10 +638,6 @@ msgstr "in {offset} days"
 msgid "{pctBirth}% thành viên đã có năm sinh"
 msgstr "{pctBirth}% of members have a birth year"
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "{r} ngày"
-msgstr "{r} days"
-
 #: src/components/ContributionDiffView.tsx
 msgid "{relation} của người đang xem"
 msgstr "{relation} of the person being viewed"
@@ -728,10 +694,6 @@ msgstr "→ will fill in"
 #: src/pages/clan/PersonDetail.tsx
 msgid "→ Sửa"
 msgstr "→ Edit"
-
-#: src/components/ai/ChatThread.tsx
-msgid "↓ Tin mới"
-msgstr "↓ New messages"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "+ Mở rộng"
@@ -888,6 +850,10 @@ msgstr "🕯️ Death anniversary"
 msgid "🖼 Ảnh → Google Drive / Google Photos"
 msgstr "🖼 Photo → Google Drive / Google Photos"
 
+#: src/components/ApiTokenPanels.tsx
+msgid "1 năm"
+msgstr "1 year"
+
 #: src/components/SubscriptionSettings.tsx
 msgid "1 ngày trước"
 msgstr "1 day before"
@@ -904,10 +870,6 @@ msgstr "1 month"
 msgid "1 tuần"
 msgstr "1 week"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "1. Áp ba migration"
-msgstr "1. Apply the three migrations"
-
 #: src/pages/clan/GoodDays.tsx
 msgid "1. Bạn muốn xem ngày cho việc gì?"
 msgstr "1. What do you want to check a day for?"
@@ -915,10 +877,6 @@ msgstr "1. What do you want to check a day for?"
 #: src/pages/clan/Import.tsx
 msgid "1. Chọn file"
 msgstr "1. Choose a file"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "1. Định dạng đầu ra"
-msgstr "1. Output format"
 
 #: src/lib/festivals.ts
 msgid "1/5 — ngày nghỉ lễ."
@@ -933,17 +891,9 @@ msgstr "The last 10 of {0} requests"
 msgid "14 ngày trước"
 msgstr "14 days before"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "2. Đẩy Edge Function và khởi động lại"
-msgstr "2. Push the Edge Function and restart it"
-
 #: src/pages/clan/Import.tsx
 msgid "2. Kiểm tra dữ liệu"
 msgstr "2. Check the data"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "2. Mô tả gia đình"
-msgstr "2. Describe the family"
 
 #: src/pages/clan/GoodDays.tsx
 msgid "2. Trong khoảng thời gian nào?"
@@ -966,14 +916,6 @@ msgstr "3 days before"
 msgid "3 tháng"
 msgstr "3 months"
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "3. Copy prompt + paste vào AI"
-msgstr "3. Copy the prompt and paste it into an AI"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "3. Đặt khoá mã hoá cho dịch vụ <0>functions</0>"
-msgstr "3. Set the encryption key for the <0>functions</0> service"
-
 #: src/pages/clan/Import.tsx
 msgid "3. Xem trước (10 dòng đầu)"
 msgstr "3. Preview (first 10 rows)"
@@ -987,10 +929,6 @@ msgstr "30 days"
 #: src/lib/festivals.ts
 msgid "30/4 — ngày nghỉ lễ."
 msgstr "30 April — public holiday."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "4. Dán kết quả AI vào đây"
-msgstr "4. Paste the AI's result here"
 
 #: src/pages/clan/Import.tsx
 msgid "4. Nhập vào dòng họ"
@@ -1022,21 +960,21 @@ msgstr "The admin will contact you via {0} if needed."
 msgid "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự động sửa cây gia phả."
 msgstr "An admin will review it before applying. Your suggestion does not edit the family tree automatically."
 
-#: src/components/BookTextsSection.tsx
-msgid "AI chưa soạn được"
-msgstr "The AI couldn't write a draft"
+#: src/components/ApiTokenPanels.tsx
+msgid "AI đang dùng token này sẽ bị chặn ngay."
+msgstr "Any AI using this token will be blocked immediately."
 
-#: src/components/BookTextsSection.tsx
-msgid "AI đã soạn xong, bạn đọc lại và sửa trước khi lưu"
-msgstr "The AI has finished — please read and edit before saving"
+#: src/components/apiTokenMeta.ts
+msgid "AI gửi thêm/sửa/ghi chú vào hàng chờ Đóng góp. Chỉ ghi vào gia phả khi admin dòng họ duyệt."
+msgstr "The AI sends additions, edits and notes to the Contributions queue. Nothing reaches the tree until a clan admin approves."
 
-#: src/components/BookTextsSection.tsx
-msgid "AI đang soạn…"
-msgstr "The AI is drafting…"
+#: src/components/apiTokenMeta.ts
+msgid "AI thêm, sửa, xoá người ngay, với đúng quyền hiện tại của người tạo token (bị hạ vai trò thì token hạ theo). Mọi thay đổi ghi vào nhật ký dưới tên người tạo và khôi phục được."
+msgstr "The AI adds, edits and deletes people immediately, with the token creator's current permissions (lowered along with their role). Every change is logged under the creator's name and can be restored."
 
-#: src/components/BookTextsSection.tsx
-msgid "AI soạn theo mô tả"
-msgstr "Draft with AI from a description"
+#: src/components/apiTokenMeta.ts
+msgid "AI tra cứu người, quan hệ, giỗ, tư liệu. Không thay đổi được gì."
+msgstr "The AI looks up people, relationships, anniversaries and records. It cannot change anything."
 
 #: src/lib/eventWhen.ts
 msgid "ÂL"
@@ -1291,10 +1229,6 @@ msgstr "Avatar: Classic"
 msgid "Avatar: Hoàng gia"
 msgstr "Avatar: Royal"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Ba con số này trước đây chỉ đổi được bằng SQL trên máy chủ. Đổi ở đây có hiệu lực ngay, không cần deploy lại."
-msgstr "These three numbers used to be changeable only with SQL on the server. Changing them here takes effect immediately, no redeploy needed."
-
 #: src/components/ClanBadges.tsx
 msgid "Bạc"
 msgstr "Silver"
@@ -1375,17 +1309,9 @@ msgstr "Tap × to choose again."
 msgid "Bấm để nhập các thông tin tuỳ chọn nếu bạn có: tên tự, tên húy, tên thụy, ngày mất, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần — vẫn lưu được người mới."
 msgstr "Tap to enter optional details if you have them: courtesy name, taboo name, posthumous name, date of death, place of birth, burial place, biography. Skip if not needed — the new person can still be saved."
 
-#: src/components/ai/MicButton.tsx
-msgid "Bấm giữ để nói"
-msgstr "Press and hold to speak"
-
 #: src/pages/Account.tsx
 msgid "Bấm link trong email để hoàn tất."
 msgstr "Click the link in the email to finish."
-
-#: src/components/ai/MicButton.tsx
-msgid "Bấm mic lần nữa để dừng"
-msgstr "Tap the mic again to stop"
 
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
@@ -1415,6 +1341,10 @@ msgstr "Tap the '+' button to create the first mosaic, then invite the whole fam
 #: src/pages/clan/Cemeteries.tsx
 msgid "Bấm nút '+' để tạo cơ sở đầu tiên."
 msgstr "Tap the '+' button to create the first site."
+
+#: src/components/admin/ApiTokensAdminTab.tsx
+msgid "Bấm nút '+' để tạo token đầu tiên."
+msgstr "Press '+' to create the first token."
 
 #: src/pages/admin/Announcements.tsx
 msgid "Bấm nút '+' để viết tin đầu tiên."
@@ -1556,10 +1486,6 @@ msgstr "You are"
 #: src/pages/clan/MyLineage.tsx
 msgid "Bạn là ai trong gia phả này?"
 msgstr "Who are you in this family tree?"
-
-#: src/components/BookTextsSection.tsx
-msgid "Bạn mô tả vài ý trước nhé"
-msgstr "Please describe a few points first"
 
 #: src/pages/Contact.tsx
 msgid "Bạn muốn nói gì?"
@@ -1713,18 +1639,9 @@ msgstr "Turn on notifications so you don't miss anything"
 msgid "Bật thông báo trên iPhone/iPad"
 msgstr "Turn on notifications on iPhone/iPad"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Bật trợ lý"
-msgstr "Turn on the assistant"
-
 #: src/pages/clan/Settings.tsx
 msgid "Bật/tắt thông tin hiển thị và phần người ngoài được xem. Tên, mô tả, chi và nội dung sổ gia phả sửa ở trang “Thông tin & Sổ gia phả”."
 msgstr "Turn on or off the information shown and what outsiders may see. The name, description, branches and family book text are edited on the “Details & Family book” page."
-
-#: src/lib/adminScreens.tsx
-#: src/pages/admin/CauHinhAiPage.tsx
-msgid "Bật/tắt, chọn model, khoá API, hạn mức và trần chi phí."
-msgstr "Turn on / off, choose the model, API key, quotas and the cost ceiling."
 
 #: src/components/Tree3DView.tsx
 msgid "bay tới xem"
@@ -1741,10 +1658,6 @@ msgstr "Father's side"
 #: src/pages/clan/Inlaws.tsx
 msgid "Bên đề nghị sẽ thấy đề nghị đã bị thu hồi. Họ có thể đề nghị lại nếu cần."
 msgstr "The requesting side will see that the request was withdrawn. They can request again if needed."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "bên dưới — không cần tạo file. (Hoặc lưu thành file"
-msgstr "below — no file needed. (Or save it as a file"
 
 #: src/components/InlawFamilyCard.tsx
 msgid "Bên kia chưa nhập cha mẹ, vợ/chồng, hoặc con cho người này."
@@ -1866,7 +1779,6 @@ msgstr "Catalogue filters"
 msgid "Bỏ lưu"
 msgstr "Unsave"
 
-#: src/components/ai/ProposalCard.tsx
 #: src/components/CalendarDateInput.tsx
 #: src/pages/admin/GiaPha.tsx
 #: src/pages/clan/Todo.tsx
@@ -1970,10 +1882,6 @@ msgstr "The whole diagram on one page, with a paper size calculated from the tre
 msgid "Cả thu và chi"
 msgstr "Income and expenses"
 
-#: src/hooks/useAiChatSession.ts
-msgid "Các câu đã hỏi sẽ bị xoá. Gia phả của bạn không bị ảnh hưởng."
-msgstr "The questions you asked will be deleted. Your family tree is not affected."
-
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Các cây tự thiết kế của dòng họ: kéo thả thẻ, nối đường, chọn nền rồi xuất PDF."
 msgstr "The clan's self-designed trees: drag cards, connect lines, choose a background, then export a PDF."
@@ -2053,10 +1961,6 @@ msgstr "How to view"
 msgid "Cách xưng hô"
 msgstr "Kinship terms"
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Cache đầu vào"
-msgstr "Input cache"
-
 #: src/components/InstallAppButton.tsx
 #: src/components/InstallAppButton.tsx
 msgid "Cài app"
@@ -2073,10 +1977,6 @@ msgstr "Settings"
 #: src/lib/adminScreens.tsx
 msgid "Cài đặt & nội dung"
 msgstr "Settings & content"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Cài đặt → GEDCOM"
-msgstr "Settings → GEDCOM"
 
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
@@ -2129,10 +2029,6 @@ msgstr "Please state your relationship to this person"
 msgid "Cần ít nhất tên hoặc nơi (nghĩa trang / chùa…)."
 msgstr "At least a name or a place (cemetery / pagoda…) is required."
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "Cần mô tả gia đình trước"
-msgstr "Describe the family first"
-
 #: src/components/QuickDateFixSheet.tsx
 msgid "Cần sửa thêm (ngày, tháng, âm lịch)?"
 msgstr "Need to edit more (day, month, lunar calendar)?"
@@ -2157,7 +2053,6 @@ msgstr "Need help? See"
 #: src/lib/announcementFormat.ts
 #: src/pages/admin/Announcements.tsx
 #: src/pages/AnnouncementDetail.tsx
-#: src/pages/Changelog.tsx
 #: src/pages/clan/Import.tsx
 msgid "Cảnh báo"
 msgstr "Warnings"
@@ -2192,13 +2087,10 @@ msgstr "Obituary"
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/AnnouncementDetail.tsx
-#: src/pages/Changelog.tsx
 msgid "Cập nhật"
 msgstr "Update"
 
 #. placeholder {0}: formatRelative(c.updated_at) ?? "—"
-#. placeholder {0}: new Date(st.updated_at).toLocaleString("vi-VN")
-#: src/components/admin/AiSettingsTab.tsx
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Cập nhật {0}"
 msgstr "Updated {0}"
@@ -2234,10 +2126,6 @@ msgstr "What's new"
 msgid "Cập nhật token"
 msgstr "Update token"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Cất giá trị này cẩn thận: đổi nó là mọi khoá API đã lưu không giải mã được nữa và phải nhập lại."
-msgstr "Keep this value safe: if it changes, every saved API key can no longer be decrypted and must be entered again."
-
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/GoodDays.tsx
@@ -2249,16 +2137,10 @@ msgstr "auspicious star"
 msgid "Cấu hình nền tảng"
 msgstr "Platform settings"
 
-#: src/lib/adminScreens.tsx
-#: src/pages/admin/CauHinhAiPage.tsx
-msgid "Cấu hình trợ lý AI"
-msgstr "AI assistant settings"
-
 #: src/pages/clan/Settings.tsx
 msgid "Cấu hình, share links, xuất dữ liệu, xoá dòng họ."
 msgstr "Configuration, share links, data export, delete the clan."
 
-#: src/components/ai/ChatComposer.tsx
 #: src/pages/admin/Feedback.tsx
 #: src/pages/Contact.tsx
 #: src/pages/CustomsForm.tsx
@@ -2273,14 +2155,6 @@ msgstr "Frequently asked questions"
 #: src/pages/CustomsForm.tsx
 msgid "Câu hỏi thường gặp (tuỳ chọn)"
 msgstr "Frequently asked questions (optional)"
-
-#: src/components/ai/ChatThread.tsx
-msgid "Câu trả lời này chưa đúng"
-msgstr "This answer is not correct"
-
-#: src/components/ai/ChatThread.tsx
-msgid "Câu trả lời này hữu ích"
-msgstr "This answer is helpful"
 
 #: src/pages/CustomsForm.tsx
 msgid "Câu trả lời…"
@@ -2398,18 +2272,6 @@ msgstr "Tap a card to expand / collapse its branch"
 msgid "Chạm thẻ để đặt trung tâm"
 msgstr "Tap a card to make it the center"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Chạm trần thì trợ lý nghỉ tới hết ngày rồi tự mở lại. Đặt 0 để tắt ngắt mạch."
-msgstr "At the ceiling the assistant rests until the end of the day, then reopens by itself. Set 0 to turn off the circuit breaker."
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Chạm trần thì trợ lý tự nghỉ tới hết ngày (giờ VN), không cần bật lại tay."
-msgstr "At the ceiling the assistant rests until the end of the day (Vietnam time), with no need to turn it back on by hand."
-
-#: src/components/ai/ChatThread.tsx
-msgid "Chào bạn 👋"
-msgstr "Hello 👋"
-
 #: src/pages/clan/Dashboard.tsx
 msgid "Chào mừng"
 msgstr "Welcome"
@@ -2422,10 +2284,6 @@ msgstr "Welcome to the {0} clan! 🎉"
 #: src/lib/relations.ts
 msgid "chắt"
 msgstr "great-grandchild (chắt)"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "ChatGPT/Gemini/Claude, AI trả file CSV/GEDCOM, sau đó nhập qua trang"
-msgstr "ChatGPT/Gemini/Claude, the AI returns a CSV/GEDCOM file, then import it through the page"
 
 #: src/lib/relations.ts
 msgid "cháu"
@@ -2485,6 +2343,10 @@ msgstr "Insert a new milestone below the milestone of year {0}"
 msgid "Chép"
 msgstr "Copy"
 
+#: src/components/ApiTokenPanels.tsx
+msgid "Chép lệnh"
+msgstr "Copy command"
+
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
@@ -2511,9 +2373,14 @@ msgstr "Copy the show-off link:"
 msgid "chép link trên thanh địa chỉ (dạng"
 msgstr "copy the link from the address bar (in the form"
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "Chép prompt"
-msgstr "Copy prompt"
+#: src/components/ApiTokenPanels.tsx
+#: src/components/ApiTokenPanels.tsx
+msgid "Chép token"
+msgstr "Copy token"
+
+#: src/components/ApiTokenPanels.tsx
+msgid "Chép token ngay — sẽ không hiện lại lần nữa. Mất thì tạo token mới."
+msgstr "Copy the token now — it will not be shown again. If lost, create a new one."
 
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Import.tsx
@@ -2543,6 +2410,10 @@ msgstr "Visible only to the administrators; not shown to anyone else."
 #: src/pages/Announcements.tsx
 msgid "Chỉ chưa đọc"
 msgstr "Unread only"
+
+#: src/components/apiTokenMeta.ts
+msgid "Chỉ đọc"
+msgstr "Read only"
 
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
@@ -2583,10 +2454,6 @@ msgstr "Expenses only"
 msgid "Chỉ khoản thu"
 msgstr "Income only"
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Chỉ lượt và tiền — không có câu hỏi, vì bảng ai_usage cố ý không lưu nội dung."
-msgstr "Only counts and cost — no questions, because the ai_usage table deliberately doesn't store content."
-
 #: src/pages/clan/EditPerson.tsx
 msgid "Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu bia mộ ghi ngày âm."
 msgstr "Just the year is fine — leave day and month blank. Tap 'Enter in the lunar calendar' if the tombstone gives a lunar date."
@@ -2601,12 +2468,6 @@ msgstr "Just the year is fine — leave day and month blank. Tap 'Enter in the l
 #: src/pages/clan/AddSpouse.tsx
 msgid "Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
 msgstr "Just the year is fine. Tap 'Enter in the lunar calendar' if the document gives a lunar date."
-
-#: src/components/admin/AiUsageTab.tsx
-#: src/components/admin/AiUsageTab.tsx
-#: src/components/admin/AiUsageTab.tsx
-msgid "Chi phí"
-msgstr "Cost"
 
 #: src/pages/clan/BookInfo.tsx
 msgid "Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ."
@@ -2641,10 +2502,6 @@ msgstr "Details & sources"
 #: src/pages/clan/NewPerson.tsx
 msgid "Chi tiết bổ sung"
 msgstr "Additional details"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Chi tiết đầy đủ nằm ở <0>supabase/functions/ai-chat/README.md</0>."
-msgstr "Full details are in <0>supabase/functions/ai-chat/README.md</0>."
 
 #: src/components/EventDetailDialog.tsx
 msgid "Chi tiết sự kiện"
@@ -2723,6 +2580,10 @@ msgstr "great-great-grandchild (chít)"
 #: src/pages/clan/MyLineage.tsx
 msgid "Chờ admin xác nhận"
 msgstr "Waiting for admin confirmation"
+
+#: src/components/ApiTokenPanels.tsx
+msgid "Cho AI bên ngoài làm việc với gia phả"
+msgstr "Let an outside AI work with the family tree"
 
 #: src/pages/CustomsDetail.tsx
 msgid "chờ duyệt"
@@ -2936,17 +2797,13 @@ msgstr "Caption (optional)"
 msgid "Chú thích ảnh (tuỳ chọn)"
 msgstr "Photo caption (optional)"
 
+#: src/components/ApiTokenPanels.tsx
+msgid "Chủ token"
+msgstr "Token owner"
+
 #: src/lib/queries/historical.ts
 msgid "Chúa"
 msgstr "Lord (Chúa)"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "chưa ai chấm điểm"
-msgstr "nobody has rated yet"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "chưa cắm khoá"
-msgstr "no key plugged in"
 
 #: src/pages/admin/Health.tsx
 msgid "Chưa chạy"
@@ -3070,20 +2927,12 @@ msgstr "No area data yet. Enter <0>\"Current residence\"</0> for each person in 
 msgid "Chưa có dữ liệu trong dòng họ."
 msgstr "There is no data in the clan yet."
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Chưa có dữ liệu trong khoảng này."
-msgstr "No data in this period yet."
-
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/MapStats.tsx
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Chưa có dữ liệu."
 msgstr "No data yet."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Chưa có GEDCOM để nhập."
-msgstr "There is no GEDCOM to import yet."
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Chưa có ghi âm."
@@ -3097,10 +2946,6 @@ msgstr "No internal notes yet."
 msgid "Chưa có ghi nhận công đức"
 msgstr "No merit records yet"
 
-#: src/components/ai/ProposalCard.tsx
-msgid "Chưa có gì được ghi vào gia phả. Bạn xem lại rồi bấm nút bên dưới."
-msgstr "Nothing has been written to the family tree yet. Review it, then tap the button below."
-
 #: src/components/ContributeDialog.tsx
 msgid "Chưa có gì thay đổi để đề xuất"
 msgstr "There are no changes to suggest yet"
@@ -3113,10 +2958,6 @@ msgstr "No transactions yet"
 msgid "Chưa có góp ý nào"
 msgstr "No feedback yet"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Chưa có khoá nào được lưu"
-msgstr "No key has been saved yet"
-
 #: src/pages/clan/Inlaws.tsx
 msgid "Chưa có liên kết nào"
 msgstr "No links yet"
@@ -3124,14 +2965,6 @@ msgstr "No links yet"
 #: src/components/ShareLinksSection.tsx
 msgid "Chưa có link chia sẻ"
 msgstr "No share links yet"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Chưa có lượt hỏi nào trong khoảng này."
-msgstr "No requests in this period yet."
-
-#: src/pages/CreditHistory.tsx
-msgid "Chưa có lượt nào được dùng"
-msgstr "No requests used yet"
 
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Chưa có mộ phần / tro cốt"
@@ -3153,10 +2986,6 @@ msgstr "No historical entries yet"
 #: src/pages/Customs.tsx
 msgid "Chưa có nội dung"
 msgstr "No content yet"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Chưa có payload để nhập."
-msgstr "There is no payload to import yet."
 
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Chưa có phòng ký ức"
@@ -3219,6 +3048,14 @@ msgstr "There is no ancestor information in the family tree yet."
 msgid "Chưa có tỉnh/thành nào"
 msgstr "No provinces / cities yet"
 
+#: src/components/admin/ApiTokensAdminTab.tsx
+msgid "Chưa có token nào"
+msgstr "No tokens yet"
+
+#: src/components/ApiTokensSection.tsx
+msgid "Chưa có token nào."
+msgstr "No tokens yet."
+
 #: src/components/PersonRelationsQuick.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Chưa có vợ / chồng."
@@ -3237,6 +3074,7 @@ msgid "Chưa đánh dấu Thuỷ tổ"
 msgstr "Founding ancestor not marked"
 
 #: src/components/NotificationBell.tsx
+#: src/components/NotificationBell.tsx
 #: src/pages/Announcements.tsx
 msgid "Chưa đọc"
 msgstr "Unread"
@@ -3248,6 +3086,14 @@ msgstr "Not synced"
 #: src/pages/admin/PodcastPage.tsx
 msgid "Chưa đồng bộ lần nào"
 msgstr "Never synced"
+
+#: src/components/ApiTokenPanels.tsx
+msgid "chưa dùng"
+msgstr "never used"
+
+#: src/components/ApiTokenPanels.tsx
+msgid "Chưa dùng"
+msgstr "Never used"
 
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Chưa gắn người nào. Bấm Sửa để thêm."
@@ -3352,9 +3198,13 @@ msgstr "Switch to dark mode"
 msgid "Chuyển xuống"
 msgstr "Move down"
 
-#: src/lib/aiModels.ts
-msgid "Claude Sonnet 5 — tool tốt nhất"
-msgstr "Claude Sonnet 5 — best at tools"
+#: src/components/ApiTokenPanels.tsx
+msgid "Claude Code — chạy một lần trong terminal"
+msgstr "Claude Code — run once in a terminal"
+
+#: src/components/ApiTokenPanels.tsx
+msgid "Client MCP khác (Claude Desktop, ChatGPT…): địa chỉ {url}, header Authorization: Bearer <token>."
+msgstr "Other MCP clients (Claude Desktop, ChatGPT…): URL {url}, header Authorization: Bearer <token>."
 
 #: src/components/ContributionDiffView.tsx
 msgid "Có"
@@ -3462,10 +3312,6 @@ msgstr "Site / cemetery (optional)"
 msgid "Cơ sở lưu tro / tháp họ"
 msgstr "Ashes facility / clan tower"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Có thay đổi chưa lưu"
-msgstr "Unsaved changes"
-
 #: src/pages/clan/Dashboard.tsx
 msgid "có thể còn thiếu con"
 msgstr "may be missing children"
@@ -3500,18 +3346,6 @@ msgstr "Child"
 #: src/components/UpcomingEventRow.tsx
 msgid "Còn {0} ngày"
 msgstr "{0} days left"
-
-#: src/pages/CreditHistory.tsx
-msgid "còn {balance}"
-msgstr "{balance} left"
-
-#: src/components/ai/QuotaBadge.tsx
-msgid "Còn {balance} lượt"
-msgstr "{balance} requests left"
-
-#: src/components/ai/QuotaBadge.tsx
-msgid "Còn {balance}/{freeThisMonth} lượt"
-msgstr "{balance}/{freeThisMonth} requests left"
 
 #. placeholder {0}: top.count
 #. placeholder {1}: CATEGORY_CTA[top.category]
@@ -3571,11 +3405,6 @@ msgstr "Daughter"
 #: src/pages/CustomsDetail.tsx
 msgid "Còn gọi: {0}"
 msgstr "Also known as: {0}"
-
-#. placeholder {0}: quota.data.usedThisMonth
-#: src/pages/CreditHistory.tsx
-msgid "còn lại · đã dùng {0} lượt trong tháng này"
-msgstr "left · used {0} requests this month"
 
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
@@ -3649,26 +3478,6 @@ msgstr "Public"
 msgid "Cong nét đứt"
 msgstr "Curved dashed"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Công tắc tổng"
-msgstr "Master switch"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Cột đỏ là lượt hỏng. Ngày vọt lên bất thường thường là vòng lặp lỗi ở client chứ không phải người dùng đông."
-msgstr "Red columns are failed requests. A day that spikes unusually is usually an error loop on the client, not a busy user base."
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Cron mỗi đêm xoá tin cũ hơn mốc này."
-msgstr "A nightly cron deletes messages older than this."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "CSV (9 cột — đơn giản, đủ dùng)"
-msgstr "CSV (9 columns — simple and sufficient)"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "CSV nhập qua \"Nhập từ Excel\" (cùng 9 cột với mẫu). GEDCOM nhập qua \"Nhập GEDCOM\" trong Cài đặt — giữ thêm chi, ngày âm lịch, tên tự / húy nếu AI điền."
-msgstr "CSV is imported via \"Import from Excel\" (the same 9 columns as the template). GEDCOM is imported via \"Import GEDCOM\" in Settings — it also keeps branches, lunar dates and courtesy / taboo names if the AI fills them in."
-
 #: src/lib/relations.ts
 msgid "Cụ"
 msgstr "Great-grandfather (Cụ)"
@@ -3733,10 +3542,6 @@ msgstr "Following turned on"
 msgid "Đã bật thông báo — bạn sẽ nhận nhắc giỗ, sinh nhật, sự kiện."
 msgstr "Notifications are on — you'll get death-anniversary, birthday and event reminders."
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đã bật trợ lý"
-msgstr "Assistant turned on"
-
 #: src/pages/clan/MyLineage.tsx
 msgid "Đã bỏ chọn người đại diện"
 msgstr "Representative person cleared"
@@ -3745,10 +3550,6 @@ msgstr "Representative person cleared"
 #: src/lib/queries/restingPlaces.ts
 msgid "Đã cải táng"
 msgstr "Reburied"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Đã cấp"
-msgstr "Granted"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -3805,7 +3606,6 @@ msgstr "Updated."
 #: src/components/ShareLinksSection.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/components/ShareTreeButton.tsx
-#: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -3833,10 +3633,6 @@ msgstr "Link copied — paste it into Zalo/Facebook to share."
 #: src/pages/clan/InlawsNew.tsx
 msgid "Đã chép link mời"
 msgstr "Invite link copied"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Đã chép prompt"
-msgstr "Prompt copied"
 
 #: src/pages/clan/MyLineage.tsx
 msgid "Đã chọn — chờ admin xác nhận"
@@ -3927,10 +3723,6 @@ msgstr "Your password has been changed. You can now sign in with your new passwo
 msgid "Đã đổi mật khẩu."
 msgstr "Password changed."
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đã đổi model"
-msgstr "Model changed"
-
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Đã đổi tên"
 msgstr "Renamed"
@@ -3952,11 +3744,6 @@ msgstr "Closed"
 #: src/pages/admin/PodcastPage.tsx
 msgid "Đã đồng bộ: {0} tập mới, {1} tập cập nhật"
 msgstr "Synced: {0} new episodes, {1} updated"
-
-#. placeholder {0}: quota.usedThisMonth
-#: src/components/ai/QuotaBadge.tsx
-msgid "Đã dùng {0} lượt trong tháng này — xem chi tiết"
-msgstr "Used {0} requests this month — view details"
 
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Đã được xử lý lúc"
@@ -4153,14 +3940,6 @@ msgstr "Recording saved"
 msgid "Đã lưu dòng họ demo."
 msgstr "Demo clan saved."
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đã lưu hạn mức"
-msgstr "Quotas saved"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đã lưu nhưng kết nối thất bại"
-msgstr "Saved, but the connection failed"
-
 #: src/components/BookTextsSection.tsx
 msgid "Đã lưu nội dung sổ gia phả"
 msgstr "Family book text saved"
@@ -4172,10 +3951,6 @@ msgstr "Changes saved"
 #: src/pages/clan/BookInfo.tsx
 msgid "Đã lưu thông tin dòng họ"
 msgstr "Clan details saved"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đã lưu và kết nối được"
-msgstr "Saved and connected"
 
 #: src/pages/Account.tsx
 #: src/pages/clan/Settings.tsx
@@ -4301,11 +4076,6 @@ msgstr "Following paused"
 msgid "Đã tạo {0} bài."
 msgstr "Created {0} articles."
 
-#. placeholder {0}: res.imported_persons
-#: src/pages/clan/AiGenerate.tsx
-msgid "Đã tạo {0} người"
-msgstr "Created {0} people"
-
 #: src/pages/CustomsForm.tsx
 msgid "Đã tạo bài"
 msgstr "Article created"
@@ -4350,21 +4120,12 @@ msgstr "Announcement created"
 msgid "Đã tắt linh vật"
 msgstr "Mascot turned off"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đã tắt trợ lý"
-msgstr "Assistant turned off"
-
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Đã thêm"
 msgstr "Added"
-
-#. placeholder {0}: res.added
-#: src/hooks/useAiChatSession.ts
-msgid "Đã thêm {0} người vào gia phả. Bạn mở Danh bạ hoặc Cây để xem nhé."
-msgstr "Added {0} people to the family tree. Open the People list or the Tree to see them."
 
 #. placeholder {0}: ROLE_LABEL[inviteRole]
 #: src/pages/clan/Members.tsx
@@ -4453,6 +4214,7 @@ msgstr "Spouse added"
 msgid "Đã thêm. Tiếp tục…"
 msgstr "Added. Continuing…"
 
+#: src/components/apiTokenMeta.ts
 #: src/components/ShareLinksSection.tsx
 msgid "Đã thu hồi"
 msgstr "Revoked"
@@ -4470,9 +4232,9 @@ msgstr "Link revoked"
 msgid "Đã thu hồi link lịch"
 msgstr "Calendar link revoked"
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Đã tiêu"
-msgstr "Spent"
+#: src/components/ApiTokenPanels.tsx
+msgid "Đã thu hồi token"
+msgstr "Token revoked"
 
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
@@ -4557,10 +4319,6 @@ msgstr "Site deleted"
 #: src/pages/MyFeedback.tsx
 msgid "Đã xoá góp ý"
 msgstr "Feedback deleted"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đã xoá khoá"
-msgstr "Key deleted"
 
 #: src/components/ShareLinksSection.tsx
 msgid "Đã xoá link"
@@ -4693,18 +4451,6 @@ msgstr "Paste the https://… link here"
 msgid "Dán nhiều bài, mỗi bài bắt đầu bằng <0>#</0> Tiêu đề. Trong mỗi bài: đoạn mở đầu là mô tả ngắn, mỗi <1>##</1> là một đoạn,<2> ![chú thích](https://…)</2> làm ảnh minh hoạ, đoạn<3> ## Câu hỏi thường gặp</3> với các <4>###</4> thành FAQ. Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong lần nhập này."
 msgstr "Paste several articles, each starting with <0>#</0> Title. In each article: the opening paragraph is the short description, each <1>##</1> is a section,<2> ![caption](https://…)</2> is an illustration, a section<3> ## Frequently asked questions</3> with <4>###</4> entries becomes the FAQ. The topic / region / status below apply to every article in this import."
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "Dán nội dung AI trả về vào ô bên trên trước."
-msgstr "Paste the AI's output into the box above first."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Dán nội dung CSV ở đây — ID,Họ tên,Giới tính,…"
-msgstr "Paste the CSV content here — ID,Full name,Gender,…"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Dán nội dung GEDCOM ở đây — bắt đầu bằng 0 HEAD…"
-msgstr "Paste the GEDCOM content here — starting with 0 HEAD…"
-
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định"
 msgstr "Paste a photo URL (https://…) — leave blank for the default photo"
@@ -4803,6 +4549,10 @@ msgstr "Changing…"
 msgid "Đang đồng bộ…"
 msgstr "Syncing…"
 
+#: src/components/apiTokenMeta.ts
+msgid "Đang dùng"
+msgstr "Active"
+
 #: src/pages/Share.tsx
 msgid "Đang dựng cây 3D…"
 msgstr "Building the 3D tree…"
@@ -4840,10 +4590,6 @@ msgstr "Merging…"
 msgid "Đang gửi…"
 msgstr "Sending…"
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Đang hết lượt"
-msgstr "Out of requests"
-
 #: src/pages/admin/PodcastPage.tsx
 #: src/pages/admin/PodcastPage.tsx
 msgid "Đang hiện"
@@ -4864,10 +4610,6 @@ msgstr "Published when you tap Save. Leave the schedule empty and uncheck = save
 #: src/pages/clan/Audit.tsx
 msgid "Đang khôi phục…"
 msgstr "Restoring…"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đang khớp với máy chủ"
-msgstr "Syncing with the server"
 
 #: src/components/CheckUpdateButton.tsx
 msgid "Đang kiểm tra cập nhật"
@@ -4969,21 +4711,12 @@ msgstr "Compressing photo… {0}%"
 msgid "Đăng ngay"
 msgstr "Publish now"
 
-#: src/components/ai/MicButton.tsx
-msgid "Đang nghe…"
-msgstr "Listening…"
-
-#: src/components/ai/ChatThread.tsx
-msgid "Đang nghĩ…"
-msgstr "Thinking…"
-
 #: src/pages/clan/Mosaics.tsx
 msgid "Đang nhận mảnh"
 msgstr "Accepting pieces"
 
 #: src/components/PlatformShell.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/Changelog.tsx
 #: src/pages/CustomsDetail.tsx
 #: src/pages/Login.tsx
 #: src/pages/Login.tsx
@@ -5061,10 +4794,6 @@ msgstr "Very active"
 msgid "Đang tải ảnh…"
 msgstr "Loading photos…"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đang tải cấu hình…"
-msgstr "Loading the settings…"
-
 #: src/pages/clan/Tree.tsx
 msgid "Đang tải cây…"
 msgstr "Loading the tree…"
@@ -5119,6 +4848,8 @@ msgid "đang tải…"
 msgstr "loading…"
 
 #: src/App.tsx
+#: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ApiTokensSection.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/HeritagePhotosSection.tsx
@@ -5213,12 +4944,12 @@ msgstr "Creating QR code…"
 msgid "Đang tạo PDF…"
 msgstr "Creating PDF…"
 
+#: src/components/ApiTokenPanels.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/components/treeCanvas/NewCanvasPanel.tsx
-#: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/CustomsImport.tsx
 #: src/pages/NewClan.tsx
@@ -5234,7 +4965,6 @@ msgstr "Off for everyone"
 msgid "Đang tham gia…"
 msgstr "Joining…"
 
-#: src/components/ai/ProposalCard.tsx
 #: src/components/BranchesSection.tsx
 #: src/pages/clan/Events.tsx
 msgid "Đang thêm…"
@@ -5250,6 +4980,7 @@ msgstr "Following"
 msgid "Đang theo dõi sự kiện dòng họ"
 msgstr "Following the clan's events"
 
+#: src/components/ClanPicker.tsx
 #: src/components/GlobalSearch.tsx
 #: src/components/TreeFolderView.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -5714,10 +5445,6 @@ msgstr "Reliability"
 msgid "Độ tin cậy (1–5)"
 msgstr "Reliability (1–5)"
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Độ trễ TB"
-msgstr "Avg latency"
-
 #: src/pages/clan/Tree.tsx
 msgid "Đỗ Việt Nguyễn"
 msgstr "Đỗ Việt Nguyễn"
@@ -5736,13 +5463,17 @@ msgstr "Portrait"
 msgid "Dọc (story)"
 msgstr "Portrait (story)"
 
+#: src/components/apiTokenMeta.ts
+msgid "Đọc + đề xuất"
+msgstr "Read + propose"
+
+#: src/components/apiTokenMeta.ts
+msgid "Đọc + ghi trực tiếp"
+msgstr "Read + write directly"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Đọc danh sách Trang"
 msgstr "Read the list of Pages"
-
-#: src/components/ai/ChatThread.tsx
-msgid "Đọc to"
-msgstr "Read aloud"
 
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -5782,10 +5513,6 @@ msgstr "Generation {0}"
 msgid "Đời {dispGen}"
 msgstr "Generation {dispGen}"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Đổi <0>AI_KEY_ENCRYPTION_KEY</0> sẽ làm mọi khoá đã lưu không giải mã được nữa — phải nhập lại ở đây."
-msgstr "Changing <0>AI_KEY_ENCRYPTION_KEY</0> will make every saved key undecryptable — they must be entered again here."
-
 #: src/components/PhotoUploadField.tsx
 msgid "Đổi ảnh"
 msgstr "Change photo"
@@ -5803,13 +5530,6 @@ msgstr "Change branch / manage branches"
 #: src/pages/clan/People.tsx
 msgid "Đổi chi cho {0} người"
 msgstr "Change branch for {0} people"
-
-#: src/components/ai/AiChatView.tsx
-#: src/components/ai/AiChatView.tsx
-#: src/pages/clan/AiChat.tsx
-#: src/pages/clan/AiChat.tsx
-msgid "Đổi cỡ chữ"
-msgstr "Change text size"
 
 #: src/pages/clan/QrExport.tsx
 #: src/pages/clan/QrExport.tsx
@@ -5836,10 +5556,6 @@ msgstr "Change email"
 #: src/pages/ResetPassword.tsx
 msgid "Đổi mật khẩu"
 msgstr "Change password"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Đổi model xong có rẻ đi thật không — và nhanh hơn hay chậm đi."
-msgstr "After changing the model, is it really cheaper — and faster or slower."
 
 #: src/pages/clan/MyLineage.tsx
 msgid "Đổi người"
@@ -5989,7 +5705,8 @@ msgstr "Community contributions"
 msgid "dòng họ"
 msgstr "clans"
 
-#: src/components/admin/AiUsageTab.tsx
+#: src/components/ApiTokenPanels.tsx
+#: src/components/ApiTokenPanels.tsx
 #: src/lib/adminScreens.tsx
 #: src/lib/queries/customs.ts
 #: src/lib/queries/global-search.ts
@@ -6078,7 +5795,6 @@ msgstr "For a small clan (few people per generation) choose “Compact” so the
 #: src/components/AppHeader.tsx
 #: src/components/AuthLayout.tsx
 #: src/components/PlatformShell.tsx
-#: src/pages/Changelog.tsx
 msgid "Dòng Họ Việt"
 msgstr "Dòng Họ Việt"
 
@@ -6112,10 +5828,6 @@ msgstr "Timeline: year {year} has no content yet."
 msgid "Đóng thông báo"
 msgstr "Close notice"
 
-#: src/pages/clan/AiChat.tsx
-msgid "Đóng trợ lý"
-msgstr "Close the assistant"
-
 #: src/components/ConfirmDialog.tsx
 msgid "Đồng ý"
 msgstr "OK"
@@ -6142,9 +5854,10 @@ msgstr "Move {0} up"
 msgid "Đưa {0} xuống"
 msgstr "Move {0} down"
 
-#: src/pages/clan/Settings.tsx
-msgid "Dùng"
-msgstr "Using"
+#. placeholder {0}: fmt(tk.last_used_at)
+#: src/components/ApiTokenPanels.tsx
+msgid "Dùng {0}"
+msgstr "Used {0}"
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Dừng & nghe lại"
@@ -6153,6 +5866,10 @@ msgstr "Stop & listen back"
 #: src/pages/clan/Merge.tsx
 msgid "Dùng cặp này"
 msgstr "Use this pair"
+
+#: src/components/ApiTokenPanels.tsx
+msgid "Dùng gần nhất"
+msgstr "Last used"
 
 #: src/pages/admin/Health.tsx
 msgid "Dung lượng"
@@ -6179,17 +5896,9 @@ msgstr "Use the arrows to set the order (the first wife goes on top)."
 msgid "Đúng ngày"
 msgstr "On the day"
 
-#: src/components/ai/MicButton.tsx
-msgid "Dừng nói"
-msgstr "Stop speaking"
-
 #: src/pages/clan/Members.tsx
 msgid "Dùng ô email phía trên để mời thành viên — họ cần đăng ký tài khoản trước."
 msgstr "Use the email box above to invite members — they need to register an account first."
-
-#: src/components/ai/ProposalCard.tsx
-msgid "Đúng rồi, thêm vào"
-msgstr "Yes, add it"
 
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Đứng tại nơi an nghỉ rồi bấm \"Lấy vị trí hiện tại\" để lưu toạ độ chỉ đường."
@@ -6202,10 +5911,6 @@ msgstr "Stand at the ancestral hall (từ đường) and tap \"Use my current lo
 #: src/lib/adminScreens.tsx
 msgid "Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng thật."
 msgstr "Touch a few times and then leave alone — and a mistake really breaks things."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Dùng ví dụ mẫu"
-msgstr "Use a sample"
 
 #: src/components/CalendarDateInput.tsx
 msgid "Dương"
@@ -6341,17 +6046,9 @@ msgstr "Zigzag"
 msgid "Gặp lỗi? Nói cho biết."
 msgstr "Found a problem? Tell us."
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "GEDCOM 5.5.1 (chuẩn phả hệ, giữ nhiều trường hơn)"
-msgstr "GEDCOM 5.5.1 (the genealogy standard, keeps more fields)"
-
 #: src/components/GedcomButtons.tsx
 msgid "GEDCOM 5.5.1 là chuẩn trao đổi dữ liệu phả hệ. Nhập sẽ tạo người mới — không hợp nhất với dữ liệu hiện có."
 msgstr "GEDCOM 5.5.1 is the standard for exchanging genealogy data. Importing creates new people — it does not merge with existing data."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "GEDCOM hợp lệ. Bấm \"Tạo thành viên từ GEDCOM\" để nhập."
-msgstr "The GEDCOM is valid. Tap \"Create members from GEDCOM\" to import it."
 
 #: src/pages/Share.tsx
 msgid "Ghi âm kể chuyện"
@@ -6495,10 +6192,6 @@ msgstr "Transactions"
 msgid "Giao diện"
 msgstr "Appearance"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Giao diện đã lên nhưng cơ sở dữ liệu và hàm phía máy chủ thì chưa. Đây là bình thường: bản tự host áp migration bằng tay, nên frontend có thể lên trước. Làm ba bước dưới đây rồi tải lại trang."
-msgstr "The interface is up but the database and server-side functions are not. This is normal: self-hosted setups apply migrations by hand, so the frontend can go live first. Do the three steps below, then reload the page."
-
 #: src/components/HeaderActions.tsx
 #: src/pages/clan/ClanMenu.tsx
 msgid "Giao diện sáng"
@@ -6604,10 +6297,6 @@ msgstr "keep"
 msgid "Giữ lại"
 msgstr "Keep"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Giữ lịch sử chat (ngày)"
-msgstr "Keep chat history (days)"
-
 #: src/components/gallery/GalleryScene.tsx
 msgid "Gỗ"
 msgstr "Wood"
@@ -6706,13 +6395,13 @@ msgstr "Type a name to search (no accents needed)"
 msgid "Gõ tên để tìm thành viên…"
 msgstr "Type a name to find a member…"
 
+#: src/components/ClanPicker.tsx
+msgid "Gõ tên dòng họ…"
+msgstr "Type a clan name…"
+
 #: src/pages/Customs.tsx
 msgid "Gõ tình huống cũng được — vd \"nhà mới\", \"có em bé\"…"
 msgstr "You can type a situation too — e.g. \"new house\", \"new baby\"…"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Gõ vào ô bên trên ai có quan hệ gì, sinh năm nào…"
-msgstr "Type in the box above who is related to whom, born in which year…"
 
 #: src/lib/nextSteps.ts
 msgid "Gọi nhau là gì theo truyền thống"
@@ -6806,15 +6495,10 @@ msgstr "This feedback was sent while signed out, so the sender can't see the rep
 msgid "Góp ý và báo lỗi người dùng gửi lên."
 msgstr "Feedback and bug reports sent by users."
 
-#: src/lib/aiModels.ts
-msgid "GPT-5.6 Luna — rẻ nhất"
-msgstr "GPT-5.6 Luna — cheapest"
-
 #: src/pages/clan/Import.tsx
 msgid "GT"
 msgstr "Gender"
 
-#: src/components/ai/ChatComposer.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Gửi"
@@ -6896,17 +6580,9 @@ msgstr "Both ends"
 msgid "Hai dòng họ là họ hàng / cùng nguồn gốc — xem ghi chú của bên gửi."
 msgstr "The two clans are relatives / share an origin — see the sender's note."
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Hài lòng"
-msgstr "Satisfied"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Hạn mức & chi phí"
-msgstr "Quotas & costs"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Hạn mức tháng này"
-msgstr "Quota this month"
+#: src/components/ApiTokenPanels.tsx
+msgid "Hạn dùng"
+msgstr "Expires after"
 
 #: src/components/ClanBadges.tsx
 msgid "Hạng {rank} theo số thành viên"
@@ -6974,6 +6650,8 @@ msgstr "System"
 msgid "Hệ thống chưa có dòng họ nào để gắn liên kết."
 msgstr "The system has no clan to attach the link to."
 
+#: src/components/apiTokenMeta.ts
+#: src/components/ApiTokenPanels.tsx
 #: src/pages/admin/Announcements.tsx
 msgid "Hết hạn"
 msgstr "Expired"
@@ -6988,13 +6666,15 @@ msgid "hết hạn {0}"
 msgstr "expires {0}"
 
 #. placeholder {0}: fmt(row.expires_at)
+#. placeholder {0}: fmt(tk.expires_at)
+#: src/components/ApiTokenPanels.tsx
 #: src/pages/admin/Announcements.tsx
 msgid "Hết hạn {0}"
 msgstr "Expires {0}"
 
-#: src/components/BookTextsSection.tsx
-msgid "Hết lượt AI tháng này"
-msgstr "No AI requests left this month"
+#: src/components/ClanPicker.tsx
+msgid "Hiện {LIMIT} kết quả đầu — gõ thêm để thu hẹp."
+msgstr "Showing the first {LIMIT} results — type more to narrow down."
 
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
@@ -7222,10 +6902,6 @@ msgstr "Lozenge pattern"
 msgid "Hoặc gửi trực tiếp tới:"
 msgstr "Or send directly to:"
 
-#: src/components/OverviewSearch.tsx
-msgid "Hoặc hỏi trợ lý AI bằng lời"
-msgstr "Or ask the AI assistant in your own words"
-
 #: src/components/SocialAuthButtons.tsx
 msgid "hoặc tiếp tục với"
 msgstr "or continue with"
@@ -7237,14 +6913,6 @@ msgstr "Or find a member (with a photo) to replace it…"
 #: src/components/VideoPlayer.tsx
 msgid "hoặc xem trang"
 msgstr "or see the page"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Hoàn do lỗi"
-msgstr "Refunded due to errors"
-
-#: src/lib/queries/credits.ts
-msgid "Hoàn lại do lỗi"
-msgstr "Refund due to an error"
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Hoàn tác (Ctrl+Z)"
@@ -7276,30 +6944,6 @@ msgstr "Recent activity"
 #: src/pages/Contact.tsx
 msgid "Hỏi cách dùng, hỏi về dữ liệu…"
 msgstr "Ask how to use something, or about your data…"
-
-#: src/lib/clanFeatures.ts
-msgid "Hỏi đáp về gia phả bằng lời — giỗ chạp, xưng hô, tra cứu người. Câu hỏi được gửi tới dịch vụ AI bên ngoài để xử lý (kèm tên, năm sinh/mất của người liên quan; không gửi ảnh hay tiểu sử)."
-msgstr "Ask about the family tree in your own words — death anniversaries, kinship terms, looking people up. Questions are sent to an external AI service for processing (with the name and birth / death year of the people involved; photos and biographies are not sent)."
-
-#: src/lib/nextSteps.ts
-msgid "Hỏi giỗ, xưng hô, tra người"
-msgstr "Ask about anniversaries, kinship, people"
-
-#: src/lib/queries/credits.ts
-msgid "Hỏi trợ lý"
-msgstr "Ask the assistant"
-
-#: src/lib/nextSteps.ts
-msgid "Hỏi trợ lý AI"
-msgstr "Ask the AI assistant"
-
-#: src/lib/navModel.tsx
-msgid "Hỏi về gia phả bằng lời."
-msgstr "Ask about the family tree in your own words."
-
-#: src/components/ai/ChatComposer.tsx
-msgid "Hỏi về gia phả…"
-msgstr "Ask about the family tree…"
 
 #: src/components/EventsCalendar.tsx
 #: src/components/TodayHubCard.tsx
@@ -7446,6 +7090,7 @@ msgstr "Lifespan"
 msgid "Huỷ"
 msgstr "Cancel"
 
+#: src/components/ApiTokenPanels.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/ui/view-edit-actions.tsx
@@ -7577,18 +7222,15 @@ msgstr "Drag onto the canvas (or click to add)."
 msgid "Kéo, phóng to, chọn người làm tâm"
 msgstr "Drag, zoom, choose a center person"
 
+#: src/lib/adminScreens.tsx
+#: src/pages/admin/KetNoiAiPage.tsx
+#: src/pages/clan/Settings.tsx
+msgid "Kết nối AI"
+msgstr "AI connection"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Kết nối Facebook"
 msgstr "Facebook connection"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Kết nối tốt"
-msgstr "Connected"
-
-#. placeholder {0}: st.last_test_ms ?? 0
-#: src/components/admin/AiSettingsTab.tsx
-msgid "kết nối tốt · {0}ms"
-msgstr "connected · {0}ms"
 
 #: src/pages/clan/Kinship.tsx
 msgid "Kết quả"
@@ -7618,10 +7260,6 @@ msgstr "Guest"
 #: src/pages/admin/Feedback.tsx
 msgid "Khách (chưa đăng nhập)"
 msgstr "Guest (not signed in)"
-
-#: src/pages/CreditHistory.tsx
-msgid "Khi bạn hỏi trợ lý dòng họ, mỗi câu hỏi sẽ được ghi lại ở đây."
-msgstr "When you ask the clan assistant, each question is recorded here."
 
 #: src/pages/Account.tsx
 msgid "Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào."
@@ -7653,20 +7291,6 @@ msgstr "Paper size"
 msgid "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
 msgstr "Paper size: {0} × {1} cm (at most 500 cm per side)."
 
-#. placeholder {0}: p.label
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Khoá API {0}"
-msgstr "{0} API key"
-
-#: src/lib/aiModels.ts
-#: src/lib/aiModels.ts
-msgid "Khoá bắt đầu bằng sk-"
-msgstr "The key starts with sk-"
-
-#: src/lib/aiModels.ts
-msgid "Khoá bắt đầu bằng sk-ant-"
-msgstr "The key starts with sk-ant-"
-
 #: src/pages/clan/Tree.tsx
 msgid "Khoá để cuộn trang"
 msgstr "Lock to scroll the page"
@@ -7674,15 +7298,6 @@ msgstr "Lock to scroll the page"
 #: src/pages/clan/Tree.tsx
 msgid "Khoá để cuộn trang. Chạm vào ảnh cây để mở chế độ di chuyển."
 msgstr "Locked for page scrolling. Tap the tree image to turn on move mode."
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Khoá được mã hoá trước khi lưu"
-msgstr "Keys are encrypted before being saved"
-
-#. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useState } from "react"; import { IconCheck, IconKey, IconRefresh, IconSparkles, IconTrash, } from "@/components/icons"; import { ErrorState } from "@/components/ErrorState"; import { LoadingState } from "@/components/LoadingState"; import { useConfirm } from "@/components/ConfirmDialog"; import { useToast } from "@/components/Toast"; import { Button } from "@/components/ui/button"; import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from "@/components/ui/card"; import { Input } from "@/components/ui/input"; import { Select } from "@/components/ui/select"; import { AI_PROVIDERS, AiNotInstalledError, QA_MODELS, deleteProviderKey, AI_LIMIT_RANGE, getAiConfig, getAiLimits, getAiSpendToday, setAiEnabled, setAiLimits, type AiLimits, setQaModel, listKeyStatus, setProviderKey, testProviderKey, type AiProvider, type KeyStatus, } from "@/lib/queries/aiAdmin"; import { Trans } from "@lingui/react/macro"; import { t } from "@lingui/core/macro"; /** * Quản trị › Trợ lý AI — cắm khoá nhà cung cấp và kiểm tra kết nối. * * Khoá được mã hoá AES-GCM ở edge function trước khi vào DB; màn hình này * chỉ thấy 4 ký tự cuối và kết quả kiểm tra. Nhập xong là hệ thống tự gọi * thử nhà cung cấp luôn, để không ai phải đoán xem khoá có chạy không. */ export function AiSettingsTab() { const qc = useQueryClient(); const toast = useToast(); const confirm = useConfirm(); const [drafts, setDrafts] = useState<Partial<Record<AiProvider, string>>>({}); const configQ = useQuery({ queryKey: ["ai-config"], queryFn: getAiConfig, retry: false }); const limitsQ = useQuery({ queryKey: ["ai-limits"], queryFn: getAiLimits, retry: false, }); const [limits, setLimits] = useState<AiLimits | null>(null); const saveLimits = useMutation({ mutationFn: (next: AiLimits) => setAiLimits(next), onSuccess: () => { toast.success(t`Đã lưu hạn mức`); setLimits(null); qc.invalidateQueries({ queryKey: ["ai-limits"] }); qc.invalidateQueries({ queryKey: ["ai-spend-today"] }); }, onError: (e: Error) => toast.error(t`Không lưu được`, { description: e.message }), }); const current = limits ?? limitsQ.data ?? null; // Chi phí hôm nay — để ngắt mạch không phải là hộp đen. const spendQ = useQuery({ queryKey: ["ai-spend-today"], queryFn: getAiSpendToday, retry: false, refetchInterval: 60_000, }); const toggleEnabled = useMutation({ mutationFn: setAiEnabled, onSuccess: (_, on) => { qc.invalidateQueries({ queryKey: ["ai-config"] }); qc.invalidateQueries({ queryKey: ["ai-enabled"] }); toast.success(on ? t`Đã bật trợ lý` : t`Đã tắt trợ lý`); }, onError: (e: Error) => toast.error(t`Không đổi được`, { description: e.message }), }); const changeModel = useMutation({ mutationFn: setQaModel, onSuccess: () => { qc.invalidateQueries({ queryKey: ["ai-config"] }); toast.success(t`Đã đổi model`); }, onError: (e: Error) => toast.error(t`Không đổi được`, { description: e.message }), }); const statusQ = useQuery({ queryKey: ["ai-provider-keys"], queryFn: listKeyStatus, // Chưa cài thì thử lại cũng vô ích, chỉ tốn thêm ba lần 404 trong // console. Các lỗi khác (mạng chập) vẫn giữ retry mặc định. retry: (count, e) => !(e instanceof AiNotInstalledError) && count < 2, }); const byProvider = new Map<AiProvider, KeyStatus>( (statusQ.data ?? []).map((s) => [s.provider, s]), ); const invalidate = () => qc.invalidateQueries({ queryKey: ["ai-provider-keys"] }); const save = useMutation({ mutationFn: ({ p, key }: { p: AiProvider; key: string }) => setProviderKey(p, key), onSuccess: (res, { p }) => { setDrafts((d) => ({ ...d, [p]: "" })); invalidate(); if (res.test.ok) { toast.success(t`Đã lưu và kết nối được`, { description: t`Nhà cung cấp trả lời sau ${res.test.ms}ms.`, }); } else { toast.error(t`Đã lưu nhưng kết nối thất bại`, { description: res.test.error ?? t`Kiểm tra lại khoá.`, }); } }, onError: (e: Error) => toast.error(t`Không lưu được`, { description: e.message }), }); const test = useMutation({ mutationFn: (p: AiProvider) => testProviderKey(p), onSuccess: (res) => { invalidate(); if (res.test.ok) { toast.success(t`Kết nối tốt`, { description: `${res.test.model} · ${res.test.ms}ms`, }); } else { toast.error(t`Không kết nối được`, { description: res.test.error ?? t`Không rõ nguyên nhân.`, }); } }, onError: (e: Error) => toast.error(t`Lỗi kiểm tra`, { description: e.message }), }); const remove = useMutation({ mutationFn: (p: AiProvider) => deleteProviderKey(p), onSuccess: () => { invalidate(); toast.success(t`Đã xoá khoá`); }, onError: (e: Error) => toast.error(t`Không xoá được`, { description: e.message }), }); if (statusQ.isLoading) return <LoadingState label={t`Đang tải cấu hình…`} />; // Frontend có thể lên trước database: prod là Supabase tự host, migration // áp bằng tay. Hiện hướng dẫn thay vì quăng lỗi PostgREST thô. if (statusQ.error instanceof AiNotInstalledError) return <SetupGuide />; if (statusQ.error) { return ( <ErrorState title={t`Không tải được cấu hình`} error={statusQ.error} onRetry={() => statusQ.refetch()} /> ); } return ( <div className="flex flex-col gap-5"> <div className="rounded-lg border bg-secondary/40 p-4 text-sm"> <p className="mb-1 font-semibold">{t`Khoá được mã hoá trước khi lưu`}</p> <p className="text-muted-foreground"> <Trans> Khoá mã hoá bằng AES-256-GCM ngay tại máy chủ hàm, khoá giải mã nằm ở biến môi trường <code>AI_KEY_ENCRYPTION_KEY</code> — cơ sở dữ liệu không bao giờ thấy khoá gốc. Cách này chặn được rò rỉ qua bản sao lưu hay truy vấn nhầm; nó <b>{t`không`}</b> chặn được người đã vào được máy chủ. </Trans> </p> <p className="mt-2 text-muted-foreground"> <Trans> Đổi <code>AI_KEY_ENCRYPTION_KEY</code> sẽ làm mọi khoá đã lưu không giải mã được nữa — phải nhập lại ở đây. </Trans> </p> </div> <Card> <CardHeader> <CardTitle className="flex items-center gap-2 text-base"> <IconSparkles className="h-5 w-5 text-primary" /> {t`Công tắc tổng`} </CardTitle> <CardDescription> <Trans>Tắt thì trợ lý ẩn hoàn toàn với mọi dòng họ, kể cả dòng họ đã bật tính năng. Mặc định tắt.</Trans> </CardDescription> </CardHeader> <CardContent className="flex flex-col gap-2"> <label htmlFor="qa-model" className="text-sm font-medium"> {t`Model cho hỏi đáp`} </label> <Select icon={<IconSparkles />} id="qa-model" className="max-w-sm" value={configQ.data?.qaModel ?? ""} disabled={configQ.isLoading || changeModel.isPending} onChange={(e) => changeModel.mutate(e.target.value)} > {QA_MODELS.map((m) => ( <option key={m.id} value={m.id}> {m.label} </option> ))} </Select> <p className="text-xs text-muted-foreground"> {t`Phải có khoá của nhà cung cấp tương ứng ở dưới thì model mới chạy.`} </p> </CardContent> {/* Hành động nằm ở footer — xem docs/design-language.md. */} <CardFooter className="justify-between gap-3 border-t pt-4"> <span className="text-sm text-muted-foreground"> {configQ.data?.enabled ? t`Trợ lý đang bật` : t`Trợ lý đang tắt`} {spendQ.data && spendQ.data.capUsd > 0 && ( <> {" · hôm nay "} <span className={ spendQ.data.spentUsd >= spendQ.data.capUsd ? "font-medium text-destructive" : "tabular-nums" } title={t`Chạm trần thì trợ lý tự nghỉ tới hết ngày (giờ VN), không cần bật lại tay.`} > ${spendQ.data.spentUsd.toFixed(2)}/${spendQ.data.capUsd} </span> </> )} </span> <Button size="sm" variant={configQ.data?.enabled ? "outline" : "default"} disabled={configQ.isLoading || toggleEnabled.isPending} onClick={() => toggleEnabled.mutate(!configQ.data?.enabled)} > <IconSparkles className="h-4 w-4" /> {configQ.data?.enabled ? t`Tắt trợ lý` : t`Bật trợ lý`} </Button> </CardFooter> </Card> <Card> <CardHeader> <CardTitle className="text-base">{t`Hạn mức & chi phí`}</CardTitle> <CardDescription> <Trans>Ba con số này trước đây chỉ đổi được bằng SQL trên máy chủ. Đổi ở đây có hiệu lực ngay, không cần deploy lại.</Trans> </CardDescription> </CardHeader> <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3"> <NumberSetting id="ai-free" label={t`Lượt miễn phí / tháng`} hint={t`Mỗi tài khoản. Đặt 0 để tắt hẳn phần miễn phí.`} value={current?.freePerMonth} range={AI_LIMIT_RANGE.freePerMonth} onChange={(v) => current && setLimits({ ...current, freePerMonth: v }) } /> <NumberSetting id="ai-cap" label={t`Trần chi phí / ngày (USD)`} hint={t`Chạm trần thì trợ lý nghỉ tới hết ngày rồi tự mở lại. Đặt 0 để tắt ngắt mạch.`} value={current?.dailyCapUsd} range={AI_LIMIT_RANGE.dailyCapUsd} onChange={(v) => current && setLimits({ ...current, dailyCapUsd: v })} /> <NumberSetting id="ai-retention" label={t`Giữ lịch sử chat (ngày)`} hint={t`Cron mỗi đêm xoá tin cũ hơn mốc này.`} value={current?.retentionDays} range={AI_LIMIT_RANGE.retentionDays} onChange={(v) => current && setLimits({ ...current, retentionDays: v }) } /> <NumberSetting id="ai-clan-daily" label={t`Lượt / ngày cho mỗi dòng họ`} hint={t`Mức chung. Đặt riêng cho một dòng họ ở Báo cáo › Dòng họ. 0 = không giới hạn.`} value={current?.clanDailyLimit} range={AI_LIMIT_RANGE.clanDailyLimit} onChange={(v) => current && setLimits({ ...current, clanDailyLimit: v }) } /> <NumberSetting id="ai-clan-monthly" label={t`Lượt / tháng cho mỗi dòng họ`} hint={t`Mức chung, tính theo tháng dương giờ Việt Nam. 0 = không giới hạn.`} value={current?.clanMonthlyLimit} range={AI_LIMIT_RANGE.clanMonthlyLimit} onChange={(v) => current && setLimits({ ...current, clanMonthlyLimit: v }) } /> </CardContent> <CardFooter className="justify-between gap-3 border-t pt-4"> <span className="text-sm text-muted-foreground"> {limits ? t`Có thay đổi chưa lưu` : t`Đang khớp với máy chủ`} </span> <Button size="sm" disabled={!limits || saveLimits.isPending} onClick={() => limits && saveLimits.mutate(limits)} > <IconCheck className="h-4 w-4" /> {t`Lưu hạn mức`} </Button> </CardFooter> </Card> {AI_PROVIDERS.map((p) => { const st = byProvider.get(p.id); const draft = drafts[p.id] ?? ""; const busy = (save.isPending && save.variables?.p === p.id) || (test.isPending && test.variables === p.id) || (remove.isPending && remove.variables === p.id); return ( <Card key={p.id}> <CardHeader className="gap-2"> <div className="flex flex-wrap items-center gap-2"> <CardTitle className="text-base">{p.label}</CardTitle> {st ? ( <span className="rounded-full border px-2 py-0.5 font-mono text-xs"> {st.hint} </span> ) : ( <span className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground"> {t`chưa cắm khoá`} </span> )} {st?.last_test_ok === true && ( <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-400"> <IconCheck className="h-3 w-3" /> {t`kết nối tốt · ${st.last_test_ms ?? 0}ms`} </span> )} {st?.last_test_ok === false && ( <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs text-destructive"> {t`lỗi kết nối`} </span> )} </div> {st?.last_test_ok === false && st.last_test_error && ( <p className="break-words rounded border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive"> {st.last_test_error} </p> )} </CardHeader> <CardContent> <label htmlFor={`key-${p.id}`} className="sr-only"> {t`Khoá API ${p.label}`} </label> <Input icon={<IconKey />} id={`key-${p.id}`} type="password" autoComplete="off" value={draft} placeholder={st ? t`Nhập khoá mới để thay` : p.hint} onChange={(e) => setDrafts((d) => ({ ...d, [p.id]: e.target.value })) } className="font-mono" /> </CardContent> {/* Mọi hành động dồn xuống footer, không chen cạnh ô nhập: ở màn hẹp chúng đẩy ô nhập co lại còn vài ký tự. */} <CardFooter className="flex-wrap justify-between gap-3 border-t pt-4"> <span className="text-xs text-muted-foreground"> {st ? t`Cập nhật ${new Date(st.updated_at).toLocaleString("vi-VN")}` : t`Chưa có khoá nào được lưu`} </span> <div className="flex flex-wrap gap-2"> {st && ( <> <Button size="sm" variant="destructive-outline" disabled={busy} onClick={async () => { const ok = await confirm({ title: t`Xoá khoá ${p.label}?`, description: t`Trợ lý sẽ ngừng dùng được nhà cung cấp này cho tới khi cắm khoá mới.`, confirmLabel: t`Xoá`, destructive: true, }); if (ok) remove.mutate(p.id); }} > <IconTrash className="h-4 w-4" /> {t`Xoá`} </Button> <Button size="sm" variant="outline" onClick={() => test.mutate(p.id)} disabled={busy} > <IconRefresh className="h-4 w-4" /> {t`Kiểm tra`} </Button> </> )} <Button size="sm" onClick={() => save.mutate({ p: p.id, key: draft })} disabled={!draft.trim() || busy} > <IconCheck className="h-4 w-4" /> {t`Lưu & kiểm tra`} </Button> </div> </CardFooter> </Card> ); })} </div> ); } /** * Hiện khi bảng/hàm của phần AI chưa có trên máy chủ. Liệt kê đúng các * bước còn thiếu, kèm lệnh — người vận hành không phải đi tìm tài liệu. */ function SetupGuide() { return ( <div className="flex flex-col gap-4"> <div className="rounded-lg border border-dashed p-5"> <h3 className="mb-1 text-base font-semibold"> {t`Phần trợ lý AI chưa được cài trên máy chủ này`} </h3> <p className="text-sm text-muted-foreground"> <Trans>Giao diện đã lên nhưng cơ sở dữ liệu và hàm phía máy chủ thì chưa. Đây là bình thường: bản tự host áp migration bằng tay, nên frontend có thể lên trước. Làm ba bước dưới đây rồi tải lại trang.</Trans> </p> </div> <ol className="flex flex-col gap-4"> <li className="rounded-lg border p-4"> <p className="mb-2 text-sm font-semibold">{t`1. Áp ba migration`}</p> <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs"> {`# trên máy chủ database for f in 20260823120000_ai_usage \\ 20260823140000_ai_messages \\ 20260823160000_ai_provider_keys; do docker exec -i supabase-db psql -U postgres -d postgres < "$f.sql" done # nhớ ghi vào bảng supabase_migrations.schema_migrations`} </pre> </li> <li className="rounded-lg border p-4"> <p className="mb-2 text-sm font-semibold"> {t`2. Đẩy Edge Function và khởi động lại`} </p> <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs"> {`# thay <host> bằng máy chủ Supabase của bạn scp -r supabase/functions/_shared \\ supabase/functions/ai-chat \\ supabase/functions/ai-admin \\ <host>:<supabase-dir>/volumes/functions/ ssh <host> 'cd <supabase-dir> && docker compose up -d --force-recreate functions'`} </pre> </li> <li className="rounded-lg border p-4"> <p className="mb-2 text-sm font-semibold"> <Trans> 3. Đặt khoá mã hoá cho dịch vụ <code>functions</code> </Trans> </p> <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs"> {`services: functions: environment: AI_KEY_ENCRYPTION_KEY: <openssl rand -base64 32>`} </pre> <p className="mt-2 text-xs text-muted-foreground"> <Trans>Cất giá trị này cẩn thận: đổi nó là mọi khoá API đã lưu không giải mã được nữa và phải nhập lại.</Trans> </p> </li> </ol> <p className="text-sm text-muted-foreground"> <Trans> Chi tiết đầy đủ nằm ở <code>supabase/functions/ai-chat/README.md</code>. </Trans> </p> </div> ); } /** * Ô nhập số có chặn khoảng. Để rỗng thì KHÔNG gửi 0 lên máy chủ — 0 ở * đây có nghĩa riêng ("tắt hẳn"), lẫn với "chưa nhập gì" là đổi hành vi * hệ thống chỉ vì người dùng lỡ xoá ô. */ function NumberSetting({ id, label, hint, value, range, onChange, }: { id: string; label: string; hint: string; value: number | undefined; range: { min: number; max: number }; onChange: (v: number) => void; }) { return ( <div className="flex flex-col gap-1.5"> <label htmlFor={id} className="text-sm font-medium"> {label} </label> <Input id={id} type="number" inputMode="numeric" min={range.min} max={range.max} value={value ?? ""} onChange={(e) => { const raw = e.target.value; if (raw === "") return; const n = Number(raw); if (Number.isFinite(n)) onChange(n); }} /> <p className="text-xs text-muted-foreground">{hint}</p> </div> ); } 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Khoá mã hoá bằng AES-256-GCM ngay tại máy chủ hàm, khoá giải mã nằm ở biến môi trường <0>AI_KEY_ENCRYPTION_KEY</0> — cơ sở dữ liệu không bao giờ thấy khoá gốc. Cách này chặn được rò rỉ qua bản sao lưu hay truy vấn nhầm; nó <1>{0}</1> chặn được người đã vào được máy chủ."
-msgstr "Keys are encrypted with AES-256-GCM on the functions server; the decryption key lives in the <0>AI_KEY_ENCRYPTION_KEY</0> environment variable — the database never sees the original key. This guards against leaks through backups or stray queries; it does <1>{0}</1> stop someone who already has access to the server."
 
 #: src/pages/admin/Users.tsx
 msgid "Khoá tài khoản"
@@ -7692,7 +7307,6 @@ msgstr "Lock the account"
 msgid "Khoản thu / chi của quỹ họ."
 msgstr "Income / expense entries of the clan fund."
 
-#: src/components/admin/AiUsageTab.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 msgid "Khoảng thời gian"
@@ -7720,10 +7334,6 @@ msgstr "Restore to the state before the edit?"
 msgid "Khôi phục về trạng thái trước khi xoá?"
 msgstr "Restore to the state before the deletion?"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "không"
-msgstr "not"
-
 #: src/components/ContributionDiffView.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/treeCanvas/CanvasPalette.tsx
@@ -7746,11 +7356,6 @@ msgstr "Could not turn on notifications"
 msgid "Không bây giờ"
 msgstr "Not now"
 
-#. placeholder {0}: desc.slice(0, 650)
-#: src/components/BookTextsSection.tsx
-msgid "không bịa tên người/năm. Chỉ trả về nội dung bài, không giải thích. Ý của tôi: {0}"
-msgstr "do not invent names or years. Return only the text itself, no explanations. My notes: {0}"
-
 #: src/components/SubscribeToggle.tsx
 #: src/components/SubscriptionSettings.tsx
 #: src/pages/clan/BoardPostDetail.tsx
@@ -7758,7 +7363,6 @@ msgid "Không cập nhật được"
 msgstr "Could not update"
 
 #: src/components/ShareTreeButton.tsx
-#: src/pages/clan/AiGenerate.tsx
 msgid "Không chép được"
 msgstr "Could not copy"
 
@@ -7857,6 +7461,10 @@ msgstr "No matching clans"
 #: src/pages/Clans.tsx
 msgid "Không có dòng họ nào khớp \"{debounced}\""
 msgstr "No clans match \"{debounced}\""
+
+#: src/components/ClanPicker.tsx
+msgid "Không có dòng họ nào khớp."
+msgstr "No clan matches."
 
 #: src/pages/clan/HonorBook.tsx
 msgid "Không có ghi nhận nào khớp"
@@ -7979,6 +7587,10 @@ msgstr "No matching announcements"
 msgid "Không có tỉnh/thành nào khớp"
 msgstr "No matching provinces / cities"
 
+#: src/components/admin/ApiTokensAdminTab.tsx
+msgid "Không có token nào khớp"
+msgstr "No tokens match"
+
 #: src/pages/Videos.tsx
 msgid "Không có video nào khớp."
 msgstr "No matching videos."
@@ -8011,12 +7623,6 @@ msgstr "Could not move the piece"
 msgid "Không đọc được ảnh"
 msgstr "Could not read the image"
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "Không đọc được dòng nào. Kiểm tra lại có đúng định dạng CSV không."
-msgstr "No rows could be read. Check that the CSV format is correct."
-
-#: src/components/admin/AiSettingsTab.tsx
-#: src/components/admin/AiSettingsTab.tsx
 #: src/components/BranchesSection.tsx
 #: src/pages/Account.tsx
 msgid "Không đổi được"
@@ -8079,10 +7685,6 @@ msgstr "does not expire"
 msgid "Không huỷ được"
 msgstr "Could not unfollow"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Không kết nối được"
-msgstr "Could not connect"
-
 #: src/components/ErrorState.tsx
 msgid "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại."
 msgstr "Could not reach the server. Check your connection and try again."
@@ -8117,8 +7719,6 @@ msgstr "Could not get the location (location permission needed)"
 msgid "Không lấy được vị trí (cần cấp quyền)"
 msgstr "Could not get the location (permission needed)"
 
-#: src/components/admin/AiSettingsTab.tsx
-#: src/components/admin/AiSettingsTab.tsx
 #: src/components/BoardPostForm.tsx
 #: src/components/BookTextsSection.tsx
 #: src/components/QuickDateFixSheet.tsx
@@ -8201,17 +7801,9 @@ msgstr "Don't remember the solar year?"
 msgid "Không nối được"
 msgstr "Could not connect"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Không rõ nguyên nhân."
-msgstr "Cause unknown."
-
 #: src/components/ShareCardDialog.tsx
 msgid "Không tải được"
 msgstr "Could not download"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Không tải được cấu hình"
-msgstr "Could not load the settings"
 
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Không tải được danh sách:"
@@ -8224,7 +7816,6 @@ msgstr "Could not load the data"
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
-#: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/NewClan.tsx
@@ -8257,6 +7848,10 @@ msgstr "Could not create the QR code"
 msgid "Không tạo được thiệp"
 msgstr "Could not create the card"
 
+#: src/components/ApiTokenPanels.tsx
+msgid "Không tạo được token"
+msgstr "Could not create token"
+
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Không thấy bài. Có thể đã bị ẩn hoặc bạn không có quyền xem."
 msgstr "Post not found. It may have been hidden, or you don't have permission to view it."
@@ -8286,6 +7881,7 @@ msgstr "Could not add"
 msgid "Không thêm được ảnh"
 msgstr "Could not add the photo"
 
+#: src/components/ApiTokenPanels.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
@@ -8393,7 +7989,6 @@ msgstr "No frame"
 msgid "Không xác nhận được"
 msgstr "Could not confirm"
 
-#: src/components/admin/AiSettingsTab.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/ShareLinksSection.tsx
@@ -8500,20 +8095,12 @@ msgstr "Encouraged"
 msgid "Kiểm duyệt bài"
 msgstr "Review posts"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Kiểm tra"
-msgstr "Test"
-
 #: src/components/CheckUpdateButton.tsx
 #: src/components/CheckUpdateButton.tsx
 #: src/components/CheckUpdateButton.tsx
 #: src/components/CheckUpdateButton.tsx
 msgid "Kiểm tra cập nhật"
 msgstr "Check for updates"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Kiểm tra lại khoá."
-msgstr "Check the key again."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Kiểm tra token"
@@ -8740,12 +8327,6 @@ msgstr "Clan history: origins, the founding ancestor and their biography; the an
 msgid "Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
 msgstr "History of every change to people, families and branches. Editors / admins can restore."
 
-#: src/pages/Account.tsx
-#: src/pages/CreditHistory.tsx
-#: src/pages/CreditHistory.tsx
-msgid "Lịch sử sử dụng"
-msgstr "Usage history"
-
 #: src/lib/navModel.tsx
 msgid "Lịch sử thay đổi dữ liệu của dòng họ."
 msgstr "History of changes to the clan's data."
@@ -8773,7 +8354,6 @@ msgstr "Perpetual calendar (lịch vạn niên)"
 
 #: src/components/BookMetaFields.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/Changelog.tsx
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Liên hệ"
 msgstr "Contact"
@@ -9089,6 +8669,7 @@ msgstr "Filter by fund"
 msgid "Lọc theo quy mô"
 msgstr "Filter by size"
 
+#: src/components/admin/ApiTokensAdminTab.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/Feedback.tsx
 #: src/pages/admin/Users.tsx
@@ -9119,6 +8700,10 @@ msgstr "Filter income / expenses"
 msgid "Lọc tỉnh / thành phố"
 msgstr "Filter provinces / cities"
 
+#: src/components/admin/ApiTokensAdminTab.tsx
+msgid "Lọc token"
+msgstr "Filter tokens"
+
 #: src/components/AddressPicker.tsx
 msgid "Lọc xã / phường"
 msgstr "Filter wards / communes"
@@ -9133,10 +8718,6 @@ msgstr "Errors"
 msgid "Lỗi / sự cố"
 msgstr "Bug / problem"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "lỗi kết nối"
-msgstr "connection error"
-
 #: src/pages/Account.tsx
 msgid "Lỗi khi test"
 msgstr "Error during the test"
@@ -9144,10 +8725,6 @@ msgstr "Error during the test"
 #: src/pages/clan/TreeCanvases.tsx
 msgid "lỗi không rõ"
 msgstr "unknown error"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Lỗi kiểm tra"
-msgstr "Test error"
 
 #: src/pages/JoinClan.tsx
 msgid "Lời mời tham gia"
@@ -9191,60 +8768,6 @@ msgstr "An extra layer of reminders — works even when the app is closed. Requi
 msgid "Lưới"
 msgstr "Grid"
 
-#: src/components/admin/AiUsageTab.tsx
-#: src/components/admin/AiUsageTab.tsx
-msgid "Lượt"
-msgstr "Requests"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Lượt / ngày cho mỗi dòng họ"
-msgstr "Requests / day per clan"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Lượt / tháng cho mỗi dòng họ"
-msgstr "Requests / month per clan"
-
-#: src/pages/admin/Clans.tsx
-msgid "Lượt AI / ngày"
-msgstr "AI requests / day"
-
-#: src/pages/admin/Clans.tsx
-msgid "Lượt AI / tháng"
-msgstr "AI requests / month"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Lượt hỏi"
-msgstr "Requests asked"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Lượt hỏi theo ngày"
-msgstr "Requests per day"
-
-#: src/pages/Account.tsx
-msgid "Lượt hỏi trợ lý"
-msgstr "Assistant requests"
-
-#: src/pages/CreditHistory.tsx
-msgid "Lượt hỏi trợ lý đã dùng và còn lại. Trang này không hiện nội dung câu hỏi."
-msgstr "Assistant requests used and remaining. This page doesn't show the content of your questions."
-
-#: src/lib/adminScreens.tsx
-#: src/pages/admin/TroLyAiPage.tsx
-msgid "Lượt hỏi, chi phí, độ trễ, hạn mức đang dùng."
-msgstr "Requests, cost, latency and quotas in use."
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Lượt lỗi"
-msgstr "Failed requests"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Lượt miễn phí / tháng"
-msgstr "Free requests / month"
-
-#: src/lib/queries/credits.ts
-msgid "Lượt tặng hằng tháng"
-msgstr "Monthly bonus"
-
 #: src/components/BranchesSection.tsx
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/QuickAddSheet.tsx
@@ -9278,10 +8801,6 @@ msgstr "Save"
 #: src/components/QuickAddSheet.tsx
 msgid "Lưu {0} người"
 msgstr "Save {0} people"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Lưu & kiểm tra"
-msgstr "Save & test"
 
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
@@ -9318,10 +8837,6 @@ msgstr "Save for {0} people"
 msgid "Lưu đoạn này"
 msgstr "Save this clip"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Lưu hạn mức"
-msgstr "Save quotas"
-
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Lưu nhắc"
 msgstr "Save reminder"
@@ -9356,6 +8871,10 @@ msgstr "Reason (if rejecting or asking for more information)"
 #: src/pages/clan/Kinship.tsx
 msgid "Lý do: {0}"
 msgstr "Reason: {0}"
+
+#: src/components/ClanPicker.tsx
+msgid "mã"
+msgstr "code"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -9404,11 +8923,6 @@ msgstr "This QR code is not valid."
 #: src/pages/Login.tsx
 msgid "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 msgstr "This QR code does not belong to Dòng Họ Việt. Ignored to protect your account."
-
-#: src/pages/admin/Clans.tsx
-#: src/pages/admin/Clans.tsx
-msgid "mặc định"
-msgstr "default"
 
 #: src/components/ClanFormFields.tsx
 msgid "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF."
@@ -9553,10 +9067,6 @@ msgstr "Central Vietnam"
 msgid "Mini cây gia đình của {0}"
 msgstr "Mini family tree of {0}"
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "mở"
-msgstr "open"
-
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Mở"
 msgstr "Open"
@@ -9585,10 +9095,6 @@ msgstr "Open your phone's camera and point it at the QR code. The link opens a r
 #: src/components/QrSignInButton.tsx
 msgid "Mở camera điện thoại, quét mã QR. Mã hiệu lực ~5 phút và chỉ dùng được một lần. KHÔNG chia sẻ ảnh chụp màn hình."
 msgstr "Open your phone's camera and scan the QR code. The code is valid for ~5 minutes and works only once. Do NOT share a screenshot."
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Mở ChatGPT / Gemini / Claude và paste vào."
-msgstr "Open ChatGPT / Gemini / Claude and paste it in."
 
 #: src/pages/clan/Tree.tsx
 msgid "Mở chế độ di chuyển cây"
@@ -9723,10 +9229,6 @@ msgstr "Description"
 msgid "Mô tả (tuỳ chọn)"
 msgstr "Description (optional)"
 
-#: src/lib/navModel.tsx
-msgid "Mô tả bằng lời, AI dựng dữ liệu để duyệt."
-msgstr "Describe in words; the AI prepares data to review."
-
 #: src/pages/Contact.tsx
 msgid "Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
 msgstr "The more specific the better — what you were doing, how the app responded, how you'd like it to behave…"
@@ -9739,18 +9241,9 @@ msgstr "Short description"
 msgid "Mô tả ngắn (tuỳ chọn)"
 msgstr "Short description (optional)"
 
-#: src/components/ai/AiChatDock.tsx
-#: src/components/ai/AiChatDock.tsx
-msgid "Mở toàn màn hình"
-msgstr "Open full screen"
-
 #: src/pages/clan/Members.tsx
 msgid "Mở trang người này →"
 msgstr "Open this person's page →"
-
-#: src/components/ai/ChatThread.tsx
-msgid "Mở trang Nhờ AI lập gia phả (miễn phí)"
-msgstr "Open the Ask AI to build a family tree page (free)"
 
 #: src/lib/navModel.tsx
 #: src/pages/Account.tsx
@@ -9780,10 +9273,6 @@ msgstr "Open in the full Guide →"
 #: src/pages/clan/Settings.tsx
 msgid "Mở xuất QR"
 msgstr "Open QR export"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Model cho hỏi đáp"
-msgstr "Model for Q&A"
 
 #: src/components/NewBadge.tsx
 #: src/pages/admin/Feedback.tsx
@@ -9934,18 +9423,9 @@ msgstr "All accounts"
 msgid "Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn thông tin nhạy cảm."
 msgstr "Any signed-in account can view it; sensitive information about living people is hidden."
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Mỗi tài khoản. Đặt 0 để tắt hẳn phần miễn phí."
-msgstr "Per account. Set 0 to turn the free tier off entirely."
-
 #: src/lib/queries/clans.ts
 msgid "Mới tạo"
 msgstr "Newest"
-
-#. placeholder {0}: quota.data.freeThisMonth
-#: src/pages/CreditHistory.tsx
-msgid "Mỗi tháng bạn được tặng {0} lượt; lượt tặng chưa dùng hết sẽ không cộng dồn sang tháng sau. <0>Mở trợ lý</0>"
-msgstr "Each month you receive {0} requests; unused bonus requests do not carry over to the next month. <0>Open the assistant</0>"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ."
@@ -9964,6 +9444,7 @@ msgstr "Invite more accounts or change roles. Current limit: {0} accounts (set b
 msgid "Mọi thứ khác."
 msgstr "Anything else."
 
+#: src/components/admin/ApiTokensAdminTab.tsx
 #: src/pages/admin/Announcements.tsx
 msgid "Mọi trạng thái"
 msgstr "All statuses"
@@ -10017,10 +9498,6 @@ msgstr "One source"
 msgid "Một trang lớn chứa cả cây (mặc định)"
 msgstr "One large page containing the whole tree (default)"
 
-#: src/lib/queries/credits.ts
-msgid "Mua thêm"
-msgstr "Bought more"
-
 #: src/components/HistoricalClansSection.tsx
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/RestingPlaces.tsx
@@ -10031,14 +9508,6 @@ msgstr "entries"
 #: src/pages/CustomsForm.tsx
 msgid "Mức bắt buộc"
 msgstr "Required level"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Mức chung, tính theo tháng dương giờ Việt Nam. 0 = không giới hạn."
-msgstr "A shared limit, counted by calendar month in Vietnam time. 0 = unlimited."
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Mức chung. Đặt riêng cho một dòng họ ở Báo cáo › Dòng họ. 0 = không giới hạn."
-msgstr "A shared limit. Set it for one clan under Reports › Clans. 0 = unlimited."
 
 #: src/pages/clan/MapStats.tsx
 msgid "mục di sản"
@@ -10092,10 +9561,6 @@ msgstr "5th of the 5th lunar month — killing insects and pests."
 #: src/lib/festivals.ts
 msgid "Mùng 9 tháng Chín — lên cao, mừng thọ người già."
 msgstr "9th of the 9th lunar month — climbing high and wishing the elderly long life."
-
-#: src/components/ai/ChatThread.tsx
-msgid "Muốn thêm người thì cứ kể, ví dụ “Bố tôi là Nguyễn Văn An, sinh 1940”. Tôi ghi lại để bạn xem trước rồi mới lưu."
-msgstr "To add someone, just tell me, for example “My father is Nguyễn Văn An, born 1940”. I'll note it down so you can preview it before saving."
 
 #: src/pages/clan/Tree.tsx
 msgid "Muốn xem thêm, mở"
@@ -10422,6 +9887,7 @@ msgstr "Date of birth (lunar)"
 msgid "Ngày sinh (tuỳ chọn)"
 msgstr "Date of birth (optional)"
 
+#: src/components/ApiTokenPanels.tsx
 #: src/pages/Customs.tsx
 msgid "Ngày tạo"
 msgstr "Date created"
@@ -10528,7 +9994,6 @@ msgstr "Five Elements {0}"
 msgid "người"
 msgstr "people"
 
-#: src/components/admin/AiUsageTab.tsx
 #: src/components/RecentActivityPanel.tsx
 #: src/lib/queries/global-search.ts
 #: src/lib/queries/mapStats.ts
@@ -10614,7 +10079,6 @@ msgstr "Contributor"
 msgid "Người đóng góp / chi tiết khoản chi…"
 msgstr "Contributor / expense details…"
 
-#: src/components/admin/AiUsageTab.tsx
 #: src/lib/adminScreens.tsx
 #: src/pages/admin/Feedback.tsx
 #: src/pages/admin/NguoiDungPage.tsx
@@ -10712,10 +10176,6 @@ msgstr "Next person →"
 msgid "Người sống: hiện đầy đủ ngày-tháng-năm sinh"
 msgstr "Living people: show the full date of birth"
 
-#: src/components/ai/ProposalCard.tsx
-msgid "người trong gia phả"
-msgstr "a person in the family tree"
-
 #: src/components/ClanFormFields.tsx
 msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
 msgstr "People who enter through the link see only the default avatar (male / female). Signed-in members still see the real photo."
@@ -10768,11 +10228,6 @@ msgstr "Nguyễn Văn A"
 #: src/components/ContributeDialog.tsx
 msgid "Nguyễn Văn B"
 msgstr "Nguyễn Văn B"
-
-#. placeholder {0}: res.test.ms
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Nhà cung cấp trả lời sau {0}ms."
-msgstr "The provider answered after {0}ms."
 
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
@@ -10888,10 +10343,6 @@ msgstr "Import a family tree"
 msgid "Nhập hàng loạt từ Markdown"
 msgstr "Bulk import from Markdown"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Nhập khoá mới để thay"
-msgstr "Enter a new key to replace it"
-
 #: src/pages/ResetPassword.tsx
 msgid "Nhập lại mật khẩu"
 msgstr "Confirm password"
@@ -10921,10 +10372,6 @@ msgid "Nhập theo lịch Âm"
 msgstr "Enter in the lunar calendar"
 
 #: src/lib/navModel.tsx
-#: src/pages/clan/AiGenerate.tsx
-#: src/pages/clan/AiGenerate.tsx
-#: src/pages/clan/AiGenerate.tsx
-#: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/People.tsx
@@ -10994,10 +10441,6 @@ msgstr "Tiered"
 #: src/lib/queries/clans.ts
 msgid "Nhỏ (5–19)"
 msgstr "Small (5–19)"
-
-#: src/components/BookTextsSection.tsx
-msgid "Nhờ AI soạn: mô tả vài ý (nguồn gốc, quê quán, nghề nghiệp, truyền thống…)"
-msgstr "Ask the AI to draft: describe a few points (origin, hometown, occupations, traditions…)"
 
 #: src/lib/queries/customs.ts
 msgid "Nho giáo"
@@ -11120,10 +10563,6 @@ msgstr "Content of this section…"
 #: src/pages/Share.tsx
 msgid "Nội dung dòng họ"
 msgstr "Clan content"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Nội dung không giống GEDCOM (phải bắt đầu bằng \"0 HEAD\"). Có thể AI trả về CSV — đổi định dạng ở mục 1."
-msgstr "The content doesn't look like GEDCOM (it must start with \"0 HEAD\"). The AI may have returned CSV — change the format in step 1."
 
 #: src/pages/Customs.tsx
 msgid "Nội dung mang tính tham khảo; phong tục có thể khác nhau theo vùng."
@@ -11291,10 +10730,6 @@ msgstr "pg_cron is not installed or has no jobs — normal in local development.
 msgid "Phả ký"
 msgstr "Clan chronicle (Phả ký)"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Phải có khoá của nhà cung cấp tương ứng ở dưới thì model mới chạy."
-msgstr "The matching provider key below must be set for the model to work."
-
 #: src/pages/CustomsForm.tsx
 msgid "Phạm vi"
 msgstr "Scope"
@@ -11320,14 +10755,6 @@ msgstr "Reply to the sender (the sender will see it)"
 #: src/pages/admin/Feedback.tsx
 msgid "Phân loại"
 msgstr "Category"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Phân tích & xem trước"
-msgstr "Analyze & preview"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Phần trợ lý AI chưa được cài trên máy chủ này"
-msgstr "The AI assistant is not installed on this server"
 
 #: src/lib/queries/customs.ts
 msgid "Phật giáo"
@@ -11532,10 +10959,6 @@ msgstr "Manage members"
 msgid "Quản trị"
 msgstr "Admin"
 
-#: src/lib/queries/credits.ts
-msgid "Quản trị cấp thêm"
-msgstr "Granted by an admin"
-
 #: src/pages/MyFeedback.tsx
 msgid "Quản trị chưa xem. Bạn vẫn sửa hoặc xoá được góp ý này."
 msgstr "The admins haven't seen it yet. You can still edit or delete this feedback."
@@ -11579,7 +11002,6 @@ msgstr "An admin / editor will add members first."
 #: src/lib/announcementFormat.ts
 #: src/pages/admin/Announcements.tsx
 #: src/pages/AnnouncementDetail.tsx
-#: src/pages/Changelog.tsx
 msgid "Quan trọng"
 msgstr "Important"
 
@@ -11680,6 +11102,11 @@ msgstr "Clan fund"
 #: src/lib/queries/historical.ts
 msgid "Quý tộc"
 msgstr "Nobility"
+
+#: src/components/ApiTokenPanels.tsx
+#: src/components/ApiTokenPanels.tsx
+msgid "Quyền"
+msgstr "Permission"
 
 #: src/components/InviteLinkCard.tsx
 msgid "Quyền khi tham gia"
@@ -11855,21 +11282,6 @@ msgstr "b. {born}"
 msgid "sinh {by}"
 msgstr "b. {by}"
 
-#: src/lib/navModel.tsx
-#: src/pages/clan/People.tsx
-#: src/pages/clan/People.tsx
-msgid "Sinh bằng AI"
-msgstr "Generate with AI"
-
-#: src/pages/clan/AiGenerate.tsx
-#: src/pages/clan/AiGenerate.tsx
-msgid "Sinh dữ liệu bằng AI"
-msgstr "Generate data with AI"
-
-#: src/pages/clan/Import.tsx
-msgid "Sinh file bằng AI"
-msgstr "Generate the file with AI"
-
 #: src/pages/clan/InlawsNew.tsx
 msgid "Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư."
 msgstr "Generate an invite link and send it to the admin on the other side via Zalo/email. Works even if the other clan is private."
@@ -11948,10 +11360,6 @@ msgstr "Number of pieces in the mosaic (slots)"
 #: src/pages/clan/Mosaics.tsx
 msgid "Số mảnh mỗi người được góp"
 msgstr "Number of pieces each person may contribute"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Số người đang hết lượt là con số để quyết định 10 lượt/tháng có chật hay không — cần nó trước khi định giá."
-msgstr "The number of people running out of requests is what decides whether 10 requests / month is too tight — you need it before setting a price."
 
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
@@ -12043,10 +11451,6 @@ msgstr "The number in the circle = how many children can be expanded."
 #: src/lib/pageTitle.ts
 msgid "Sổ vàng"
 msgstr "Honor roll"
-
-#: src/components/admin/AiUsageTab.tsx
-msgid "Số ví"
-msgstr "Wallets"
 
 #: src/components/BackgroundPicker.tsx
 msgid "Sơn thuỷ"
@@ -12173,10 +11577,6 @@ msgstr "Edit feedback"
 msgid "Sửa hạn mức dòng họ"
 msgstr "Edit the clan's quotas"
 
-#: src/components/ai/ProposalCard.tsx
-msgid "Sửa lại"
-msgstr "Edit again"
-
 #: src/lib/pageTitle.ts
 msgid "Sửa mộ phần"
 msgstr "Edit grave"
@@ -12198,10 +11598,6 @@ msgstr "Edit resting place"
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Sửa phòng"
 msgstr "Edit room"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Sửa qua trang Nhập từ Excel"
-msgstr "Edit through the Import from Excel page"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Sửa tập"
@@ -12377,11 +11773,6 @@ msgstr "Create"
 msgid "Tạo {0} bài"
 msgstr "Create {0} articles"
 
-#. placeholder {0}: csvPlan?.payload?.persons.length ?? 0
-#: src/pages/clan/AiGenerate.tsx
-msgid "Tạo {0} người"
-msgstr "Create {0} people"
-
 #: src/components/RecordDates.tsx
 msgid "Tạo {created}"
 msgstr "Created {created}"
@@ -12446,10 +11837,6 @@ msgstr "Create your first clan — you'll be the admin and can invite relatives 
 #: src/pages/NewClan.tsx
 msgid "Tạo dòng họ mới"
 msgstr "Create a new clan"
-
-#: src/lib/pageTitle.ts
-msgid "Tạo gia phả bằng AI"
-msgstr "Create a family tree with AI"
 
 #: src/pages/KhoeCard.tsx
 msgid "Tạo gia phả dòng họ của bạn"
@@ -12525,10 +11912,6 @@ msgstr "Create account"
 msgid "Tạo tài khoản miễn phí để lập gia phả dòng họ, vẽ cây nhiều đời và mời người thân cùng bổ sung."
 msgstr "Create a free account to build your clan's family tree, draw it across many generations and invite relatives to contribute."
 
-#: src/pages/clan/AiGenerate.tsx
-msgid "Tạo thành viên từ GEDCOM"
-msgstr "Create members from GEDCOM"
-
 #: src/components/KhoeButton.tsx
 msgid "Tạo thẻ cá nhân để khoe lên Zalo/Facebook"
 msgstr "Create a personal card to share on Zalo/Facebook"
@@ -12542,6 +11925,11 @@ msgstr "Create another"
 #: src/components/UpcomingEventRow.tsx
 msgid "Tạo thiệp chia sẻ"
 msgstr "Create a share card"
+
+#: src/components/ApiTokenPanels.tsx
+#: src/components/ApiTokensSection.tsx
+msgid "Tạo token"
+msgstr "Create token"
 
 #: src/components/panel/GlobalPanelHost.tsx
 msgid "Tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
@@ -12655,14 +12043,7 @@ msgstr "No background"
 msgid "Tất niên · Giao thừa"
 msgstr "Year-end · New Year's Eve (Giao thừa)"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Tắt thì trợ lý ẩn hoàn toàn với mọi dòng họ, kể cả dòng họ đã bật tính năng. Mặc định tắt."
-msgstr "When off, the assistant is hidden from every clan, including clans that turned the feature on. Off by default."
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Tắt trợ lý"
-msgstr "Turn off the assistant"
-
+#: src/components/ApiTokenPanels.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Tên"
@@ -12819,6 +12200,10 @@ msgstr "Posthumous name (thuỵ)"
 msgid "Tên thụy"
 msgstr "Tên thụy (posthumous name)"
 
+#: src/components/ApiTokenPanels.tsx
+msgid "Tên token"
+msgstr "Token name"
+
 #: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
@@ -12879,14 +12264,6 @@ msgstr "Double Tenth · New Rice Festival (Tết cơm mới)"
 #: src/lib/festivals.ts
 msgid "Tết Trung Thu"
 msgstr "Mid-Autumn Festival (Tết Trung Thu)"
-
-#: src/components/ai/MicButton.tsx
-msgid "Thả để gửi · Vuốt lên để huỷ"
-msgstr "Release to send · Swipe up to cancel"
-
-#: src/components/ai/MicButton.tsx
-msgid "Thả ra để huỷ"
-msgstr "Release to cancel"
 
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Thả vào canvas"
@@ -13009,10 +12386,6 @@ msgstr "Low"
 #: src/lib/queries/restingPlaces.ts
 msgid "Thất lạc"
 msgstr "Lost"
-
-#: src/components/BookTextsSection.tsx
-msgid "Thay \"{label}\" đang có bằng bản AI soạn?"
-msgstr "Replace the existing \"{label}\" with the AI draft?"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Thay ảnh / video cho khung này"
@@ -13347,10 +12720,6 @@ msgstr "Follow separately by branch"
 msgid "Theo dõi sự kiện"
 msgstr "Follow events"
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Theo dòng họ"
-msgstr "By clan"
-
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Theo khung chung"
 msgstr "Use the shared frame"
@@ -13417,10 +12786,6 @@ msgstr "missing parents"
 #: src/pages/clan/Todo.tsx
 msgid "Thiếu cha/mẹ"
 msgstr "Missing parents"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Thiếu clan id"
-msgstr "Missing clan id"
 
 #: src/pages/clan/MapStats.tsx
 msgid "Thiếu khu vực: {missing}"
@@ -13607,6 +12972,7 @@ msgstr "Income (contribution)"
 msgid "thứ {0}"
 msgstr "No. {0}"
 
+#: src/components/admin/ApiTokensAdminTab.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/Clans.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -13696,6 +13062,8 @@ msgstr "Collapse the calendar"
 msgid "Thu gọn tất cả"
 msgstr "Collapse all"
 
+#: src/components/ApiTokenPanels.tsx
+#: src/components/ApiTokenPanels.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/pages/clan/Inlaws.tsx
@@ -13718,6 +13086,11 @@ msgstr "Revoke link"
 msgid "Thu hồi link lịch?"
 msgstr "Revoke the calendar link?"
 
+#. placeholder {0}: tk.name
+#: src/components/ApiTokenPanels.tsx
+msgid "Thu hồi token \"{0}\"?"
+msgstr "Revoke token \"{0}\"?"
+
 #: src/components/ErrorState.tsx
 msgid "Thử lại"
 msgstr "Try again"
@@ -13730,17 +13103,12 @@ msgstr "Try widening the time range or choosing another task. The remaining days
 msgid "Thư mục"
 msgstr "Folders"
 
-#: src/components/ai/AiChatDock.tsx
 #: src/components/ImageLightbox.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Thu nhỏ"
 msgstr "Zoom out"
-
-#: src/components/ai/AiChatDock.tsx
-msgid "Thu nhỏ khung trò chuyện"
-msgstr "Minimize the chat window"
 
 #: src/pages/clan/ClanFund.tsx
 msgid "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
@@ -13896,6 +13264,7 @@ msgstr "Find heritage"
 msgid "Tìm đóng góp"
 msgstr "Find contributions"
 
+#: src/components/ClanPicker.tsx
 #: src/pages/Clans.tsx
 msgid "Tìm dòng họ"
 msgstr "Find clans"
@@ -14089,6 +13458,10 @@ msgstr "Search by person name, anniversary, event…"
 msgid "Tìm theo tên phòng…"
 msgstr "Search by room name…"
 
+#: src/components/admin/ApiTokensAdminTab.tsx
+msgid "Tìm theo tên token, người tạo, dòng họ…"
+msgstr "Search by token name, creator, clan…"
+
 #: src/pages/clan/People.tsx
 msgid "Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
 msgstr "Search by name, nickname, place of birth, biography…"
@@ -14133,6 +13506,10 @@ msgstr "Find a feature…"
 msgid "Tìm tỉnh/thành"
 msgstr "Find provinces / cities"
 
+#: src/components/admin/ApiTokensAdminTab.tsx
+msgid "Tìm token"
+msgstr "Search tokens"
+
 #: src/components/TreeFolderView.tsx
 msgid "Tìm trong danh sách này…"
 msgstr "Search this list…"
@@ -14152,6 +13529,10 @@ msgstr "Search content / contact / notes"
 #: src/pages/MyFeedback.tsx
 msgid "Tìm trong nội dung góp ý và phản hồi…"
 msgstr "Search the feedback text and replies…"
+
+#: src/components/ClanPicker.tsx
+msgid "Tìm và chọn dòng họ…"
+msgstr "Search and choose a clan…"
 
 #: src/pages/clan/MyLineage.tsx
 msgid "Tìm và chọn người đại diện cho mình. Admin sẽ xác nhận trước khi hiển thị công khai."
@@ -14173,7 +13554,6 @@ msgstr "Find, add and edit people in the clan."
 #: src/components/ClanPostCard.tsx
 #: src/lib/announcementFormat.ts
 #: src/pages/AnnouncementDetail.tsx
-#: src/pages/Changelog.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -14245,10 +13625,6 @@ msgstr "Features you'd like, things that are inconvenient…"
 msgid "Tỉnh này còn xã/phường hoặc đang được dùng trong địa chỉ thành viên."
 msgstr "This province still has communes / wards, or is used in member addresses."
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Tính theo giờ Việt Nam"
-msgstr "Counted in Vietnam time"
-
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
 msgid "Tình trạng"
@@ -14319,10 +13695,6 @@ msgstr "Full platform administration rights.{0}"
 msgid "Tối"
 msgstr "Dark"
 
-#: src/components/ai/ChatThread.tsx
-msgid "Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời thường ngày — ngày giỗ, cách xưng hô, ai là con ai."
-msgstr "I know about the {clanName} family tree. Just ask in everyday words — death anniversaries, kinship terms, who is whose child."
-
 #: src/components/ContributeDialog.tsx
 msgid "Tôi có giấy chứng tử, hoặc bố tôi kể lại…"
 msgstr "I have the death certificate, or my father told me…"
@@ -14360,6 +13732,10 @@ msgstr "At most {MAX_GRAVE_PHOTOS} photos per resting place."
 msgid "Tối đa {MAX_PHOTOS} ảnh mỗi mục."
 msgstr "At most {MAX_PHOTOS} photos per entry."
 
+#: src/components/ApiTokenPanels.tsx
+msgid "Tôi đã chép xong"
+msgstr "I have copied it"
+
 #: src/pages/JoinClan.tsx
 msgid "Tôi đã có tài khoản"
 msgstr "I already have an account"
@@ -14367,10 +13743,6 @@ msgstr "I already have an account"
 #: src/lib/tree/canvasModel.ts
 msgid "Tối giản"
 msgstr "Minimal"
-
-#: src/components/ai/ProposalCard.tsx
-msgid "Tôi hiểu là:"
-msgstr "Here's what I understood:"
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Tôi là ai trong cây?"
@@ -14389,14 +13761,39 @@ msgstr "At least {minSlots} (there is a piece in the farthest slot)."
 msgid "Tối thiểu 8 ký tự."
 msgstr "At least 8 characters."
 
+#: src/components/ApiTokenPanels.tsx
+msgid "Token"
+msgstr "Token"
+
+#: src/components/ApiTokenPanels.tsx
+msgid "Token AI"
+msgstr "AI token"
+
 #. placeholder {0}: r.pageName
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token còn tốt — Trang {0}"
 msgstr "The token is still good — Page {0}"
 
+#: src/lib/adminScreens.tsx
+msgid "Token của AI bên ngoài (Claude, ChatGPT…); thu hồi khi nghi bị lộ."
+msgstr "Tokens for outside AIs (Claude, ChatGPT…); revoke when a leak is suspected."
+
+#: src/pages/admin/KetNoiAiPage.tsx
+msgid "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu hồi khi nghi bị lộ."
+msgstr "Tokens for outside AIs (Claude, ChatGPT…) to look up the tree; revoke when a leak is suspected."
+
+#: src/pages/clan/Settings.tsx
+msgid "Token để Claude, ChatGPT… làm việc với gia phả bằng đúng quyền của bạn."
+msgstr "Tokens for Claude, ChatGPT… to work with the tree using exactly your permissions."
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token không dùng được"
 msgstr "The token can't be used"
+
+#: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ApiTokenPanels.tsx
+msgid "Token mới"
+msgstr "New token"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token người dùng"
@@ -14478,10 +13875,6 @@ msgstr "Kinship lookup"
 msgid "Trần"
 msgstr "Ceiling"
 
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Trần chi phí / ngày (USD)"
-msgstr "Cost ceiling / day (USD)"
-
 #: src/components/gallery/GalleryScene.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Trắng"
@@ -14546,10 +13939,6 @@ msgstr "Previous page"
 msgid "Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này."
 msgstr "An ink-wash painting as the app background, on this device only."
 
-#: src/components/admin/AiUsageTab.tsx
-msgid "Trễ TB"
-msgstr "Avg latency"
-
 #: src/lib/tipCatalogue.ts
 msgid "Trên cây gia phả, người đầu tiên cần thêm là Thuỷ tổ (đời 1)."
 msgstr "On the family tree, the first person to add is the founding ancestor (generation 1)."
@@ -14601,38 +13990,6 @@ msgstr "This browser doesn't support push notifications. Use Export calendar (.i
 #: src/pages/Videos.tsx
 msgid "Trợ giúp"
 msgstr "Help"
-
-#: src/components/ai/AiChatDock.tsx
-msgid "Trợ lý"
-msgstr "Assistant"
-
-#: src/lib/adminScreens.tsx
-#: src/lib/clanFeatures.ts
-#: src/lib/navModel.tsx
-#: src/pages/admin/TroLyAiPage.tsx
-msgid "Trợ lý AI"
-msgstr "AI assistant"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Trợ lý đang bật"
-msgstr "The assistant is on"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Trợ lý đang tắt"
-msgstr "The assistant is off"
-
-#: src/components/ai/AiChatDock.tsx
-#: src/components/ai/AiChatView.tsx
-#: src/components/panel/PanelHost.tsx
-#: src/lib/pageTitle.ts
-#: src/pages/clan/AiChat.tsx
-#: src/pages/clan/AiChat.tsx
-msgid "Trợ lý dòng họ"
-msgstr "Clan assistant"
-
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Trợ lý sẽ ngừng dùng được nhà cung cấp này cho tới khi cắm khoá mới."
-msgstr "The assistant will stop being able to use this provider until a new key is plugged in."
 
 #: src/components/TreeFolderView.tsx
 msgid "trở xuống"
@@ -15027,10 +14384,6 @@ msgstr "e.g. a family moves into a new house"
 msgid "Vd: Họ Nguyễn Hữu"
 msgstr "E.g. Nguyễn Hữu clan"
 
-#: src/components/BookTextsSection.tsx
-msgid "Vd: Họ tôi gốc ở làng…, tổ khai khẩn từ khoảng…, làm nghề…, có nhà thờ họ ở…, truyền thống hiếu học…"
-msgstr "E.g. Our clan comes from the village of…, the ancestors settled around…, worked as…, with a clan temple in…, a tradition of scholarship…"
-
 #: src/components/BoardPostForm.tsx
 msgid "Vd: Họp họ rằm tháng Bảy"
 msgstr "E.g. Clan gathering on the 15th of the 7th lunar month"
@@ -15190,6 +14543,10 @@ msgstr "Back to the home page"
 msgid "vĩ độ"
 msgstr "latitude"
 
+#: src/components/ApiTokenPanels.tsx
+msgid "Ví dụ: Claude trên laptop"
+msgstr "For example: Claude on my laptop"
+
 #: src/pages/clan/AddChild.tsx
 msgid "Ví dụ: người chồng có 2 đời vợ — muốn nhập con của vợ hai thì chọn đúng vợ hai ở trên. Nếu vợ/chồng đó chưa có trong cây, hãy thêm bằng \"Thêm vợ/chồng\" trước."
 msgstr "Example: a husband has had 2 wives — to enter the second wife's child, pick the second wife above. If that spouse isn't in the tree yet, add her first with \"Add spouse\"."
@@ -15287,10 +14644,6 @@ msgstr "Write an announcement shown to all users."
 #: src/components/BoardPostForm.tsx
 msgid "Viết tin cho cả họ đọc…"
 msgstr "Write news for the whole clan to read…"
-
-#: src/pages/clan/AiGenerate.tsx
-msgid "Viết tự do — ai là thuỷ tổ, sinh năm nào, vợ/chồng là ai, có bao nhiêu con và tên gì. AI sẽ tự đánh số ID + kết nối quan hệ cha/mẹ."
-msgstr "Write freely — who the founding ancestor is, born in which year, who the spouse is, how many children and their names. The AI will number the IDs and link the parent/child relationships itself."
 
 #: src/pages/clan/HonorBook.tsx
 msgid "Vinh danh đóng góp hoặc thành tích của con cháu dòng họ."
@@ -15540,10 +14893,6 @@ msgstr "View details"
 msgid "Xem cộng đồng"
 msgstr "Browse the community"
 
-#: src/pages/Account.tsx
-msgid "Xem đã dùng bao nhiêu lượt, còn lại bao nhiêu. Sổ này không hiện nội dung câu hỏi — muốn đọc lại thì mở khung trò chuyện."
-msgstr "See how many requests you've used and how many remain. This log does not show the content of your questions — to re-read them, open the chat window."
-
 #: src/pages/clan/Import.tsx
 msgid "Xem danh bạ"
 msgstr "View the People list"
@@ -15697,8 +15046,6 @@ msgstr "View and explore the tree across generations."
 msgid "Xem việc"
 msgstr "View tasks"
 
-#: src/components/admin/AiSettingsTab.tsx
-#: src/components/admin/AiSettingsTab.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/gallery/GalleryScene.tsx
@@ -15707,7 +15054,6 @@ msgstr "View tasks"
 #: src/components/RecentActivityPanel.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/components/ui/view-edit-actions.tsx
-#: src/hooks/useAiChatSession.ts
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -15887,25 +15233,9 @@ msgstr "Delete this feedback?"
 msgid "Xoá hiện vật 3D này?"
 msgstr "Delete this 3D object?"
 
-#. placeholder {0}: p.label
-#: src/components/admin/AiSettingsTab.tsx
-msgid "Xoá khoá {0}?"
-msgstr "Delete the {0} key?"
-
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Xoá khỏi canvas"
 msgstr "Remove from the canvas"
-
-#: src/components/ai/AiChatView.tsx
-#: src/components/ai/AiChatView.tsx
-#: src/pages/clan/AiChat.tsx
-#: src/pages/clan/AiChat.tsx
-msgid "Xoá lịch sử trò chuyện"
-msgstr "Clear chat history"
-
-#: src/hooks/useAiChatSession.ts
-msgid "Xoá lịch sử trò chuyện?"
-msgstr "Clear the chat history?"
 
 #: src/components/ShareLinksSection.tsx
 #: src/components/ShareLinksSection.tsx

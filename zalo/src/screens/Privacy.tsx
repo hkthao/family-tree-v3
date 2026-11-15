@@ -1,10 +1,5 @@
 import type { ReactNode } from "react";
 
-import { providerLabelForModel } from "@/lib/aiModels";
-import { getPlatformSetting } from "@/lib/queries/platformSettings";
-
-import { useAsync } from "../useAsync";
-
 /**
  * Chính sách riêng tư — CÙNG NỘI DUNG với trang `/chinh-sach-rieng-tu` của
  * web (`src/pages/PrivacyPolicy.tsx`), chỉ đổi chỉ dẫn cho đúng chỗ trong
@@ -18,11 +13,6 @@ import { useAsync } from "../useAsync";
 const UPDATED = "25/10/2026";
 
 export function PrivacyScreen() {
-  // Tên nhà cung cấp AI suy từ cấu hình như web — admin đổi model thì câu
-  // chữ đổi theo. Chưa tải xong hay model lạ thì nói chung chung.
-  const model = useAsync(() => getPlatformSetting("ai.model.qa"), []);
-  const provider = providerLabelForModel(model.data ?? null);
-
   return (
     <div className="page">
       <p className="note" style={{ margin: "4px 6px 0" }}>
@@ -71,38 +61,23 @@ export function PrivacyScreen() {
             Nhật ký thao tác trong dòng họ (ai sửa gì, khi nào) — để dòng họ tự giám sát và
             khôi phục khi cần.
           </li>
-          <li>
-            Lịch sử trò chuyện với trợ lý AI (trên bản web), <b>chỉ chính bạn đọc được</b>.
-          </li>
         </ul>
       </Section>
 
-      <Section title="Trợ lý AI — dữ liệu đi ra ngoài chỗ này">
+      <Section title="Kết nối AI bên ngoài — dữ liệu đi ra ngoài chỗ này">
         <p>
-          Đây là chỗ duy nhất dữ liệu gia phả rời khỏi máy chủ của chúng tôi. Khi ai đó hỏi
-          trợ lý trên bản web, câu hỏi được gửi tới{" "}
-          <b>{provider ?? "một dịch vụ AI bên thứ ba"}</b> để xử lý, kèm{" "}
-          <b>tên, giới tính, còn sống hay đã mất, đời thứ mấy, ngày sinh/mất/giỗ</b> của những
-          người liên quan tới câu hỏi.
-        </p>
-        <p>
-          <b>Không gửi đi:</b> ảnh, tiểu sử, nơi sinh, nơi an táng, thông tin liên hệ, email,
-          hay bất cứ tài liệu nào bạn tải lên.
-        </p>
-        <p>
-          Trợ lý <b>không tự ghi vào gia phả</b>, và quản trị dòng họ tắt được tính năng này;
-          tắt rồi thì không có gì được gửi đi cả.
+          Ứng dụng <b>không tự gửi</b> dữ liệu gia phả cho dịch vụ AI nào. Chỉ khi quản trị dòng
+          họ hoặc quản trị hệ thống chủ động tạo <b>token kết nối AI</b> trên bản web và dán vào
+          công cụ AI của họ, công cụ đó mới đọc được dữ liệu dòng họ, với đúng quyền của người
+          tạo token. Token có hạn và thu hồi được bất cứ lúc nào.
         </p>
       </Section>
 
       <Section title="Giữ trong bao lâu">
         <ul>
           <li>
-            <b>Lịch sử trò chuyện với trợ lý: 90 ngày</b>, sau đó tự xoá.
-          </li>
-          <li>
             Gia phả và tài khoản: giữ cho tới khi bạn xoá. Xoá tài khoản ở màn Tài khoản là dữ
-            liệu cá nhân, lịch sử trò chuyện và thông báo của bạn bị xoá theo.
+            liệu cá nhân và thông báo của bạn bị xoá theo.
           </li>
         </ul>
       </Section>

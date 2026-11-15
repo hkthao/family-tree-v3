@@ -6,8 +6,8 @@ import {
   normalize,
   rankPassages,
   splitPassages,
-} from "../../../supabase/functions/ai-chat/bookSearch";
-import { TOOL_SPECS } from "../../../supabase/functions/ai-chat/toolSpecs";
+} from "../../../mcp-server/src/bookSearch";
+import { MCP_TOOLS } from "../../../mcp-server/src/specs";
 
 describe("bookSearch", () => {
   it("normalize bỏ dấu và đ", () => {
@@ -47,10 +47,10 @@ describe("bookSearch", () => {
     expect(formatPassages([])).toContain("Không tìm thấy");
   });
 
-  it("search_book có trong bộ tool, schema hợp lệ (không additionalProperties lỏng)", () => {
-    const t = TOOL_SPECS.find((x) => x.name === "search_book");
+  it("search_book có trong bộ tool MCP, schema đóng", () => {
+    const t = MCP_TOOLS.find((x) => x.name === "search_book");
     expect(t).toBeTruthy();
-    expect(t!.parameters.required).toEqual(["query"]);
-    expect((t!.parameters as { additionalProperties?: boolean }).additionalProperties).toBe(false);
+    expect(t!.inputSchema.required).toEqual(["query"]);
+    expect(t!.inputSchema.additionalProperties).toBe(false);
   });
 });

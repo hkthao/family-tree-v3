@@ -38,7 +38,6 @@ import {
   IconMapPin,
   IconPlus,
   IconSearch,
-  IconSparkles,
   IconTrash,
   IconTree,
   IconUpload,
@@ -393,11 +392,6 @@ export default function People() {
               label: t`Nhập từ Excel`,
               icon: <IconUpload />,
               to: `/clans/${clan.id}/import`,
-            },
-            {
-              label: t`Sinh bằng AI`,
-              icon: <IconSparkles />,
-              to: `/clans/${clan.id}/ai-generate`,
             },
           ]}
         />
@@ -805,15 +799,6 @@ export default function People() {
                         label: t`Nhập từ Excel`,
                         to: `/clans/${clan.id}/import`,
                         icon: <IconUpload className="h-4 w-4 mr-1.5" />,
-                      }
-                    : null
-                }
-                tertiary={
-                  canEdit
-                    ? {
-                        label: t`Sinh bằng AI`,
-                        to: `/clans/${clan.id}/ai-generate`,
-                        icon: <IconSparkles className="h-4 w-4 mr-1.5" />,
                       }
                     : null
                 }

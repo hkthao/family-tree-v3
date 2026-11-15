@@ -1,3 +1,5 @@
+> **ĐÃ GỠ (15/11/2026):** trợ lý AI trong app (chat hỏi đáp, nhập liệu bằng AI, hạn mức/credit) đã bị loại bỏ hoàn toàn. Thay bằng cách cho AI bên ngoài kết nối qua MCP — xem [mcp-ket-noi-ai.md](mcp-ket-noi-ai.md). File này giữ lại làm lịch sử thiết kế.
+
 # Plan — Trợ lý AI (nhập liệu bằng giọng nói + hỏi đáp gia đình)
 
 ## Mục tiêu
