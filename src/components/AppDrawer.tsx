@@ -1,3 +1,4 @@
+import { NewBadge } from "@/components/NewBadge";
 import { useSidebarHidden } from "@/lib/sidebarHidden";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
@@ -257,6 +258,7 @@ export function AppDrawer({ open, onClose }: Props) {
                             {item.icon}
                           </span>
                           <span className="flex-1">{item.label}</span>
+                          {item.isNew && <NewBadge />}
                           {item.badge !== undefined && (
                             <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
                               {item.badge}
