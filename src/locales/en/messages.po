@@ -2212,8 +2212,8 @@ msgid "Cập nhật gần đây"
 msgstr "Recently updated"
 
 #: src/components/MyProfileCard.tsx
-msgid "Cập nhật hồ sơ của tôi"
-msgstr "Update my profile"
+msgid "Cập nhật hồ sơ"
+msgstr "Update profile"
 
 #. placeholder {0}: formatTime(lastSyncedAt)
 #. placeholder {0}: new Date(data.generated_at).toLocaleString("vi-VN")
@@ -6207,6 +6207,10 @@ msgstr "Connectors"
 msgid "Đường nối tuỳ chỉnh"
 msgstr "Custom connector"
 
+#: src/components/MyProfileCard.tsx
+msgid "Đường trực hệ"
+msgstr "Direct line"
+
 #: src/pages/clan/Tree.tsx
 msgid "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời."
 msgstr "Direct line — from me back to the founding ancestor, choose the paternal / maternal side at each generation."
@@ -6214,10 +6218,6 @@ msgstr "Direct line — from me back to the founding ancestor, choose the patern
 #: src/pages/clan/MyLineage.tsx
 msgid "Đường trực hệ (chỉ xem)"
 msgstr "Direct line (view only)"
-
-#: src/components/MyProfileCard.tsx
-msgid "Đường trực hệ của tôi"
-msgstr "My direct line"
 
 #: src/lib/nextSteps.ts
 msgid "Đường về Thuỷ tổ của bạn"
