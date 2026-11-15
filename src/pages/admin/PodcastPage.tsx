@@ -1,3 +1,4 @@
+import { PodcastThumb } from "@/components/PodcastThumb";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
@@ -278,16 +279,11 @@ function EpisodeRowItem({ episode, onOpen }: { episode: PodcastEpisode; onOpen: 
         {/* Ảnh bìa ngay trong danh sách: admin cần NHÌN THẤY cái mà người
             dùng sẽ thấy, nhất là khi ảnh bìa lấy từ Facebook và URL có
             hạn dùng — hỏng ảnh thì phải phát hiện ở đây. */}
-        {episode.thumbnail_url ? (
-          <img
-            src={episode.thumbnail_url}
-            alt=""
-            loading="lazy"
-            className="min-h-14 w-14 shrink-0 self-stretch rounded-lg border object-cover"
-          />
-        ) : (
-          <IconTile icon={IconMicrophone} tone="violet" />
-        )}
+        <PodcastThumb
+          src={episode.thumbnail_url}
+          className="min-h-14 w-14 shrink-0 self-stretch rounded-lg border object-cover"
+          fallback={<IconTile icon={IconMicrophone} tone="violet" />}
+        />
         <div className="min-w-0 flex-1">
           <p className="line-clamp-2 font-medium leading-snug">{episode.title}</p>
           <p className="mt-0.5 text-xs text-muted-foreground/80">

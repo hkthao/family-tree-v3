@@ -1,3 +1,4 @@
+import { PodcastThumb } from "@/components/PodcastThumb";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -130,19 +131,16 @@ function EpisodeCard({
         className="group flex w-full items-center gap-3 p-3 text-left hover:bg-muted/40"
       >
         <span className="relative shrink-0">
-          {episode.thumbnail_url ? (
-            <img
-              src={episode.thumbnail_url}
-              alt=""
-              // Ảnh bìa reel là ảnh dọc — khung vuông cắt mất đầu và chân.
-              className="h-24 w-[54px] rounded-lg object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <span className="flex h-24 w-[54px] items-center justify-center rounded-lg bg-muted">
-              <IconMicrophone className="h-6 w-6 text-muted-foreground" />
-            </span>
-          )}
+          <PodcastThumb
+            src={episode.thumbnail_url}
+            // Ảnh bìa reel là ảnh dọc — khung vuông cắt mất đầu và chân.
+            className="h-24 w-[54px] rounded-lg object-cover"
+            fallback={
+              <span className="flex h-24 w-[54px] items-center justify-center rounded-lg bg-muted">
+                <IconMicrophone className="h-6 w-6 text-muted-foreground" />
+              </span>
+            }
+          />
           <span className="absolute inset-0 flex items-center justify-center">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white transition-transform group-hover:scale-110">
               <IconPlay className="h-5 w-5" />
