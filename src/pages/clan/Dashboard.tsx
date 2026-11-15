@@ -4,22 +4,21 @@ import { NextStepCard } from "@/components/NextStepCard";
 import { PodcastTodayCard } from "@/components/PodcastTodayCard";
 import { upcomingFestivals } from "@/lib/festivals";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import {
-  IconCamera,
+  IconCube,
   IconCheck,
   IconDownload,
   IconGrave,
   IconGrid,
-  IconBook,
   IconSettings,
   IconHome,
   IconLink,
-  IconList,
+  IconMore,
   IconPencil,
   IconPlus,
   IconAward,
@@ -174,7 +173,12 @@ export default function Dashboard() {
   const cardEvents: UpcomingEvent[] = useMemo(() => {
     if (!tree || !events || !anniversaries) return [];
     const today = new Date();
-    const a = computeUpcomingEvents({ today, daysAhead: 30, persons: tree.persons, events });
+    const a = computeUpcomingEvents({
+      today,
+      daysAhead: 30,
+      persons: tree.persons,
+      events,
+    });
     const b = computeUpcomingAnniversaries({
       today,
       daysAhead: 30,
@@ -184,7 +188,8 @@ export default function Dashboard() {
     const pad = (n: number) => String(n).padStart(2, "0");
     const iso = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
     return [...a, ...b, ...upcomingFestivals(iso, 30)].sort(
-      (x, y) => x.daysUntil - y.daysUntil || x.title.localeCompare(y.title, "vi"),
+      (x, y) =>
+        x.daysUntil - y.daysUntil || x.title.localeCompare(y.title, "vi"),
     );
   }, [tree, events, anniversaries, clan.generation_offset]);
   const nextStepInput = useMemo(
@@ -194,10 +199,19 @@ export default function Dashboard() {
       counts: contentCounts,
       customEvents: events?.length,
       canEdit,
-      isEnabled: (k: ClanFeatureKey) => isFeatureEnabled(clan.disabled_features, k),
+      isEnabled: (k: ClanFeatureKey) =>
+        isFeatureEnabled(clan.disabled_features, k),
       aiOn,
     }),
-    [tree, todoSummary, contentCounts, events, canEdit, clan.disabled_features, aiOn],
+    [
+      tree,
+      todoSummary,
+      contentCounts,
+      events,
+      canEdit,
+      clan.disabled_features,
+      aiOn,
+    ],
   );
 
   return (
@@ -261,9 +275,7 @@ export default function Dashboard() {
         >
           <div>
             <p className="font-semibold">
-              <Trans>
-              Chào mừng bạn đến với dòng họ {clan.name}! 🎉
-              </Trans>
+              <Trans>Chào mừng bạn đến với dòng họ {clan.name}! 🎉</Trans>
             </p>
             <p className="text-sm text-muted-foreground">
               <Trans>
@@ -440,102 +452,187 @@ export default function Dashboard() {
           {/* Bản đồ dòng họ: nơi ở của con cháu, mộ phần, di sản theo tỉnh — ngay dưới số liệu. */}
           {isMember && <MapOverviewCard clanId={clan.id} />}
 
-          {/* Thao tác nhanh — điều hướng chính, đưa lên cao. */}
-          <SectionCard id="quick" icon={<IconGrid />} title={t`Thao tác nhanh`}>
-            {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop
-                → thấp hơn hẳn ô vuông cũ, tiết kiệm diện tích. */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <ActionTile
-                to={`/clans/${clan.id}/people`}
-                icon={<IconList />}
-                title={t`Danh bạ`}
-              />
-              <ActionTile
-                to={`/clans/${clan.id}/tree`}
-                icon={<IconTree />}
-                title={t`Phả hệ`}
-              />
-              <ActionTile
-                to={`/clans/${clan.id}/graves`}
-                icon={<IconGrave />}
-                title={t`Mộ phần`}
-              />
-              <ActionTile
-                to={`/clans/${clan.id}/board`}
-                icon={<IconScroll />}
-                title={t`Bảng tin`}
-              />
-              <ActionTile
-                to={`/clans/${clan.id}/xem-ngay`}
-                icon={<IconSparkles />}
-                title={t`Xem ngày tốt`}
-              />
-              {isMember && (
-                <>
+          {/* Thao tác nhanh — TỐI ĐA 12 ô, chọn theo mức dùng thật (Umami 90 ngày: Mộ phần 40, Cài đặt 38,
+              Phòng ký ức 32, Di sản 32, Việc cần làm 28, Bảng tin 28, Quỹ họ 11…) và giá trị hành động (Thêm người, Nhập
+              Excel). Cây / Danh bạ không lặp lại vì đã nằm trên thanh tab dưới. Ô thứ 12 LUÔN là lối tắt vào "Tất cả tính
+              năng" để không mục nào bị mất đường vào. */}
+          {(() => {
+            const feat = (k: Parameters<typeof isFeatureEnabled>[1]) =>
+              isFeatureEnabled(clan.disabled_features, k);
+            const base = `/clans/${clan.id}`;
+            type Quick = {
+              key: string;
+              show: boolean;
+              node: ReactNode;
+            };
+            // Thứ tự = thứ tự ưu tiên: nếu quá 11 ô hợp lệ thì các ô cuối bị bỏ (vẫn vào được qua "Tất cả tính năng").
+            const candidates: Quick[] = [
+              {
+                key: "add",
+                show: canEdit,
+                node: (
                   <ActionTile
-                    to={`/clans/${clan.id}/memory-room`}
-                    icon={<IconCamera />}
-                    title={t`Phòng ký ức`}
+                    to={`${base}/people/new`}
+                    icon={<IconPlus />}
+                    title={t`Thêm người`}
                   />
+                ),
+              },
+              {
+                key: "todo",
+                show: isMember,
+                node: (
                   <ActionTile
-                    to={`/clans/${clan.id}/honor`}
-                    icon={<IconAward />}
-                    title={t`Bảng vàng`}
-                  />
-                  <ActionTile
-                    to={`/clans/${clan.id}/fund`}
-                    icon={<IconWallet />}
-                    title={t`Quỹ họ`}
-                  />
-                  <ActionTile
-                    to={`/clans/${clan.id}/todo`}
+                    to={`${base}/todo`}
                     icon={<IconCheck />}
                     title={t`Việc làm`}
                     badge={todoCount}
                   />
-                  {isFeatureEnabled(clan.disabled_features, "inlaws") && (
-                    <ActionTile
-                      to={`/clans/${clan.id}/inlaws`}
-                      icon={<IconLink />}
-                      title={t`Liên kết họ`}
-                    />
-                  )}
-                </>
-              )}
-              {canEdit && (
-                <>
+                ),
+              },
+              {
+                key: "graves",
+                show: (isMember || clan.public_show_graves) && feat("graves"),
+                node: (
                   <ActionTile
-                    to={`/clans/${clan.id}/people/new`}
-                    icon={<IconPlus />}
-                    title={t`Thêm người`}
+                    to={`${base}/graves`}
+                    icon={<IconGrave />}
+                    title={t`Mộ phần`}
                   />
+                ),
+              },
+              {
+                key: "board",
+                show: isMember && feat("board"),
+                node: (
                   <ActionTile
-                    to={`/clans/${clan.id}/import`}
+                    to={`${base}/board`}
+                    icon={<IconScroll />}
+                    title={t`Bảng tin`}
+                  />
+                ),
+              },
+              {
+                key: "memory",
+                show: isMember && feat("memory_room"),
+                node: (
+                  <ActionTile
+                    to={`${base}/memory-room`}
+                    icon={<IconCube />}
+                    title={t`Phòng ký ức`}
+                  />
+                ),
+              },
+              {
+                key: "heritage",
+                show:
+                  (isMember || clan.public_show_heritage) && feat("heritage"),
+                node: (
+                  <ActionTile
+                    to={`${base}/heritage`}
+                    icon={<IconScroll />}
+                    title={t`Di sản`}
+                  />
+                ),
+              },
+              {
+                key: "goodday",
+                show: true,
+                node: (
+                  <ActionTile
+                    to={`${base}/xem-ngay`}
+                    icon={<IconSparkles />}
+                    title={t`Xem ngày tốt`}
+                  />
+                ),
+              },
+              {
+                key: "settings",
+                show: isClanAdmin(clan),
+                node: (
+                  <ActionTile
+                    to={`${base}/settings`}
+                    icon={<IconSettings />}
+                    title={t`Cài đặt dòng họ`}
+                  />
+                ),
+              },
+              {
+                key: "import",
+                show: canEdit,
+                node: (
+                  <ActionTile
+                    to={`${base}/import`}
                     icon={<IconUpload />}
                     title={t`Nhập Excel`}
                   />
-                </>
-              )}
-              {canEditClan(clan) && (
-                <ActionTile
-                  to={`/clans/${clan.id}/so-gia-pha`}
-                  icon={<IconBook />}
-                  title={t`Thông tin & Sổ gia phả`}
-                />
-              )}
-              {isClanAdmin(clan) && (
-                <ActionTile
-                  to={`/clans/${clan.id}/settings`}
-                  icon={<IconSettings />}
-                  title={t`Cài đặt dòng họ`}
-                />
-              )}
-              {/* PDF export is member-only — bulk-downloading the whole
-                  clan book is owner territory, not for non-member
-                  public-clan visitors. */}
-              {isMember && <PdfActionTile clan={clan} />}
-            </div>
-          </SectionCard>
+                ),
+              },
+              // Xuất PDF chỉ cho thành viên: tải cả cuốn sổ là việc của người trong họ.
+              {
+                key: "pdf",
+                show: isMember,
+                node: <PdfActionTile clan={clan} />,
+              },
+              {
+                key: "fund",
+                show: isMember && feat("fund"),
+                node: (
+                  <ActionTile
+                    to={`${base}/fund`}
+                    icon={<IconWallet />}
+                    title={t`Quỹ họ`}
+                  />
+                ),
+              },
+              {
+                key: "inlaws",
+                show: isMember && feat("inlaws"),
+                node: (
+                  <ActionTile
+                    to={`${base}/inlaws`}
+                    icon={<IconLink />}
+                    title={t`Liên kết họ`}
+                  />
+                ),
+              },
+              {
+                key: "honor",
+                show: isMember && feat("honor"),
+                node: (
+                  <ActionTile
+                    to={`${base}/honor`}
+                    icon={<IconAward />}
+                    title={t`Bảng vàng`}
+                  />
+                ),
+              },
+            ];
+            const MAX_QUICK = 12;
+            const shown = candidates
+              .filter((c) => c.show)
+              .slice(0, MAX_QUICK - 1);
+            return (
+              <SectionCard
+                id="quick"
+                icon={<IconGrid />}
+                title={t`Thao tác nhanh`}
+              >
+                {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop. */}
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {shown.map((c) => (
+                    <Fragment key={c.key}>{c.node}</Fragment>
+                  ))}
+                  <ActionTile
+                    to={`${base}/menu`}
+                    icon={<IconMore />}
+                    title={t`Tất cả tính năng`}
+                    tone="muted"
+                  />
+                </div>
+              </SectionCard>
+            );
+          })()}
 
           {/* Hồ sơ của tôi: nhận vị trí trên cây + tự cập nhật (quản trị duyệt). */}
           {isMember && userId && (
@@ -603,17 +700,20 @@ function ActionTile({
   icon,
   title,
   badge,
+  tone = "default",
 }: {
   to: string;
   icon: React.ReactNode;
   title: string;
   /** Optional badge số đếm (vd. todo count). 0/undefined → không hiển thị. */
   badge?: number;
+  /** `muted`: ô lối tắt "Tất cả tính năng" — viền nét đứt để phân biệt với các ô chức năng. */
+  tone?: "default" | "muted";
 }) {
   return (
     <Link
       to={to}
-      className="group relative flex items-center gap-2.5 rounded-xl border bg-card shadow-sm px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors"
+      className={`group relative flex items-center gap-2.5 rounded-xl border bg-card shadow-sm px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors ${tone === "muted" ? "border-dashed" : ""}`}
     >
       <span
         className="text-primary shrink-0 [&>svg]:h-5 [&>svg]:w-5"
@@ -780,8 +880,8 @@ function CompletionTile({
             <>
               <span className="text-muted-foreground">
                 <Trans>
-                Còn <span className="tabular-nums">{top.count}</span> người{" "}
-                {CATEGORY_CTA[top.category]}
+                  Còn <span className="tabular-nums">{top.count}</span> người{" "}
+                  {CATEGORY_CTA[top.category]}
                 </Trans>
               </span>
               <span className="text-primary"> →</span>
@@ -789,8 +889,8 @@ function CompletionTile({
           ) : (
             <span className="text-muted-foreground tabular-nums">
               <Trans>
-              {complete.toLocaleString(currentIntlTag())} /{" "}
-              {total.toLocaleString(currentIntlTag())} người đã đủ thông tin.
+                {complete.toLocaleString(currentIntlTag())} /{" "}
+                {total.toLocaleString(currentIntlTag())} người đã đủ thông tin.
               </Trans>
             </span>
           )}
