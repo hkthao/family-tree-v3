@@ -2104,13 +2104,6 @@ msgstr "Can chi (tự tính theo năm)"
 msgid "Can chi ngày {0}"
 msgstr "Can chi ngày {0}"
 
-#. placeholder {0}: info.canChi.day
-#. placeholder {1}: info.canChi.month
-#. placeholder {2}: info.canChi.year
-#: src/pages/clan/GoodDays.tsx
-msgid "Can chi: ngày {0} · tháng {1} · năm {2}"
-msgstr "Can chi: ngày {0} · tháng {1} · năm {2}"
-
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Căn chỉnh: dồn thẻ cùng hàng, bám lưới"
 msgstr "Căn chỉnh: dồn thẻ cùng hàng, bám lưới"
@@ -7323,6 +7316,10 @@ msgstr "Họp họ, ngày kỷ niệm dòng họ — thêm theo dương lịch h
 msgid "Họp họ, tảo mộ, chạp họ, kỷ niệm…"
 msgstr "Họp họ, tảo mộ, chạp họ, kỷ niệm…"
 
+#: src/pages/clan/GoodDays.tsx
+msgid "hung tinh"
+msgstr "hung tinh"
+
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Hướng"
 msgstr "Hướng"
@@ -10108,6 +10105,7 @@ msgstr "Năm"
 #. placeholder {0}: info.canChi.year
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
+#: src/pages/clan/GoodDays.tsx
 msgid "Năm {0}"
 msgstr "Năm {0}"
 
@@ -10240,6 +10238,11 @@ msgstr "Ngày"
 #: src/pages/clan/HonorBook.tsx
 msgid "Ngày (tuỳ chọn)"
 msgstr "Ngày (tuỳ chọn)"
+
+#. placeholder {0}: info.canChi.day
+#: src/pages/clan/GoodDays.tsx
+msgid "Ngày {0}"
+msgstr "Ngày {0}"
 
 #. placeholder {0}: d.getDate()
 #. placeholder {0}: info.lunar.day
@@ -12860,6 +12863,11 @@ msgstr "Tháng"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Thẳng"
 msgstr "Thẳng"
+
+#. placeholder {0}: info.canChi.month
+#: src/pages/clan/GoodDays.tsx
+msgid "Tháng {0}"
+msgstr "Tháng {0}"
 
 #. placeholder {0}: m + 1
 #: src/pages/clan/GoodDays.tsx
@@ -15555,6 +15563,7 @@ msgstr "Xem tất cả thông báo"
 #: src/components/BioText.tsx
 #: src/pages/admin/shared.tsx
 #: src/pages/clan/Dashboard.tsx
+#: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Xem thêm"
 msgstr "Xem thêm"
