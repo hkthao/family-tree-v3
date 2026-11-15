@@ -83,19 +83,24 @@ export function MyProfileCard({
         )
       }
       footer={
-        // Một hàng, chữ ngắn (không rớt dòng trên điện thoại): nút phụ "Đường trực hệ" + nút chính "Cập nhật hồ sơ".
-        // `footer` của SectionCard đã bọc ActionArea nên hai nút cùng cỡ như các thẻ khác; icon trước chữ theo design-language.
-        <div className="flex w-full flex-nowrap justify-end gap-2">
-          <Button asChild size="sm" variant="outline" className="min-w-0 px-3">
+        // HAI NÚT CÂN ĐÔI (cùng chiều rộng, cùng chiều cao h-10 của vùng hành động), chữ ngắn một dòng.
+        // Dùng đúng kiểu nút chuẩn: phụ = outline, chính = default; khoảng cách icon–chữ do `gap-2` của Button,
+        // không tự thêm margin; viền trong suốt ở nút chính để hộp hai nút bằng nhau từng điểm ảnh.
+        <div className="grid w-full grid-cols-2 gap-2">
+          <Button asChild size="sm" variant="outline" className="w-full">
             <Link to={lineageTo}>
-              <IconTree className="mr-1.5 h-4 w-4 shrink-0" />
-              <span className="truncate">{t`Đường trực hệ`}</span>
+              <IconTree className="h-4 w-4 shrink-0" />
+              {t`Đường trực hệ`}
             </Link>
           </Button>
-          <Button asChild size="sm" className="min-w-0 px-3">
+          <Button
+            asChild
+            size="sm"
+            className="w-full border border-transparent"
+          >
             <Link to={`/clans/${clanId}/people/${mine.self_person_id}`}>
-              <IconPencil className="mr-1.5 h-4 w-4 shrink-0" />
-              <span className="truncate">{t`Cập nhật hồ sơ`}</span>
+              <IconPencil className="h-4 w-4 shrink-0" />
+              {t`Cập nhật hồ sơ`}
             </Link>
           </Button>
         </div>
