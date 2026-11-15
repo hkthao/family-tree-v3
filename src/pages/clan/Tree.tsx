@@ -7,7 +7,7 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import {
   IconDownload,
-  IconFilter,
+  IconSliders,
   IconGrid,
   IconHome,
   IconLayers,
@@ -1447,7 +1447,7 @@ export default function Tree() {
               aria-label={t`Tuỳ chọn`}
               title={t`Tuỳ chọn`}
             >
-              <IconFilter className="h-4 w-4 sm:mr-1.5" />
+              <IconSliders className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">{t`Tuỳ chọn`}</span>
             </Button>
             <RefreshButton
@@ -1574,7 +1574,7 @@ export default function Tree() {
               aria-haspopup="dialog"
               aria-label={t`Tuỳ chọn`}
             >
-              <IconFilter className="h-4 w-4" /> {t`Tuỳ chọn`}
+              <IconSliders className="h-4 w-4" /> {t`Tuỳ chọn`}
             </Button>
             {actionButtons}
           </div>
