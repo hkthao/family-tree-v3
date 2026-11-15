@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 
 import { Chip, type ChipTone } from "@/components/Chip";
 import { IconChevronDown, IconClock, IconSparkles } from "@/components/icons";
-import { IconTile } from "@/components/IconTile";
 import { PageHeader } from "@/components/PageHeader";
 import { PlatformShell } from "@/components/PlatformShell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -95,7 +94,6 @@ function ChangelogEntry({
         aria-expanded={open}
         className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
       >
-        <IconTile icon={IconSparkles} tone={tone} />
         <span className="min-w-0 flex-1">
           <span className="flex items-start gap-2">
             <span className="min-w-0 flex-1 font-semibold leading-snug">
