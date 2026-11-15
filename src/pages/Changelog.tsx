@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
 
-import { AppLogo } from "@/components/AppLogo";
 import { IconSparkles } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { PlatformShell } from "@/components/PlatformShell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   listPublicAnnouncements,
@@ -55,53 +54,31 @@ export default function Changelog() {
   }, [latest]);
 
   return (
-    <div className="min-h-dvh bg-background">
-      <header className="border-b bg-background sticky top-0 z-30">
-        <div className="container max-w-4xl flex items-center justify-between gap-2 px-4 h-[64px]">
-          <Link
-            to="/"
-            className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
-          >
-            <AppLogo size={28} className="rounded" />
-            {t`Dòng Họ Việt`}
-          </Link>
-          <nav className="flex items-center gap-3 text-sm">
-            <Link to="/login" className="hover:underline">
-              {t`Đăng nhập`}
-            </Link>
-            <Link to="/lien-he" className="hover:underline">
-              {t`Liên hệ`}
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <PlatformShell>
+      <PageHeader
+        icon={<IconSparkles className="h-7 w-7" />}
+        title={t`Cập nhật mới`}
+        description={t`Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app.`}
+      />
 
-      <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <PageHeader
-          icon={<IconSparkles className="h-7 w-7" />}
-          title={t`Cập nhật mới`}
-          description={t`Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app.`}
-        />
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{(error as Error).message}</AlertDescription>
+        </Alert>
+      )}
+      {!isLoading && rows.length === 0 && (
+        <p className="text-muted-foreground italic">
+          {t`Chưa có cập nhật nào được công bố. Quay lại sau.`}
+        </p>
+      )}
 
-        {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{(error as Error).message}</AlertDescription>
-          </Alert>
-        )}
-        {!isLoading && rows.length === 0 && (
-          <p className="text-muted-foreground italic">
-            {t`Chưa có cập nhật nào được công bố. Quay lại sau.`}
-          </p>
-        )}
-
-        <ul className="space-y-4">
-          {rows.map((row) => (
-            <ChangelogEntry key={row.id} row={row} />
-          ))}
-        </ul>
-      </main>
-    </div>
+      <ul className="space-y-4">
+        {rows.map((row) => (
+          <ChangelogEntry key={row.id} row={row} />
+        ))}
+      </ul>
+    </PlatformShell>
   );
 }
 
