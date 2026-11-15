@@ -59,7 +59,30 @@ export function Overview() {
           <Strong>Chia sẻ</Strong> — gửi 1 đường link, người nhận xem được
           cây mà không cần đăng ký.
         </LI>
+        <LI>
+          <Strong>Mộ phần &amp; tro cốt, Bản đồ, Di sản, Quỹ họ</Strong> — lưu
+          nơi an nghỉ có chỉ đường, con cháu theo tỉnh/thành, từ đường và kỷ
+          vật, sổ thu chi.
+        </LI>
+        <LI>
+          <Strong>Phòng ký ức &amp; Ảnh ghép</Strong> — phòng ảnh 3D và bức ảnh
+          mỗi người góp một mảnh; <Strong>Bảng tin</Strong> cho tin vui, thông
+          báo chung.
+        </LI>
+        <LI>
+          <Strong>Sổ gia phả PDF, Trợ lý AI, tiếng Anh</Strong> — xuất cả
+          cuốn sổ để in, hỏi gia phả bằng lời, dùng giao diện tiếng Việt hoặc
+          tiếng Anh.
+        </LI>
       </UL>
+      <P>
+        Không biết tính năng nằm ở đâu? Bấm <Strong>Tất cả tính năng</Strong>{" "}
+        ở menu trái hoặc xem{" "}
+        <Link to="/docs/tuy-chinh-tong-quan" className="underline">
+          Trang Tổng quan &amp; Thao tác nhanh
+        </Link>
+        .
+      </P>
 
       <H2>Có gì khác sổ giấy</H2>
       <UL>

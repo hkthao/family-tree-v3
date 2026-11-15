@@ -35,6 +35,54 @@
     <meta name="twitter:image" content="https://giapha.thaohk.com/icons/og-banner.png" />
 
     <title>Dòng Họ Việt — Quản lý gia phả dòng họ</title>
+    <link rel="canonical" href="https://giapha.thaohk.com/" />
+    <!-- GEO/AEO: dữ liệu có cấu trúc để công cụ tìm kiếm và AI hiểu ĐÚNG app là gì (tên, loại, nền tảng, ngôn ngữ, giá).
+         Giữ thống nhất với landing (donghoviet.thaohk.com) và llms.txt: tên, mô tả cốt lõi, liên hệ. -->
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://donghoviet.thaohk.com/#org",
+      "name": "Dòng Họ Việt",
+      "url": "https://donghoviet.thaohk.com/",
+      "logo": "https://giapha.thaohk.com/icons/app-icon-180.png",
+      "email": "support@thaohk.com",
+      "sameAs": ["https://www.facebook.com/donghoviet2026"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://giapha.thaohk.com/#website",
+      "url": "https://giapha.thaohk.com/",
+      "name": "Dòng Họ Việt",
+      "inLanguage": "vi",
+      "publisher": { "@id": "https://donghoviet.thaohk.com/#org" }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://giapha.thaohk.com/#app",
+      "name": "Dòng Họ Việt",
+      "alternateName": "Phần mềm gia phả Dòng Họ Việt",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Web, Android, iOS",
+      "inLanguage": "vi",
+      "url": "https://giapha.thaohk.com/",
+      "description": "Phần mềm gia phả tiếng Việt cho dòng họ: cả họ cùng dựng cây gia phả nhiều đời, ghi ngày giỗ âm lịch và được nhắc, lưu giọng kể và di sản của ông bà, xuất sổ gia phả PDF.",
+      "featureList": [
+        "Cây gia phả nhiều đời, thuỷ tổ và số đời",
+        "Ngày giỗ âm lịch, nhắc giỗ và sinh nhật",
+        "Tra cứu quan hệ và xưng hô họ hàng",
+        "Mộ phần, nhà thờ họ, di sản dòng họ",
+        "Xuất sổ gia phả PDF, nhập Excel và GEDCOM",
+        "Mời cả họ cùng bổ sung qua một đường link"
+      ],
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "VND" },
+      "publisher": { "@id": "https://donghoviet.thaohk.com/#org" }
+    }
+  ]
+}
+    </script>
     <script>
       // Apply theme class BEFORE first paint so dark-mode users
       // don't flash the light palette while the React bundle loads.
@@ -66,6 +114,24 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Bản TĨNH cho bot không chạy JavaScript (nhiều bot AI chỉ đọc HTML thô): trả lời "app này là gì" ngay trong
+         HTML đầu tiên và dẫn tới các trang công khai. Người dùng thường không thấy vì React thay #root khi nạp xong
+         (nằm trong <noscript> nên chỉ hiện khi tắt JS). -->
+    <noscript>
+      <main style="max-width:760px;margin:2rem auto;padding:0 1rem;font-family:system-ui,sans-serif;line-height:1.6">
+        <h1>Dòng Họ Việt — phần mềm gia phả cho dòng họ Việt Nam</h1>
+        <p>Dòng Họ Việt là phần mềm gia phả bằng tiếng Việt: cả họ cùng dựng cây gia phả nhiều đời, ghi ngày giỗ theo âm lịch và được nhắc trước, lưu giữ giọng kể, ảnh và di sản của ông bà, xuất sổ gia phả PDF. Miễn phí để bắt đầu; chạy trên web và cài như ứng dụng trên điện thoại.</p>
+        <ul>
+          <li><a href="https://giapha.thaohk.com/xem/demo">Xem thử gia phả mẫu (không cần đăng nhập)</a></li>
+          <li><a href="https://giapha.thaohk.com/signup">Tạo gia phả miễn phí</a></li>
+          <li><a href="https://giapha.thaohk.com/docs">Hướng dẫn sử dụng</a></li>
+          <li><a href="https://giapha.thaohk.com/so-tay">Sổ tay Văn hoá: phong tục, nghi lễ, tín ngưỡng Việt Nam</a></li>
+          <li><a href="https://donghoviet.thaohk.com/huong-dan.html">Kiến thức gia phả: cách lập gia phả, ngày giỗ âm lịch, xưng hô họ hàng</a></li>
+          <li><a href="https://donghoviet.thaohk.com/">Giới thiệu và hỏi đáp</a></li>
+        </ul>
+        <p>Hỗ trợ: support@thaohk.com</p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

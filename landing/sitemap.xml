@@ -1,11 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Hiện landing chỉ có một trang. Khi tách trang con theo từ khoá dài
-     (cách lập gia phả dòng họ, cách tính ngày giỗ âm lịch, phần mềm gia
-     phả tiếng Việt — xem docs/plan-landing-update.md) thì thêm <url> ở đây. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://donghoviet.thaohk.com/</loc>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-11-15</lastmod>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan/cach-lap-gia-pha-dong-ho.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan/cach-tinh-ngay-gio-am-lich.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan/cach-xung-ho-ho-hang.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan/phan-mem-gia-pha-tieng-viet.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan/thuat-ngu-gia-pha.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan/mau-so-gia-pha.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://donghoviet.thaohk.com/huong-dan/chap-ho-tao-mo-gio-to.html</loc>
+    <lastmod>2026-11-15</lastmod>
+    <priority>0.7</priority>
   </url>
 </urlset>
