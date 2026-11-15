@@ -171,6 +171,14 @@ export function GlobalSearch({
         to: menuHubPath(clanId),
         keywords: "menu danh sach tinh nang cong cu",
       });
+    if (profile?.is_platform_admin)
+      out.push({
+        group: "menu",
+        title: "Cập nhật token Facebook (Podcast)",
+        subtitle: "Quản trị hệ thống › Podcast › Kết nối Facebook",
+        to: "/admin/podcast",
+        keywords: "fb facebook token dong bo podcast ket noi trang",
+      });
     out.push(
       {
         group: "menu",
