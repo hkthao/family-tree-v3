@@ -3386,6 +3386,7 @@ msgstr "Font size ({0})"
 msgid "Cổ điển"
 msgstr "Classic"
 
+#: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 msgid "Có gì mới"
 msgstr "What's new"
@@ -9780,6 +9781,7 @@ msgstr "Open QR export"
 msgid "Model cho hỏi đáp"
 msgstr "Model for Q&A"
 
+#: src/components/NewBadge.tsx
 #: src/pages/admin/Feedback.tsx
 msgid "Mới"
 msgstr "New"
@@ -11008,6 +11010,10 @@ msgstr "Remembered it?"
 #: src/pages/clan/Todo.tsx
 msgid "Nhóm việc cần làm"
 msgstr "To-do groups"
+
+#: src/lib/navModel.tsx
+msgid "Những cập nhật và tính năng mới nhất."
+msgstr "The latest updates and new features."
 
 #: src/pages/Podcast.tsx
 msgid "Những câu chuyện ngắn để nghe lúc rảnh — mỗi tập một câu hỏi đáng nghĩ."

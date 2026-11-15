@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { AppLogo } from "@/components/AppLogo";
@@ -11,6 +12,7 @@ import {
   type AnnouncementLevel,
 } from "@/lib/queries/announcements";
 import { queryKeys } from "@/lib/queries/keys";
+import { markChangelogSeen } from "@/lib/whatsNew";
 
 import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
@@ -47,6 +49,10 @@ export default function Changelog() {
   });
 
   const rows = data ?? [];
+  const latest = rows[0]?.published_at;
+  useEffect(() => {
+    markChangelogSeen(latest);
+  }, [latest]);
 
   return (
     <div className="min-h-dvh bg-background">

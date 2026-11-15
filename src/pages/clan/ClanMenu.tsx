@@ -1,3 +1,4 @@
+import { NewBadge } from "@/components/NewBadge";
 import { t } from "@lingui/core/macro";
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -27,6 +28,7 @@ interface Tile {
   hint?: string;
   icon: ReactNode;
   badge?: string | number;
+  isNew?: boolean;
   to?: string;
   onClick?: () => void;
 }
@@ -58,6 +60,7 @@ function TileBody({ tile }: { tile: Tile }) {
       </span>
       <span className="line-clamp-2 font-medium leading-tight">
         {tile.label}
+        {tile.isNew && <NewBadge className="ml-1.5 align-middle" />}
       </span>
       {tile.hint && (
         <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">
@@ -94,6 +97,7 @@ export default function ClanMenu() {
       hint: i.hint,
       icon: i.icon,
       badge: i.badge,
+      isNew: i.isNew,
       to: i.to,
     }));
   const byId = (id: string) => sections.find((x) => x.id === id);

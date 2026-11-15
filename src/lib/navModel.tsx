@@ -240,6 +240,8 @@ export interface DrawerItem {
   end?: boolean;
   /** Optional pill rendered after the label — e.g. pending count. */
   badge?: string | number;
+  /** Tính năng vừa ra, người dùng chưa mở — hiện nhãn "Mới" (xem lib/whatsNew). */
+  isNew?: boolean;
   /** Bấm thường mở ngăn kéo (?panel=…) thay vì chuyển trang; `to` là link dự phòng. */
   panel?: "chat";
   /** Một câu mô tả ngắn — hiện ở trang "Tất cả tính năng" (menu trái không dùng). */
@@ -327,6 +329,12 @@ export function buildSections(
       label: "Podcast",
       hint: t`Nghe những câu chuyện ngắn về gia phả.`,
       icon: <IconMicrophone className={ic} />,
+    },
+    {
+      to: "/changelog",
+      label: t`Có gì mới`,
+      hint: t`Những cập nhật và tính năng mới nhất.`,
+      icon: <IconSparkles className={ic} />,
     },
     // Góp ý về hẳn menu: trước đây nó là một nút nhỏ lẫn trong hàng
     // tiện ích ở chân drawer, cạnh QR và Cập nhật — chỗ người dùng chỉ
