@@ -66,7 +66,7 @@ export function GedcomButtons({ clan }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         <Button
           size="sm"
           variant="outline"
@@ -76,28 +76,35 @@ export function GedcomButtons({ clan }: Props) {
           <IconDownload className="h-4 w-4 mr-1.5" />
           {exportM.isPending ? t`Đang xuất…` : t`Xuất GEDCOM`}
         </Button>
-        <label className="inline-block">
-          <input
-            type="file"
-            accept=".ged,.gedcom,text/plain"
-            className="sr-only"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setImportMsg(null);
-                importM.mutate(file);
-              }
-              e.target.value = "";
-            }}
-          />
-          <span
-            className="inline-flex h-12 px-5 items-center justify-center gap-2 rounded-md border border-input bg-background hover:bg-muted cursor-pointer text-base font-medium"
-            aria-disabled={importM.isPending}
-          >
-            <IconUpload className="h-4 w-4" />
+        {/* Cùng `Button` size sm với nút Xuất: label là phần tử gốc (asChild) để bấm vào mở hộp chọn file. */}
+        <Button
+          asChild
+          size="sm"
+          variant="outline"
+          className={
+            importM.isPending
+              ? "pointer-events-none opacity-50"
+              : "cursor-pointer"
+          }
+        >
+          <label aria-disabled={importM.isPending}>
+            <input
+              type="file"
+              accept=".ged,.gedcom,text/plain"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImportMsg(null);
+                  importM.mutate(file);
+                }
+                e.target.value = "";
+              }}
+            />
+            <IconUpload className="h-4 w-4 mr-1.5" />
             {importM.isPending ? t`Đang nhập…` : t`Nhập GEDCOM`}
-          </span>
-        </label>
+          </label>
+        </Button>
       </div>
       {exportM.error && (
         <Alert variant="destructive">
