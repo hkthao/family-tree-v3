@@ -2,7 +2,10 @@ import { useState } from "react";
 
 import { IconCheck, IconCopy } from "@/components/icons";
 import { SidePanel } from "@/components/SidePanel";
-import { SegmentedButton, SegmentedControl } from "@/components/ui/segmented-control";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,12 +20,14 @@ function Code({ text }: { text: string }) {
   const [done, setDone] = useState(false);
   return (
     <div className="relative">
-      <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 pr-11 font-mono text-xs leading-relaxed">{text}</pre>
+      <pre className="whitespace-pre-wrap break-all rounded-lg border bg-muted/40 p-3 pr-12 font-mono text-xs leading-relaxed">
+        {text}
+      </pre>
       <Button
         type="button"
         size="icon"
         variant="ghost"
-        className="absolute right-1 top-1 h-8 w-8"
+        className="absolute right-0.5 top-0.5 h-11 w-11"
         aria-label={t`Chép`}
         onClick={async () => {
           try {
@@ -34,13 +39,25 @@ function Code({ text }: { text: string }) {
           }
         }}
       >
-        {done ? <IconCheck className="h-4 w-4" /> : <IconCopy className="h-4 w-4" />}
+        {done ? (
+          <IconCheck className="h-4 w-4" />
+        ) : (
+          <IconCopy className="h-4 w-4" />
+        )}
       </Button>
     </div>
   );
 }
 
-function Step({ n, title, children }: { n: number; title: string; children?: React.ReactNode }) {
+function Step({
+  n,
+  title,
+  children,
+}: {
+  n: number;
+  title: string;
+  children?: React.ReactNode;
+}) {
   return (
     <li className="flex gap-3">
       <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
@@ -54,10 +71,20 @@ function Step({ n, title, children }: { n: number; title: string; children?: Rea
   );
 }
 
-const P = ({ children }: { children: React.ReactNode }) => <p className="text-sm text-muted-foreground">{children}</p>;
+const P = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-sm text-muted-foreground">{children}</p>
+);
 
 /** Ngăn kéo hướng dẫn người dùng nối từng ứng dụng AI (Claude, ChatGPT, Claude Code, khác) với gia phả. */
-export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean; onClose: () => void; admin?: boolean }) {
+export function McpGuidePanel({
+  open,
+  onClose,
+  admin = false,
+}: {
+  open: boolean;
+  onClose: () => void;
+  admin?: boolean;
+}) {
   const [client, setClient] = useState<Client>("claude");
   const [custom, setCustom] = useState("");
   const url = custom.trim().replace(/\/+$/, "") || mcpUrl();
@@ -65,13 +92,44 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
   const tok = "<TOKEN>";
 
   return (
-    <SidePanel open={open} title={t`Hướng dẫn kết nối AI`} subtitle={t`Chọn ứng dụng AI bạn đang dùng`} onClose={onClose} size="lg">
+    <SidePanel
+      open={open}
+      title={t`Hướng dẫn kết nối AI`}
+      subtitle={t`Chọn ứng dụng AI bạn đang dùng`}
+      onClose={onClose}
+      size="lg"
+    >
       <div className="space-y-5">
-        <SegmentedControl ariaLabel={t`Ứng dụng AI`} className="w-fit max-w-full self-start overflow-x-auto">
-          <SegmentedButton active={client === "claude"} onClick={() => setClient("claude")}>Claude</SegmentedButton>
-          <SegmentedButton active={client === "chatgpt"} onClick={() => setClient("chatgpt")}>ChatGPT</SegmentedButton>
-          <SegmentedButton active={client === "claude-code"} onClick={() => setClient("claude-code")}>Claude Code</SegmentedButton>
-          <SegmentedButton active={client === "other"} onClick={() => setClient("other")}>{t`Khác`}</SegmentedButton>
+        <SegmentedControl
+          ariaLabel={t`Ứng dụng AI`}
+          className="flex w-full sm:w-fit sm:max-w-full sm:self-start"
+        >
+          <SegmentedButton
+            className="min-w-0 flex-1 px-1 sm:flex-none sm:px-4"
+            active={client === "claude"}
+            onClick={() => setClient("claude")}
+          >
+            Claude
+          </SegmentedButton>
+          <SegmentedButton
+            className="min-w-0 flex-1 px-1 sm:flex-none sm:px-4"
+            active={client === "chatgpt"}
+            onClick={() => setClient("chatgpt")}
+          >
+            ChatGPT
+          </SegmentedButton>
+          <SegmentedButton
+            className="min-w-0 flex-1 px-1 sm:flex-none sm:px-4"
+            active={client === "claude-code"}
+            onClick={() => setClient("claude-code")}
+          >
+            Claude Code
+          </SegmentedButton>
+          <SegmentedButton
+            className="min-w-0 flex-1 px-1 sm:flex-none sm:px-4"
+            active={client === "other"}
+            onClick={() => setClient("other")}
+          >{t`Khác`}</SegmentedButton>
         </SegmentedControl>
 
         <div className="space-y-1.5">
@@ -95,15 +153,27 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
 
         {client === "claude" && (
           <ol className="space-y-4">
-            <Step n={1} title={t`Mở Claude (claude.ai hoặc ứng dụng máy tính) → Customize → Connectors`} />
+            <Step
+              n={1}
+              title={t`Mở Claude (claude.ai hoặc ứng dụng máy tính) → Customize → Connectors`}
+            />
             <Step n={2} title={t`Bấm Add → đưa chuột vào Custom → chọn Web`} />
-            <Step n={3} title={t`Đặt tên, dán địa chỉ kết nối rồi bấm Continue`}>
+            <Step
+              n={3}
+              title={t`Đặt tên, dán địa chỉ kết nối rồi bấm Continue`}
+            >
               <Code text={url} />
             </Step>
-            <Step n={4} title={t`Giữ nguyên Authentication; ở OAuth client chọn "Register automatically"`}>
+            <Step
+              n={4}
+              title={t`Giữ nguyên Authentication; ở OAuth client chọn "Register automatically"`}
+            >
               <P>{t`Bấm Add. Claude sẽ mở trang của hệ thống này để bạn đăng nhập và bấm "Cho phép".`}</P>
             </Step>
-            <Step n={5} title={t`Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm "Cho phép"`}>
+            <Step
+              n={5}
+              title={t`Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm "Cho phép"`}
+            >
               <P>{t`Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào.`}</P>
             </Step>
             <Step n={6} title={t`Dùng trong cuộc trò chuyện`}>
@@ -114,9 +184,15 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
 
         {client === "chatgpt" && (
           <ol className="space-y-4">
-            <Step n={1} title={t`Mở ChatGPT trên web → Plugins (chatgpt.com/plugins)`} />
+            <Step
+              n={1}
+              title={t`Mở ChatGPT trên web → Plugins (chatgpt.com/plugins)`}
+            />
             <Step n={2} title={t`Bấm nút "+" → Add custom MCP server`} />
-            <Step n={3} title={t`Nhập tên, dán địa chỉ kết nối vào ô Server URL`}>
+            <Step
+              n={3}
+              title={t`Nhập tên, dán địa chỉ kết nối vào ô Server URL`}
+            >
               <Code text={url} />
             </Step>
             <Step n={4} title={t`Ở Authentication chọn "OAuth"`}>
@@ -141,11 +217,19 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
 
         {client === "claude-code" && (
           <ol className="space-y-4">
-            <Step n={1} title={t`Dành cho người dùng Claude Code (công cụ dòng lệnh)`}>
+            <Step
+              n={1}
+              title={t`Dành cho người dùng Claude Code (công cụ dòng lệnh)`}
+            >
               <P>{t`Mở terminal và chạy một lần:`}</P>
-              <Code text={`claude mcp add --transport http dong-ho-viet ${url} --header "Authorization: Bearer ${tok}"`} />
+              <Code
+                text={`claude mcp add --transport http dong-ho-viet ${url} --header "Authorization: Bearer ${tok}"`}
+              />
             </Step>
-            <Step n={2} title={t`Khởi động lại Claude Code, gõ /mcp để kiểm tra`}>
+            <Step
+              n={2}
+              title={t`Khởi động lại Claude Code, gõ /mcp để kiểm tra`}
+            >
               <P>{t`Thấy dong-ho-viet ở trạng thái connected là xong.`}</P>
             </Step>
           </ol>
@@ -172,7 +256,9 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
             <li>{t`"Tuần này có ngày giỗ nào?"`}</li>
             <li>{t`"Cập nhật nơi sinh của … là …" (cần gói ghi trực tiếp).`}</li>
             <li>{t`"Xuất sổ gia phả PDF."`}</li>
-            {admin && <li>{t`"Liệt kê các đóng góp đang chờ duyệt trên toàn hệ thống."`}</li>}
+            {admin && (
+              <li>{t`"Liệt kê các đóng góp đang chờ duyệt trên toàn hệ thống."`}</li>
+            )}
           </ul>
         </div>
 
@@ -181,7 +267,9 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
           <ul className="list-disc space-y-1 pl-5">
             <li>{t`Token như mật khẩu: không gửi vào nhóm chat hay dán lên mạng. Nghi lộ thì thu hồi ngay.`}</li>
             <li>{t`Chọn gói quyền nhỏ nhất đủ dùng; AI không bao giờ vượt quá vai trò hiện tại của người tạo token.`}</li>
-            {admin && <li>{t`Token Admin hệ thống rất mạnh: nên đặt hạn ngắn, mọi lệnh được ghi nhật ký.`}</li>}
+            {admin && (
+              <li>{t`Token Admin hệ thống rất mạnh: nên đặt hạn ngắn, mọi lệnh được ghi nhật ký.`}</li>
+            )}
           </ul>
         </div>
       </div>
