@@ -482,9 +482,15 @@ interface Props {
   coverQrDataUri?: string;
   /** id mục → số trang, in vào mục lục (xem bookPages). */
   tocPages?: Record<string, number>;
+  /**
+   * Chỉ dựng một trang đệm (thay bìa) + trang mục lục. Dùng để dàn lại RIÊNG trang mục lục với số trang thật
+   * mà không phải dàn trang lại cả cuốn sổ (xem mcp-server/src/book.tsx). Trang mục lục vẫn ở vị trí thứ 2 nên
+   * số trang chân trang của nó đúng.
+   */
+  tocOnly?: boolean;
 }
 
-export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri, tocPages }: Props) {
+export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri, tocPages, tocOnly }: Props) {
   ensurePdfFontRegistered();
   // Toàn bộ sổ dùng MỘT font — font đã chọn ở cây (không còn trộn với Be Vietnam Pro).
   styles.page.fontFamily = pdfSerifFamily();
@@ -831,24 +837,31 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
     ...(texts?.phu_khao ? [{ title: "Phụ khảo", id: "sec-phukhao" }] : []),
   ];
 
+  const watermarkValue = include?.watermark
+    ? {
+        ...BOOK_WATERMARKS[include.watermark],
+        src: pdfAssets.watermarks[include.watermark] ?? BOOK_WATERMARKS[include.watermark].src,
+      }
+    : null;
+
+  if (tocOnly) {
+    return (
+      <Document title={`Gia phả - ${cleanName}`} author="Dòng Họ Việt" subject={`Sổ gia phả dòng họ ${cleanName}`}>
+        <WatermarkContext.Provider value={watermarkValue}>
+          <Page size="A4" style={styles.page} />
+          {showGenealogy && <TocPage items={tocItems} pages={tocPages} />}
+        </WatermarkContext.Provider>
+      </Document>
+    );
+  }
+
   return (
     <Document
       title={`Gia phả - ${cleanName}`}
       author="Dòng Họ Việt"
       subject={`Sổ gia phả dòng họ ${cleanName}`}
     >
-      <WatermarkContext.Provider
-        value={
-          include?.watermark
-            ? {
-                ...BOOK_WATERMARKS[include.watermark],
-                src:
-                  pdfAssets.watermarks[include.watermark] ??
-                  BOOK_WATERMARKS[include.watermark].src,
-              }
-            : null
-        }
-      >
+      <WatermarkContext.Provider value={watermarkValue}>
       {/* ─── Cover ──────────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
         <VineBorder />
