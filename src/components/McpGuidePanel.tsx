@@ -77,7 +77,7 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
   return (
     <SidePanel open={open} title={t`Hướng dẫn kết nối AI`} subtitle={t`Chọn loại AI bạn đang dùng`} onClose={onClose} size="lg">
       <div className="space-y-5">
-        <SegmentedControl ariaLabel={t`Loại AI`} className="flex w-full flex-wrap">
+        <SegmentedControl ariaLabel={t`Loại AI`} className="max-w-full overflow-x-auto">
           <SegmentedButton active={client === "claude-code"} onClick={() => setClient("claude-code")}>Claude Code</SegmentedButton>
           <SegmentedButton active={client === "claude-desktop"} onClick={() => setClient("claude-desktop")}>Claude Desktop</SegmentedButton>
           <SegmentedButton active={client === "chatgpt"} onClick={() => setClient("chatgpt")}>ChatGPT</SegmentedButton>
