@@ -66,7 +66,7 @@ export function GedcomButtons({ clan }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
         <Button
           size="sm"
           variant="outline"
