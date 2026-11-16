@@ -3,8 +3,8 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { scopeMeta } from "@/components/apiTokenMeta";
+import { ClanPicker, type ClanOption } from "@/components/ClanPicker";
 import {
-  IconBuildings,
   IconCheck,
   IconShield,
   IconX,
@@ -12,7 +12,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { mcpUrl, type ApiTokenScope } from "@/lib/queries/api-tokens";
 import { supabase } from "@/lib/supabase";
@@ -66,7 +65,7 @@ export default function ConnectAiAuthorize() {
     }),
     [sp],
   );
-  const [clanId, setClanId] = useState("");
+  const [picked, setPicked] = useState<ClanOption | null>(null);
   const [scope, setScope] = useState<ApiTokenScope>("read");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -89,10 +88,10 @@ export default function ConnectAiAuthorize() {
       if (!ids.length) return [];
       const { data } = await supabase
         .from("clans")
-        .select("id, name")
+        .select("id, name, description, person_count")
         .in("id", ids)
         .order("name");
-      return data ?? [];
+      return (data ?? []) as ClanOption[];
     },
   });
   const sysAdminQ = useQuery({
@@ -113,7 +112,9 @@ export default function ConnectAiAuthorize() {
     : CLAN_SCOPES;
   const isAdminScope = scope === "admin";
   const clans = clansQ.data ?? [];
-  const chosen = clanId || (clans.length === 1 ? clans[0].id : "");
+  // Chỉ có đúng một dòng họ thì chọn sẵn.
+  const chosen = picked?.id ?? (clans.length === 1 ? clans[0].id : "");
+  const pickedOption = picked ?? (clans.length === 1 ? clans[0] : null);
 
   async function allow() {
     setBusy(true);
@@ -184,19 +185,12 @@ export default function ConnectAiAuthorize() {
                 {!isAdminScope && (
                   <div className="space-y-2">
                     <Label htmlFor="oauth-clan">{t`Dòng họ cho phép AI làm việc`}</Label>
-                    <Select
+                    <ClanPicker
                       id="oauth-clan"
-                      icon={<IconBuildings />}
-                      value={chosen}
-                      onChange={(e) => setClanId(e.target.value)}
-                    >
-                      <option value="">{t`Chọn dòng họ…`}</option>
-                      {clans.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </Select>
+                      value={pickedOption}
+                      onChange={setPicked}
+                      onlyIds={clans.map((c) => c.id)}
+                    />
                   </div>
                 )}
 

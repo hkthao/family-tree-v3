@@ -2,7 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
 import { Chip } from "@/components/Chip";
-import { IconBuildings, IconCheck, IconChevronDown, IconSearch, IconUsers } from "@/components/icons";
+import {
+  IconBuildings,
+  IconCheck,
+  IconChevronDown,
+  IconSearch,
+  IconUsers,
+} from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -27,10 +33,13 @@ export function ClanPicker({
   id,
   value,
   onChange,
+  onlyIds,
 }: {
   id?: string;
   value: ClanOption | null;
   onChange: (clan: ClanOption) => void;
+  /** Chỉ cho chọn trong các dòng họ này (vd các họ mình làm admin). Bỏ trống = mọi dòng họ. */
+  onlyIds?: string[];
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -56,7 +65,7 @@ export function ClanPicker({
   }, [open]);
 
   const q = useQuery({
-    queryKey: ["clan-picker", debounced],
+    queryKey: ["clan-picker", debounced, onlyIds ?? null],
     enabled: open,
     staleTime: 30_000,
     queryFn: async (): Promise<ClanOption[]> => {
@@ -66,7 +75,9 @@ export function ClanPicker({
         .order("person_count", { ascending: false })
         .order("name", { ascending: true })
         .limit(LIMIT);
-      if (debounced) req = req.ilike("name", `%${debounced.replace(/[%_]/g, "")}%`);
+      if (onlyIds) req = req.in("id", onlyIds);
+      if (debounced)
+        req = req.ilike("name", `%${debounced.replace(/[%_]/g, "")}%`);
       const { data, error } = await req;
       if (error) throw new Error(error.message);
       return (data ?? []) as ClanOption[];
@@ -116,8 +127,14 @@ export function ClanPicker({
             />
           </div>
           <ul role="listbox" className="max-h-72 divide-y overflow-y-auto">
-            {q.isLoading && <li className="p-3 text-sm text-muted-foreground">{t`Đang tìm…`}</li>}
-            {q.error && <li className="p-3 text-sm text-destructive">{(q.error as Error).message}</li>}
+            {q.isLoading && (
+              <li className="p-3 text-sm text-muted-foreground">{t`Đang tìm…`}</li>
+            )}
+            {q.error && (
+              <li className="p-3 text-sm text-destructive">
+                {(q.error as Error).message}
+              </li>
+            )}
             {!q.isLoading && !q.error && (q.data ?? []).length === 0 && (
               <li className="p-3 text-sm text-muted-foreground">{t`Không có dòng họ nào khớp.`}</li>
             )}
@@ -135,7 +152,9 @@ export function ClanPicker({
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{c.name}</p>
                     {c.description && (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {c.description}
+                      </p>
                     )}
                     <div className="mt-1.5 flex flex-wrap items-center justify-end gap-1.5">
                       <span className="mr-auto font-mono text-xs text-muted-foreground">
@@ -146,7 +165,9 @@ export function ClanPicker({
                       </Chip>
                     </div>
                   </div>
-                  {c.id === value?.id && <IconCheck className="mt-1 h-4 w-4 shrink-0 text-primary" />}
+                  {c.id === value?.id && (
+                    <IconCheck className="mt-1 h-4 w-4 shrink-0 text-primary" />
+                  )}
                 </button>
               </li>
             ))}
