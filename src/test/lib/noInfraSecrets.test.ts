@@ -45,6 +45,8 @@ const RULES: Rule[] = [
     re: /\b(?:\d{1,3}\.){3}\d{1,3}\b/g,
     // Loopback, 0.0.0.0 và dải private là vô hại.
     allow: /^(127\.|0\.0\.0\.0$|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/,
+    // Test chống SSRF cần liệt kê IP dải đặc biệt (link-local, CGNAT, multicast…) để chứng minh bị chặn.
+    allowIn: /^src\/test\/lib\/mcpFields\.test\.ts$/,
   },
   { name: "hostname VPS nhà cung cấp", re: /srv\d{6,}|hstgr\.cloud/gi },
   { name: "bí danh SSH nội bộ", re: /\bfamily-tree-db\b/g },
