@@ -25,6 +25,8 @@ const GRANT_TTL_DAYS = 90;
 const ADMIN_GRANT_TTL_DAYS = 30;
 const CODE_TTL_S = 300;
 const MAX_CLIENTS = 5000;
+/** Số dòng họ tối đa trong một lần cấp quyền. */
+const MAX_CLANS_PER_GRANT = 20;
 const SCOPES = ["read", "propose", "write"] as const;
 export type OAuthScope = (typeof SCOPES)[number] | "admin";
 
@@ -233,22 +235,31 @@ async function approve(req: Request): Promise<Response> {
 
   const scope = str(b.scope) as OAuthScope;
   const isAdminScope = scope === "admin";
-  const clanId = isAdminScope ? "" : str(b.clan_id);
   if (!isAdminScope && !(SCOPES as readonly string[]).includes(scope)) return reply({ ok: false, error: "Gói quyền không hợp lệ." }, 400);
-  if (!isAdminScope && !/^[0-9a-f-]{36}$/i.test(clanId)) return reply({ ok: false, error: "Chưa chọn dòng họ." }, 400);
+  // Một hoặc nhiều dòng họ (clan_ids); vẫn nhận clan_id cũ cho client/bản FE cũ.
+  const rawIds = Array.isArray(b.clan_ids) ? b.clan_ids : b.clan_id ? [b.clan_id] : [];
+  const clanIds = isAdminScope ? [] : [...new Set(rawIds.map(str))];
+  if (!isAdminScope) {
+    if (!clanIds.length) return reply({ ok: false, error: "Chưa chọn dòng họ." }, 400);
+    if (clanIds.length > MAX_CLANS_PER_GRANT) return reply({ ok: false, error: `Tối đa ${MAX_CLANS_PER_GRANT} dòng họ một lần.` }, 400);
+    if (!clanIds.every((id) => /^[0-9a-f-]{36}$/i.test(id))) return reply({ ok: false, error: "Dòng họ không hợp lệ." }, 400);
+  }
 
-  // Chỉ admin của chính dòng họ đó (hoặc admin hệ thống) được cấp quyền cho AI — như khi tạo token tay.
-  const [{ data: member }, { data: profile }] = await Promise.all([
+  // Chỉ admin của TỪNG dòng họ được chọn (hoặc admin hệ thống) cấp quyền cho AI — như khi tạo token tay.
+  const [{ data: memberships }, { data: profile }] = await Promise.all([
     isAdminScope
-      ? Promise.resolve({ data: null })
-      : admin.from("clan_members").select("role").eq("clan_id", clanId).eq("user_id", user.id).maybeSingle(),
+      ? Promise.resolve({ data: [] as Array<{ clan_id: string; role: string }> })
+      : admin.from("clan_members").select("clan_id, role").eq("user_id", user.id).in("clan_id", clanIds),
     admin.from("profiles").select("is_suspended, is_platform_admin").eq("id", user.id).maybeSingle(),
   ]);
   if (profile?.is_suspended) return reply({ ok: false, error: "Tài khoản đang bị khoá." }, 403);
-  // Gói admin hệ thống: CHỈ admin hệ thống, không gắn dòng họ (mỗi lệnh tự truyền clan_id).
+  // Gói admin hệ thống: CHỈ admin hệ thống, không gắn dòng họ (mỗi lệnh tự truyền clan).
   if (isAdminScope && !profile?.is_platform_admin) return reply({ ok: false, error: "Chỉ admin hệ thống mới cấp được gói này." }, 403);
-  if (!isAdminScope && member?.role !== "admin" && !profile?.is_platform_admin) {
-    return reply({ ok: false, error: "Chỉ quản trị dòng họ mới được kết nối AI cho dòng họ này." }, 403);
+  if (!isAdminScope && !profile?.is_platform_admin) {
+    const adminOf = new Set((memberships ?? []).filter((m) => m.role === "admin").map((m) => m.clan_id));
+    if (!clanIds.every((id) => adminOf.has(id))) {
+      return reply({ ok: false, error: "Chỉ quản trị dòng họ mới được kết nối AI cho dòng họ đó — có họ trong danh sách bạn không phải quản trị." }, 403);
+    }
   }
 
   const code = randomSecret("gcd_");
@@ -256,7 +267,8 @@ async function approve(req: Request): Promise<Response> {
     code_hash: await sha256Hex(code),
     client_id: r.client.client_id,
     user_id: user.id,
-    clan_id: isAdminScope ? null : clanId,
+    clan_id: isAdminScope ? null : clanIds[0],
+    clan_ids: isAdminScope ? null : clanIds,
     scope,
     redirect_uri: str(b.redirect_uri),
     code_challenge: str(b.code_challenge),
@@ -333,6 +345,15 @@ async function exchangeCode(b: Record<string, unknown>): Promise<Response> {
     .select("id")
     .single();
   if (error || !grant) return oauthError("server_error", "Không tạo được kết nối.", 500);
+  // Kết nối nhiều họ: ghi toàn bộ họ (gồm họ chính) để server MCP và admin từng họ nhìn thấy.
+  const ids = (row.clan_ids as string[] | null) ?? [];
+  if (ids.length > 1) {
+    const { error: linkErr } = await admin.from("api_token_clans").insert(ids.map((id) => ({ token_id: grant.id, clan_id: id })));
+    if (linkErr) {
+      await revokeGrant(grant.id as string);
+      return oauthError("server_error", "Không tạo được kết nối nhiều dòng họ.", 500);
+    }
+  }
   await admin.from("oauth_codes").update({ grant_id: grant.id }).eq("code_hash", hash);
   return reply(await issuePair(grant.id as string, client.client_id, row.scope as string, grantDays(row.scope as string)));
 }

@@ -269,6 +269,10 @@ msgid "“Dù ai đi ngược về xuôi…” — ngày nghỉ lễ."
 msgstr "“Dù ai đi ngược về xuôi…” — ngày nghỉ lễ."
 
 #: src/components/McpGuidePanel.tsx
+msgid "\"Họ Huỳnh có bao nhiêu người?\" (kết nối nhiều họ: cứ nói tên họ)"
+msgstr "\"Họ Huỳnh có bao nhiêu người?\" (kết nối nhiều họ: cứ nói tên họ)"
+
+#: src/components/McpGuidePanel.tsx
 msgid "\"Liệt kê các đóng góp đang chờ duyệt trên toàn hệ thống.\""
 msgstr "\"Liệt kê các đóng góp đang chờ duyệt trên toàn hệ thống.\""
 
@@ -439,6 +443,11 @@ msgstr "{0} bức"
 #: src/pages/clan/MyLineage.tsx
 msgid "{0} đời — chưa đến thuỷ tổ"
 msgstr "{0} đời — chưa đến thuỷ tổ"
+
+#. placeholder {0}: tk.clan_count
+#: src/components/ApiTokenPanels.tsx
+msgid "{0} dòng họ"
+msgstr "{0} dòng họ"
 
 #. placeholder {0}: i.audio_count
 #: src/pages/clan/Heritage.tsx
@@ -1003,6 +1012,10 @@ msgstr "AI gửi thêm/sửa/ghi chú vào hàng chờ Đóng góp. Chỉ ghi v�
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI."
 msgstr "AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI."
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Cài đặt dòng họ → Kết nối AI."
+msgstr "AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Cài đặt dòng họ → Kết nối AI."
 
 #: src/components/apiTokenMeta.ts
 msgid "AI thêm, sửa, xoá người ngay, với đúng quyền hiện tại của người tạo token (bị hạ vai trò thì token hạ theo). Mọi thay đổi ghi vào nhật ký dưới tên người tạo và khôi phục được."
@@ -1760,6 +1773,11 @@ msgstr "Bính Tuất"
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Bỏ"
 msgstr "Bỏ"
+
+#. placeholder {0}: c.name
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Bỏ {0}"
+msgstr "Bỏ {0}"
 
 #. placeholder {0}: link.points?.length ?? 0
 #: src/components/treeCanvas/CanvasPalette.tsx
@@ -2721,10 +2739,6 @@ msgstr "Chọn cả trang này ({count})"
 msgid "Chọn để xử lý hàng loạt"
 msgstr "Chọn để xử lý hàng loạt"
 
-#: src/components/McpGuidePanel.tsx
-msgid "Chọn dòng họ và quyền cho AI, bấm \"Cho phép\""
-msgstr "Chọn dòng họ và quyền cho AI, bấm \"Cho phép\""
-
 #: src/pages/clan/Kinship.tsx
 msgid "Chọn đủ hai người để xem kết quả."
 msgstr "Chọn đủ hai người để xem kết quả."
@@ -2777,6 +2791,10 @@ msgstr "Chọn mẫu để có sẵn bài hoàn chỉnh rồi sửa lại; AI so
 msgid "Chọn một ảnh"
 msgstr "Chọn một ảnh"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
+msgstr "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
+
 #: src/pages/clan/ClanMenu.tsx
 msgid "Chọn một mục để mở."
 msgstr "Chọn một mục để mở."
@@ -2828,6 +2846,11 @@ msgstr "Chọn quan hệ với người này:"
 #: src/pages/clan/QrExport.tsx
 msgid "Chọn tất cả"
 msgstr "Chọn tất cả"
+
+#. placeholder {0}: clans.length
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Chọn tất cả {0} dòng họ"
+msgstr "Chọn tất cả {0} dòng họ"
 
 #: src/pages/clan/People.tsx
 msgid "Chọn tất cả {total} kết quả khớp bộ lọc"

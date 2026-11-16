@@ -146,21 +146,23 @@ describe("token admin hệ thống", () => {
     const names = MCP_ADMIN_TOOLS.map((t) => t.name).join(" ");
     expect(names).not.toMatch(/delete_clan|wipe|purge|drop/);
   });
-  it("toolsForScope(admin): tool theo dòng họ có clan_id bắt buộc, không có propose_*, kèm tool admin", () => {
+  it("toolsForScope(admin): tool theo dòng họ có `clan` (tên hoặc mã) bắt buộc, không có propose_*, kèm tool admin", () => {
     const tools = toolsForScope("admin");
     expect(tools.some((t) => t.name.startsWith("propose_"))).toBe(false);
     expect(tools.some((t) => t.name === "admin_list_clans")).toBe(true);
     for (const n of ["get_person", "create_person", "export_clan_book", "list_branches"]) {
       const t = tools.find((x) => x.name === n)!;
-      expect(t.inputSchema.required).toContain("clan_id");
-      expect(t.inputSchema.properties).toHaveProperty("clan_id");
+      expect(t.inputSchema.required).toContain("clan");
+      expect(t.inputSchema.properties).toHaveProperty("clan");
     }
+    // list_my_clans là tool chung, không đòi chọn họ trước.
+    expect(tools.find((x) => x.name === "list_my_clans")!.inputSchema.required ?? []).not.toContain("clan");
   });
   it("token dòng họ không thấy tool admin_*; withClanId không làm đổi tool gốc", () => {
     for (const s of ["read", "propose", "write"] as const) expect(toolsForScope(s).some((t) => t.name.startsWith("admin_"))).toBe(false);
     const base = MCP_TOOLS.find((t) => t.name === "clan_stats")!;
     const wrapped = withClanId(base);
-    expect((base.inputSchema.properties as object)).not.toHaveProperty("clan_id");
-    expect(wrapped.inputSchema.properties).toHaveProperty("clan_id");
+    expect((base.inputSchema.properties as object)).not.toHaveProperty("clan");
+    expect(wrapped.inputSchema.properties).toHaveProperty("clan");
   });
 });

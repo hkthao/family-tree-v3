@@ -103,7 +103,7 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
             <Step n={4} title={t`Giữ nguyên Authentication; ở OAuth client chọn "Register automatically"`}>
               <P>{t`Bấm Add. Claude sẽ mở trang của hệ thống này để bạn đăng nhập và bấm "Cho phép".`}</P>
             </Step>
-            <Step n={5} title={t`Chọn dòng họ và quyền cho AI, bấm "Cho phép"`}>
+            <Step n={5} title={t`Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm "Cho phép"`}>
               <P>{t`Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào.`}</P>
             </Step>
             <Step n={6} title={t`Dùng trong cuộc trò chuyện`}>
@@ -167,6 +167,7 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
           <p className="text-sm font-medium">{t`Thử hỏi AI`}</p>
           <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
             <li>{t`"Cho tôi xem thông tin dòng họ."`}</li>
+            <li>{t`"Họ Huỳnh có bao nhiêu người?" (kết nối nhiều họ: cứ nói tên họ)`}</li>
             <li>{t`"Tìm ông Huỳnh Văn A và cho biết con cháu."`}</li>
             <li>{t`"Tuần này có ngày giỗ nào?"`}</li>
             <li>{t`"Cập nhật nơi sinh của … là …" (cần gói ghi trực tiếp).`}</li>

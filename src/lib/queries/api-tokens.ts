@@ -22,6 +22,8 @@ export interface ApiToken {
   last_used_at: string | null;
   revoked_at: string | null;
   created_at: string;
+  /** Số dòng họ của kết nối (chỉ có khi là kết nối nhiều họ; kết nối một họ để trống). */
+  clan_count?: number;
 }
 
 const COLS =
@@ -41,8 +43,13 @@ export function makeApiToken(): string {
 }
 
 export async function sha256Hex(s: string): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(s),
+  );
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /**
@@ -81,23 +88,46 @@ export async function listClanApiTokens(
   clanId: string,
   client: Client = defaultClient,
 ): Promise<ClanApiToken[]> {
+  // Kết nối nhiều họ có thể chỉ liệt kê họ này ở bảng api_token_clans (họ chính là họ khác).
+  const { data: links } = await client
+    .from("api_token_clans")
+    .select("token_id")
+    .eq("clan_id", clanId);
+  const linked = (links ?? []).map((l: { token_id: string }) => l.token_id);
   const { data, error } = await client
     .from("api_tokens")
-    .select(`${COLS}, user_id`)
-    .eq("clan_id", clanId)
+    .select(`${COLS}, user_id, api_token_clans(clan_id)`)
+    .or(
+      linked.length
+        ? `clan_id.eq.${clanId},id.in.(${linked.join(",")})`
+        : `clan_id.eq.${clanId}`,
+    )
     .order("created_at", { ascending: false })
     .limit(200);
   if (error) throw new Error(error.message);
-  const rows = (data ?? []) as unknown as Array<ApiToken & { user_id: string }>;
+  const rows = (data ?? []) as unknown as Array<
+    ApiToken & { user_id: string; api_token_clans?: Array<{ clan_id: string }> }
+  >;
   // Tên lấy từ danh sách thành viên của họ (profiles bị RLS chặn với admin dòng họ).
   const members = await listClanMembers(clanId).catch(() => []);
   const names = new Map(members.map((m) => [m.user_id, m.display_name]));
-  return rows.map((r) => ({ ...r, user_name: names.get(r.user_id) || "—" }));
+  return rows.map(({ api_token_clans, ...r }) => ({
+    ...r,
+    clan_count:
+      (api_token_clans?.length ?? 0) > 1 ? api_token_clans!.length : undefined,
+    user_name: names.get(r.user_id) || "—",
+  }));
 }
 
 /** Tạo token; trả về BẢN RÕ để hiện một lần — không lưu và không lấy lại được. */
 export async function createApiToken(
-  input: { clanId: string | null; userId: string; name: string; scope: ApiTokenScope; days: number },
+  input: {
+    clanId: string | null;
+    userId: string;
+    name: string;
+    scope: ApiTokenScope;
+    days: number;
+  },
   client: Client = defaultClient,
 ): Promise<string> {
   const token = makeApiToken();
@@ -114,7 +144,10 @@ export async function createApiToken(
   return token;
 }
 
-export async function revokeApiToken(id: string, client: Client = defaultClient): Promise<void> {
+export async function revokeApiToken(
+  id: string,
+  client: Client = defaultClient,
+): Promise<void> {
   const { error } = await client
     .from("api_tokens")
     .update({ revoked_at: new Date().toISOString() })

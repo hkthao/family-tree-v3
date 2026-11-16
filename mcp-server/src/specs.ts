@@ -17,6 +17,8 @@ export interface McpToolSpec {
    * hệ thống (chỉ token admin).
    */
   needs: Scope;
+  /** Tool không thuộc về một dòng họ cụ thể (vd list_my_clans): không bị thêm tham số `clan`. */
+  global?: boolean;
 }
 
 export type Scope = "read" | "propose" | "write" | "admin";
@@ -81,6 +83,15 @@ const CHANGES_SCHEMA = {
 };
 
 export const MCP_TOOLS: McpToolSpec[] = [
+  {
+    name: "list_my_clans",
+    needs: "read",
+    global: true,
+    description:
+      "List the clans this connection can work in (name, description, headcount, permission). Call this first when the user names a clan " +
+      "(e.g. \"họ Huỳnh\") — then pass that name as `clan` to other tools. Never ask the user for a clan id; they do not know it.",
+    inputSchema: obj({ q: { type: "string", description: "Optional: filter by part of the clan name" } }),
+  },
   {
     name: "clan_stats",
     needs: "read",
@@ -441,17 +452,24 @@ export const MCP_TOOLS: McpToolSpec[] = [
 
 // ─── Token ADMIN HỆ THỐNG ──────────────────────────────────────────────────
 
-const clanIdProp = { type: "string", description: "Clan id (UUID) — from admin_list_clans. Required for admin tokens because they are not bound to one clan." };
 
-/** Token admin không gắn dòng họ: mọi tool theo dòng họ nhận thêm `clan_id` (bắt buộc). */
+const clanProp = {
+  type: "string",
+  description:
+    "Which clan to work in: its NAME as the user says it (e.g. \"Huỳnh\" or \"Dòng họ Huỳnh\") or its id. Not sure → call list_my_clans. " +
+    "If several clans match, ask the user which one — never guess and never ask the user for an id.",
+};
+
+/** Token admin / kết nối nhiều họ không gắn một dòng họ: mọi tool theo dòng họ nhận thêm `clan` (bắt buộc), nhận tên hoặc mã. */
 export function withClanId(t: McpToolSpec): McpToolSpec {
+  if (t.global) return t;
   const schema = t.inputSchema as { properties?: Record<string, unknown>; required?: string[] };
   return {
     ...t,
     inputSchema: {
       ...t.inputSchema,
-      properties: { clan_id: clanIdProp, ...(schema.properties ?? {}) },
-      required: ["clan_id", ...(schema.required ?? [])],
+      properties: { clan: clanProp, ...(schema.properties ?? {}) },
+      required: ["clan", ...(schema.required ?? [])],
     },
   };
 }
@@ -505,7 +523,7 @@ export const MCP_ADMIN_TOOLS: McpToolSpec[] = [
     name: "admin_set_clan_limits",
     needs: "admin",
     description: "Set a clan's person and account limits.",
-    inputSchema: obj({ clan_id: clanIdProp, max_persons: { type: "integer", minimum: 1 }, max_users: { type: "integer", minimum: 1 } }, ["clan_id"]),
+    inputSchema: obj({ clan_id: { type: "string", description: "Clan id (UUID) — from admin_list_clans." }, max_persons: { type: "integer", minimum: 1 }, max_users: { type: "integer", minimum: 1 } }, ["clan_id"]),
   },
   {
     name: "admin_list_contributions",

@@ -27,7 +27,8 @@ import { UserError } from "./fields.ts";
 import { OPS } from "./ops.ts";
 import { MAX_NAME, UUID_RE, validateChanges, validateNewPerson, validateNote } from "./proposals.ts";
 import { ADMIN_OPS, type AdminCtx } from "./admin.ts";
-import { MCP_TOOLS, scopeAllows, toolsForScope, type Scope } from "./specs.ts";
+import { MCP_TOOLS, scopeAllows, toolsForScope, withClanId, type Scope } from "./specs.ts";
+import { describeClan, norm, resolveClanInput, type ClanBrief } from "./clans.ts";
 
 const env = (k: string): string | undefined => process.env[k];
 
@@ -82,6 +83,12 @@ interface Auth {
   db: SupabaseClient;
   /** Client mới với JWT mới, cho thao tác chạy quá vài chục giây. */
   fresh: () => Promise<SupabaseClient>;
+  /** Kết nối mang NHIỀU dòng họ (một gói chung): mỗi lệnh chọn họ bằng tham số `clan` (tên hoặc mã). */
+  multi: boolean;
+  /** Các họ còn được phép của kết nối nhiều họ (đã loại họ mà chủ token không còn là thành viên). */
+  clans: ClanBrief[];
+  /** Quyền thật của chủ token ở TỪNG họ (min(gói, vai trò hiện tại ở họ đó)). */
+  access: Map<string, Scope>;
 }
 
 function rateLimited(tokenId: string): boolean {
@@ -103,30 +110,50 @@ async function authenticate(req: Request): Promise<Auth | Response> {
   // Token OAuth: tra ra "kết nối" (hàng api_tokens) rồi kiểm y như token thường (thu hồi, hạn, thành viên, khoá).
   const grantId = isOAuth ? await resolveAccessToken(token) : null;
   if (isOAuth && !grantId) return unauthorized("Phiên kết nối hết hạn hoặc đã bị thu hồi.", req);
-  const q = admin.from("api_tokens").select("id, user_id, clan_id, scope, name, expires_at, revoked_at");
+  const q = admin.from("api_tokens").select("id, user_id, clan_id, scope, name, expires_at, revoked_at, api_token_clans(clan_id)");
   const { data: row } = await (grantId ? q.eq("id", grantId) : q.eq("token_hash", await sha256Hex(token))).maybeSingle();
   if (!row || row.revoked_at || new Date(row.expires_at as string) < new Date()) {
     return unauthorized("Token không còn hiệu lực (đã thu hồi hoặc hết hạn).", req);
   }
 
   const isAdminToken = row.scope === "admin";
-  const [{ data: member }, { data: profile }] = await Promise.all([
-    isAdminToken
-      ? Promise.resolve({ data: null })
-      : admin.from("clan_members").select("role").eq("clan_id", row.clan_id).eq("user_id", row.user_id).maybeSingle(),
+  // Họ của kết nối: họ chính + các họ thêm (kết nối nhiều họ). Token admin không gắn họ nào.
+  const extra = ((row.api_token_clans as Array<{ clan_id: string }> | null) ?? []).map((x) => x.clan_id);
+  const allowed = isAdminToken ? [] : [...new Set([row.clan_id as string, ...extra].filter(Boolean))];
+  const multi = allowed.length > 1;
+  const [{ data: members }, { data: profile }] = await Promise.all([
+    isAdminToken || !allowed.length
+      ? Promise.resolve({ data: [] as Array<{ clan_id: string; role: string }> })
+      : admin.from("clan_members").select("clan_id, role").eq("user_id", row.user_id).in("clan_id", allowed),
     admin.from("profiles").select("is_suspended, is_platform_admin").eq("id", row.user_id).maybeSingle(),
   ]);
   const sysAdmin = !!profile?.is_platform_admin;
   if (profile?.is_suspended) return unauthorized("Tài khoản của người tạo token đang bị khoá.", req);
   // Token admin: sống chừng nào chủ token CÒN là admin hệ thống — bị gỡ quyền là chết ngay ở lượt gọi kế tiếp.
   if (isAdminToken && !sysAdmin) return unauthorized("Người tạo token không còn là admin hệ thống.", req);
-  // Admin hệ thống không cần là thành viên (token do họ tạo cho dòng họ bất kỳ).
-  if (!isAdminToken && !member && !sysAdmin) return unauthorized("Người tạo token không còn là thành viên dòng họ.", req);
-  // Quyền thật = min(gói, vai trò hiện tại). Ghi thẳng cần là editor/admin (hoặc admin hệ
+
+  // Quyền thật Ở TỪNG HỌ = min(gói, vai trò hiện tại ở họ đó). Ghi thẳng cần là editor/admin (hoặc admin hệ
   // thống); người đã bị hạ xuống viewer chỉ còn đọc. RLS vẫn là lớp chặn cuối cùng.
-  const canEdit = sysAdmin || member?.role === "admin" || member?.role === "editor";
   const stored = row.scope as Scope;
-  const scope: Scope = isAdminToken ? "admin" : stored !== "read" && !canEdit ? "read" : stored;
+  const roleOf = new Map((members ?? []).map((m) => [m.clan_id, m.role]));
+  const access = new Map<string, Scope>();
+  for (const id of allowed) {
+    // Admin hệ thống không cần là thành viên (token do họ tạo cho dòng họ bất kỳ).
+    if (!sysAdmin && !roleOf.has(id)) continue;
+    const canEdit = sysAdmin || roleOf.get(id) === "admin" || roleOf.get(id) === "editor";
+    access.set(id, stored !== "read" && !canEdit ? "read" : stored);
+  }
+  if (!isAdminToken && access.size === 0) {
+    return unauthorized(multi ? "Người tạo token không còn là thành viên của dòng họ nào trong kết nối này." : "Người tạo token không còn là thành viên dòng họ.", req);
+  }
+  const accessible = [...access.keys()];
+  // Kết nối nhiều họ: thấy tool theo mức cao nhất còn lại; từng lệnh vẫn bị chặn theo quyền thật của họ được chọn.
+  const scope: Scope = isAdminToken ? "admin" : multi ? ([...access.values()].some((v) => v === stored) ? stored : "read") : (access.get(allowed[0]) as Scope);
+  let clans: ClanBrief[] = [];
+  if (multi) {
+    const { data } = await admin.from("clans").select("id, name, description, person_count").in("id", accessible);
+    clans = ((data ?? []) as ClanBrief[]).sort((x, y) => y.person_count - x.person_count);
+  }
 
   const fresh = async (): Promise<SupabaseClient> =>
     createClient(SUPABASE_URL, ANON_KEY, {
@@ -150,12 +177,15 @@ async function authenticate(req: Request): Promise<Auth | Response> {
   return {
     tokenId: row.id as string,
     userId: row.user_id as string,
-    clanId: (row.clan_id as string | null) ?? "", // token admin không gắn dòng họ: mỗi lệnh tự truyền clan_id
+    clanId: multi ? "" : ((row.clan_id as string | null) ?? ""), // token admin / nhiều họ: mỗi lệnh tự truyền clan
     scope,
     tokenName: row.name as string,
     db,
     fresh,
     mintJwt: () => mintUserJwt(row.user_id as string),
+    multi,
+    clans,
+    access,
   };
 }
 
@@ -342,6 +372,28 @@ function logArgs(args: Record<string, unknown>): Record<string, unknown> {
   return out;
 }
 
+/** Danh sách mọi dòng họ (để admin hệ thống gọi theo tên), cache 60 giây. */
+let allClansCache: { at: number; rows: ClanBrief[] } | null = null;
+async function resolveAdminClan(a: Auth, input: unknown): Promise<{ id: string } | { error: string }> {
+  const raw = typeof input === "string" ? input.trim() : "";
+  if (!raw) return { error: "Cần tham số clan: tên dòng họ (hoặc mã). Chưa biết tên thì gọi list_my_clans với q." };
+  if (UUID_RE.test(raw)) {
+    const { data: clan } = await a.db.from("clans").select("id").eq("id", raw).maybeSingle();
+    return clan ? { id: raw } : { error: "Không tìm thấy dòng họ này." };
+  }
+  if (!allClansCache || Date.now() - allClansCache.at > 60_000) {
+    const { data } = await a.db.from("clans").select("id, name, description, person_count").order("person_count", { ascending: false }).limit(1000);
+    allClansCache = { at: Date.now(), rows: (data ?? []) as ClanBrief[] };
+  }
+  let rows = allClansCache.rows;
+  // Hệ thống có thể có hơn 1000 họ (trần của PostgREST): không thấy trong danh sách thì tìm thêm theo tên.
+  if (rows.length >= 1000 && !resolveClanInput(rows, raw).hasOwnProperty("id")) {
+    const { data } = await a.db.from("clans").select("id, name, description, person_count").ilike("name", `%${raw.replace(/[%_,()]/g, " ")}%`).limit(30);
+    rows = [...rows, ...((data ?? []) as ClanBrief[])];
+  }
+  return resolveClanInput(rows, raw);
+}
+
 /** Token admin: tool quản trị hệ thống, hoặc tool theo dòng họ kèm `clan_id`. Mọi lệnh đều được ghi `mcp_admin_log`. */
 async function callAdminTool(a: Auth, name: string, args: Record<string, unknown>): Promise<{ text: string; isError?: boolean }> {
   let res: { text: string; isError?: boolean };
@@ -356,17 +408,15 @@ async function callAdminTool(a: Auth, name: string, args: Record<string, unknown
       const spec = MCP_TOOLS.find((t) => t.name === name);
       if (!spec) res = { text: `Không có công cụ "${name}".`, isError: true };
       else if (spec.needs === "propose") res = { text: "Token admin ghi thẳng: dùng tool ghi (create_person, update_person…), không dùng propose_*.", isError: true };
+      else if (spec.global) res = { text: await ADMIN_OPS.admin_list_clans({ db: a.db, userId: a.userId, tokenId: a.tokenId, mintJwt: a.mintJwt, supabaseUrl: SUPABASE_URL, anonKey: ANON_KEY }, { q: args.q, sort: "members", limit: 30 }) };
       else {
-        const { clan_id, ...rest } = args;
-        if (typeof clan_id !== "string" || !UUID_RE.test(clan_id)) res = { text: "Cần clan_id (UUID) — lấy từ admin_list_clans.", isError: true };
+        const { clan, clan_id, ...rest } = args;
+        const r = await resolveAdminClan(a, clan ?? clan_id);
+        if ("error" in r) res = { text: r.error, isError: true };
         else {
-          const { data: clan } = await a.db.from("clans").select("id").eq("id", clan_id).maybeSingle();
-          if (!clan) res = { text: "Không tìm thấy dòng họ này.", isError: true };
-          else {
-            clanId = clan_id;
-            // Các tool theo dòng họ chạy như gói "write" trên dòng họ vừa chọn (đọc + ghi thẳng).
-            res = await callTool({ ...a, scope: "write", clanId: clan_id }, name, rest);
-          }
+          clanId = r.id;
+          // Các tool theo dòng họ chạy như gói "write" trên dòng họ vừa chọn (đọc + ghi thẳng).
+          res = await callTool({ ...a, scope: "write", clanId: r.id }, name, rest);
         }
       }
     }
@@ -386,8 +436,28 @@ async function callAdminTool(a: Auth, name: string, args: Record<string, unknown
   return res;
 }
 
+/** Kết nối nhiều họ: chọn họ theo `clan` (tên/mã), lấy quyền thật của chủ token Ở HỌ ĐÓ rồi chạy như kết nối một họ. */
+async function callMulti(a: Auth, name: string, args: Record<string, unknown>): Promise<{ text: string; isError?: boolean }> {
+  const spec = MCP_TOOLS.find((t) => t.name === name);
+  if (!spec) return { text: `Không có công cụ "${name}".`, isError: true };
+  if (spec.global) {
+    const q = typeof args.q === "string" ? norm(args.q) : "";
+    const rows = a.clans.filter((c) => !q || norm(c.name).includes(q));
+    if (!rows.length) return { text: "Không có dòng họ nào khớp." };
+    const label = (s: Scope | undefined) => (s === "write" ? "ghi trực tiếp" : s === "propose" ? "đề xuất" : "chỉ đọc");
+    return { text: `${rows.length} dòng họ có thể làm việc:\n${rows.map((c) => `- ${describeClan(c, `quyền: ${label(a.access.get(c.id))}`)}`).join("\n")}` };
+  }
+  const { clan, clan_id, ...rest } = args;
+  const r = resolveClanInput(a.clans, clan ?? clan_id);
+  if ("error" in r) return { text: r.error, isError: true };
+  const scope = a.access.get(r.id);
+  if (!scope) return { text: "Chủ token không còn là thành viên dòng họ này.", isError: true };
+  return callTool({ ...a, multi: false, clanId: r.id, scope }, name, rest);
+}
+
 async function callTool(a: Auth, name: string, args: Record<string, unknown>): Promise<{ text: string; isError?: boolean }> {
   if (a.scope === "admin") return callAdminTool(a, name, args);
+  if (a.multi) return callMulti(a, name, args);
   const spec = MCP_TOOLS.find((t) => t.name === name);
   if (!spec) return { text: `Không có công cụ "${name}".`, isError: true };
   if (!scopeAllows(a.scope, spec.needs)) {
@@ -401,6 +471,11 @@ async function callTool(a: Auth, name: string, args: Record<string, unknown>): P
     const op = OPS[name];
     if (op) return { text: await op({ db: a.db, clanId: a.clanId, userId: a.userId, fresh: a.fresh }, args) };
     switch (name) {
+      case "list_my_clans": {
+        const { data } = await a.db.from("clans").select("id, name, description, person_count").eq("id", a.clanId);
+        const c = ((data ?? []) as ClanBrief[])[0];
+        return { text: c ? `1 dòng họ có thể làm việc (kết nối này chỉ gắn một họ, không cần truyền clan):\n- ${describeClan(c)}` : "Không đọc được thông tin dòng họ." };
+      }
       case "get_person":
         return { text: await getPersonDetail(a, String(args.person_id ?? "")) };
       case "get_relatives":
@@ -463,7 +538,7 @@ async function handle(a: Auth, r: RpcReq): Promise<unknown | null> {
         serverInfo: SERVER_INFO,
         instructions:
           "Tra cứu và đề xuất chỉnh sửa gia phả một dòng họ Việt. Luôn gọi search_person để lấy id trước. " +
-          "Token admin: mọi tool theo dòng họ cần clan_id (admin_list_clans). Xưng hô dùng get_kinship, ngày giỗ dùng upcoming_anniversaries — đừng tự suy luận. " +
+          "Token admin hoặc kết nối nhiều họ: mọi tool theo dòng họ cần tham số clan = TÊN họ người dùng nói (vd \"Huỳnh\"); chưa chắc thì gọi list_my_clans, nhiều họ trùng tên thì hỏi lại người dùng — không bao giờ đòi người dùng cung cấp mã. Xưng hô dùng get_kinship, ngày giỗ dùng upcoming_anniversaries — đừng tự suy luận. " +
           "Công cụ propose_* chỉ gửi đề xuất chờ admin duyệt, không ghi trực tiếp.",
       });
     }
@@ -471,7 +546,8 @@ async function handle(a: Auth, r: RpcReq): Promise<unknown | null> {
       return ok({});
     case "tools/list":
       return ok({
-        tools: toolsForScope(a.scope).map(({ needs: _n, ...t }) => t),
+        // Token admin và kết nối nhiều họ: mọi tool theo dòng họ nhận thêm `clan` (tên hoặc mã) — toolsForScope đã lo cho admin.
+        tools: (a.multi ? toolsForScope(a.scope).map(withClanId) : toolsForScope(a.scope)).map(({ needs: _n, ...t }) => t),
       });
     case "tools/call": {
       const name = String(r.params?.name ?? "");

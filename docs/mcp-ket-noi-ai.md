@@ -107,6 +107,12 @@ tay người dùng và không bao giờ nằm trong URL.
 - **Cấp quyền:** `POST /oauth/authorize-info` (app hỏi tên ứng dụng, kiểm redirect_uri) và `POST /oauth/approve` (kèm JWT đăng nhập
   của người dùng; chỉ admin của dòng họ đó hoặc admin hệ thống; gói `read|propose|write`). Admin hệ thống có thêm gói `admin` (không gắn dòng họ, mọi
   dòng họ + chức năng quản trị, hạn trượt 30 ngày thay vì 90); người khác xin gói này bị 403.
+- **Nhiều dòng họ một lần:** màn "Cho phép" chọn được tối đa 20 họ (chỉ các họ mình là admin) với MỘT gói chung. Họ chính ở
+  `api_tokens.clan_id`, toàn bộ họ ở `api_token_clans`. Quyền thật tính RIÊNG TỪNG HỌ mỗi lượt gọi (hạ vai trò ở họ B → B chỉ còn đọc,
+  A vẫn ghi; rời hết các họ → 401). Admin của BẤT KỲ họ nào trong kết nối thấy và thu hồi được kết nối (thu hồi dừng quyền ở mọi họ).
+- **Gọi theo TÊN họ, không bao giờ theo mã:** kết nối nhiều họ và token admin thêm tham số `clan` (tên như người dùng nói, hoặc mã) vào
+  mọi tool theo họ, và có tool `list_my_clans` (tên, mô tả, số người, quyền; lọc bằng `q`). Khớp không phân biệt dấu/hoa thường, ưu tiên
+  khớp nguyên từ; trùng tên → trả danh sách kèm mô tả + số người để AI hỏi lại người dùng. Kết nối một họ không cần `clan`. Vẫn nhận `clan_id` kiểu cũ.
 - **Token:** `POST /oauth/token` — `authorization_code` (code 5 phút, dùng một lần, ràng buộc client + redirect_uri + PKCE) và
   `refresh_token`. Access token `gat_…` sống 1 giờ; refresh token xoay vòng mỗi lần dùng, dùng lại token cũ → thu hồi cả kết nối.
 - **Mô hình dữ liệu:** một lần cấp quyền = một hàng `api_tokens` (tên "<ứng dụng> (OAuth)", hạn trượt 90 ngày) — hiện chung ở danh
@@ -126,7 +132,7 @@ JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long node mcp-serv
 
 ## Triển khai (làm tay lần đầu)
 
-1. **Migration** `20261115100000_api_tokens.sql`, `20261116100000_api_tokens_admin.sql`, `20261116200000_api_tokens_clan_admin.sql`, `20261117100000_oauth_mcp.sql`, `20261117200000_oauth_admin_scope.sql` lên DB self-host (xem [[project_migrations_manual_selfhost]]; ghi `schema_migrations`).
+1. **Migration** `20261115100000_api_tokens.sql`, `20261116100000_api_tokens_admin.sql`, `20261116200000_api_tokens_clan_admin.sql`, `20261117100000_oauth_mcp.sql`, `20261117200000_oauth_admin_scope.sql`, `20261117300000_api_token_multi_clan.sql` lên DB self-host (xem [[project_migrations_manual_selfhost]]; ghi `schema_migrations`).
 2. **Máy web** (máy chạy FE; địa chỉ thật xem doc vận hành ngoài repo): tạo `/opt/gia-pha-mcp/mcp.env` từ `deploy/mcp.env.example`, `chmod 600`.
    `JWT_SECRET` + `SERVICE_ROLE_KEY` là khoá quyền cao — lấy ở file `.env` của Supabase self-host trên máy DB (`<supabase-dir>/.env`).
 3. **nginx** của genealogy-app: chèn `deploy/nginx-mcp-location.conf` vào server block giapha.thaohk.com,

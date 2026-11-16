@@ -1,14 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { scopeMeta } from "@/components/apiTokenMeta";
 import { ClanPicker, type ClanOption } from "@/components/ClanPicker";
-import {
-  IconCheck,
-  IconShield,
-  IconX,
-} from "@/components/icons";
+import { IconCheck, IconShield, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -65,7 +61,7 @@ export default function ConnectAiAuthorize() {
     }),
     [sp],
   );
-  const [picked, setPicked] = useState<ClanOption | null>(null);
+  const [picked, setPicked] = useState<ClanOption[]>([]);
   const [scope, setScope] = useState<ApiTokenScope>("read");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -113,8 +109,10 @@ export default function ConnectAiAuthorize() {
   const isAdminScope = scope === "admin";
   const clans = clansQ.data ?? [];
   // Chỉ có đúng một dòng họ thì chọn sẵn.
-  const chosen = picked?.id ?? (clans.length === 1 ? clans[0].id : "");
-  const pickedOption = picked ?? (clans.length === 1 ? clans[0] : null);
+  useEffect(() => {
+    if (clans.length === 1) setPicked(clans);
+  }, [clans]);
+  const left = clans.filter((c) => !picked.some((p) => p.id === c.id));
 
   async function allow() {
     setBusy(true);
@@ -123,7 +121,11 @@ export default function ConnectAiAuthorize() {
       const { data } = await supabase.auth.getSession();
       const r = await post<{ ok: boolean; redirect?: string; error?: string }>(
         "/oauth/approve",
-        { ...params, clan_id: isAdminScope ? undefined : chosen, scope },
+        {
+          ...params,
+          clan_ids: isAdminScope ? undefined : picked.map((p) => p.id),
+          scope,
+        },
         data.session?.access_token,
       );
       if (r.ok && r.redirect) {
@@ -185,12 +187,43 @@ export default function ConnectAiAuthorize() {
                 {!isAdminScope && (
                   <div className="space-y-2">
                     <Label htmlFor="oauth-clan">{t`Dòng họ cho phép AI làm việc`}</Label>
-                    <ClanPicker
-                      id="oauth-clan"
-                      value={pickedOption}
-                      onChange={setPicked}
-                      onlyIds={clans.map((c) => c.id)}
-                    />
+                    {picked.length > 0 && (
+                      <ul className="flex flex-wrap gap-1.5">
+                        {picked.map((c) => (
+                          <li key={c.id}>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPicked(picked.filter((p) => p.id !== c.id))
+                              }
+                              aria-label={t`Bỏ ${c.name}`}
+                              className="inline-flex max-w-full items-center gap-1.5 rounded-full border bg-primary/5 px-2.5 py-1 text-sm hover:bg-primary/10"
+                            >
+                              <span className="truncate">{c.name}</span>
+                              <IconX className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {left.length > 0 && (
+                      <ClanPicker
+                        id="oauth-clan"
+                        value={null}
+                        onChange={(c) => setPicked([...picked, c])}
+                        onlyIds={left.map((c) => c.id)}
+                      />
+                    )}
+                    {left.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPicked(clans)}
+                      >
+                        {t`Chọn tất cả ${clans.length} dòng họ`}
+                      </Button>
+                    )}
                   </div>
                 )}
 
@@ -229,7 +262,9 @@ export default function ConnectAiAuthorize() {
                 <p className="text-sm text-muted-foreground">
                   {isAdminScope
                     ? t`AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI.`
-                    : t`AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Cài đặt dòng họ → Kết nối AI.`}
+                    : picked.length > 1
+                      ? t`AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Cài đặt dòng họ → Kết nối AI.`
+                      : t`AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Cài đặt dòng họ → Kết nối AI.`}
                 </p>
 
                 {err && (
@@ -252,7 +287,7 @@ export default function ConnectAiAuthorize() {
                   <Button
                     type="button"
                     className="flex-1"
-                    disabled={busy || (!isAdminScope && !chosen)}
+                    disabled={busy || (!isAdminScope && picked.length === 0)}
                     onClick={() => void allow()}
                   >
                     <IconCheck className="mr-1.5 h-4 w-4" />

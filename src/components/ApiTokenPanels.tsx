@@ -68,7 +68,9 @@ export function ApiTokenRow({
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">
             {tk.name}{" "}
-            <span className="font-mono text-xs text-muted-foreground">{tk.token_prefix}…</span>
+            <span className="font-mono text-xs text-muted-foreground">
+              {tk.token_prefix}…
+            </span>
           </p>
           {owner && (
             <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-muted-foreground">
@@ -83,6 +85,11 @@ export function ApiTokenRow({
             </p>
           )}
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            {tk.clan_count ? (
+              <Chip tone="info" icon={<IconBuildings />}>
+                {t`${tk.clan_count} dòng họ`}
+              </Chip>
+            ) : null}
             <Chip tone={sc.tone} icon={<sc.icon />}>
               {sc.label}
             </Chip>
@@ -92,7 +99,10 @@ export function ApiTokenRow({
             <Chip tone={expiryTone(tk.expires_at)} icon={<IconClock />}>
               {t`Hết hạn ${fmt(tk.expires_at)}`}
             </Chip>
-            <Chip tone={tk.last_used_at ? "violet" : "neutral"} icon={<IconCalendar />}>
+            <Chip
+              tone={tk.last_used_at ? "violet" : "neutral"}
+              icon={<IconCalendar />}
+            >
               {tk.last_used_at ? t`Dùng ${fmt(tk.last_used_at)}` : t`Chưa dùng`}
             </Chip>
           </div>
@@ -132,12 +142,20 @@ export function ApiTokenCreatePanel({
   const [copied, setCopied] = useState<string | null>(null);
 
   const create = useMutation({
-    mutationFn: () => createApiToken({ clanId: scope === "admin" ? null : clanId, userId, name, scope, days }),
+    mutationFn: () =>
+      createApiToken({
+        clanId: scope === "admin" ? null : clanId,
+        userId,
+        name,
+        scope,
+        days,
+      }),
     onSuccess: (token) => {
       setFresh(token);
       onCreated();
     },
-    onError: (e) => toast.error(t`Không tạo được token`, { description: friendlyError(e) }),
+    onError: (e) =>
+      toast.error(t`Không tạo được token`, { description: friendlyError(e) }),
   });
 
   function close() {
@@ -188,8 +206,18 @@ export function ApiTokenCreatePanel({
               className="font-mono text-xs"
               onFocus={(e) => e.currentTarget.select()}
               action={
-                <Button type="button" size="icon" variant="ghost" onClick={() => copy("tok", fresh)} aria-label={t`Chép token`}>
-                  {copied === "tok" ? <IconCheck className="h-4 w-4" /> : <IconCopy className="h-4 w-4" />}
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => copy("tok", fresh)}
+                  aria-label={t`Chép token`}
+                >
+                  {copied === "tok" ? (
+                    <IconCheck className="h-4 w-4" />
+                  ) : (
+                    <IconCopy className="h-4 w-4" />
+                  )}
                 </Button>
               }
             />
@@ -204,8 +232,18 @@ export function ApiTokenCreatePanel({
               className="font-mono text-xs"
               onFocus={(e) => e.currentTarget.select()}
               action={
-                <Button type="button" size="icon" variant="ghost" onClick={() => copy("cmd", cmd)} aria-label={t`Chép lệnh`}>
-                  {copied === "cmd" ? <IconCheck className="h-4 w-4" /> : <IconCopy className="h-4 w-4" />}
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => copy("cmd", cmd)}
+                  aria-label={t`Chép lệnh`}
+                >
+                  {copied === "cmd" ? (
+                    <IconCheck className="h-4 w-4" />
+                  ) : (
+                    <IconCopy className="h-4 w-4" />
+                  )}
                 </Button>
               }
             />
@@ -257,7 +295,12 @@ export function ApiTokenCreatePanel({
               value={scope}
               onChange={(e) => setScope(e.target.value as ApiTokenScope)}
             >
-              {([...(["read", "propose", "write"] as const), ...(fixedClanId ? [] : (["admin"] as const))] as const).map((s) => (
+              {(
+                [
+                  ...(["read", "propose", "write"] as const),
+                  ...(fixedClanId ? [] : (["admin"] as const)),
+                ] as const
+              ).map((s) => (
                 <option key={s} value={s}>
                   {scopeMeta(s).label}
                 </option>
@@ -287,7 +330,14 @@ export function ApiTokenCreatePanel({
             <Button type="button" variant="outline" onClick={close}>
               {t`Hủy`}
             </Button>
-            <Button type="submit" disabled={create.isPending || (!clanId && scope !== "admin") || !name.trim()}>
+            <Button
+              type="submit"
+              disabled={
+                create.isPending ||
+                (!clanId && scope !== "admin") ||
+                !name.trim()
+              }
+            >
               <IconKey className="mr-1.5 h-4 w-4" />
               {create.isPending ? t`Đang tạo…` : t`Tạo token`}
             </Button>
@@ -320,7 +370,8 @@ export function ApiTokenViewPanel({
       toast.success(t`Đã thu hồi token`);
       onClose();
     },
-    onError: (e) => toast.error(t`Không thu hồi được`, { description: friendlyError(e) }),
+    onError: (e) =>
+      toast.error(t`Không thu hồi được`, { description: friendlyError(e) }),
   });
 
   const sc = tk ? scopeMeta(tk.scope) : null;
@@ -331,13 +382,19 @@ export function ApiTokenViewPanel({
         ...(owner
           ? ([
               [t`Chủ token`, owner.user, <IconUser key="u" />],
-              ...(owner.clan ? [[t`Dòng họ`, owner.clan, <IconBuildings key="b" />]] : []),
+              ...(owner.clan
+                ? [[t`Dòng họ`, owner.clan, <IconBuildings key="b" />]]
+                : []),
             ] as Array<[string, string, React.ReactNode]>)
           : []),
         [t`Quyền`, sc!.label, <IconShield key="s" />],
         [t`Ngày tạo`, fmt(tk.created_at), <IconCalendar key="c" />],
         [t`Hết hạn`, fmt(tk.expires_at), <IconClock key="e" />],
-        [t`Dùng gần nhất`, tk.last_used_at ? fmt(tk.last_used_at) : t`chưa dùng`, <IconClock key="l" />],
+        [
+          t`Dùng gần nhất`,
+          tk.last_used_at ? fmt(tk.last_used_at) : t`chưa dùng`,
+          <IconClock key="l" />,
+        ],
       ]
     : [];
 
