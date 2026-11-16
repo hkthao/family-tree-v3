@@ -23,6 +23,46 @@ interface Info {
   error?: string;
 }
 
+/** Máy chủ nhận mã cấp quyền (host của redirect_uri); "" nếu URL hỏng. */
+function hostOf(uri: string): string {
+  try {
+    return new URL(uri).host;
+  } catch {
+    return "";
+  }
+}
+
+/** Khớp đúng host hoặc subdomain của nó. Chỉ liệt kê tên miền riêng của dịch vụ AI — KHÔNG thêm tên miền chung (google.com, github.io…). */
+const KNOWN_AI_HOSTS = [
+  "claude.ai",
+  "claude.com",
+  "anthropic.com",
+  "chatgpt.com",
+  "openai.com",
+  "deepseek.com",
+  "gemini.google.com",
+  "aistudio.google.com",
+  "copilot.microsoft.com",
+  "perplexity.ai",
+  "mistral.ai",
+  "grok.com",
+  "x.ai",
+  "kimi.com",
+  "moonshot.cn",
+  "qwen.ai",
+  "qianwen.com",
+  "doubao.com",
+  "poe.com",
+  "manus.im",
+];
+
+/** Host của ứng dụng AI quen thuộc, hoặc máy của chính người dùng (Claude Code / app máy tính dùng loopback). */
+function isKnownAiHost(hostWithPort: string): boolean {
+  const host = hostWithPort.replace(/:\d+$/, "");
+  if (host === "localhost" || host === "127.0.0.1" || host === "[::1]") return true;
+  return KNOWN_AI_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+}
+
 /** Địa chỉ gốc của máy chủ MCP (nơi có /oauth/*): cùng tên miền với app, hoặc VITE_MCP_URL khi chạy dev. */
 const oauthBase = () => new URL(mcpUrl()).origin;
 
@@ -147,6 +187,8 @@ export default function ConnectAiAuthorize() {
   }
 
   const info = infoQ.data;
+  const redirectHost = hostOf(params.redirect_uri);
+  const knownHost = isKnownAiHost(redirectHost);
   return (
     <div className="min-h-dvh bg-background grid place-items-center px-3 py-5 sm:px-4 sm:py-10">
       <div className="w-full max-w-md space-y-5 rounded-xl border bg-card p-4 shadow-sm sm:p-6">
@@ -173,7 +215,19 @@ export default function ConnectAiAuthorize() {
             <div className="space-y-1 text-center">
               <p className="text-sm text-muted-foreground">{t`Ứng dụng muốn kết nối với gia phả của bạn`}</p>
               <h1 className="text-2xl font-semibold">{info.client_name}</h1>
+              <p className="break-all text-sm text-muted-foreground">
+                {t`Sau khi cho phép, mã cấp quyền được gửi tới:`}{" "}
+                <strong className="text-foreground">{redirectHost || "?"}</strong>
+              </p>
             </div>
+
+            <Alert variant={knownHost ? "default" : "destructive"}>
+              <AlertDescription>
+                {knownHost
+                  ? t`Tên ứng dụng do chính ứng dụng tự khai. Chỉ cho phép nếu bạn vừa tự bấm kết nối từ Claude, ChatGPT hoặc ứng dụng bạn tin.`
+                  : t`Địa chỉ nhận quyền này không thuộc ứng dụng AI quen thuộc (Claude, ChatGPT, DeepSeek, Gemini…). Nếu bạn không tự bắt đầu kết nối này, hoặc nhận đường dẫn từ người khác, hãy bấm Từ chối.`}
+              </AlertDescription>
+            </Alert>
 
             {!clansQ.isLoading &&
             !sysAdminQ.isLoading &&

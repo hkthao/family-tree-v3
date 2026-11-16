@@ -65,13 +65,15 @@ dòng họ (`api_tokens.clan_id` null): mỗi lệnh theo dòng họ truyền th
 - **Tool theo dòng họ** (mọi tool đọc + ghi, kể cả `export_clan_book`) dùng được trên bất kỳ dòng họ, kèm `clan_id`.
   Không dùng được `propose_*` (admin ghi thẳng).
 - **Tool quản trị (`admin_*`):** `platform_stats`, `list_users` / `set_user_limits` / `user_action` (suspend, unsuspend,
-  signout, grant/revoke platform admin, delete), `list_clans` / `set_clan_limits`, `list_contributions` /
+  signout), `list_clans` / `set_clan_limits`, `list_contributions` /
   `review_contribution` (duyệt/từ chối/cần thêm thông tin trên MỌI dòng họ), `list_feedback` / `update_feedback`,
-  `list/create/update/delete_announcement`, `get_settings` / `set_setting`, `list_failed_notifications` /
+  `list/create/update/delete_announcement`, `get_settings` (chỉ đọc), `list_failed_notifications` /
   `clear_failed_notification`, `list_api_tokens` / `revoke_api_token`, `audit_log`.
-- **Chốt an toàn:** xoá tài khoản, khoá, cấp/thu quyền admin, đổi cấu hình, xoá thông báo, thu hồi token đều bắt buộc
-  `confirm: true` + `reason` (5–500 ký tự). Không tự khoá/xoá/hạ quyền chính mình, không thu hồi token đang dùng. Cố ý
-  KHÔNG có tool xoá dòng họ hay xoá sạch danh mục.
+- **Chốt an toàn:** khoá tài khoản, xoá thông báo, thu hồi token bắt buộc
+  `confirm: true` + `reason` (5–500 ký tự). Không tự khoá chính mình, không thu hồi token đang dùng. Cố ý
+  KHÔNG có tool xoá dòng họ, xoá sạch danh mục, xoá tài khoản, cấp/thu quyền admin hệ thống hay đổi cấu hình nền tảng:
+  nội dung do người ngoài nhập (góp ý, đóng góp) có thể cài lệnh điều khiển AI mà `confirm` do chính AI tự điền thì không
+  chặn được — các việc này chỉ làm trong giao diện admin.
 - **Nhật ký:** mọi lệnh của token admin (tool, dòng họ, tham số đã rút gọn, kết quả) ghi vào `mcp_admin_log`; xem bằng
   `admin_audit_log`. Ngoài ra thay đổi dữ liệu gia phả vẫn vào audit theo dòng họ dưới tên chủ token.
 - **Chưa có:** nhập gia phả lịch sử (Gia phả vua chúa), danh mục địa giới, Podcast — các màn này còn là việc chuyên biệt.

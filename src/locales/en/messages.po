@@ -5516,6 +5516,10 @@ msgstr "Connection address"
 msgid "Địa chỉ này dùng cho các bước bên dưới. Thường bạn không cần sửa."
 msgstr "This address is used in the steps below. You normally do not need to change it."
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Địa chỉ nhận quyền này không thuộc ứng dụng AI quen thuộc (Claude, ChatGPT, DeepSeek, Gemini…). Nếu bạn không tự bắt đầu kết nối này, hoặc nhận đường dẫn từ người khác, hãy bấm Từ chối."
+msgstr "This address does not belong to a well-known AI app (Claude, ChatGPT, DeepSeek, Gemini…). If you did not start this connection yourself, or got the link from someone else, choose Deny."
+
 #: src/components/BookTextsSection.tsx
 msgid "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…"
 msgstr "Local history of the homeland; communal houses, pagodas and shrines; markets, ferry landings; traditional trades…"
@@ -11450,6 +11454,10 @@ msgstr "Sort: Name"
 msgid "Sau"
 msgstr "Next"
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Sau khi cho phép, mã cấp quyền được gửi tới:"
+msgstr "After you allow, the authorization code is sent to:"
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "Sau khi lưu, bạn có thể <0>thêm ảnh</0> và <1>ghi âm kể chuyện</1> ở trang chi tiết."
 msgstr "After saving, you can <0>add photos</0> and <1>record stories</1> on the detail page."
@@ -12454,6 +12462,10 @@ msgstr "Tên tự (courtesy name)"
 #: src/pages/clan/EditPerson.tsx
 msgid "Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần."
 msgstr "Courtesy name, taboo name, posthumous name, date of death, birth order, place of birth, burial place, biography. Skip if not needed yet."
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Tên ứng dụng do chính ứng dụng tự khai. Chỉ cho phép nếu bạn vừa tự bấm kết nối từ Claude, ChatGPT hoặc ứng dụng bạn tin."
+msgstr "The app name is self-declared by the app. Only allow if you just started this connection yourself from Claude, ChatGPT or an app you trust."
 
 #: src/components/BookMetaFields.tsx
 msgid "Tên và địa chỉ nhà thờ họ (từ đường)"

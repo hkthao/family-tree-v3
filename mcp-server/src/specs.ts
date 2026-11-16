@@ -498,11 +498,11 @@ export const MCP_ADMIN_TOOLS: McpToolSpec[] = [
     name: "admin_user_action",
     needs: "admin",
     description:
-      "Account action: suspend, unsuspend, signout (drop sessions), grant_platform_admin / revoke_platform_admin, or delete (PERMANENT, removes the account). suspend, delete and the platform-admin actions need confirm=true and a reason. You cannot suspend, delete or demote yourself.",
+      "Account action: suspend, unsuspend or signout (drop sessions). suspend needs confirm=true and a reason; you cannot suspend yourself. Deleting accounts and granting/revoking platform admin are NOT available over MCP — do them in the admin UI.",
     inputSchema: obj(
       {
         user_id: uuidProp("Target user id"),
-        action: { type: "string", enum: ["suspend", "unsuspend", "signout", "grant_platform_admin", "revoke_platform_admin", "delete"] },
+        action: { type: "string", enum: ["suspend", "unsuspend", "signout"] },
         ...dangerous,
       },
       ["user_id", "action"],
@@ -610,12 +610,6 @@ export const MCP_ADMIN_TOOLS: McpToolSpec[] = [
     needs: "admin",
     description: "Platform settings (key/value). Pass key for one value, or omit to list all keys.",
     inputSchema: obj({ key: { type: "string" } }),
-  },
-  {
-    name: "admin_set_setting",
-    needs: "admin",
-    description: "Set a platform setting (value null deletes the value). Changes platform-wide behaviour: confirm=true and a reason are required.",
-    inputSchema: obj({ key: { type: "string" }, value: { type: ["string", "null"] }, ...dangerous }, ["key", "value", "confirm", "reason"]),
   },
   {
     name: "admin_list_failed_notifications",
