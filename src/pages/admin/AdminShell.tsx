@@ -78,6 +78,7 @@ export function AdminShell({
           title={title}
           description={description}
           actions={actions}
+          actionsBelow="mobile"
         />
         {children}
       </main>

@@ -148,8 +148,8 @@ export default function ConnectAiAuthorize() {
 
   const info = infoQ.data;
   return (
-    <div className="min-h-dvh bg-background grid place-items-center px-4 py-10">
-      <div className="w-full max-w-md space-y-5 rounded-xl border bg-card p-6 shadow-sm">
+    <div className="min-h-dvh bg-background grid place-items-center px-3 py-5 sm:px-4 sm:py-10">
+      <div className="w-full max-w-md space-y-5 rounded-xl border bg-card p-4 shadow-sm sm:p-6">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary/10 text-primary">
           <IconShield className="h-7 w-7" />
         </span>

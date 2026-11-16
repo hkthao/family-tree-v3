@@ -33,8 +33,9 @@ export default function AiConnect() {
         icon={<IconSparkles className="h-7 w-7" />}
         title={t`Kết nối AI`}
         description={t`Cho Claude, ChatGPT… tra cứu và cập nhật gia phả bằng đúng quyền của bạn. Xem và thu hồi mọi kết nối của dòng họ.`}
+        actionsBelow="mobile"
         actions={
-          <Button size="sm" variant="outline" onClick={() => setGuide(true)}>
+          <Button variant="outline" onClick={() => setGuide(true)}>
             <IconBook className="mr-1.5 h-4 w-4" />
             {t`Hướng dẫn kết nối`}
           </Button>

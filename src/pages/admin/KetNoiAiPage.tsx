@@ -15,7 +15,7 @@ export default function KetNoiAiPage() {
       title={t`Kết nối AI`}
       description={t`Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu hồi khi nghi bị lộ.`}
       actions={
-        <Button size="sm" variant="outline" onClick={() => setGuide(true)}>
+        <Button variant="outline" onClick={() => setGuide(true)}>
           <IconBook className="mr-1.5 h-4 w-4" />
           {t`Hướng dẫn kết nối`}
         </Button>
