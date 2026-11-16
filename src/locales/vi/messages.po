@@ -13845,6 +13845,11 @@ msgstr "Toàn quyền quản trị nền tảng: mọi dòng họ (đọc + ghi)
 msgid "Toàn quyền quản trị nền tảng.{0}"
 msgstr "Toàn quyền quản trị nền tảng.{0}"
 
+#: src/components/ApiTokensSection.tsx
+#: src/components/ApiTokensSection.tsx
+msgid "Tôi"
+msgstr "Tôi"
+
 #: src/components/ThemeToggle.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Tối"
@@ -13942,8 +13947,8 @@ msgid "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu 
 msgstr "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu hồi khi nghi bị lộ."
 
 #: src/pages/clan/Settings.tsx
-msgid "Token để Claude, ChatGPT… làm việc với gia phả bằng đúng quyền của bạn."
-msgstr "Token để Claude, ChatGPT… làm việc với gia phả bằng đúng quyền của bạn."
+msgid "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; token chỉ hoạt động trong họ này, với quyền của người tạo."
+msgstr "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; token chỉ hoạt động trong họ này, với quyền của người tạo."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token không dùng được"

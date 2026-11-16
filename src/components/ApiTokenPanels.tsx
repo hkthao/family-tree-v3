@@ -54,7 +54,7 @@ export function ApiTokenRow({
   tk: ApiToken;
   onOpen: () => void;
   /** Quản trị hệ thống thấy thêm chủ token và dòng họ. */
-  owner?: { user: string; clan: string };
+  owner?: { user: string; clan?: string };
 }) {
   const sc = scopeMeta(tk.scope);
   const st = statusMeta(tokenStatus(tk));
@@ -74,8 +74,12 @@ export function ApiTokenRow({
             <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-muted-foreground">
               <IconUser className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{owner.user}</span>
-              <IconBuildings className="ml-1 h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{owner.clan}</span>
+              {owner.clan && (
+                <>
+                  <IconBuildings className="ml-1 h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{owner.clan}</span>
+                </>
+              )}
             </p>
           )}
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
@@ -302,7 +306,7 @@ export function ApiTokenViewPanel({
   invalidateKeys,
 }: {
   tk: ApiToken | null;
-  owner?: { user: string; clan: string };
+  owner?: { user: string; clan?: string };
   onClose: () => void;
   invalidateKeys: unknown[][];
 }) {
@@ -327,7 +331,7 @@ export function ApiTokenViewPanel({
         ...(owner
           ? ([
               [t`Chủ token`, owner.user, <IconUser key="u" />],
-              [t`Dòng họ`, owner.clan, <IconBuildings key="b" />],
+              ...(owner.clan ? [[t`Dòng họ`, owner.clan, <IconBuildings key="b" />]] : []),
             ] as Array<[string, string, React.ReactNode]>)
           : []),
         [t`Quyền`, sc!.label, <IconShield key="s" />],

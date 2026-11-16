@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { listClanMembers } from "@/lib/queries/members";
 import { supabase as defaultClient } from "@/lib/supabase";
 
 /**
@@ -68,6 +69,30 @@ export async function listMyApiTokens(
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []) as ApiToken[];
+}
+
+export interface ClanApiToken extends ApiToken {
+  user_id: string;
+  user_name: string;
+}
+
+/** Mọi token của MỘT dòng họ (RLS: admin dòng họ đó hoặc admin hệ thống), kèm tên chủ token. */
+export async function listClanApiTokens(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<ClanApiToken[]> {
+  const { data, error } = await client
+    .from("api_tokens")
+    .select(`${COLS}, user_id`)
+    .eq("clan_id", clanId)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as unknown as Array<ApiToken & { user_id: string }>;
+  // Tên lấy từ danh sách thành viên của họ (profiles bị RLS chặn với admin dòng họ).
+  const members = await listClanMembers(clanId).catch(() => []);
+  const names = new Map(members.map((m) => [m.user_id, m.display_name]));
+  return rows.map((r) => ({ ...r, user_name: names.get(r.user_id) || "—" }));
 }
 
 /** Tạo token; trả về BẢN RÕ để hiện một lần — không lưu và không lấy lại được. */

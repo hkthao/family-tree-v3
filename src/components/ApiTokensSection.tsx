@@ -6,7 +6,7 @@ import { ApiTokenCreatePanel, ApiTokenRow, ApiTokenViewPanel } from "@/component
 import { IconBook, IconKey, IconPlus } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { listMyApiTokens } from "@/lib/queries/api-tokens";
+import { listClanApiTokens } from "@/lib/queries/api-tokens";
 
 import { t } from "@lingui/core/macro";
 
@@ -18,15 +18,14 @@ export function ApiTokensSection({ clanId }: { clanId: string }) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const qc = useQueryClient();
-  const key = ["api-tokens", clanId, userId];
+  const key = ["api-tokens", clanId];
   const [creating, setCreating] = useState(false);
   const [guide, setGuide] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const { data: tokens = [], isLoading } = useQuery({
     queryKey: key,
-    queryFn: () => listMyApiTokens(clanId, userId),
-    enabled: !!userId,
+    queryFn: () => listClanApiTokens(clanId),
   });
   const open = tokens.find((x) => x.id === openId) ?? null;
 
@@ -42,7 +41,7 @@ export function ApiTokensSection({ clanId }: { clanId: string }) {
       ) : (
         <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
           {tokens.map((tk) => (
-            <ApiTokenRow key={tk.id} tk={tk} onOpen={() => setOpenId(tk.id)} />
+            <ApiTokenRow key={tk.id} tk={tk} owner={{ user: tk.user_id === userId ? t`Tôi` : tk.user_name }} onOpen={() => setOpenId(tk.id)} />
           ))}
         </ul>
       )}
@@ -68,6 +67,7 @@ export function ApiTokensSection({ clanId }: { clanId: string }) {
       />
       <ApiTokenViewPanel
         tk={open}
+        owner={open ? { user: open.user_id === userId ? t`Tôi` : open.user_name } : undefined}
         onClose={() => setOpenId(null)}
         invalidateKeys={[key, ["admin-api-tokens"]]}
       />
