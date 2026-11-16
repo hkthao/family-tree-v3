@@ -3,6 +3,7 @@ import { useState } from "react";
 import { IconCheck, IconCopy } from "@/components/icons";
 import { SidePanel } from "@/components/SidePanel";
 import { SegmentedButton, SegmentedControl } from "@/components/ui/segmented-control";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import { mcpUrl } from "@/lib/queries/api-tokens";
 
 import { t } from "@lingui/core/macro";
 
-type Client = "claude-code" | "claude-desktop" | "chatgpt" | "other";
+type Client = "claude" | "chatgpt" | "claude-code" | "other";
 
 function Code({ text }: { text: string }) {
   const [done, setDone] = useState(false);
@@ -55,41 +56,26 @@ function Step({ n, title, children }: { n: number; title: string; children?: Rea
 
 const P = ({ children }: { children: React.ReactNode }) => <p className="text-sm text-muted-foreground">{children}</p>;
 
-/** Ngăn kéo hướng dẫn nối từng loại AI (Claude Code, Claude Desktop, ChatGPT, công cụ khác) với server MCP. */
+/** Ngăn kéo hướng dẫn người dùng nối từng ứng dụng AI (Claude, ChatGPT, Claude Code, khác) với gia phả. */
 export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean; onClose: () => void; admin?: boolean }) {
-  const [client, setClient] = useState<Client>("claude-code");
+  const [client, setClient] = useState<Client>("claude");
   const [custom, setCustom] = useState("");
   const url = custom.trim().replace(/\/+$/, "") || mcpUrl();
   const local = /^https?:\/\/(localhost|127\.|\[::1\])/.test(url);
   const tok = "<TOKEN>";
 
-  const desktopCfg = JSON.stringify(
-    {
-      mcpServers: {
-        "dong-ho-viet": {
-          command: "npx",
-          args: ["-y", "mcp-remote", url, "--header", "Authorization:${AUTH}"],
-          env: { AUTH: `Bearer ${tok}` },
-        },
-      },
-    },
-    null,
-    2,
-  );
-  const curl = `curl -s ${url} \\\n  -H "Authorization: Bearer ${tok}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`;
-
   return (
-    <SidePanel open={open} title={t`Hướng dẫn kết nối AI`} subtitle={t`Chọn loại AI bạn đang dùng`} onClose={onClose} size="lg">
+    <SidePanel open={open} title={t`Hướng dẫn kết nối AI`} subtitle={t`Chọn ứng dụng AI bạn đang dùng`} onClose={onClose} size="lg">
       <div className="space-y-5">
-        <SegmentedControl ariaLabel={t`Loại AI`} className="w-fit max-w-full self-start overflow-x-auto">
-          <SegmentedButton active={client === "claude-code"} onClick={() => setClient("claude-code")}>Claude Code</SegmentedButton>
-          <SegmentedButton active={client === "claude-desktop"} onClick={() => setClient("claude-desktop")}>Claude Desktop</SegmentedButton>
+        <SegmentedControl ariaLabel={t`Ứng dụng AI`} className="w-fit max-w-full self-start overflow-x-auto">
+          <SegmentedButton active={client === "claude"} onClick={() => setClient("claude")}>Claude</SegmentedButton>
           <SegmentedButton active={client === "chatgpt"} onClick={() => setClient("chatgpt")}>ChatGPT</SegmentedButton>
+          <SegmentedButton active={client === "claude-code"} onClick={() => setClient("claude-code")}>Claude Code</SegmentedButton>
           <SegmentedButton active={client === "other"} onClick={() => setClient("other")}>{t`Khác`}</SegmentedButton>
         </SegmentedControl>
 
         <div className="space-y-1.5">
-          <Label htmlFor="mcp-url">{t`Địa chỉ máy chủ MCP`}</Label>
+          <Label htmlFor="mcp-url">{t`Địa chỉ kết nối`}</Label>
           <Input
             id="mcp-url"
             className="font-mono text-xs"
@@ -102,68 +88,72 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
           />
           <P>
             {local
-              ? t`Đang là địa chỉ máy bạn (localhost), AI bên ngoài không truy cập được. Sửa thành địa chỉ công khai của máy chủ MCP rồi chép lệnh bên dưới.`
-              : t`Mặc định theo tên miền bạn đang dùng. Sửa lại nếu máy chủ MCP nằm ở địa chỉ khác; các lệnh bên dưới đổi theo.`}
+              ? t`Đây là địa chỉ máy bạn (localhost), ứng dụng AI trên mạng không truy cập được. Hãy sửa thành địa chỉ công khai của hệ thống.`
+              : t`Địa chỉ này dùng cho các bước bên dưới. Thường bạn không cần sửa.`}
           </P>
         </div>
 
-        <P>
-          {t`Cả bốn cách đều cần token: bấm nút "+" để tạo, chép token ngay (chỉ hiện một lần), rồi thay ${tok} trong các lệnh dưới đây.`}
-        </P>
+        <Alert>
+          <AlertDescription>
+            {t`Trước hết bấm nút "+" để tạo token và chép lại ngay (chỉ hiện một lần). Ở các bước dưới, ${tok} là token đó.`}
+          </AlertDescription>
+        </Alert>
 
-        {client === "claude-code" && (
+        {client === "claude" && (
           <ol className="space-y-4">
-            <Step n={1} title={t`Mở terminal, chạy một lần`}>
-              <Code text={`claude mcp add --transport http dong-ho-viet ${url} --header "Authorization: Bearer ${tok}"`} />
-              <P>{t`Thêm cờ --scope user nếu muốn dùng ở mọi thư mục.`}</P>
+            <Step n={1} title={t`Mở Claude (claude.ai hoặc ứng dụng máy tính) → Customize → Connectors`} />
+            <Step n={2} title={t`Bấm Add → đưa chuột vào Custom → chọn Web`} />
+            <Step n={3} title={t`Đặt tên và dán địa chỉ kết nối, bấm Continue`}>
+              <Code text={url} />
             </Step>
-            <Step n={2} title={t`Khởi động lại Claude Code rồi kiểm tra`}>
-              <Code text="/mcp" />
-              <P>{t`Thấy dong-ho-viet ở trạng thái connected là xong.`}</P>
+            <Step n={4} title={t`Ở mục Authentication chọn "No sign in"`}>
+              <P>{t`Hệ thống dùng token riêng nên không cần đăng nhập ở bước này.`}</P>
             </Step>
-          </ol>
-        )}
-
-        {client === "claude-desktop" && (
-          <ol className="space-y-4">
-            <Step n={1} title={t`Cài Node.js (để chạy cầu nối mcp-remote)`}>
-              <P>{t`Tải ở nodejs.org, bản LTS. Máy đã có Node thì bỏ qua bước này.`}</P>
+            <Step n={5} title={t`Ở mục Request headers, thêm một dòng`}>
+              <Code text={`Authorization: Bearer ${tok}`} />
+              <P>{t`Tên là Authorization, giá trị là chữ Bearer, một dấu cách, rồi token của bạn.`}</P>
             </Step>
-            <Step n={2} title={t`Mở Claude Desktop → Settings → Developer → Edit Config`}>
-              <P>{t`Dán đoạn sau vào file claude_desktop_config.json (gộp vào mục mcpServers nếu đã có).`}</P>
-              <Code text={desktopCfg} />
-            </Step>
-            <Step n={3} title={t`Thoát hẳn rồi mở lại Claude Desktop`}>
-              <P>{t`Biểu tượng công cụ ở ô chat sẽ liệt kê các tool của dong-ho-viet.`}</P>
+            <Step n={6} title={t`Bấm Add để hoàn tất`} />
+            <Step n={7} title={t`Dùng trong cuộc trò chuyện`}>
+              <P>{t`Bấm "+" ở góc dưới bên trái ô chat (hoặc gõ "/"), chọn Connectors rồi bật kết nối vừa thêm.`}</P>
             </Step>
           </ol>
         )}
 
         {client === "chatgpt" && (
           <ol className="space-y-4">
-            <Step n={1} title={t`Bật chế độ nhà phát triển`}>
-              <P>{t`ChatGPT → Settings → Connectors → Advanced → Developer mode (cần gói trả phí hỗ trợ MCP tuỳ chỉnh).`}</P>
-            </Step>
-            <Step n={2} title={t`Thêm máy chủ MCP`}>
-              <P>{t`Chọn tạo connector mới, nhập địa chỉ:`}</P>
+            <Step n={1} title={t`Mở ChatGPT trên web → Plugins (chatgpt.com/plugins)`} />
+            <Step n={2} title={t`Bấm nút "+" → Add custom MCP server`} />
+            <Step n={3} title={t`Nhập tên, rồi dán địa chỉ kết nối vào ô Server URL`}>
               <Code text={url} />
             </Step>
-            <Step n={3} title={t`Xác thực bằng token`}>
-              <P>{t`Nếu giao diện cho nhập header, đặt Authorization = Bearer <token>. Nếu ChatGPT chỉ cho OAuth hoặc không xác thực thì chưa nối thẳng được; dùng Claude Code/Desktop hoặc cách "Khác".`}</P>
-              <Code text={`Authorization: Bearer ${tok}`} />
+            <Step n={4} title={t`Chọn kiểu xác thực`}>
+              <P>{t`ChatGPT hiện chỉ có ba lựa chọn: OAuth, No authentication, hoặc OAuth or no authentication. Chưa có ô nhập token (Bearer) nên ChatGPT chưa kết nối trực tiếp được với token của hệ thống này.`}</P>
+              <P>{t`Nếu cần dùng ngay, hãy chọn tab Claude. Khi ChatGPT bổ sung ô nhập header, làm theo các bước tương tự tab Claude.`}</P>
+            </Step>
+          </ol>
+        )}
+
+        {client === "claude-code" && (
+          <ol className="space-y-4">
+            <Step n={1} title={t`Dành cho người dùng Claude Code (công cụ dòng lệnh)`}>
+              <P>{t`Mở terminal và chạy một lần:`}</P>
+              <Code text={`claude mcp add --transport http dong-ho-viet ${url} --header "Authorization: Bearer ${tok}"`} />
+            </Step>
+            <Step n={2} title={t`Khởi động lại Claude Code, gõ /mcp để kiểm tra`}>
+              <P>{t`Thấy dong-ho-viet ở trạng thái connected là xong.`}</P>
             </Step>
           </ol>
         )}
 
         {client === "other" && (
           <ol className="space-y-4">
-            <Step n={1} title={t`Client MCP bất kỳ hỗ trợ HTTP`}>
-              <P>{t`Địa chỉ và header cần nhập:`}</P>
+            <Step n={1} title={t`Ứng dụng AI khác có hỗ trợ MCP từ xa`}>
+              <P>{t`Tìm mục thêm máy chủ / connector MCP tuỳ chỉnh và nhập hai thông tin:`}</P>
               <Code text={`${url}\nAuthorization: Bearer ${tok}`} />
             </Step>
-            <Step n={2} title={t`Thử bằng curl hoặc script`}>
-              <Code text={curl} />
-              <P>{t`Giao thức JSON-RPC 2.0 qua POST; trả danh sách tool theo quyền của token.`}</P>
+            <Step n={2} title={t`Nếu chỉ có OAuth hoặc không có ô nhập header`}>
+              <P>{t`Ứng dụng đó chưa kết nối được. Hãy dùng Claude.`}</P>
             </Step>
           </ol>
         )}
