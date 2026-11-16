@@ -3,9 +3,9 @@
  *
  * Vẫn chạy bằng JWT của chủ token — một admin hệ thống thật — nên RLS cho phép đúng những gì admin UI làm được; không có
  * quyền nào "lớn hơn" app. Quy ước an toàn:
- *  - thao tác không hoàn tác / ảnh hưởng toàn nền tảng (xoá tài khoản, khoá, cấp-thu quyền admin, đổi cấu hình, xoá tin,
- *    thu hồi token) bắt buộc `confirm: true` + `reason` (≥ 5 ký tự); lý do được ghi vào `mcp_admin_log`;
- *  - không tự khoá / xoá / hạ quyền chính mình, không thu hồi token đang dùng;
+ *  - thao tác không hoàn tác / ảnh hưởng toàn nền tảng (khoá tài khoản, xoá tin, thu hồi token) bắt buộc `confirm: true` + `reason` (≥ 5 ký tự); lý do được ghi vào `mcp_admin_log`;
+ *  - không có xoá tài khoản, cấp/thu quyền admin hệ thống, đổi cấu hình nền tảng: các việc này chỉ làm trong giao diện admin;
+ *  - không tự khoá chính mình, không thu hồi token đang dùng;
  *  - không có tool xoá dòng họ hay xoá sạch danh mục: app cũng không cho admin làm việc đó bằng một cú bấm.
  */
 
@@ -104,24 +104,22 @@ export async function setUserLimits(c: AdminCtx, a: Args): Promise<string> {
   return data?.length ? `Đã đặt tối đa ${a.max_clans} dòng họ cho tài khoản.` : "Không tìm thấy tài khoản.";
 }
 
-const USER_ACTIONS = ["suspend", "unsuspend", "signout", "grant_platform_admin", "revoke_platform_admin", "delete"] as const;
-const NEEDS_CONFIRM = new Set(["suspend", "grant_platform_admin", "revoke_platform_admin", "delete"]);
+// Xoá tài khoản và cấp/thu quyền admin hệ thống CỐ Ý không có qua MCP: nội dung do người ngoài nhập (góp ý, đóng góp)
+// có thể cài lệnh điều khiển AI, mà `confirm` do chính AI tự điền nên không chặn được. Làm trong giao diện admin.
+const USER_ACTIONS = ["suspend", "unsuspend", "signout"] as const;
+const NEEDS_CONFIRM = new Set(["suspend"]);
 
 export async function userAction(c: AdminCtx, a: Args): Promise<string> {
   const id = uuid(a.user_id, "user_id");
   const action = String(a.action);
   if (!(USER_ACTIONS as readonly string[]).includes(action)) throw new UserError(`action phải là: ${USER_ACTIONS.join(", ")}.`);
   if (NEEDS_CONFIRM.has(action)) requireConfirm(a);
-  if (id === c.userId && ["suspend", "delete", "revoke_platform_admin"].includes(action)) {
-    throw new UserError("Không tự khoá / xoá / hạ quyền chính mình qua token này.");
-  }
+  if (id === c.userId && action === "suspend") throw new UserError("Không tự khoá chính mình qua token này.");
   const { data: target } = await c.db.from("profiles").select("display_name").eq("id", id).maybeSingle();
   if (!target) throw new UserError("Không tìm thấy tài khoản.");
 
   // Gọi chính edge function mà admin UI dùng (nó kiểm lại JWT là admin hệ thống rồi mới dùng service role).
-  const body: Record<string, unknown> = { action: action === "revoke_platform_admin" ? "grant_platform_admin" : action, target_user_id: id };
-  if (action === "grant_platform_admin") body.grant = true;
-  if (action === "revoke_platform_admin") body.grant = false;
+  const body: Record<string, unknown> = { action, target_user_id: id };
   const res = await fetch(`${c.supabaseUrl}/functions/v1/admin-action`, {
     method: "POST",
     headers: { Authorization: `Bearer ${await c.mintJwt()}`, apikey: c.anonKey, "Content-Type": "application/json" },
@@ -134,9 +132,6 @@ export async function userAction(c: AdminCtx, a: Args): Promise<string> {
     suspend: `Đã khoá tài khoản ${who} và đăng xuất mọi phiên.`,
     unsuspend: `Đã mở khoá tài khoản ${who}.`,
     signout: `Đã đăng xuất mọi phiên của ${who}.`,
-    grant_platform_admin: `Đã cấp quyền admin hệ thống cho ${who}.`,
-    revoke_platform_admin: `Đã thu quyền admin hệ thống của ${who}.`,
-    delete: `Đã XOÁ tài khoản ${who} (không hoàn tác).`,
   }[action]!;
 }
 
@@ -322,17 +317,6 @@ export async function getSettings(c: AdminCtx, a: Args): Promise<string> {
   return data.map((r) => `${r.key} = ${r.value === null ? "(trống)" : String(r.value).length > 160 ? `${String(r.value).slice(0, 160)}…` : r.value}`).join("\n");
 }
 
-export async function setSetting(c: AdminCtx, a: Args): Promise<string> {
-  requireConfirm(a);
-  const key = typeof a.key === "string" ? a.key.trim() : "";
-  if (!/^[a-z0-9_.-]{1,100}$/i.test(key)) throw new UserError("key không hợp lệ (chữ, số, _ . -; tối đa 100).");
-  const value = a.value === null ? null : typeof a.value === "string" && a.value.length <= 20000 ? a.value : undefined;
-  if (value === undefined) throw new UserError("value phải là chuỗi (≤ 20000 ký tự) hoặc null.");
-  const { error } = await c.db.from("platform_settings").upsert({ key, value, updated_at: new Date().toISOString() });
-  if (error) throw new UserError(error.message);
-  return `Đã đặt ${key}.`;
-}
-
 // ─── Token MCP ───────────────────────────────────────────────────────────
 
 export async function listApiTokens(c: AdminCtx): Promise<string> {
@@ -390,7 +374,6 @@ export const ADMIN_OPS: Record<string, (c: AdminCtx, a: Args) => Promise<string>
   admin_update_announcement: updateAnnouncement,
   admin_delete_announcement: deleteAnnouncement,
   admin_get_settings: getSettings,
-  admin_set_setting: setSetting,
   admin_list_failed_notifications: (c) => listFailedNotifications(c),
   admin_clear_failed_notification: clearFailedNotification,
   admin_list_api_tokens: (c) => listApiTokens(c),

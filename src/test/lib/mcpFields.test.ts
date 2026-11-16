@@ -133,14 +133,21 @@ describe("token admin hệ thống", () => {
     expect(new Set(names).size).toBe(names.length);
   });
   it("tool nguy hiểm bắt buộc confirm + reason trong schema", () => {
-    for (const n of ["admin_delete_announcement", "admin_set_setting", "admin_revoke_api_token"]) {
+    for (const n of ["admin_delete_announcement", "admin_revoke_api_token"]) {
       const t = MCP_ADMIN_TOOLS.find((x) => x.name === n)!;
       expect(t.inputSchema.required).toEqual(expect.arrayContaining(["confirm", "reason"]));
     }
     const ua = MCP_ADMIN_TOOLS.find((x) => x.name === "admin_user_action")!;
-    expect((ua.inputSchema.properties as any).action.enum).toContain("delete");
+    expect((ua.inputSchema.properties as any).action.enum).toEqual(["suspend", "unsuspend", "signout"]);
     expect(ua.inputSchema.properties).toHaveProperty("confirm");
     expect(ua.inputSchema.properties).toHaveProperty("reason");
+  });
+  it("không có tool đổi cấu hình nền tảng hay xoá tài khoản / cấp quyền admin (chống prompt injection)", () => {
+    const names = MCP_ADMIN_TOOLS.map((t) => t.name);
+    expect(names).not.toContain("admin_set_setting");
+    const ua = MCP_ADMIN_TOOLS.find((x) => x.name === "admin_user_action")!;
+    const actions = (ua.inputSchema.properties as any).action.enum as string[];
+    for (const bad of ["delete", "grant_platform_admin", "revoke_platform_admin"]) expect(actions).not.toContain(bad);
   });
   it("không có tool xoá dòng họ / xoá sạch danh mục", () => {
     const names = MCP_ADMIN_TOOLS.map((t) => t.name).join(" ");

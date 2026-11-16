@@ -5516,6 +5516,10 @@ msgstr "Địa chỉ kết nối"
 msgid "Địa chỉ này dùng cho các bước bên dưới. Thường bạn không cần sửa."
 msgstr "Địa chỉ này dùng cho các bước bên dưới. Thường bạn không cần sửa."
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Địa chỉ nhận quyền này không thuộc ứng dụng AI quen thuộc (Claude, ChatGPT, DeepSeek, Gemini…). Nếu bạn không tự bắt đầu kết nối này, hoặc nhận đường dẫn từ người khác, hãy bấm Từ chối."
+msgstr "Địa chỉ nhận quyền này không thuộc ứng dụng AI quen thuộc (Claude, ChatGPT, DeepSeek, Gemini…). Nếu bạn không tự bắt đầu kết nối này, hoặc nhận đường dẫn từ người khác, hãy bấm Từ chối."
+
 #: src/components/BookTextsSection.tsx
 msgid "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…"
 msgstr "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…"
@@ -11450,6 +11454,10 @@ msgstr "Sắp: Tên"
 msgid "Sau"
 msgstr "Sau"
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Sau khi cho phép, mã cấp quyền được gửi tới:"
+msgstr "Sau khi cho phép, mã cấp quyền được gửi tới:"
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "Sau khi lưu, bạn có thể <0>thêm ảnh</0> và <1>ghi âm kể chuyện</1> ở trang chi tiết."
 msgstr "Sau khi lưu, bạn có thể <0>thêm ảnh</0> và <1>ghi âm kể chuyện</1> ở trang chi tiết."
@@ -12454,6 +12462,10 @@ msgstr "Tên tự"
 #: src/pages/clan/EditPerson.tsx
 msgid "Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần."
 msgstr "Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần."
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Tên ứng dụng do chính ứng dụng tự khai. Chỉ cho phép nếu bạn vừa tự bấm kết nối từ Claude, ChatGPT hoặc ứng dụng bạn tin."
+msgstr "Tên ứng dụng do chính ứng dụng tự khai. Chỉ cho phép nếu bạn vừa tự bấm kết nối từ Claude, ChatGPT hoặc ứng dụng bạn tin."
 
 #: src/components/BookMetaFields.tsx
 msgid "Tên và địa chỉ nhà thờ họ (từ đường)"
