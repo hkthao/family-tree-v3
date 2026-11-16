@@ -6,8 +6,11 @@ dist
 dev-dist
 videos
 backups-oldapp
-public
-src
+public/*
+!public/fonts
+!public/avatars
+!public/watermarks
+!public/icons
 docs
 landing
 zalo

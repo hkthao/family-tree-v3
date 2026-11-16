@@ -21,8 +21,11 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import { CORS, json } from "../../supabase/functions/_shared/cors.ts";
 import { runTool } from "./tools.ts";
+import { UserError } from "./fields.ts";
+import { OPS } from "./ops.ts";
 import { MAX_NAME, UUID_RE, validateChanges, validateNewPerson, validateNote } from "./proposals.ts";
-import { MCP_TOOLS, scopeAllows, type Scope } from "./specs.ts";
+import { ADMIN_OPS, type AdminCtx } from "./admin.ts";
+import { MCP_TOOLS, scopeAllows, toolsForScope, type Scope } from "./specs.ts";
 
 const env = (k: string): string | undefined => process.env[k];
 
@@ -33,18 +36,18 @@ const JWT_SECRET =
   env("JWT_SECRET") ?? "";
 
 const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
-const SERVER_INFO = { name: "dong-ho-viet", version: "1.0.0" };
+const SERVER_INFO = { name: "dong-ho-viet", version: "3.0.0" };
 
 const TOKEN_RE = /^gpt_[A-Za-z0-9_-]{32,96}$/;
 
-/** Trần chống vòng lặp: 60 lệnh/phút/token (bộ nhớ tiến trình; một server nên đếm chính xác — đủ để chặn script chạy bậy). */
-const RATE_PER_MIN = 60;
+/** Trần chống vòng lặp: 120 lệnh/phút/token (bộ nhớ tiến trình; một server nên đếm chính xác — đủ để chặn script chạy bậy). */
+const RATE_PER_MIN = 120;
 /** Trần đề xuất đang chờ của một người — tránh đổ đầy hàng chờ của admin. */
 const MAX_PENDING_PER_USER = 30;
 const hits = new Map<string, number[]>();
 
 /** Service role: CHỈ để tra token, vai trò, hồ sơ. Không đụng dữ liệu gia phả. */
-const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
+export const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
@@ -72,8 +75,12 @@ interface Auth {
   clanId: string;
   scope: Scope;
   tokenName: string;
+  /** JWT ngắn hạn mới của chủ token — chỉ dùng để gọi edge function (admin-action). */
+  mintJwt: () => Promise<string>;
   /** Client mang danh tính chủ token — mọi dữ liệu gia phả đi qua đây (RLS áp dụng). */
   db: SupabaseClient;
+  /** Client mới với JWT mới, cho thao tác chạy quá vài chục giây. */
+  fresh: () => Promise<SupabaseClient>;
 }
 
 async function sha256Hex(s: string): Promise<string> {
@@ -103,27 +110,33 @@ async function authenticate(req: Request): Promise<Auth | Response> {
     return unauthorized("Token không còn hiệu lực (đã thu hồi hoặc hết hạn).");
   }
 
+  const isAdminToken = row.scope === "admin";
   const [{ data: member }, { data: profile }] = await Promise.all([
-    admin.from("clan_members").select("role").eq("clan_id", row.clan_id).eq("user_id", row.user_id).maybeSingle(),
+    isAdminToken
+      ? Promise.resolve({ data: null })
+      : admin.from("clan_members").select("role").eq("clan_id", row.clan_id).eq("user_id", row.user_id).maybeSingle(),
     admin.from("profiles").select("is_suspended, is_platform_admin").eq("id", row.user_id).maybeSingle(),
   ]);
-  // Admin hệ thống không cần là thành viên (token do họ tạo cho dòng họ bất kỳ).
   const sysAdmin = !!profile?.is_platform_admin;
-  if ((!member && !sysAdmin) || profile?.is_suspended) {
-    return unauthorized("Người tạo token không còn là thành viên dòng họ.");
-  }
+  if (profile?.is_suspended) return unauthorized("Tài khoản của người tạo token đang bị khoá.");
+  // Token admin: sống chừng nào chủ token CÒN là admin hệ thống — bị gỡ quyền là chết ngay ở lượt gọi kế tiếp.
+  if (isAdminToken && !sysAdmin) return unauthorized("Người tạo token không còn là admin hệ thống.");
+  // Admin hệ thống không cần là thành viên (token do họ tạo cho dòng họ bất kỳ).
+  if (!isAdminToken && !member && !sysAdmin) return unauthorized("Người tạo token không còn là thành viên dòng họ.");
   // Quyền thật = min(gói, vai trò hiện tại). Ghi thẳng cần là editor/admin (hoặc admin hệ
   // thống); người đã bị hạ xuống viewer chỉ còn đọc. RLS vẫn là lớp chặn cuối cùng.
   const canEdit = sysAdmin || member?.role === "admin" || member?.role === "editor";
   const stored = row.scope as Scope;
-  const scope: Scope = stored !== "read" && !canEdit ? "read" : stored;
+  const scope: Scope = isAdminToken ? "admin" : stored !== "read" && !canEdit ? "read" : stored;
 
-  let db: SupabaseClient;
-  try {
-    db = createClient(SUPABASE_URL, ANON_KEY, {
+  const fresh = async (): Promise<SupabaseClient> =>
+    createClient(SUPABASE_URL, ANON_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: { headers: { Authorization: `Bearer ${await mintUserJwt(row.user_id as string)}` } },
     });
+  let db: SupabaseClient;
+  try {
+    db = await fresh();
   } catch (e) {
     return json({ error: (e as Error).message }, { status: 500 });
   }
@@ -131,7 +144,16 @@ async function authenticate(req: Request): Promise<Auth | Response> {
   // Ghi mốc dùng gần nhất; lỗi ở đây không được chặn lượt gọi.
   void admin.from("api_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", row.id);
 
-  return { tokenId: row.id as string, userId: row.user_id as string, clanId: row.clan_id as string, scope, tokenName: row.name as string, db };
+  return {
+    tokenId: row.id as string,
+    userId: row.user_id as string,
+    clanId: (row.clan_id as string | null) ?? "", // token admin không gắn dòng họ: mỗi lệnh tự truyền clan_id
+    scope,
+    tokenName: row.name as string,
+    db,
+    fresh,
+    mintJwt: () => mintUserJwt(row.user_id as string),
+  };
 }
 
 function unauthorized(message: string): Response {
@@ -142,8 +164,11 @@ function unauthorized(message: string): Response {
 
 const PERSON_DETAIL_COLS =
   "id, full_name, courtesy_name, posthumous_name, nickname, gender, is_living, generation, " +
-  "birth_date, death_date, birth_place, burial_place, bio, " +
-  "death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap, birth_family_id";
+  "birth_date, birth_date_precision, death_date, death_date_precision, birth_place, burial_place, bio, " +
+  "birth_lunar_year, birth_lunar_month, birth_lunar_day, birth_lunar_is_leap, " +
+  "death_lunar_year, death_lunar_month, death_lunar_day, death_lunar_is_leap, " +
+  "death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap, " +
+  "birth_order, lifespan_years, branch_id, photo_path, birth_family_id";
 
 async function getPersonDetail(a: Auth, id: string): Promise<string> {
   if (!UUID_RE.test(id)) return "person_id không hợp lệ — lấy id từ search_person.";
@@ -157,7 +182,8 @@ async function getPersonDetail(a: Auth, id: string): Promise<string> {
   if (error) throw new Error(error.message);
   if (!p) return "Không tìm thấy người này.";
   const rec = p as unknown as Record<string, unknown>;
-  const { birth_family_id: _omit, ...rest } = rec;
+  const { birth_family_id: _omit, photo_path, ...rest } = rec;
+  if (photo_path) (rest as Record<string, unknown>).has_photo = true;
   return JSON.stringify(
     Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== null && v !== "")),
     null,
@@ -300,139 +326,64 @@ async function listProposals(a: Auth, status: unknown): Promise<string> {
     .join("\n");
 }
 
-// ─── Tool ghi thẳng (gói write) ────────────────────────────────────────────────
-// Chạy bằng JWT của chủ token: RLS quyết định ai được sửa/xoá gì. Hàng bị RLS chặn trả về
-// 0 dòng (không báo lỗi) nên mọi lệnh ghi đều `.select("id")` để biết có thật sự ghi không.
-
-const DENIED = "Không ghi được: không tìm thấy người này, hoặc chủ token không đủ quyền với thao tác này.";
-
-async function createPerson(a: Auth, v: Record<string, unknown>): Promise<string> {
-  const rel = v.relation as { as: "child" | "spouse"; of_person_id: string } | undefined;
-  const { relation: _r, ...fields } = v;
-  const row: Record<string, unknown> = { ...fields, clan_id: a.clanId };
-
-  let relatedGender: string | null = null;
-  if (rel) {
-    const { data: rp } = await a.db
-      .from("persons")
-      .select("id, gender")
-      .eq("clan_id", a.clanId)
-      .eq("id", rel.of_person_id)
-      .is("deleted_at", null)
-      .maybeSingle();
-    if (!rp) return "relation_of_person_id không thuộc dòng họ này.";
-    relatedGender = rp.gender as string;
-
-    if (rel.as === "child") {
-      // Cùng cách apply_contribution/app làm: dùng gia đình đầu tiên của người đó, chưa có thì tạo.
-      const { data: fam } = await a.db
-        .from("families")
-        .select("id")
-        .eq("clan_id", a.clanId)
-        .or(`husband_id.eq.${rel.of_person_id},wife_id.eq.${rel.of_person_id}`)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      let famId = fam?.id as string | undefined;
-      if (!famId) {
-        const { data: nf, error } = await a.db
-          .from("families")
-          .insert({
-            clan_id: a.clanId,
-            husband_id: relatedGender === "M" ? rel.of_person_id : null,
-            wife_id: relatedGender === "F" ? rel.of_person_id : null,
-            union_type: "marriage",
-          })
-          .select("id")
-          .single();
-        if (error) throw new Error(error.message);
-        famId = nf.id as string;
-      }
-      row.birth_family_id = famId;
-    } else if (relatedGender === row.gender) {
-      return "Hai người cùng giới tính — app chưa hỗ trợ ghép vợ/chồng cùng giới.";
-    }
-  }
-
-  const { data: created, error } = await a.db.from("persons").insert(row).select("id").single();
-  if (error) throw new Error(error.message);
-
-  if (rel?.as === "spouse") {
-    const newIsMale = row.gender === "M";
-    const { error: fe } = await a.db.from("families").insert({
-      clan_id: a.clanId,
-      husband_id: newIsMale ? created.id : rel.of_person_id,
-      wife_id: newIsMale ? rel.of_person_id : created.id,
-      union_type: "marriage",
-    });
-    if (fe) {
-      await a.db.from("persons").delete().eq("id", created.id); // trigger → xoá mềm, không để người mồ côi
-      throw new Error(fe.message);
-    }
-  }
-  return `Đã thêm ${row.full_name} (id ${created.id}).`;
-}
-
-async function updatePerson(a: Auth, id: string, changes: Record<string, unknown>): Promise<string> {
-  const { data, error } = await a.db
-    .from("persons")
-    .update(changes)
-    .eq("clan_id", a.clanId)
-    .eq("id", id)
-    .is("deleted_at", null)
-    .select("id");
-  if (error) throw new Error(error.message);
-  return data?.length ? `Đã cập nhật ${Object.keys(changes).join(", ")}.` : DENIED;
-}
-
-async function appendNote(a: Auth, id: string, note: string): Promise<string> {
-  const { data: p } = await a.db
-    .from("persons")
-    .select("bio")
-    .eq("clan_id", a.clanId)
-    .eq("id", id)
-    .is("deleted_at", null)
-    .maybeSingle();
-  if (!p) return DENIED;
-  const bio = p.bio ? `${p.bio}\n\n${note}` : note;
-  return await updatePerson(a, id, { bio });
-}
-
-async function deletePerson(a: Auth, id: string): Promise<string> {
-  // BẮT BUỘC lọc deleted_at is null: trigger xoá mềm chỉ chặn khi dòng chưa bị xoá; gọi lần
-  // hai lên dòng đã xoá mềm sẽ XOÁ CỨNG nó.
-  const { data: before } = await a.db
-    .from("persons")
-    .select("deleted_at")
-    .eq("clan_id", a.clanId)
-    .eq("id", id)
-    .maybeSingle();
-  if (!before) return DENIED;
-  if (before.deleted_at) return "Người này đã được xoá trước đó.";
-  const { error } = await a.db
-    .from("persons")
-    .delete()
-    .eq("clan_id", a.clanId)
-    .eq("id", id)
-    .is("deleted_at", null);
-  if (error) throw new Error(error.message);
-  // Xoá mềm = trigger huỷ DELETE và UPDATE deleted_at, nên RETURNING luôn rỗng: không dựa vào
-  // số dòng trả về mà đọc lại trạng thái. RLS chặn thì dòng vẫn còn nguyên (deleted_at null).
-  const { data } = await a.db
-    .from("persons")
-    .select("deleted_at")
-    .eq("clan_id", a.clanId)
-    .eq("id", id)
-    .maybeSingle();
-  return data?.deleted_at
-    ? "Đã xoá (xoá mềm — khôi phục được từ nhật ký thay đổi trong app)."
-    : DENIED;
-}
-
 // ─── Điều phối ───────────────────────────────────────────────────────────────
 
+/** Bỏ dữ liệu to / nhạy khỏi tham số trước khi ghi nhật ký. */
+function logArgs(args: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(args)) {
+    if (k === "image_base64") out[k] = `[base64 ${String(v).length} ký tự]`;
+    else out[k] = typeof v === "string" && v.length > 500 ? `${v.slice(0, 500)}…` : v;
+  }
+  return out;
+}
+
+/** Token admin: tool quản trị hệ thống, hoặc tool theo dòng họ kèm `clan_id`. Mọi lệnh đều được ghi `mcp_admin_log`. */
+async function callAdminTool(a: Auth, name: string, args: Record<string, unknown>): Promise<{ text: string; isError?: boolean }> {
+  let res: { text: string; isError?: boolean };
+  let clanId: string | null = null;
+  try {
+    const adminOp = ADMIN_OPS[name];
+    if (adminOp) {
+      const ctx: AdminCtx = { db: a.db, userId: a.userId, tokenId: a.tokenId, mintJwt: a.mintJwt, supabaseUrl: SUPABASE_URL, anonKey: ANON_KEY };
+      res = { text: await adminOp(ctx, args) };
+      if (typeof args.clan_id === "string" && UUID_RE.test(args.clan_id)) clanId = args.clan_id;
+    } else {
+      const spec = MCP_TOOLS.find((t) => t.name === name);
+      if (!spec) res = { text: `Không có công cụ "${name}".`, isError: true };
+      else if (spec.needs === "propose") res = { text: "Token admin ghi thẳng: dùng tool ghi (create_person, update_person…), không dùng propose_*.", isError: true };
+      else {
+        const { clan_id, ...rest } = args;
+        if (typeof clan_id !== "string" || !UUID_RE.test(clan_id)) res = { text: "Cần clan_id (UUID) — lấy từ admin_list_clans.", isError: true };
+        else {
+          const { data: clan } = await a.db.from("clans").select("id").eq("id", clan_id).maybeSingle();
+          if (!clan) res = { text: "Không tìm thấy dòng họ này.", isError: true };
+          else {
+            clanId = clan_id;
+            // Các tool theo dòng họ chạy như gói "write" trên dòng họ vừa chọn (đọc + ghi thẳng).
+            res = await callTool({ ...a, scope: "write", clanId: clan_id }, name, rest);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    if (e instanceof UserError) res = { text: e.message, isError: true };
+    else {
+      console.error("[mcp-server] admin tool", name, e);
+      res = { text: `Lỗi hệ thống: ${(e as Error).message}`, isError: true };
+    }
+  }
+  if (name !== "admin_audit_log") {
+    void admin
+      .from("mcp_admin_log")
+      .insert({ user_id: a.userId, token_id: a.tokenId, clan_id: clanId, tool: name, args: logArgs(args), is_error: !!res.isError, result: res.text.slice(0, 300) })
+      .then(({ error }) => error && console.error("[mcp-server] không ghi được mcp_admin_log:", error.message));
+  }
+  return res;
+}
+
 async function callTool(a: Auth, name: string, args: Record<string, unknown>): Promise<{ text: string; isError?: boolean }> {
+  if (a.scope === "admin") return callAdminTool(a, name, args);
   const spec = MCP_TOOLS.find((t) => t.name === name);
   if (!spec) return { text: `Không có công cụ "${name}".`, isError: true };
   if (!scopeAllows(a.scope, spec.needs)) {
@@ -443,6 +394,8 @@ async function callTool(a: Auth, name: string, args: Record<string, unknown>): P
   }
   try {
     const ctx = { sb: a.db as never, clanId: a.clanId };
+    const op = OPS[name];
+    if (op) return { text: await op({ db: a.db, clanId: a.clanId, userId: a.userId, fresh: a.fresh }, args) };
     switch (name) {
       case "get_person":
         return { text: await getPersonDetail(a, String(args.person_id ?? "")) };
@@ -471,35 +424,15 @@ async function callTool(a: Auth, name: string, args: Record<string, unknown>): P
         if (!v.ok) return { text: v.error, isError: true };
         return { text: await submitProposal(a, "add_note", args.person_id as string, { note_addition: v.value }, args.reason) };
       }
-      case "create_person": {
-        const v = validateNewPerson(args);
-        if (!v.ok) return { text: v.error, isError: true };
-        return { text: await createPerson(a, v.value) };
-      }
-      case "update_person": {
-        if (typeof args.person_id !== "string" || !UUID_RE.test(args.person_id)) return { text: "person_id không hợp lệ.", isError: true };
-        const v = validateChanges(args.changes);
-        if (!v.ok) return { text: v.error, isError: true };
-        return { text: await updatePerson(a, args.person_id, v.value) };
-      }
-      case "append_person_note": {
-        if (typeof args.person_id !== "string" || !UUID_RE.test(args.person_id)) return { text: "person_id không hợp lệ.", isError: true };
-        const v = validateNote(args.note);
-        if (!v.ok) return { text: v.error, isError: true };
-        return { text: await appendNote(a, args.person_id, v.value) };
-      }
-      case "delete_person": {
-        if (typeof args.person_id !== "string" || !UUID_RE.test(args.person_id)) return { text: "person_id không hợp lệ.", isError: true };
-        if (args.confirm !== true) return { text: "Cần confirm=true — chỉ đặt sau khi người dùng đã yêu cầu xoá rõ ràng.", isError: true };
-        return { text: await deletePerson(a, args.person_id) };
-      }
       // search_person, get_kinship, upcoming_anniversaries, search_book, clan_stats:
       // dùng lại đúng bộ tool của trợ lý trong app (cùng logic xưng hô, âm lịch).
       default:
         return { text: await runTool(ctx, name, args) };
     }
   } catch (e) {
-    return { text: `Lỗi: ${(e as Error).message}`, isError: true };
+    if (e instanceof UserError) return { text: e.message, isError: true };
+    console.error("[mcp-server] tool", name, e);
+    return { text: `Lỗi hệ thống: ${(e as Error).message}`, isError: true };
   }
 }
 
@@ -526,7 +459,7 @@ async function handle(a: Auth, r: RpcReq): Promise<unknown | null> {
         serverInfo: SERVER_INFO,
         instructions:
           "Tra cứu và đề xuất chỉnh sửa gia phả một dòng họ Việt. Luôn gọi search_person để lấy id trước. " +
-          "Xưng hô dùng get_kinship, ngày giỗ dùng upcoming_anniversaries — đừng tự suy luận. " +
+          "Token admin: mọi tool theo dòng họ cần clan_id (admin_list_clans). Xưng hô dùng get_kinship, ngày giỗ dùng upcoming_anniversaries — đừng tự suy luận. " +
           "Công cụ propose_* chỉ gửi đề xuất chờ admin duyệt, không ghi trực tiếp.",
       });
     }
@@ -534,7 +467,7 @@ async function handle(a: Auth, r: RpcReq): Promise<unknown | null> {
       return ok({});
     case "tools/list":
       return ok({
-        tools: MCP_TOOLS.filter((t) => scopeAllows(a.scope, t.needs)).map(({ needs: _n, ...t }) => t),
+        tools: toolsForScope(a.scope).map(({ needs: _n, ...t }) => t),
       });
     case "tools/call": {
       const name = String(r.params?.name ?? "");

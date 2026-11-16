@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 
 import type { ChipTone } from "@/components/Chip";
-import { IconLock, IconPencil, IconSend } from "@/components/icons";
+import { IconLock, IconPencil, IconSend, IconShield } from "@/components/icons";
 import type { ApiToken, ApiTokenScope } from "@/lib/queries/api-tokens";
 
 import { t } from "@lingui/core/macro";
@@ -14,6 +14,13 @@ export function scopeMeta(scope: ApiTokenScope): {
   icon: ComponentType<{ className?: string }>;
 } {
   switch (scope) {
+    case "admin":
+      return {
+        label: t`Admin hệ thống`,
+        hint: t`Toàn quyền quản trị nền tảng: mọi dòng họ (đọc + ghi), tài khoản người dùng, đóng góp, góp ý, thông báo, cấu hình, token. Thao tác nguy hiểm (xoá tài khoản, cấp quyền admin, đổi cấu hình…) buộc xác nhận + ghi lý do; mọi lệnh được ghi nhật ký. Token chết ngay nếu người tạo không còn là admin hệ thống.`,
+        tone: "danger",
+        icon: IconShield,
+      };
     case "write":
       return {
         label: t`Đọc + ghi trực tiếp`,

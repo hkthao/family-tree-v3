@@ -8,11 +8,12 @@ import { supabase as defaultClient } from "@/lib/supabase";
  */
 type Client = SupabaseClient;
 
-export type ApiTokenScope = "read" | "propose" | "write";
+export type ApiTokenScope = "read" | "propose" | "write" | "admin";
 
 export interface ApiToken {
   id: string;
-  clan_id: string;
+  /** null = token admin hệ thống, không gắn dòng họ. */
+  clan_id: string | null;
   name: string;
   token_prefix: string;
   scope: ApiTokenScope;
@@ -71,12 +72,12 @@ export async function listMyApiTokens(
 
 /** Tạo token; trả về BẢN RÕ để hiện một lần — không lưu và không lấy lại được. */
 export async function createApiToken(
-  input: { clanId: string; userId: string; name: string; scope: ApiTokenScope; days: number },
+  input: { clanId: string | null; userId: string; name: string; scope: ApiTokenScope; days: number },
   client: Client = defaultClient,
 ): Promise<string> {
   const token = makeApiToken();
   const { error } = await client.from("api_tokens").insert({
-    clan_id: input.clanId,
+    clan_id: input.scope === "admin" ? null : input.clanId,
     user_id: input.userId,
     name: input.name.trim(),
     scope: input.scope,

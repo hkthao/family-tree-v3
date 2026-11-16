@@ -18,7 +18,7 @@ export async function listAllApiTokens(): Promise<AdminApiToken[]> {
     .limit(500);
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as unknown as ApiToken[] & { user_id: string }[];
-  const clanIds = [...new Set(rows.map((r) => r.clan_id))];
+  const clanIds = [...new Set(rows.map((r) => r.clan_id).filter((x): x is string => !!x))];
   const userIds = [...new Set(rows.map((r) => (r as unknown as { user_id: string }).user_id))];
   const [clans, profiles] = await Promise.all([
     clanIds.length ? supabase.from("clans").select("id, name").in("id", clanIds) : { data: [] },
@@ -33,7 +33,7 @@ export async function listAllApiTokens(): Promise<AdminApiToken[]> {
     return {
       ...r,
       user_id: uid,
-      clan_name: clanName.get(r.clan_id) ?? "—",
+      clan_name: r.clan_id ? (clanName.get(r.clan_id) ?? "—") : "Toàn nền tảng",
       user_name: userName.get(uid) ?? "—",
     };
   });

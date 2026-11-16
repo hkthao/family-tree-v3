@@ -2,9 +2,12 @@
   "extends": "../tsconfig.node.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM"],
+    "jsx": "react-jsx",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "types": ["node", "vite/client"],
     "paths": {
+      "@/*": ["../src/*"],
       "jsr:@supabase/supabase-js@2": ["../node_modules/@supabase/supabase-js"],
       "npm:@dqcai/vn-lunar@1.0.1": ["../node_modules/@dqcai/vn-lunar"]
     }

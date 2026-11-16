@@ -951,6 +951,10 @@ msgstr "90 days"
 msgid "Admin đã xác nhận"
 msgstr "Confirmed by an admin"
 
+#: src/components/apiTokenMeta.ts
+msgid "Admin hệ thống"
+msgstr "System admin"
+
 #. placeholder {0}: submitterContact || t`thông tin bạn đã ghi`
 #: src/components/ContributeDialog.tsx
 msgid "Admin sẽ liên hệ qua {0} nếu cần."
@@ -13684,6 +13688,10 @@ msgstr "reset view"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Toàn màn hình"
 msgstr "Full screen"
+
+#: src/components/apiTokenMeta.ts
+msgid "Toàn quyền quản trị nền tảng: mọi dòng họ (đọc + ghi), tài khoản người dùng, đóng góp, góp ý, thông báo, cấu hình, token. Thao tác nguy hiểm (xoá tài khoản, cấp quyền admin, đổi cấu hình…) buộc xác nhận + ghi lý do; mọi lệnh được ghi nhật ký. Token chết ngay nếu người tạo không còn là admin hệ thống."
+msgstr "Full platform administration: every clan (read + write), user accounts, contributions, feedback, announcements, settings, tokens. Dangerous actions (deleting accounts, granting admin, changing settings…) require confirmation and a recorded reason; every command is logged. The token stops working immediately if its creator is no longer a system admin."
 
 #. placeholder {0}: isSelf && " Không tự đổi quyền của chính mình."
 #: src/pages/admin/Users.tsx

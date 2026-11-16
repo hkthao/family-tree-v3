@@ -128,7 +128,7 @@ export function ApiTokenCreatePanel({
   const [copied, setCopied] = useState<string | null>(null);
 
   const create = useMutation({
-    mutationFn: () => createApiToken({ clanId, userId, name, scope, days }),
+    mutationFn: () => createApiToken({ clanId: scope === "admin" ? null : clanId, userId, name, scope, days }),
     onSuccess: (token) => {
       setFresh(token);
       onCreated();
@@ -221,10 +221,10 @@ export function ApiTokenCreatePanel({
           className="space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (clanId && name.trim()) create.mutate();
+            if ((clanId || scope === "admin") && name.trim()) create.mutate();
           }}
         >
-          {!fixedClanId && (
+          {!fixedClanId && scope !== "admin" && (
             <div className="space-y-2">
               <Label htmlFor="api-token-clan" required>
                 {t`Dòng họ`}
@@ -253,7 +253,7 @@ export function ApiTokenCreatePanel({
               value={scope}
               onChange={(e) => setScope(e.target.value as ApiTokenScope)}
             >
-              {(["read", "propose", "write"] as const).map((s) => (
+              {([...(["read", "propose", "write"] as const), ...(fixedClanId ? [] : (["admin"] as const))] as const).map((s) => (
                 <option key={s} value={s}>
                   {scopeMeta(s).label}
                 </option>
@@ -283,7 +283,7 @@ export function ApiTokenCreatePanel({
             <Button type="button" variant="outline" onClick={close}>
               {t`Hủy`}
             </Button>
-            <Button type="submit" disabled={create.isPending || !clanId || !name.trim()}>
+            <Button type="submit" disabled={create.isPending || (!clanId && scope !== "admin") || !name.trim()}>
               <IconKey className="mr-1.5 h-4 w-4" />
               {create.isPending ? t`Đang tạo…` : t`Tạo token`}
             </Button>

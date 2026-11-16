@@ -2,7 +2,8 @@ import "./env.ts";
 
 import { createServer } from "node:http";
 
-import { handleHttp } from "./handler.ts";
+import { sweepExports } from "./book.tsx";
+import { admin, handleHttp } from "./handler.ts";
 
 /**
  * Vỏ HTTP mỏng bọc handler kiểu fetch (Request → Response). Handler không biết gì về Node.
@@ -12,7 +13,8 @@ import { handleHttp } from "./handler.ts";
  */
 
 const PORT = Number(process.env.PORT ?? 3333);
-const MAX_BODY = 256 * 1024;
+// Đủ cho ảnh base64 (≤ 6 MB → ~8 MB base64); các lệnh khác chỉ vài KB.
+const MAX_BODY = 9 * 1024 * 1024;
 
 const server = createServer(async (nreq, nres) => {
   try {
@@ -59,6 +61,11 @@ const server = createServer(async (nreq, nres) => {
     nres.end('{"error":"Lỗi máy chủ."}');
   }
 });
+
+// Dọn file sổ PDF tạm quá hạn: ngay khi khởi động rồi mỗi giờ. Lỗi dọn không được làm sập server.
+const sweep = () => sweepExports(admin).then((n) => n && console.log(`[mcp-server] đã dọn ${n} file sổ tạm`)).catch((e) => console.error("[mcp-server] dọn file tạm lỗi:", e));
+setTimeout(sweep, 30_000).unref();
+setInterval(sweep, 3600_000).unref();
 
 server.listen(PORT, () => console.log(`[mcp-server] lắng nghe :${PORT}`));
 for (const sig of ["SIGTERM", "SIGINT"] as const) process.on(sig, () => server.close(() => process.exit(0)));
