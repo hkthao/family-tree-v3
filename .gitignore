@@ -49,3 +49,6 @@ build-bg/
 # Catalog đã biên dịch (sinh bởi `lingui compile`; plugin Vite tự biên dịch .po lúc build)
 src/locales/**/*.js
 src/locales/**/*.ts
+
+# Dữ liệu bài Sổ tay (không commit chung repo code)
+/so-tay-markdown/
