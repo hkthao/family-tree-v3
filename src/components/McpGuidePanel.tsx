@@ -4,6 +4,8 @@ import { IconCheck, IconCopy } from "@/components/icons";
 import { SidePanel } from "@/components/SidePanel";
 import { SegmentedButton, SegmentedControl } from "@/components/ui/segmented-control";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { mcpUrl } from "@/lib/queries/api-tokens";
 
 import { t } from "@lingui/core/macro";
@@ -56,7 +58,9 @@ const P = ({ children }: { children: React.ReactNode }) => <p className="text-sm
 /** Ngăn kéo hướng dẫn nối từng loại AI (Claude Code, Claude Desktop, ChatGPT, công cụ khác) với server MCP. */
 export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean; onClose: () => void; admin?: boolean }) {
   const [client, setClient] = useState<Client>("claude-code");
-  const url = mcpUrl();
+  const [custom, setCustom] = useState("");
+  const url = custom.trim().replace(/\/+$/, "") || mcpUrl();
+  const local = /^https?:\/\/(localhost|127\.|\[::1\])/.test(url);
   const tok = "<TOKEN>";
 
   const desktopCfg = JSON.stringify(
@@ -77,12 +81,31 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
   return (
     <SidePanel open={open} title={t`Hướng dẫn kết nối AI`} subtitle={t`Chọn loại AI bạn đang dùng`} onClose={onClose} size="lg">
       <div className="space-y-5">
-        <SegmentedControl ariaLabel={t`Loại AI`} className="max-w-full overflow-x-auto">
+        <SegmentedControl ariaLabel={t`Loại AI`} className="w-fit max-w-full self-start overflow-x-auto">
           <SegmentedButton active={client === "claude-code"} onClick={() => setClient("claude-code")}>Claude Code</SegmentedButton>
           <SegmentedButton active={client === "claude-desktop"} onClick={() => setClient("claude-desktop")}>Claude Desktop</SegmentedButton>
           <SegmentedButton active={client === "chatgpt"} onClick={() => setClient("chatgpt")}>ChatGPT</SegmentedButton>
           <SegmentedButton active={client === "other"} onClick={() => setClient("other")}>{t`Khác`}</SegmentedButton>
         </SegmentedControl>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="mcp-url">{t`Địa chỉ máy chủ MCP`}</Label>
+          <Input
+            id="mcp-url"
+            className="font-mono text-xs"
+            value={custom || url}
+            onChange={(e) => setCustom(e.target.value)}
+            onFocus={(e) => e.currentTarget.select()}
+            inputMode="url"
+            autoCapitalize="off"
+            spellCheck={false}
+          />
+          <P>
+            {local
+              ? t`Đang là địa chỉ máy bạn (localhost), AI bên ngoài không truy cập được. Sửa thành địa chỉ công khai của máy chủ MCP rồi chép lệnh bên dưới.`
+              : t`Mặc định theo tên miền bạn đang dùng. Sửa lại nếu máy chủ MCP nằm ở địa chỉ khác; các lệnh bên dưới đổi theo.`}
+          </P>
+        </div>
 
         <P>
           {t`Cả bốn cách đều cần token: bấm nút "+" để tạo, chép token ngay (chỉ hiện một lần), rồi thay ${tok} trong các lệnh dưới đây.`}
