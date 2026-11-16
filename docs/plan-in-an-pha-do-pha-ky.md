@@ -103,8 +103,7 @@ làm C nếu có nhu cầu thật. Tính năng AI/xuất tốn tài nguyên nên
 2. Gọi 2–3 nhà in (HN/HCM) lấy **báo giá thật** phả đồ A1/A0 (decal, PP, vải
    canvas, giấy mỹ thuật) và sách 100–200 trang bìa cứng/bìa da → định giá.
 3. Khổ phả đồ phổ biến thực tế dòng họ dùng? (hỏi 5–10 trưởng họ/người làm
-   gia phả; bài FB thu thập ý kiến đã soạn sẵn ở `fb-post-thu-thap-y-kien.md`
-   — thêm câu hỏi về in ấn).
+   gia phả).
 4. Phả ký: dòng họ muốn **AI viết nháp** hay tự viết hoàn toàn (nhạy cảm về
    độ chính xác lịch sử)? Mức người duyệt tối thiểu?
 5. Có thử in A1 thật bằng ảnh test để kiểm chất lượng trước P2 không?
