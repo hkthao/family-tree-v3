@@ -256,7 +256,12 @@ async function approve(req: Request): Promise<Response> {
     expires_at: new Date(Date.now() + CODE_TTL_S * 1000).toISOString(),
   });
   if (error) return reply({ ok: false, error: "Không tạo được mã cấp quyền." }, 500);
-  void admin.from("oauth_clients").update({ last_used_at: new Date().toISOString() }).eq("client_id", r.client.client_id);
+  // `.then` bắt buộc: truy vấn Supabase lười, `void` một mình sẽ không bao giờ chạy.
+  admin
+    .from("oauth_clients")
+    .update({ last_used_at: new Date().toISOString() })
+    .eq("client_id", r.client.client_id)
+    .then(({ error }) => error && console.error("[oauth] không ghi được last_used_at:", error.message));
 
   const target = new URL(str(b.redirect_uri));
   target.searchParams.set("code", code);

@@ -140,8 +140,12 @@ async function authenticate(req: Request): Promise<Auth | Response> {
     return json({ error: (e as Error).message }, { status: 500 });
   }
 
-  // Ghi mốc dùng gần nhất; lỗi ở đây không được chặn lượt gọi.
-  void admin.from("api_tokens").update({ last_used_at: new Date().toISOString() }).eq("id", row.id);
+  // Ghi mốc dùng gần nhất; lỗi ở đây không được chặn lượt gọi. Truy vấn Supabase chỉ chạy khi có `.then` (không phải `void`).
+  admin
+    .from("api_tokens")
+    .update({ last_used_at: new Date().toISOString() })
+    .eq("id", row.id)
+    .then(({ error }) => error && console.error("[mcp-server] không ghi được last_used_at:", error.message));
 
   return {
     tokenId: row.id as string,
