@@ -96,6 +96,7 @@ const People = lazy(() => import("@/pages/clan/People"));
 const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
 const QrExport = lazy(() => import("@/pages/clan/QrExport"));
 const Settings = lazy(() => import("@/pages/clan/Settings"));
+const AiConnect = lazy(() => import("@/pages/clan/AiConnect"));
 const BookInfo = lazy(() => import("@/pages/clan/BookInfo"));
 const Todo = lazy(() => import("@/pages/clan/Todo"));
 const Tree = lazy(() => import("@/pages/clan/Tree"));
@@ -418,6 +419,7 @@ export default function App() {
                   }
                 />
                 <Route path="settings" element={<Settings />} />
+                <Route path="ket-noi-ai" element={<AiConnect />} />
                 <Route path="so-gia-pha" element={<BookInfo />} />
                 <Route path="import" element={<Import />} />
                 <Route path="merge" element={<Merge />} />

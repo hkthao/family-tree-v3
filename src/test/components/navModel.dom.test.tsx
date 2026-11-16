@@ -147,6 +147,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Thành viên",
       "Liên kết dòng họ",
       "Cài đặt dòng họ",
+      "Kết nối AI",
       "Việc cần làm",
       "Lịch âm dương",
       "Nhật ký",
@@ -167,6 +168,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Thành viên",
       "Liên kết dòng họ",
       "Cài đặt dòng họ",
+      "Kết nối AI",
       "Việc cần làm",
       "Lịch âm dương",
       "Nhật ký",
@@ -234,7 +236,7 @@ describe("buildSections — nhóm của dòng họ", () => {
     const viewer = { ...clan, myRole: "viewer" } as unknown as ClanDetail;
     const work = build({ clan: viewer }).find((x) => x.id === "clan-work")!;
     const labels = work.items.map((i) => i.label);
-    for (const adminOnly of ["Thành viên", "Liên kết dòng họ", "Cài đặt dòng họ"]) {
+    for (const adminOnly of ["Thành viên", "Liên kết dòng họ", "Cài đặt dòng họ", "Kết nối AI"]) {
       expect(labels).not.toContain(adminOnly);
     }
   });

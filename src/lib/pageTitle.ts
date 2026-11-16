@@ -160,6 +160,7 @@ export const ROUTE_META: RouteMeta[] = lazyMessages([
   { pattern: "/clans/:clanId/heritage/:itemId", title: msg`Di sản dòng họ` },
   { pattern: "/clans/:clanId/heritage", title: msg`Di sản dòng họ` },
   { pattern: "/clans/:clanId/settings", title: msg`Cài đặt dòng họ` },
+  { pattern: "/clans/:clanId/ket-noi-ai", title: msg`Kết nối AI` },
   { pattern: "/clans/:clanId/import", title: msg`Nhập dữ liệu` },
   { pattern: "/clans/:clanId/merge", title: msg`Gộp trùng` },
   { pattern: "/clans/:clanId/audit", title: msg`Nhật ký thay đổi` },

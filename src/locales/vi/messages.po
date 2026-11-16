@@ -2676,6 +2676,14 @@ msgstr "Chờ admin xác nhận"
 msgid "Cho AI bên ngoài làm việc với gia phả"
 msgstr "Cho AI bên ngoài làm việc với gia phả"
 
+#: src/lib/navModel.tsx
+msgid "Cho Claude, ChatGPT… làm việc với gia phả; xem và thu hồi kết nối."
+msgstr "Cho Claude, ChatGPT… làm việc với gia phả; xem và thu hồi kết nối."
+
+#: src/pages/clan/AiConnect.tsx
+msgid "Cho Claude, ChatGPT… tra cứu và cập nhật gia phả bằng đúng quyền của bạn. Xem và thu hồi mọi kết nối của dòng họ."
+msgstr "Cho Claude, ChatGPT… tra cứu và cập nhật gia phả bằng đúng quyền của bạn. Xem và thu hồi mọi kết nối của dòng họ."
+
 #: src/pages/CustomsDetail.tsx
 msgid "chờ duyệt"
 msgstr "chờ duyệt"
@@ -7393,7 +7401,11 @@ msgid "Kéo, phóng to, chọn người làm tâm"
 msgstr "Kéo, phóng to, chọn người làm tâm"
 
 #: src/lib/adminScreens.tsx
+#: src/lib/navModel.tsx
+#: src/lib/pageTitle.ts
 #: src/pages/admin/KetNoiAiPage.tsx
+#: src/pages/clan/AiConnect.tsx
+#: src/pages/clan/AiConnect.tsx
 #: src/pages/clan/Settings.tsx
 msgid "Kết nối AI"
 msgstr "Kết nối AI"
@@ -14031,8 +14043,8 @@ msgid "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu 
 msgstr "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu hồi khi nghi bị lộ."
 
 #: src/pages/clan/Settings.tsx
-msgid "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; token chỉ hoạt động trong họ này, với quyền của người tạo."
-msgstr "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; token chỉ hoạt động trong họ này, với quyền của người tạo."
+msgid "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; AI luôn làm việc với quyền của người cấp."
+msgstr "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; AI luôn làm việc với quyền của người cấp."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token không dùng được"

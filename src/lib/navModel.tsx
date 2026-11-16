@@ -525,6 +525,12 @@ export function buildSections(
         hint: t`Thông tin, hiển thị, chia sẻ, xuất sổ.`,
         icon: <IconSettings className={ic} />,
       });
+      workItems.push({
+        to: `/clans/${clanId}/ket-noi-ai`,
+        label: t`Kết nối AI`,
+        hint: t`Cho Claude, ChatGPT… làm việc với gia phả; xem và thu hồi kết nối.`,
+        icon: <IconSparkles className={ic} />,
+      });
     }
     const canEditData = isAdmin || clan.myRole === "editor";
     if (isMember) {
