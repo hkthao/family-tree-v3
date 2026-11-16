@@ -105,7 +105,8 @@ tay người dùng và không bao giờ nằm trong URL.
 - **Đăng ký client:** `POST /oauth/register` (RFC 7591, client công khai + PKCE S256 bắt buộc). Chưa hỗ trợ Client ID Metadata
   Document nên client tự rơi về đăng ký động (Claude: "Register automatically").
 - **Cấp quyền:** `POST /oauth/authorize-info` (app hỏi tên ứng dụng, kiểm redirect_uri) và `POST /oauth/approve` (kèm JWT đăng nhập
-  của người dùng; chỉ admin của dòng họ đó hoặc admin hệ thống; gói `read|propose|write`, KHÔNG cấp `admin`).
+  của người dùng; chỉ admin của dòng họ đó hoặc admin hệ thống; gói `read|propose|write`). Admin hệ thống có thêm gói `admin` (không gắn dòng họ, mọi
+  dòng họ + chức năng quản trị, hạn trượt 30 ngày thay vì 90); người khác xin gói này bị 403.
 - **Token:** `POST /oauth/token` — `authorization_code` (code 5 phút, dùng một lần, ràng buộc client + redirect_uri + PKCE) và
   `refresh_token`. Access token `gat_…` sống 1 giờ; refresh token xoay vòng mỗi lần dùng, dùng lại token cũ → thu hồi cả kết nối.
 - **Mô hình dữ liệu:** một lần cấp quyền = một hàng `api_tokens` (tên "<ứng dụng> (OAuth)", hạn trượt 90 ngày) — hiện chung ở danh
@@ -125,7 +126,7 @@ JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long node mcp-serv
 
 ## Triển khai (làm tay lần đầu)
 
-1. **Migration** `20261115100000_api_tokens.sql`, `20261116100000_api_tokens_admin.sql`, `20261116200000_api_tokens_clan_admin.sql`, `20261117100000_oauth_mcp.sql` lên DB self-host (xem [[project_migrations_manual_selfhost]]; ghi `schema_migrations`).
+1. **Migration** `20261115100000_api_tokens.sql`, `20261116100000_api_tokens_admin.sql`, `20261116200000_api_tokens_clan_admin.sql`, `20261117100000_oauth_mcp.sql`, `20261117200000_oauth_admin_scope.sql` lên DB self-host (xem [[project_migrations_manual_selfhost]]; ghi `schema_migrations`).
 2. **Máy web** (máy chạy FE; địa chỉ thật xem doc vận hành ngoài repo): tạo `/opt/gia-pha-mcp/mcp.env` từ `deploy/mcp.env.example`, `chmod 600`.
    `JWT_SECRET` + `SERVICE_ROLE_KEY` là khoá quyền cao — lấy ở file `.env` của Supabase self-host trên máy DB (`<supabase-dir>/.env`).
 3. **nginx** của genealogy-app: chèn `deploy/nginx-mcp-location.conf` vào server block giapha.thaohk.com,

@@ -1000,6 +1000,10 @@ msgstr "AI đang dùng token này sẽ bị chặn ngay."
 msgid "AI gửi thêm/sửa/ghi chú vào hàng chờ Đóng góp. Chỉ ghi vào gia phả khi admin dòng họ duyệt."
 msgstr "AI gửi thêm/sửa/ghi chú vào hàng chờ Đóng góp. Chỉ ghi vào gia phả khi admin dòng họ duyệt."
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI."
+msgstr "AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI."
+
 #: src/components/apiTokenMeta.ts
 msgid "AI thêm, sửa, xoá người ngay, với đúng quyền hiện tại của người tạo token (bị hạ vai trò thì token hạ theo). Mọi thay đổi ghi vào nhật ký dưới tên người tạo và khôi phục được."
 msgstr "AI thêm, sửa, xoá người ngay, với đúng quyền hiện tại của người tạo token (bị hạ vai trò thì token hạ theo). Mọi thay đổi ghi vào nhật ký dưới tên người tạo và khôi phục được."
@@ -2531,8 +2535,8 @@ msgid "Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tà
 msgstr "Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
 
 #: src/components/McpGuidePanel.tsx
-msgid "Chỉ quản trị dòng họ mới cấp được. Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
-msgstr "Chỉ quản trị dòng họ mới cấp được. Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
+msgid "Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
+msgstr "Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
 
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "Chỉ quản trị dòng họ mới kết nối được AI. Tài khoản này chưa quản trị dòng họ nào."

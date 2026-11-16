@@ -104,7 +104,7 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
               <P>{t`Bấm Add. Claude sẽ mở trang của hệ thống này để bạn đăng nhập và bấm "Cho phép".`}</P>
             </Step>
             <Step n={5} title={t`Chọn dòng họ và quyền cho AI, bấm "Cho phép"`}>
-              <P>{t`Chỉ quản trị dòng họ mới cấp được. Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào.`}</P>
+              <P>{t`Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào.`}</P>
             </Step>
             <Step n={6} title={t`Dùng trong cuộc trò chuyện`}>
               <P>{t`Bấm "+" ở góc dưới bên trái ô chat (hoặc gõ "/"), chọn Connectors rồi bật kết nối vừa thêm.`}</P>

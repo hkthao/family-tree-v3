@@ -3,7 +3,12 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { scopeMeta } from "@/components/apiTokenMeta";
-import { IconBuildings, IconCheck, IconShield, IconX } from "@/components/icons";
+import {
+  IconBuildings,
+  IconCheck,
+  IconShield,
+  IconX,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 import { t } from "@lingui/core/macro";
 
-const SCOPES: ApiTokenScope[] = ["read", "propose", "write"];
+const CLAN_SCOPES: ApiTokenScope[] = ["read", "propose", "write"];
 
 interface Info {
   ok: boolean;
@@ -26,10 +31,17 @@ interface Info {
 /** Địa chỉ gốc của máy chủ MCP (nơi có /oauth/*): cùng tên miền với app, hoặc VITE_MCP_URL khi chạy dev. */
 const oauthBase = () => new URL(mcpUrl()).origin;
 
-async function post<T>(path: string, body: unknown, token?: string): Promise<T> {
+async function post<T>(
+  path: string,
+  body: unknown,
+  token?: string,
+): Promise<T> {
   const res = await fetch(`${oauthBase()}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify(body),
   });
   return (await res.json()) as T;
@@ -68,13 +80,38 @@ export default function ConnectAiAuthorize() {
     queryKey: ["oauth-admin-clans", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data: mem } = await supabase.from("clan_members").select("clan_id").eq("user_id", user!.id).eq("role", "admin");
+      const { data: mem } = await supabase
+        .from("clan_members")
+        .select("clan_id")
+        .eq("user_id", user!.id)
+        .eq("role", "admin");
       const ids = (mem ?? []).map((m) => m.clan_id);
       if (!ids.length) return [];
-      const { data } = await supabase.from("clans").select("id, name").in("id", ids).order("name");
+      const { data } = await supabase
+        .from("clans")
+        .select("id, name")
+        .in("id", ids)
+        .order("name");
       return data ?? [];
     },
   });
+  const sysAdminQ = useQuery({
+    queryKey: ["oauth-is-sysadmin", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("is_platform_admin")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return !!data?.is_platform_admin;
+    },
+  });
+  const sysAdmin = !!sysAdminQ.data;
+  const scopes: ApiTokenScope[] = sysAdmin
+    ? [...CLAN_SCOPES, "admin"]
+    : CLAN_SCOPES;
+  const isAdminScope = scope === "admin";
   const clans = clansQ.data ?? [];
   const chosen = clanId || (clans.length === 1 ? clans[0].id : "");
 
@@ -85,7 +122,7 @@ export default function ConnectAiAuthorize() {
       const { data } = await supabase.auth.getSession();
       const r = await post<{ ok: boolean; redirect?: string; error?: string }>(
         "/oauth/approve",
-        { ...params, clan_id: chosen, scope },
+        { ...params, clan_id: isAdminScope ? undefined : chosen, scope },
         data.session?.access_token,
       );
       if (r.ok && r.redirect) {
@@ -114,12 +151,17 @@ export default function ConnectAiAuthorize() {
           <IconShield className="h-7 w-7" />
         </span>
 
-        {infoQ.isLoading && <p className="text-center text-muted-foreground">{t`Đang kiểm tra yêu cầu…`}</p>}
+        {infoQ.isLoading && (
+          <p className="text-center text-muted-foreground">{t`Đang kiểm tra yêu cầu…`}</p>
+        )}
 
         {!infoQ.isLoading && !info?.ok && (
           <div className="space-y-3 text-center">
             <h1 className="text-xl font-semibold">{t`Yêu cầu kết nối không hợp lệ`}</h1>
-            <p className="text-muted-foreground">{info?.error ?? t`Không kiểm tra được yêu cầu. Hãy bắt đầu lại từ ứng dụng AI.`}</p>
+            <p className="text-muted-foreground">
+              {info?.error ??
+                t`Không kiểm tra được yêu cầu. Hãy bắt đầu lại từ ứng dụng AI.`}
+            </p>
           </div>
         )}
 
@@ -130,40 +172,60 @@ export default function ConnectAiAuthorize() {
               <h1 className="text-2xl font-semibold">{info.client_name}</h1>
             </div>
 
-            {!clansQ.isLoading && clans.length === 0 ? (
+            {!clansQ.isLoading &&
+            !sysAdminQ.isLoading &&
+            clans.length === 0 &&
+            !sysAdmin ? (
               <Alert variant="destructive">
                 <AlertDescription>{t`Chỉ quản trị dòng họ mới kết nối được AI. Tài khoản này chưa quản trị dòng họ nào.`}</AlertDescription>
               </Alert>
             ) : (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="oauth-clan">{t`Dòng họ cho phép AI làm việc`}</Label>
-                  <Select id="oauth-clan" icon={<IconBuildings />} value={chosen} onChange={(e) => setClanId(e.target.value)}>
-                    <option value="">{t`Chọn dòng họ…`}</option>
-                    {clans.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
+                {!isAdminScope && (
+                  <div className="space-y-2">
+                    <Label htmlFor="oauth-clan">{t`Dòng họ cho phép AI làm việc`}</Label>
+                    <Select
+                      id="oauth-clan"
+                      icon={<IconBuildings />}
+                      value={chosen}
+                      onChange={(e) => setClanId(e.target.value)}
+                    >
+                      <option value="">{t`Chọn dòng họ…`}</option>
+                      {clans.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
 
                 <fieldset className="space-y-2">
                   <legend className="mb-1 text-sm font-medium">{t`Quyền cho AI`}</legend>
-                  {SCOPES.map((s) => {
+                  {scopes.map((s) => {
                     const m = scopeMeta(s);
                     return (
                       <label
                         key={s}
                         className={cn(
                           "flex cursor-pointer gap-3 rounded-lg border p-3 transition-colors",
-                          scope === s ? "border-primary bg-primary/5" : "hover:bg-muted/40",
+                          scope === s
+                            ? "border-primary bg-primary/5"
+                            : "hover:bg-muted/40",
                         )}
                       >
-                        <input type="radio" name="scope" className="mt-1" checked={scope === s} onChange={() => setScope(s)} />
+                        <input
+                          type="radio"
+                          name="scope"
+                          className="mt-1"
+                          checked={scope === s}
+                          onChange={() => setScope(s)}
+                        />
                         <span className="min-w-0">
                           <span className="block font-medium">{m.label}</span>
-                          <span className="block text-sm text-muted-foreground">{m.hint}</span>
+                          <span className="block text-sm text-muted-foreground">
+                            {m.hint}
+                          </span>
                         </span>
                       </label>
                     );
@@ -171,7 +233,9 @@ export default function ConnectAiAuthorize() {
                 </fieldset>
 
                 <p className="text-sm text-muted-foreground">
-                  {t`AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Cài đặt dòng họ → Kết nối AI.`}
+                  {isAdminScope
+                    ? t`AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI.`
+                    : t`AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Cài đặt dòng họ → Kết nối AI.`}
                 </p>
 
                 {err && (
@@ -181,11 +245,22 @@ export default function ConnectAiAuthorize() {
                 )}
 
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" className="flex-1" disabled={busy} onClick={deny}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    disabled={busy}
+                    onClick={deny}
+                  >
                     <IconX className="mr-1.5 h-4 w-4" />
                     {t`Từ chối`}
                   </Button>
-                  <Button type="button" className="flex-1" disabled={busy || !chosen} onClick={() => void allow()}>
+                  <Button
+                    type="button"
+                    className="flex-1"
+                    disabled={busy || (!isAdminScope && !chosen)}
+                    onClick={() => void allow()}
+                  >
                     <IconCheck className="mr-1.5 h-4 w-4" />
                     {busy ? t`Đang cấp quyền…` : t`Cho phép`}
                   </Button>
