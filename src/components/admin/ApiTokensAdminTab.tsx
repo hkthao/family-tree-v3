@@ -1,20 +1,29 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import { McpGuidePanel } from "@/components/McpGuidePanel";
-import { ApiTokenCreatePanel, ApiTokenRow, ApiTokenViewPanel } from "@/components/ApiTokenPanels";
-import { statusMeta, tokenStatus, type ApiTokenStatus } from "@/components/apiTokenMeta";
+import {
+  ApiTokenCreatePanel,
+  ApiTokenRow,
+  ApiTokenViewPanel,
+} from "@/components/ApiTokenPanels";
+import {
+  statusMeta,
+  tokenStatus,
+  type ApiTokenStatus,
+} from "@/components/apiTokenMeta";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { Fab } from "@/components/Fab";
-import { IconBook, IconCheck, IconKey, IconSearch } from "@/components/icons";
+import { IconCheck, IconKey, IconSearch } from "@/components/icons";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
-import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+} from "@/hooks/useClientPaging";
 import { listAllApiTokens } from "@/lib/queries/api-tokens-admin";
 import { unaccent } from "@/lib/unaccent";
 
@@ -27,19 +36,23 @@ export function ApiTokensAdminTab() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
-  const [guide, setGuide] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ApiTokenStatus | "">("");
 
-  const listQ = useQuery({ queryKey: KEY, queryFn: listAllApiTokens, retry: false });
+  const listQ = useQuery({
+    queryKey: KEY,
+    queryFn: listAllApiTokens,
+    retry: false,
+  });
 
   const filtered = useMemo(() => {
     const needle = unaccent(search.trim());
     return (listQ.data ?? []).filter(
       (r) =>
         (!status || tokenStatus(r) === status) &&
-        (!needle || unaccent(`${r.name} ${r.user_name} ${r.clan_name}`).includes(needle)),
+        (!needle ||
+          unaccent(`${r.name} ${r.user_name} ${r.clan_name}`).includes(needle)),
     );
   }, [listQ.data, search, status]);
   const paging = useClientPaging(filtered, 20);
@@ -49,12 +62,6 @@ export function ApiTokensAdminTab() {
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
-        <Button size="sm" variant="outline" onClick={() => setGuide(true)}>
-          <IconBook className="mr-1.5 h-4 w-4" />
-          {t`Hướng dẫn kết nối`}
-        </Button>
-      </div>
       <Fab onClick={() => setCreating(true)} label={t`Token mới`} />
 
       <CollapsibleFilters
@@ -104,10 +111,22 @@ export function ApiTokensAdminTab() {
 
       {!listQ.isLoading && filtered.length === 0 && (
         <EmptyState
-          icon={listQ.data?.length ? <IconSearch className="h-10 w-10" /> : <IconKey className="h-10 w-10" />}
-          title={listQ.data?.length ? t`Không có token nào khớp` : t`Chưa có token nào`}
+          icon={
+            listQ.data?.length ? (
+              <IconSearch className="h-10 w-10" />
+            ) : (
+              <IconKey className="h-10 w-10" />
+            )
+          }
+          title={
+            listQ.data?.length
+              ? t`Không có token nào khớp`
+              : t`Chưa có token nào`
+          }
           description={
-            listQ.data?.length ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.` : t`Bấm nút '+' để tạo token đầu tiên.`
+            listQ.data?.length
+              ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.`
+              : t`Bấm nút '+' để tạo token đầu tiên.`
           }
         />
       )}
@@ -138,7 +157,6 @@ export function ApiTokensAdminTab() {
         />
       )}
 
-      <McpGuidePanel open={guide} onClose={() => setGuide(false)} admin />
       <ApiTokenCreatePanel
         open={creating}
         onClose={() => setCreating(false)}
@@ -147,7 +165,9 @@ export function ApiTokensAdminTab() {
       />
       <ApiTokenViewPanel
         tk={open}
-        owner={open ? { user: open.user_name, clan: open.clan_name } : undefined}
+        owner={
+          open ? { user: open.user_name, clan: open.clan_name } : undefined
+        }
         onClose={() => setOpenId(null)}
         invalidateKeys={[KEY]}
       />

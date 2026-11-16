@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
 
-import { ApiTokensSection } from "@/components/ApiTokensSection";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconSparkles } from "@/components/icons";
+import { ClanApiTokensTab } from "@/components/ClanApiTokensTab";
+import { IconBook, IconSparkles } from "@/components/icons";
+import { McpGuidePanel } from "@/components/McpGuidePanel";
 import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 
 import { t } from "@lingui/core/macro";
@@ -14,17 +17,31 @@ import { t } from "@lingui/core/macro";
  */
 export default function AiConnect() {
   const { clan } = useClanContext();
-  if (!isClanAdmin(clan)) return <Navigate to={`/clans/${clan.id}/people`} replace />;
+  const [guide, setGuide] = useState(false);
+  if (!isClanAdmin(clan))
+    return <Navigate to={`/clans/${clan.id}/people`} replace />;
 
   return (
     <div className="space-y-3">
-      <Breadcrumb items={[{ label: clan.name, to: `/clans/${clan.id}` }, { label: t`Kết nối AI` }]} />
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: t`Kết nối AI` },
+        ]}
+      />
       <PageHeader
         icon={<IconSparkles className="h-7 w-7" />}
         title={t`Kết nối AI`}
         description={t`Cho Claude, ChatGPT… tra cứu và cập nhật gia phả bằng đúng quyền của bạn. Xem và thu hồi mọi kết nối của dòng họ.`}
+        actions={
+          <Button size="sm" variant="outline" onClick={() => setGuide(true)}>
+            <IconBook className="mr-1.5 h-4 w-4" />
+            {t`Hướng dẫn kết nối`}
+          </Button>
+        }
       />
-      <ApiTokensSection clanId={clan.id} />
+      <ClanApiTokensTab clanId={clan.id} />
+      <McpGuidePanel open={guide} onClose={() => setGuide(false)} />
     </div>
   );
 }

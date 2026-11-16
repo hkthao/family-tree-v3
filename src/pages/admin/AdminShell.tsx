@@ -27,11 +27,14 @@ export function AdminShell({
   title,
   description,
   icon,
+  actions,
   children,
 }: {
   title: string;
   description?: string;
   icon: ReactNode;
+  /** Nút phụ ở tiêu đề trang (nút Thêm vẫn là `Fab`). */
+  actions?: ReactNode;
   children: ReactNode;
 }) {
   // `loading` là bắt buộc: lúc mới tải trang, phiên đăng nhập chưa khôi
@@ -70,7 +73,12 @@ export function AdminShell({
           <IconArrowLeft className="h-4 w-4" />
           {t`Quản trị nền tảng`}
         </Link>
-        <PageHeader icon={icon} title={title} description={description} />
+        <PageHeader
+          icon={icon}
+          title={title}
+          description={description}
+          actions={actions}
+        />
         {children}
       </main>
     </div>
