@@ -109,6 +109,7 @@ const MyFeedback = lazy(() => import("@/pages/MyFeedback"));
 const Share = lazy(() => import("@/pages/Share"));
 const KhoeCard = lazy(() => import("@/pages/KhoeCard"));
 const JoinClan = lazy(() => import("@/pages/JoinClan"));
+const ConnectAiAuthorize = lazy(() => import("@/pages/ConnectAiAuthorize"));
 const Signup = lazy(() => import("@/pages/Signup"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
@@ -154,6 +155,15 @@ export default function App() {
               <Route path="/xem/demo" element={<DemoRedirect />} />
               <Route path="/khoe/:token" element={<KhoeCard />} />
               <Route path="/join/:token" element={<JoinClan />} />
+              {/* OAuth: ChatGPT/Claude chuyển người dùng tới đây để bấm "Cho phép" kết nối AI. */}
+              <Route
+                path="/ket-noi-ai/cap-quyen"
+                element={
+                  <RequireAuth>
+                    <ConnectAiAuthorize />
+                  </RequireAuth>
+                }
+              />
               <Route path="/lien-he" element={<Contact />} />
               {/* Công khai, không cần đăng nhập: người ta phải đọc được TRƯỚC
             khi quyết định có đăng ký hay không. */}

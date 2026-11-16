@@ -93,28 +93,20 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
           </P>
         </div>
 
-        <Alert>
-          <AlertDescription>
-            {t`Trước hết bấm nút "+" để tạo token và chép lại ngay (chỉ hiện một lần). Ở các bước dưới, ${tok} là token đó.`}
-          </AlertDescription>
-        </Alert>
-
         {client === "claude" && (
           <ol className="space-y-4">
             <Step n={1} title={t`Mở Claude (claude.ai hoặc ứng dụng máy tính) → Customize → Connectors`} />
             <Step n={2} title={t`Bấm Add → đưa chuột vào Custom → chọn Web`} />
-            <Step n={3} title={t`Đặt tên và dán địa chỉ kết nối, bấm Continue`}>
+            <Step n={3} title={t`Đặt tên, dán địa chỉ kết nối rồi bấm Continue`}>
               <Code text={url} />
             </Step>
-            <Step n={4} title={t`Ở mục Authentication chọn "No sign in"`}>
-              <P>{t`Hệ thống dùng token riêng nên không cần đăng nhập ở bước này.`}</P>
+            <Step n={4} title={t`Giữ nguyên Authentication; ở OAuth client chọn "Register automatically"`}>
+              <P>{t`Bấm Add. Claude sẽ mở trang của hệ thống này để bạn đăng nhập và bấm "Cho phép".`}</P>
             </Step>
-            <Step n={5} title={t`Ở mục Request headers, thêm một dòng`}>
-              <Code text={`Authorization: Bearer ${tok}`} />
-              <P>{t`Tên là Authorization, giá trị là chữ Bearer, một dấu cách, rồi token của bạn.`}</P>
+            <Step n={5} title={t`Chọn dòng họ và quyền cho AI, bấm "Cho phép"`}>
+              <P>{t`Chỉ quản trị dòng họ mới cấp được. Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào.`}</P>
             </Step>
-            <Step n={6} title={t`Bấm Add để hoàn tất`} />
-            <Step n={7} title={t`Dùng trong cuộc trò chuyện`}>
+            <Step n={6} title={t`Dùng trong cuộc trò chuyện`}>
               <P>{t`Bấm "+" ở góc dưới bên trái ô chat (hoặc gõ "/"), chọn Connectors rồi bật kết nối vừa thêm.`}</P>
             </Step>
           </ol>
@@ -124,14 +116,27 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
           <ol className="space-y-4">
             <Step n={1} title={t`Mở ChatGPT trên web → Plugins (chatgpt.com/plugins)`} />
             <Step n={2} title={t`Bấm nút "+" → Add custom MCP server`} />
-            <Step n={3} title={t`Nhập tên, rồi dán địa chỉ kết nối vào ô Server URL`}>
+            <Step n={3} title={t`Nhập tên, dán địa chỉ kết nối vào ô Server URL`}>
               <Code text={url} />
             </Step>
-            <Step n={4} title={t`Chọn kiểu xác thực`}>
-              <P>{t`ChatGPT hiện chỉ có ba lựa chọn: OAuth, No authentication, hoặc OAuth or no authentication. Chưa có ô nhập token (Bearer) nên ChatGPT chưa kết nối trực tiếp được với token của hệ thống này.`}</P>
-              <P>{t`Nếu cần dùng ngay, hãy chọn tab Claude. Khi ChatGPT bổ sung ô nhập header, làm theo các bước tương tự tab Claude.`}</P>
+            <Step n={4} title={t`Ở Authentication chọn "OAuth"`}>
+              <P>{t`Đọc cảnh báo rủi ro, chọn "I understand and want to continue" rồi "Create as a plugin".`}</P>
+            </Step>
+            <Step n={5} title={t`Cài plugin vừa tạo và đăng nhập khi được hỏi`}>
+              <P>{t`ChatGPT mở trang của hệ thống này: chọn dòng họ, chọn quyền cho AI và bấm "Cho phép".`}</P>
+            </Step>
+            <Step n={6} title={t`Dùng trong cuộc trò chuyện`}>
+              <P>{t`Gõ "@" rồi chọn plugin; nên nói rõ tên plugin trong câu hỏi. Với thao tác ghi, kiểm tra nội dung trước khi xác nhận.`}</P>
             </Step>
           </ol>
+        )}
+
+        {(client === "claude-code" || client === "other") && (
+          <Alert>
+            <AlertDescription>
+              {t`Cách này dùng token: bấm nút "+" để tạo token và chép lại ngay (chỉ hiện một lần). Ở các bước dưới, ${tok} là token đó.`}
+            </AlertDescription>
+          </Alert>
         )}
 
         {client === "claude-code" && (
@@ -152,8 +157,8 @@ export function McpGuidePanel({ open, onClose, admin = false }: { open: boolean;
               <P>{t`Tìm mục thêm máy chủ / connector MCP tuỳ chỉnh và nhập hai thông tin:`}</P>
               <Code text={`${url}\nAuthorization: Bearer ${tok}`} />
             </Step>
-            <Step n={2} title={t`Nếu chỉ có OAuth hoặc không có ô nhập header`}>
-              <P>{t`Ứng dụng đó chưa kết nối được. Hãy dùng Claude.`}</P>
+            <Step n={2} title={t`Nếu ứng dụng không có ô nhập header`}>
+              <P>{t`Nếu ứng dụng hỗ trợ đăng nhập OAuth, chỉ cần nhập địa chỉ kết nối rồi làm theo màn hình "Cho phép".`}</P>
             </Step>
           </ol>
         )}

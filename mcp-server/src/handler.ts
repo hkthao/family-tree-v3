@@ -20,6 +20,8 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import { CORS, json } from "../../supabase/functions/_shared/cors.ts";
+import { admin, sha256Hex } from "./db.ts";
+import { challenge, resolveAccessToken } from "./oauth.ts";
 import { runTool } from "./tools.ts";
 import { UserError } from "./fields.ts";
 import { OPS } from "./ops.ts";
@@ -30,8 +32,8 @@ import { MCP_TOOLS, scopeAllows, toolsForScope, type Scope } from "./specs.ts";
 const env = (k: string): string | undefined => process.env[k];
 
 const SUPABASE_URL = env("SUPABASE_URL")!;
-const SERVICE_KEY = env("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = env("SUPABASE_ANON_KEY")!;
+const SERVICE_KEY = env("SUPABASE_SERVICE_ROLE_KEY")!;
 const JWT_SECRET =
   env("JWT_SECRET") ?? "";
 
@@ -39,6 +41,8 @@ const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER_INFO = { name: "dong-ho-viet", version: "3.0.0" };
 
 const TOKEN_RE = /^gpt_[A-Za-z0-9_-]{32,96}$/;
+/** Access token OAuth (cấp qua /oauth/token). */
+const OAUTH_TOKEN_RE = /^gat_[A-Za-z0-9_-]{32,96}$/;
 
 /** Trần chống vòng lặp: 120 lệnh/phút/token (bộ nhớ tiến trình; một server nên đếm chính xác — đủ để chặn script chạy bậy). */
 const RATE_PER_MIN = 120;
@@ -46,10 +50,7 @@ const RATE_PER_MIN = 120;
 const MAX_PENDING_PER_USER = 30;
 const hits = new Map<string, number[]>();
 
-/** Service role: CHỈ để tra token, vai trò, hồ sơ. Không đụng dữ liệu gia phả. */
-export const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+export { admin };
 
 const b64url = (b: ArrayBuffer | string) => {
   const bytes = typeof b === "string" ? new TextEncoder().encode(b) : new Uint8Array(b);
@@ -83,11 +84,6 @@ interface Auth {
   fresh: () => Promise<SupabaseClient>;
 }
 
-async function sha256Hex(s: string): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 function rateLimited(tokenId: string): boolean {
   const now = Date.now();
   const recent = (hits.get(tokenId) ?? []).filter((t) => now - t < 60_000);
@@ -99,15 +95,18 @@ function rateLimited(tokenId: string): boolean {
 async function authenticate(req: Request): Promise<Auth | Response> {
   const m = /^Bearer\s+(\S+)$/i.exec(req.headers.get("authorization") ?? "");
   const token = m?.[1] ?? "";
-  if (!TOKEN_RE.test(token)) return unauthorized("Thiếu hoặc sai token. Tạo token trong app: Cài đặt dòng họ → Kết nối AI.");
+  const isOAuth = OAUTH_TOKEN_RE.test(token);
+  if (!isOAuth && !TOKEN_RE.test(token)) {
+    return unauthorized("Thiếu hoặc sai token. Kết nối bằng OAuth, hoặc tạo token trong app: Cài đặt dòng họ → Kết nối AI.", req);
+  }
 
-  const { data: row } = await admin
-    .from("api_tokens")
-    .select("id, user_id, clan_id, scope, name, expires_at, revoked_at")
-    .eq("token_hash", await sha256Hex(token))
-    .maybeSingle();
+  // Token OAuth: tra ra "kết nối" (hàng api_tokens) rồi kiểm y như token thường (thu hồi, hạn, thành viên, khoá).
+  const grantId = isOAuth ? await resolveAccessToken(token) : null;
+  if (isOAuth && !grantId) return unauthorized("Phiên kết nối hết hạn hoặc đã bị thu hồi.", req);
+  const q = admin.from("api_tokens").select("id, user_id, clan_id, scope, name, expires_at, revoked_at");
+  const { data: row } = await (grantId ? q.eq("id", grantId) : q.eq("token_hash", await sha256Hex(token))).maybeSingle();
   if (!row || row.revoked_at || new Date(row.expires_at as string) < new Date()) {
-    return unauthorized("Token không còn hiệu lực (đã thu hồi hoặc hết hạn).");
+    return unauthorized("Token không còn hiệu lực (đã thu hồi hoặc hết hạn).", req);
   }
 
   const isAdminToken = row.scope === "admin";
@@ -118,11 +117,11 @@ async function authenticate(req: Request): Promise<Auth | Response> {
     admin.from("profiles").select("is_suspended, is_platform_admin").eq("id", row.user_id).maybeSingle(),
   ]);
   const sysAdmin = !!profile?.is_platform_admin;
-  if (profile?.is_suspended) return unauthorized("Tài khoản của người tạo token đang bị khoá.");
+  if (profile?.is_suspended) return unauthorized("Tài khoản của người tạo token đang bị khoá.", req);
   // Token admin: sống chừng nào chủ token CÒN là admin hệ thống — bị gỡ quyền là chết ngay ở lượt gọi kế tiếp.
-  if (isAdminToken && !sysAdmin) return unauthorized("Người tạo token không còn là admin hệ thống.");
+  if (isAdminToken && !sysAdmin) return unauthorized("Người tạo token không còn là admin hệ thống.", req);
   // Admin hệ thống không cần là thành viên (token do họ tạo cho dòng họ bất kỳ).
-  if (!isAdminToken && !member && !sysAdmin) return unauthorized("Người tạo token không còn là thành viên dòng họ.");
+  if (!isAdminToken && !member && !sysAdmin) return unauthorized("Người tạo token không còn là thành viên dòng họ.", req);
   // Quyền thật = min(gói, vai trò hiện tại). Ghi thẳng cần là editor/admin (hoặc admin hệ
   // thống); người đã bị hạ xuống viewer chỉ còn đọc. RLS vẫn là lớp chặn cuối cùng.
   const canEdit = sysAdmin || member?.role === "admin" || member?.role === "editor";
@@ -156,8 +155,9 @@ async function authenticate(req: Request): Promise<Auth | Response> {
   };
 }
 
-function unauthorized(message: string): Response {
-  return json({ error: message }, { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
+function unauthorized(message: string, req: Request): Response {
+  // resource_metadata chỉ cho client MCP biết đường khám phá OAuth (RFC 9728).
+  return json({ error: message }, { status: 401, headers: { "WWW-Authenticate": challenge(req) } });
 }
 
 // ─── Tool đọc bổ sung ──────────────────────────────────────────────────────────────

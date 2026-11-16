@@ -988,6 +988,10 @@ msgstr "The admin will contact you via {0} if needed."
 msgid "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự động sửa cây gia phả."
 msgstr "An admin will review it before applying. Your suggestion does not edit the family tree automatically."
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Cài đặt dòng họ → Kết nối AI."
+msgstr "The AI only works inside this clan and never beyond your role. You can revoke it any time in Clan settings → AI connection."
+
 #: src/components/ApiTokenPanels.tsx
 msgid "AI đang dùng token này sẽ bị chặn ngay."
 msgstr "Any AI using this token will be blocked immediately."
@@ -1342,8 +1346,8 @@ msgid "Bấm Add → đưa chuột vào Custom → chọn Web"
 msgstr "Click Add → hover over Custom → choose Web"
 
 #: src/components/McpGuidePanel.tsx
-msgid "Bấm Add để hoàn tất"
-msgstr "Click Add to finish"
+msgid "Bấm Add. Claude sẽ mở trang của hệ thống này để bạn đăng nhập và bấm \"Cho phép\"."
+msgstr "Click Add. Claude opens a page of this system where you sign in and click \"Allow\"."
 
 #: src/pages/clan/NewPerson.tsx
 msgid "Bấm để nhập các thông tin tuỳ chọn nếu bạn có: tên tự, tên húy, tên thụy, ngày mất, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần — vẫn lưu được người mới."
@@ -1988,6 +1992,10 @@ msgstr "Display mode"
 msgid "Cách liên lạc lại (tuỳ chọn)"
 msgstr "How to reach you (optional)"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Cách này dùng token: bấm nút \"+\" để tạo token và chép lại ngay (chỉ hiện một lần). Ở các bước dưới, {tok} là token đó."
+msgstr "This way uses a token: press \"+\" to create one and copy it right away (shown only once). In the steps below, {tok} is that token."
+
 #: src/pages/clan/Tree.tsx
 msgid "Cách trình bày sơ đồ cây"
 msgstr "How the tree diagram is laid out"
@@ -2034,6 +2042,10 @@ msgstr "Clan settings"
 #: src/lib/pageTitle.ts
 msgid "Cài đặt nền tảng"
 msgstr "Platform settings"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Cài plugin vừa tạo và đăng nhập khi được hỏi"
+msgstr "Install the plugin you just created and sign in when asked"
 
 #: src/pages/Contact.tsx
 #: src/pages/MyFeedback.tsx
@@ -2330,8 +2342,8 @@ msgid "chắt"
 msgstr "great-grandchild (chắt)"
 
 #: src/components/McpGuidePanel.tsx
-msgid "ChatGPT hiện chỉ có ba lựa chọn: OAuth, No authentication, hoặc OAuth or no authentication. Chưa có ô nhập token (Bearer) nên ChatGPT chưa kết nối trực tiếp được với token của hệ thống này."
-msgstr "ChatGPT currently offers only three options: OAuth, No authentication, or OAuth or no authentication. There is no field for a token (Bearer), so ChatGPT cannot connect directly with this system's token yet."
+msgid "ChatGPT mở trang của hệ thống này: chọn dòng họ, chọn quyền cho AI và bấm \"Cho phép\"."
+msgstr "ChatGPT opens a page of this system: choose the clan, choose the AI's permissions and click \"Allow\"."
 
 #: src/lib/relations.ts
 msgid "cháu"
@@ -2518,6 +2530,14 @@ msgstr "Just the year is fine — leave day and month blank. Tap 'Enter in the l
 msgid "Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
 msgstr "Just the year is fine. Tap 'Enter in the lunar calendar' if the document gives a lunar date."
 
+#: src/components/McpGuidePanel.tsx
+msgid "Chỉ quản trị dòng họ mới cấp được. Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
+msgstr "Only clan admins can grant this. The connection appears in Clan settings → AI connection, where you can revoke it any time."
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Chỉ quản trị dòng họ mới kết nối được AI. Tài khoản này chưa quản trị dòng họ nào."
+msgstr "Only clan admins can connect an AI. This account does not manage any clan."
+
 #: src/pages/clan/BookInfo.tsx
 msgid "Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ."
 msgstr "Only the clan admin can edit the name, description and display options; you can edit the information for the book."
@@ -2652,6 +2672,10 @@ msgstr "Pending review"
 msgid "Chờ người dùng gửi."
 msgstr "Waiting for users to send some."
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Cho phép"
+msgstr "Allow"
+
 #: src/pages/Account.tsx
 msgid "Cho phép thông báo"
 msgstr "Allow notifications"
@@ -2693,6 +2717,14 @@ msgstr "Select this whole page ({count})"
 msgid "Chọn để xử lý hàng loạt"
 msgstr "Select for bulk actions"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Chọn dòng họ và quyền cho AI, bấm \"Cho phép\""
+msgstr "Choose the clan and the AI's permissions, then click \"Allow\""
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Chọn dòng họ…"
+msgstr "Choose a clan…"
+
 #: src/pages/clan/Kinship.tsx
 msgid "Chọn đủ hai người để xem kết quả."
 msgstr "Choose both people to see the result."
@@ -2720,10 +2752,6 @@ msgstr "Choose two people in the clan, and the app works out how they address ea
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó."
 msgstr "Choose a style, then hover over a card / line and drag the blue dot to where you want to connect. Select a line first to change its style."
-
-#: src/components/McpGuidePanel.tsx
-msgid "Chọn kiểu xác thực"
-msgstr "Choose the authentication type"
 
 #: src/pages/clan/Merge.tsx
 msgid "Chọn lại"
@@ -4573,6 +4601,10 @@ msgstr "On: tap a card to expand/collapse a branch (light for large clans)"
 msgid "Đang bật…"
 msgstr "Turning on…"
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Đang cấp quyền…"
+msgstr "Granting access…"
+
 #: src/pages/clan/Tree.tsx
 msgid "Đang chính giữa là {focalName}. Bấm để về Thuỷ tổ."
 msgstr "Currently centered on {focalName}. Tap to go back to the founding ancestor."
@@ -4687,6 +4719,10 @@ msgstr "Checking the code…"
 #: src/pages/Account.tsx
 msgid "Đang kiểm tra trình duyệt…"
 msgstr "Checking the browser…"
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Đang kiểm tra yêu cầu…"
+msgstr "Checking the request…"
 
 #: src/components/CheckUpdateButton.tsx
 #: src/components/CheckUpdateButton.tsx
@@ -5244,13 +5280,13 @@ msgstr "Set reminder"
 msgid "Đặt nơi ở"
 msgstr "Set residence"
 
-#: src/components/McpGuidePanel.tsx
-msgid "Đặt tên và dán địa chỉ kết nối, bấm Continue"
-msgstr "Enter a name and paste the connection address, then click Continue"
-
 #: src/pages/NewClan.tsx
 msgid "Đặt tên và vài thông tin cơ bản — tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
 msgstr "Give it a name and a few basic details — once created the clan is empty, ready for you to add the founding ancestor."
+
+#: src/components/McpGuidePanel.tsx
+msgid "Đặt tên, dán địa chỉ kết nối rồi bấm Continue"
+msgstr "Enter a name, paste the connection address, then click Continue"
 
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
@@ -5552,6 +5588,10 @@ msgstr "Read + propose"
 msgid "Đọc + ghi trực tiếp"
 msgstr "Read + write directly"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Đọc cảnh báo rủi ro, chọn \"I understand and want to continue\" rồi \"Create as a plugin\"."
+msgstr "Read the risk warning, choose \"I understand and want to continue\", then \"Create as a plugin\"."
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Đọc danh sách Trang"
 msgstr "Read the list of Pages"
@@ -5811,6 +5851,10 @@ msgstr "Clans you have joined or follow."
 msgid "Dòng họ cần xoá danh bạ"
 msgstr "Clan whose People list is to be deleted"
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Dòng họ cho phép AI làm việc"
+msgstr "Clan the AI may work in"
+
 #: src/components/TreeFolderView.tsx
 msgid "Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu."
 msgstr "The clan has no one yet. Add the founding ancestor to begin."
@@ -5989,6 +6033,7 @@ msgstr "Stand at the resting place and tap \"Use my current location\" to save c
 msgid "Đứng tại từ đường rồi bấm \"Lấy vị trí hiện tại\" để lưu toạ độ chỉ đường."
 msgstr "Stand at the ancestral hall (từ đường) and tap \"Use my current location\" to save coordinates for directions."
 
+#: src/components/McpGuidePanel.tsx
 #: src/components/McpGuidePanel.tsx
 msgid "Dùng trong cuộc trò chuyện"
 msgstr "Use it in a conversation"
@@ -6382,9 +6427,17 @@ msgstr "keep"
 msgid "Giữ lại"
 msgstr "Keep"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Giữ nguyên Authentication; ở OAuth client chọn \"Register automatically\""
+msgstr "Keep Authentication as is; under OAuth client choose \"Register automatically\""
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Gỗ"
 msgstr "Wood"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Gõ \"@\" rồi chọn plugin; nên nói rõ tên plugin trong câu hỏi. Với thao tác ghi, kiểm tra nội dung trước khi xác nhận."
+msgstr "Type \"@\" and pick the plugin; name it in your question. For write actions, review the content before confirming."
 
 #. placeholder {0}: rel.full_name
 #: src/pages/clan/PersonDetail.tsx
@@ -6734,10 +6787,6 @@ msgstr "System"
 #: src/pages/InlawsConfirm.tsx
 msgid "Hệ thống chưa có dòng họ nào để gắn liên kết."
 msgstr "The system has no clan to attach the link to."
-
-#: src/components/McpGuidePanel.tsx
-msgid "Hệ thống dùng token riêng nên không cần đăng nhập ở bước này."
-msgstr "The system uses its own token, so no sign-in is needed at this step."
 
 #: src/components/apiTokenMeta.ts
 #: src/components/ApiTokenPanels.tsx
@@ -7465,6 +7514,10 @@ msgstr "Not now"
 msgid "Không cập nhật được"
 msgstr "Could not update"
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Không cấp quyền được, thử lại."
+msgstr "Could not grant access, please try again."
+
 #: src/components/ShareTreeButton.tsx
 msgid "Không chép được"
 msgstr "Could not copy"
@@ -7792,6 +7845,10 @@ msgstr "Could not unfollow"
 msgid "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại."
 msgstr "Could not reach the server. Check your connection and try again."
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Không kết nối được tới máy chủ. Thử lại sau."
+msgstr "Could not reach the server. Please try again later."
+
 #: src/pages/clan/Audit.tsx
 msgid "Không khôi phục được"
 msgstr "Could not restore"
@@ -7807,6 +7864,10 @@ msgstr "No frame"
 #: src/components/CheckUpdateButton.tsx
 msgid "Không kiểm tra được"
 msgstr "Could not check"
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Không kiểm tra được yêu cầu. Hãy bắt đầu lại từ ứng dụng AI."
+msgstr "Could not check the request. Please start again from the AI app."
 
 #. placeholder {0}: (error as Error).message
 #: src/components/InlawFamilyCard.tsx
@@ -9836,14 +9897,6 @@ msgstr "Background: Dragon"
 msgid "Nét đứt"
 msgstr "Dashed"
 
-#: src/components/McpGuidePanel.tsx
-msgid "Nếu cần dùng ngay, hãy chọn tab Claude. Khi ChatGPT bổ sung ô nhập header, làm theo các bước tương tự tab Claude."
-msgstr "If you need it now, use the Claude tab. When ChatGPT adds a header field, follow steps similar to the Claude tab."
-
-#: src/components/McpGuidePanel.tsx
-msgid "Nếu chỉ có OAuth hoặc không có ô nhập header"
-msgstr "If it only has OAuth or no header field"
-
 #: src/lib/tipCatalogue.ts
 msgid "Nếu đã có danh sách trong Excel, có thể nhập hàng loạt thay vì gõ từng người."
 msgstr "If you already have a list in Excel, you can import it in bulk instead of typing each person."
@@ -9851,6 +9904,14 @@ msgstr "If you already have a list in Excel, you can import it in bulk instead o
 #: src/pages/ForgotPassword.tsx
 msgid "Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm vào liên kết để đặt mật khẩu mới."
 msgstr "If that email is in our system, we've sent a password reset link. Check your inbox (and your spam folder) and click the link to set a new password."
+
+#: src/components/McpGuidePanel.tsx
+msgid "Nếu ứng dụng hỗ trợ đăng nhập OAuth, chỉ cần nhập địa chỉ kết nối rồi làm theo màn hình \"Cho phép\"."
+msgstr "If the app supports OAuth sign-in, just enter the connection address and follow the \"Allow\" screen."
+
+#: src/components/McpGuidePanel.tsx
+msgid "Nếu ứng dụng không có ô nhập header"
+msgstr "If the app has no header field"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Ngắm"
@@ -10487,8 +10548,8 @@ msgid "Nhập số (≥ 7)"
 msgstr "Enter a number (≥ 7)"
 
 #: src/components/McpGuidePanel.tsx
-msgid "Nhập tên, rồi dán địa chỉ kết nối vào ô Server URL"
-msgstr "Enter a name, then paste the connection address into Server URL"
+msgid "Nhập tên, dán địa chỉ kết nối vào ô Server URL"
+msgstr "Enter a name and paste the connection address into Server URL"
 
 #: src/pages/admin/GiaPha.tsx
 msgid "Nhập thất bại"
@@ -10822,6 +10883,10 @@ msgstr "Female"
 msgid "Núi sương"
 msgstr "Misty mountains"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Ở Authentication chọn \"OAuth\""
+msgstr "Under Authentication choose \"OAuth\""
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ô chữ"
@@ -10839,14 +10904,6 @@ msgstr "Where"
 #: src/pages/admin/PodcastPage.tsx
 msgid "ở Graph API Explorer với quyền"
 msgstr "in Graph API Explorer with the permissions"
-
-#: src/components/McpGuidePanel.tsx
-msgid "Ở mục Authentication chọn \"No sign in\""
-msgstr "Under Authentication choose \"No sign in\""
-
-#: src/components/McpGuidePanel.tsx
-msgid "Ở mục Request headers, thêm một dòng"
-msgstr "Under Request headers, add one line"
 
 #. placeholder {0}: years(r.reign_start_year, r.reign_end_year)
 #: src/components/HistoricalPersonSections.tsx
@@ -11246,6 +11303,10 @@ msgstr "Nobility"
 #: src/components/ApiTokenPanels.tsx
 msgid "Quyền"
 msgstr "Permission"
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Quyền cho AI"
+msgstr "AI permissions"
 
 #: src/components/InviteLinkCard.tsx
 msgid "Quyền khi tham gia"
@@ -12310,10 +12371,6 @@ msgstr "Taboo name / nickname"
 #: src/pages/clan/EditPerson.tsx
 msgid "Tên khai sinh, kiêng gọi sau khi mất"
 msgstr "Birth name, avoided in speech after death"
-
-#: src/components/McpGuidePanel.tsx
-msgid "Tên là Authorization, giá trị là chữ Bearer, một dấu cách, rồi token của bạn."
-msgstr "The name is Authorization; the value is the word Bearer, a space, then your token."
 
 #: src/pages/clan/Members.tsx
 msgid "Tên này là tên tài khoản của người ấy, hiện ở mọi dòng họ họ tham gia."
@@ -14212,10 +14269,6 @@ msgstr "Duplicate title in the pasted list"
 msgid "Trước"
 msgstr "Previous"
 
-#: src/components/McpGuidePanel.tsx
-msgid "Trước hết bấm nút \"+\" để tạo token và chép lại ngay (chỉ hiện một lần). Ở các bước dưới, {tok} là token đó."
-msgstr "First press \"+\" to create a token and copy it right away (shown only once). In the steps below, {tok} is that token."
-
 #: src/pages/admin/GiaPha.tsx
 msgid "trước khi"
 msgstr "before"
@@ -14257,6 +14310,7 @@ msgstr "From you up through the generations"
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
+#: src/pages/ConnectAiAuthorize.tsx
 msgid "Từ chối"
 msgstr "Reject"
 
@@ -14407,9 +14461,9 @@ msgstr "AI app"
 msgid "Ứng dụng AI khác có hỗ trợ MCP từ xa"
 msgstr "Other AI apps that support remote MCP"
 
-#: src/components/McpGuidePanel.tsx
-msgid "Ứng dụng đó chưa kết nối được. Hãy dùng Claude."
-msgstr "That app cannot connect yet. Use Claude."
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Ứng dụng muốn kết nối với gia phả của bạn"
+msgstr "This app wants to connect to your family tree"
 
 #: src/hooks/useClanContext.ts
 msgid "useClanContext cần nằm trong ClanLayout (Outlet hoặc PanelHost)"
@@ -15616,3 +15670,7 @@ msgstr "Down"
 #: src/pages/admin/Feedback.tsx
 msgid "Ý kiến"
 msgstr "Opinion"
+
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "Yêu cầu kết nối không hợp lệ"
+msgstr "Invalid connection request"
