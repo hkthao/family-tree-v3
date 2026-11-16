@@ -263,8 +263,8 @@ export default function ConnectAiAuthorize() {
                   {isAdminScope
                     ? t`AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI.`
                     : picked.length > 1
-                      ? t`AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Cài đặt dòng họ → Kết nối AI.`
-                      : t`AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Cài đặt dòng họ → Kết nối AI.`}
+                      ? t`AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Công cụ & Quản trị → Kết nối AI.`
+                      : t`AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Công cụ & Quản trị → Kết nối AI.`}
                 </p>
 
                 {err && (

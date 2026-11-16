@@ -174,7 +174,7 @@ export function McpGuidePanel({
               n={5}
               title={t`Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm "Cho phép"`}
             >
-              <P>{t`Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào.`}</P>
+              <P>{t`Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong menu Công cụ & Quản trị → Kết nối AI, thu hồi ở đó bất cứ lúc nào.`}</P>
             </Step>
             <Step n={6} title={t`Dùng trong cuộc trò chuyện`}>
               <P>{t`Bấm "+" ở góc dưới bên trái ô chat (hoặc gõ "/"), chọn Connectors rồi bật kết nối vừa thêm.`}</P>
