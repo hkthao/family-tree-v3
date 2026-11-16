@@ -1,15 +1,17 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
+import { McpGuidePanel } from "@/components/McpGuidePanel";
 import { ApiTokenCreatePanel, ApiTokenRow, ApiTokenViewPanel } from "@/components/ApiTokenPanels";
 import { statusMeta, tokenStatus, type ApiTokenStatus } from "@/components/apiTokenMeta";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { Fab } from "@/components/Fab";
-import { IconCheck, IconKey, IconSearch } from "@/components/icons";
+import { IconBook, IconCheck, IconKey, IconSearch } from "@/components/icons";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
+import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
@@ -25,6 +27,7 @@ export function ApiTokensAdminTab() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
+  const [guide, setGuide] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ApiTokenStatus | "">("");
@@ -46,6 +49,12 @@ export function ApiTokensAdminTab() {
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" onClick={() => setGuide(true)}>
+          <IconBook className="mr-1.5 h-4 w-4" />
+          {t`Hướng dẫn kết nối`}
+        </Button>
+      </div>
       <Fab onClick={() => setCreating(true)} label={t`Token mới`} />
 
       <CollapsibleFilters
@@ -129,6 +138,7 @@ export function ApiTokensAdminTab() {
         />
       )}
 
+      <McpGuidePanel open={guide} onClose={() => setGuide(false)} admin />
       <ApiTokenCreatePanel
         open={creating}
         onClose={() => setCreating(false)}

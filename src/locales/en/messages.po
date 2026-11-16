@@ -252,6 +252,14 @@ msgstr "· Limit of {MAX_PER_EXPORT} people at a time"
 msgid "· hết hạn {0}"
 msgstr "· expires {0}"
 
+#: src/components/McpGuidePanel.tsx
+msgid "\"Cập nhật nơi sinh của … là …\" (cần gói ghi trực tiếp)."
+msgstr "\"Update the birthplace of … to …\" (needs the direct-write plan)."
+
+#: src/components/McpGuidePanel.tsx
+msgid "\"Cho tôi xem thông tin dòng họ.\""
+msgstr "\"Show me the clan information.\""
+
 #: src/lib/festivals.ts
 msgid "“Cúng quanh năm không bằng rằm tháng Giêng.”"
 msgstr "“Offerings all year round are not worth the full moon of the first month.”"
@@ -260,13 +268,29 @@ msgstr "“Offerings all year round are not worth the full moon of the first mon
 msgid "“Dù ai đi ngược về xuôi…” — ngày nghỉ lễ."
 msgstr "“Wherever you wander, remember where you came from…” — public holiday."
 
+#: src/components/McpGuidePanel.tsx
+msgid "\"Liệt kê các đóng góp đang chờ duyệt trên toàn hệ thống.\""
+msgstr "\"List the contributions awaiting review across the whole system.\""
+
 #: src/components/QuickDateFixSheet.tsx
 msgid "\"Sửa đầy đủ\""
 msgstr "\"Full edit\""
 
+#: src/components/McpGuidePanel.tsx
+msgid "\"Tìm ông Huỳnh Văn A và cho biết con cháu.\""
+msgstr "\"Find Huỳnh Văn A and list his descendants.\""
+
+#: src/components/McpGuidePanel.tsx
+msgid "\"Tuần này có ngày giỗ nào?\""
+msgstr "\"Are there any death anniversaries this week?\""
+
 #: src/pages/admin/Config.tsx
 msgid "“Xem thử gia phả mẫu”"
 msgstr "“Try the sample family tree”"
+
+#: src/components/McpGuidePanel.tsx
+msgid "\"Xuất sổ gia phả PDF.\""
+msgstr "\"Export the family book as PDF.\""
 
 #. placeholder {0}: c.person_count
 #: src/pages/admin/Config.tsx
@@ -1567,6 +1591,10 @@ msgstr "Notify in advance"
 msgid "Bắt buộc"
 msgstr "Required"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Bật chế độ nhà phát triển"
+msgstr "Enable developer mode"
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Bật chế độ nối: nhấp lần lượt hai thẻ"
 msgstr "Turn on connect mode: click two cards in turn"
@@ -1694,6 +1722,10 @@ msgstr "Locked"
 #: src/pages/JoinClan.tsx
 msgid "Biên tập"
 msgstr "Editor"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Biểu tượng công cụ ở ô chat sẽ liệt kê các tool của dong-ho-viet."
+msgstr "The tools icon in the chat box will list the dong-ho-viet tools."
 
 #: src/components/PodcastViewer.tsx
 msgid "Bình luận"
@@ -1837,6 +1869,10 @@ msgstr "Previous picture"
 #: src/components/Tree3DView.tsx
 msgid "bung / thu nhánh con"
 msgstr "expand / collapse child branches"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Cả bốn cách đều cần token: bấm nút \"+\" để tạo, chép token ngay (chỉ hiện một lần), rồi thay {tok} trong các lệnh dưới đây."
+msgstr "All four ways need a token: press \"+\" to create one, copy it right away (shown only once), then replace {tok} in the commands below."
 
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Cả cây"
@@ -1994,6 +2030,10 @@ msgstr "Clan settings"
 #: src/lib/pageTitle.ts
 msgid "Cài đặt nền tảng"
 msgstr "Platform settings"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Cài Node.js (để chạy cầu nối mcp-remote)"
+msgstr "Install Node.js (to run the mcp-remote bridge)"
 
 #: src/pages/Contact.tsx
 #: src/pages/MyFeedback.tsx
@@ -2289,6 +2329,10 @@ msgstr "Welcome to the {0} clan! 🎉"
 msgid "chắt"
 msgstr "great-grandchild (chắt)"
 
+#: src/components/McpGuidePanel.tsx
+msgid "ChatGPT → Settings → Connectors → Advanced → Developer mode (cần gói trả phí hỗ trợ MCP tuỳ chỉnh)."
+msgstr "ChatGPT → Settings → Connectors → Advanced → Developer mode (needs a paid plan that supports custom MCP)."
+
 #: src/lib/relations.ts
 msgid "cháu"
 msgstr "grandchild (cháu)"
@@ -2343,6 +2387,7 @@ msgstr "Insert a new milestone below"
 msgid "Chèn mốc mới bên dưới mốc năm {0}"
 msgstr "Insert a new milestone below the milestone of year {0}"
 
+#: src/components/McpGuidePanel.tsx
 #: src/components/ShareTreeButton.tsx
 msgid "Chép"
 msgstr "Copy"
@@ -2660,6 +2705,10 @@ msgstr "Choose .md files (you can choose several)…"
 msgid "Chọn file .md…"
 msgstr "Choose a .md file…"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Chọn gói quyền nhỏ nhất đủ dùng; AI không bao giờ vượt quá vai trò hiện tại của người tạo token."
+msgstr "Pick the smallest permission plan that works; the AI never exceeds the token creator's current role."
+
 #: src/pages/clan/People.tsx
 msgid "Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt."
 msgstr "Choose two people in the clan to see how they address each other in the Vietnamese tradition."
@@ -2679,6 +2728,10 @@ msgstr "Choose again"
 #: src/components/CalendarDateInput.tsx
 msgid "Chọn lịch"
 msgstr "Choose calendar"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Chọn loại AI bạn đang dùng"
+msgstr "Choose the AI you use"
 
 #: src/components/BookTextsSection.tsx
 msgid "Chọn mẫu"
@@ -2743,6 +2796,10 @@ msgstr "Choose which parts people outside the clan (signed in, but not members) 
 #: src/components/QuickAddSheet.tsx
 msgid "Chọn quan hệ với người này:"
 msgstr "Choose the relationship to this person:"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Chọn tạo connector mới, nhập địa chỉ:"
+msgstr "Create a new connector and enter this address:"
 
 #: src/pages/clan/QrExport.tsx
 msgid "Chọn tất cả"
@@ -3205,6 +3262,10 @@ msgstr "Move down"
 #: src/components/ApiTokenPanels.tsx
 msgid "Claude Code — chạy một lần trong terminal"
 msgstr "Claude Code — run once in a terminal"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Client MCP bất kỳ hỗ trợ HTTP"
+msgstr "Any MCP client that supports HTTP"
 
 #: src/components/ApiTokenPanels.tsx
 msgid "Client MCP khác (Claude Desktop, ChatGPT…): địa chỉ {url}, header Authorization: Bearer <token>."
@@ -4417,6 +4478,10 @@ msgstr "Special zone"
 msgid "Dán <0>thân Markdown</0>: <1>#</1> Tiêu đề · đoạn mở đầu là mô tả ngắn · mỗi <2>##</2> là một đoạn · <3>![chú thích](https://…)</3> làm ảnh minh hoạ · đoạn <4>## Câu hỏi thường gặp</4> với các <5>###</5> thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới."
 msgstr "Paste <0>Markdown body</0>: <1>#</1> Title · the opening paragraph is the short description · each <2>##</2> is a section · <3>![caption](https://…)</3> is an illustration · a section <4>## Frequently asked questions</4> with <5>###</5> entries becomes the FAQ. Topic / region / origin are chosen in the form below."
 
+#: src/components/McpGuidePanel.tsx
+msgid "Dán đoạn sau vào file claude_desktop_config.json (gộp vào mục mcpServers nếu đã có)."
+msgstr "Paste the following into claude_desktop_config.json (merge into mcpServers if it already exists)."
+
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ."
 msgstr "Paste or engrave this QR code at the grave / tower — scan it to see the resting-place information."
@@ -5375,6 +5440,10 @@ msgstr "Detailed address (optional)"
 msgid "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…"
 msgstr "Local history of the homeland; communal houses, pagodas and shrines; markets, ferry landings; traditional trades…"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Địa chỉ và header cần nhập:"
+msgstr "Address and header to enter:"
+
 #: src/components/BookTextsSection.tsx
 msgid "Địa chí xóm ấp từ xưa đến nay, đình làng, chợ, bến đò, nghề truyền thống. Di sản đã nhập ở mục Di sản sẽ tự in kèm."
 msgstr "Local history of the hamlet through the ages: the communal house, markets, ferry landings and traditional trades. Heritage entered in the Heritage section is printed automatically."
@@ -6205,6 +6274,10 @@ msgstr "Light mode"
 #: src/pages/clan/ClanMenu.tsx
 msgid "Giao diện tối"
 msgstr "Dark mode"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Giao thức JSON-RPC 2.0 qua POST; trả danh sách tool theo quyền của token."
+msgstr "JSON-RPC 2.0 over POST; returns the tools allowed by the token."
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Giấy kẻ ô"
@@ -7040,6 +7113,15 @@ msgstr "How to use Dòng Họ Việt: create a clan, add people, draw the family
 msgid "Hướng dẫn dùng từng tính năng."
 msgstr "How to use each feature."
 
+#: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ApiTokensSection.tsx
+msgid "Hướng dẫn kết nối"
+msgstr "Connection guide"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Hướng dẫn kết nối AI"
+msgstr "AI connection guide"
+
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Hướng dẫn lấy link (bấm để xem)"
 msgstr "How to get a link (tap to view)"
@@ -7240,6 +7322,7 @@ msgstr "Facebook connection"
 msgid "Kết quả"
 msgstr "Result"
 
+#: src/components/McpGuidePanel.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/lib/queries/honor.ts
@@ -7319,6 +7402,10 @@ msgstr "Time range"
 #: src/components/KhoeButton.tsx
 msgid "Khoe — tạo thẻ cá nhân chia sẻ"
 msgstr "Show off — create a personal card to share"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Khởi động lại Claude Code rồi kiểm tra"
+msgstr "Restart Claude Code and check"
 
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
@@ -8519,6 +8606,10 @@ msgstr "Type"
 msgid "Loại {0} người khỏi danh sách?"
 msgstr "Remove {0} people from the list?"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Loại AI"
+msgstr "AI type"
+
 #: src/components/BoardPostForm.tsx
 msgid "Loại bài"
 msgstr "Post type"
@@ -8863,6 +8954,10 @@ msgstr "Save changes"
 msgid "Lưu từ đường, tục lệ"
 msgstr "Save the ancestral hall, customs"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Lưu ý an toàn"
+msgstr "Safety notes"
+
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Lưu ý: link phải bắt đầu bằng <0>https://</0> và để chế độ ai có link đều xem được, nếu không người trong họ sẽ không mở được."
 msgstr "Note: the link must start with <0>https://</0> and be set so that anyone with the link can view it, otherwise clan members won't be able to open it."
@@ -9104,6 +9199,10 @@ msgstr "Open your phone's camera and scan the QR code. The code is valid for ~5 
 msgid "Mở chế độ di chuyển cây"
 msgstr "Turn on tree move mode"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Mở Claude Desktop → Settings → Developer → Edit Config"
+msgstr "Open Claude Desktop → Settings → Developer → Edit Config"
+
 #: src/pages/clan/MapStats.tsx
 msgid "Mở Danh bạ → chọn người → \"Sửa\" và nhập thẻ \"Nơi ở hiện tại\"."
 msgstr "Open People → choose a person → \"Edit\" and fill in the \"Current residence\" card."
@@ -9244,6 +9343,10 @@ msgstr "Short description"
 #: src/pages/clan/HeritageForm.tsx
 msgid "Mô tả ngắn (tuỳ chọn)"
 msgstr "Short description (optional)"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Mở terminal, chạy một lần"
+msgstr "Open a terminal and run once"
 
 #: src/pages/clan/Members.tsx
 msgid "Mở trang người này →"
@@ -9728,6 +9831,10 @@ msgstr "If you already have a list in Excel, you can import it in bulk instead o
 #: src/pages/ForgotPassword.tsx
 msgid "Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm vào liên kết để đặt mật khẩu mới."
 msgstr "If that email is in our system, we've sent a password reset link. Check your inbox (and your spam folder) and click the link to set a new password."
+
+#: src/components/McpGuidePanel.tsx
+msgid "Nếu giao diện cho nhập header, đặt Authorization = Bearer <token>. Nếu ChatGPT chỉ cho OAuth hoặc không xác thực thì chưa nối thẳng được; dùng Claude Code/Desktop hoặc cách \"Khác\"."
+msgstr "If the UI lets you enter headers, set Authorization = Bearer <token>. If ChatGPT only offers OAuth or no authentication, it cannot connect directly; use Claude Code/Desktop or the \"Other\" option."
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Ngắm"
@@ -11742,6 +11849,10 @@ msgstr "Reload the page to continue. If the error repeats, tell the administrato
 msgid "Tài liệu dài nên chia thành từng đoạn có tiêu đề (vd \"Lời nói đầu\", \"Chúc thư\", \"Phụ lục\"…) — người đọc sẽ thấy mục lục và gập/mở từng đoạn, đỡ ngợp. Để trống nếu chỉ dùng ô Nội dung ở trên."
 msgstr "A long document is best split into sections with titles (e.g. \"Foreword\", \"Will\", \"Appendix\"…) — readers will see a table of contents and can collapse / expand each section, so it's less overwhelming. Leave blank if you only use the Content box above."
 
+#: src/components/McpGuidePanel.tsx
+msgid "Tải ở nodejs.org, bản LTS. Máy đã có Node thì bỏ qua bước này."
+msgstr "Download the LTS version from nodejs.org. Skip if Node is already installed."
+
 #: src/pages/clan/Tree.tsx
 msgid "Tải PDF"
 msgstr "Download PDF"
@@ -12403,6 +12514,10 @@ msgstr "changes"
 msgid "Thay đổi chưa lưu ở cây hiện tại sẽ không được giữ."
 msgstr "Unsaved changes in the current tree will not be kept."
 
+#: src/components/McpGuidePanel.tsx
+msgid "Thấy dong-ho-viet ở trạng thái connected là xong."
+msgstr "Done when dong-ho-viet shows as connected."
+
 #: src/components/BookTextsSection.tsx
 msgid "Thay nội dung đang có bằng mẫu?"
 msgstr "Replace the existing text with the template?"
@@ -12524,6 +12639,10 @@ msgstr "Add the first branch in the form below — branches help filter the Peop
 msgid "Thêm chi tiết khác"
 msgstr "Add more details"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Thêm cờ --scope user nếu muốn dùng ở mọi thư mục."
+msgstr "Add --scope user to use it in every folder."
+
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/Cemeteries.tsx
 msgid "Thêm cơ sở"
@@ -12591,6 +12710,10 @@ msgstr "Add link"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Thêm mảnh của tôi"
 msgstr "Add my piece"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Thêm máy chủ MCP"
+msgstr "Add the MCP server"
 
 #: src/lib/pageTitle.ts
 #: src/pages/clan/RestingPlaces.tsx
@@ -12836,6 +12959,10 @@ msgstr "Missing share token"
 msgid "Thờ cúng & tín ngưỡng"
 msgstr "Worship & beliefs"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Thoát hẳn rồi mở lại Claude Desktop"
+msgstr "Quit and reopen Claude Desktop"
+
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/Tree3DView.tsx
@@ -12976,6 +13103,10 @@ msgstr "Income (contribution)"
 msgid "thứ {0}"
 msgstr "No. {0}"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Thử bằng curl hoặc script"
+msgstr "Try it with curl or a script"
+
 #: src/components/admin/ApiTokensAdminTab.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/Clans.tsx
@@ -13074,6 +13205,10 @@ msgstr "Collapse all"
 #: src/pages/clan/Inlaws.tsx
 msgid "Thu hồi"
 msgstr "Revoke"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Thử hỏi AI"
+msgstr "Try asking the AI"
 
 #: src/pages/clan/Inlaws.tsx
 msgid "Thu hồi liên kết?"
@@ -13773,6 +13908,10 @@ msgstr "At least 8 characters."
 msgid "Token"
 msgstr "Token"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Token Admin hệ thống rất mạnh: nên đặt hạn ngắn, mọi lệnh được ghi nhật ký."
+msgstr "A system-admin token is very powerful: use a short expiry; every command is logged."
+
 #: src/components/ApiTokenPanels.tsx
 msgid "Token AI"
 msgstr "AI token"
@@ -13806,6 +13945,10 @@ msgstr "New token"
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token người dùng"
 msgstr "User token"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Token như mật khẩu: không gửi vào nhóm chat hay dán lên mạng. Nghi lộ thì thu hồi ngay."
+msgstr "A token is like a password: never post it in chat groups or online. Revoke it right away if you suspect a leak."
 
 #: src/lib/tipCatalogue.ts
 msgid "Tombstone ghi ngày âm — bấm 'Nhập theo lịch Âm' khi sửa người."
@@ -14826,6 +14969,10 @@ msgstr "Confirm this link?"
 #: src/pages/Account.tsx
 msgid "Xác nhận mật khẩu mới"
 msgstr "Confirm the new password"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Xác thực bằng token"
+msgstr "Authenticate with the token"
 
 #: src/components/gallery/palettes.ts
 msgid "Xanh rêu"

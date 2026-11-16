@@ -1,8 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { McpGuidePanel } from "@/components/McpGuidePanel";
 import { ApiTokenCreatePanel, ApiTokenRow, ApiTokenViewPanel } from "@/components/ApiTokenPanels";
-import { IconKey, IconPlus } from "@/components/icons";
+import { IconBook, IconKey, IconPlus } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { listMyApiTokens } from "@/lib/queries/api-tokens";
@@ -19,6 +20,7 @@ export function ApiTokensSection({ clanId }: { clanId: string }) {
   const qc = useQueryClient();
   const key = ["api-tokens", clanId, userId];
   const [creating, setCreating] = useState(false);
+  const [guide, setGuide] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const { data: tokens = [], isLoading } = useQuery({
@@ -45,13 +47,18 @@ export function ApiTokensSection({ clanId }: { clanId: string }) {
         </ul>
       )}
 
-      <div className="flex justify-end border-t pt-4">
+      <div className="flex justify-end gap-2 border-t pt-4">
+        <Button size="sm" variant="outline" onClick={() => setGuide(true)}>
+          <IconBook className="mr-1.5 h-4 w-4" />
+          {t`Hướng dẫn kết nối`}
+        </Button>
         <Button size="sm" onClick={() => setCreating(true)}>
           <IconPlus className="mr-1.5 h-4 w-4" />
           {t`Tạo token`}
         </Button>
       </div>
 
+      <McpGuidePanel open={guide} onClose={() => setGuide(false)} />
       <ApiTokenCreatePanel
         open={creating}
         onClose={() => setCreating(false)}
