@@ -9,7 +9,7 @@ AI chạy **bằng danh tính chủ token**, không phải một tài khoản ri
 sống 2 phút cho chủ token rồi truy vấn bằng JWT đó. Nhờ vậy RLS, trigger audit và quyền xoá
 của app áp dụng nguyên vẹn, không có bản luật thứ hai để lệch.
 
-- **Ai tạo token:** chỉ admin dòng họ (*Cài đặt dòng họ → Kết nối AI*) hoặc admin hệ thống
+- **Ai tạo token:** chỉ admin dòng họ (*menu Công cụ & Quản trị → Kết nối AI*, trang `/clans/:id/ket-noi-ai`) hoặc admin hệ thống
   (*Quản trị → Kết nối AI*, xem/thu hồi mọi token). Admin dòng họ xem và thu hồi được MỌI token của dòng họ mình
   (kể cả của admin khác), không thấy token dòng họ khác hay token admin hệ thống (RLS `api_tokens_clan_admin_*`). Token gắn 1 người + 1 dòng họ, hạn 30/90/365 ngày.
   DB chỉ lưu SHA-256; bản rõ hiện đúng một lần.

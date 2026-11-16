@@ -998,8 +998,8 @@ msgid "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn kh�
 msgstr "An admin will review it before applying. Your suggestion does not edit the family tree automatically."
 
 #: src/pages/ConnectAiAuthorize.tsx
-msgid "AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Cài đặt dòng họ → Kết nối AI."
-msgstr "The AI only works inside this clan and never beyond your role. You can revoke it any time in Clan settings → AI connection."
+msgid "AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Công cụ & Quản trị → Kết nối AI."
+msgstr "The AI only works inside this clan and never beyond your role. You can revoke it any time in Tools & Admin → AI connection."
 
 #: src/components/ApiTokenPanels.tsx
 msgid "AI đang dùng token này sẽ bị chặn ngay."
@@ -1014,8 +1014,8 @@ msgid "AI làm việc trên mọi dòng họ và các chức năng quản trị,
 msgstr "The AI works across every clan and the admin functions, only while you remain a system admin. Dangerous commands require confirmation with a reason, and every command is logged. Revoke it in Admin → AI connection."
 
 #: src/pages/ConnectAiAuthorize.tsx
-msgid "AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Cài đặt dòng họ → Kết nối AI."
-msgstr "The AI works in the selected clans (you just say the clan name), with one shared permission plan, and in each clan never beyond your current role. Revoke in Clan settings → AI connection."
+msgid "AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Công cụ & Quản trị → Kết nối AI."
+msgstr "The AI works in the selected clans (you just say the clan name), with one shared permission plan, and in each clan never beyond your current role. Revoke in Tools & Admin → AI connection."
 
 #: src/components/apiTokenMeta.ts
 msgid "AI thêm, sửa, xoá người ngay, với đúng quyền hiện tại của người tạo token (bị hạ vai trò thì token hạ theo). Mọi thay đổi ghi vào nhật ký dưới tên người tạo và khôi phục được."
@@ -2557,8 +2557,8 @@ msgid "Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tà
 msgstr "Just the year is fine. Tap 'Enter in the lunar calendar' if the document gives a lunar date."
 
 #: src/components/McpGuidePanel.tsx
-msgid "Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
-msgstr "Only clan admins can grant this (system admins also get an option covering every clan). The connection appears in Clan settings → AI connection, where you can revoke it any time."
+msgid "Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong menu Công cụ & Quản trị → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
+msgstr "Only clan admins can grant this (system admins also get an option covering every clan). The connection appears in the Tools & Admin menu → AI connection, where you can revoke it any time."
 
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "Chỉ quản trị dòng họ mới kết nối được AI. Tài khoản này chưa quản trị dòng họ nào."
@@ -3176,10 +3176,6 @@ msgstr "No provinces / cities yet"
 #: src/components/ClanApiTokensTab.tsx
 msgid "Chưa có token nào"
 msgstr "No tokens yet"
-
-#: src/components/ApiTokensSection.tsx
-msgid "Chưa có token nào."
-msgstr "No tokens yet."
 
 #: src/components/PersonRelationsQuick.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -4982,7 +4978,6 @@ msgstr "loading…"
 
 #: src/App.tsx
 #: src/components/admin/ApiTokensAdminTab.tsx
-#: src/components/ApiTokensSection.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/ClanApiTokensTab.tsx
@@ -7211,7 +7206,6 @@ msgstr "How to use Dòng Họ Việt: create a clan, add people, draw the family
 msgid "Hướng dẫn dùng từng tính năng."
 msgstr "How to use each feature."
 
-#: src/components/ApiTokensSection.tsx
 #: src/pages/admin/KetNoiAiPage.tsx
 #: src/pages/clan/AiConnect.tsx
 msgid "Hướng dẫn kết nối"
@@ -7413,7 +7407,6 @@ msgstr "Drag, zoom, choose a center person"
 #: src/pages/admin/KetNoiAiPage.tsx
 #: src/pages/clan/AiConnect.tsx
 #: src/pages/clan/AiConnect.tsx
-#: src/pages/clan/Settings.tsx
 msgid "Kết nối AI"
 msgstr "AI connection"
 
@@ -12173,7 +12166,6 @@ msgid "Tạo thiệp chia sẻ"
 msgstr "Create a share card"
 
 #: src/components/ApiTokenPanels.tsx
-#: src/components/ApiTokensSection.tsx
 msgid "Tạo token"
 msgstr "Create token"
 
@@ -13958,8 +13950,6 @@ msgstr "Full platform administration: every clan (read + write), user accounts, 
 msgid "Toàn quyền quản trị nền tảng.{0}"
 msgstr "Full platform administration rights.{0}"
 
-#: src/components/ApiTokensSection.tsx
-#: src/components/ApiTokensSection.tsx
 #: src/components/ClanApiTokensTab.tsx
 #: src/components/ClanApiTokensTab.tsx
 msgid "Tôi"
@@ -14060,10 +14050,6 @@ msgstr "Tokens for outside AIs (Claude, ChatGPT…); revoke when a leak is suspe
 #: src/pages/admin/KetNoiAiPage.tsx
 msgid "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu hồi khi nghi bị lộ."
 msgstr "Tokens for outside AIs (Claude, ChatGPT…) to look up the tree; revoke when a leak is suspected."
-
-#: src/pages/clan/Settings.tsx
-msgid "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; AI luôn làm việc với quyền của người cấp."
-msgstr "Tokens for Claude, ChatGPT… to work with this clan's family tree. You can see and revoke every token in the clan; the AI always works with the permissions of whoever granted it."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token không dùng được"
