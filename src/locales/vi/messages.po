@@ -4720,6 +4720,10 @@ msgstr "Đăng ký lịch — Google / Apple Calendar tự cập nhật"
 msgid "Đăng ký lịch tự cập nhật"
 msgstr "Đăng ký lịch tự cập nhật"
 
+#: src/components/McpGuidePanel.tsx
+msgid "Đang là địa chỉ máy bạn (localhost), AI bên ngoài không truy cập được. Sửa thành địa chỉ công khai của máy chủ MCP rồi chép lệnh bên dưới."
+msgstr "Đang là địa chỉ máy bạn (localhost), AI bên ngoài không truy cập được. Sửa thành địa chỉ công khai của máy chủ MCP rồi chép lệnh bên dưới."
+
 #: src/pages/clan/Todo.tsx
 msgid "Đang loại…"
 msgstr "Đang loại…"
@@ -5435,6 +5439,10 @@ msgstr "Địa chỉ chi tiết"
 #: src/pages/clan/HeritageForm.tsx
 msgid "Địa chỉ chi tiết (tuỳ chọn)"
 msgstr "Địa chỉ chi tiết (tuỳ chọn)"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Địa chỉ máy chủ MCP"
+msgstr "Địa chỉ máy chủ MCP"
 
 #: src/components/BookTextsSection.tsx
 msgid "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…"
@@ -9030,6 +9038,10 @@ msgstr "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/th�
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 msgid "Mặc định có thành viên"
 msgstr "Mặc định có thành viên"
+
+#: src/components/McpGuidePanel.tsx
+msgid "Mặc định theo tên miền bạn đang dùng. Sửa lại nếu máy chủ MCP nằm ở địa chỉ khác; các lệnh bên dưới đổi theo."
+msgstr "Mặc định theo tên miền bạn đang dùng. Sửa lại nếu máy chủ MCP nằm ở địa chỉ khác; các lệnh bên dưới đổi theo."
 
 #: src/components/ClanFormFields.tsx
 msgid "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc."
