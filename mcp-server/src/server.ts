@@ -3,12 +3,15 @@ import "./env.ts";
 import { createServer } from "node:http";
 
 import { sweepExports } from "./book.tsx";
-import { admin, handleHttp } from "./handler.ts";
+import { admin } from "./db.ts";
+import { handleHttp } from "./handler.ts";
+import { handleOAuth, sweepOAuth } from "./oauth.ts";
 
 /**
  * Vỏ HTTP mỏng bọc handler kiểu fetch (Request → Response). Handler không biết gì về Node.
  *
  *   POST /mcp      JSON-RPC MCP
+ *   /.well-known/oauth-*, /oauth/*   OAuth 2.1 (xem oauth.ts)
  *   GET  /healthz  để docker healthcheck / nginx
  */
 
@@ -23,7 +26,9 @@ const server = createServer(async (nreq, nres) => {
       nres.writeHead(200, { "Content-Type": "text/plain" }).end("ok");
       return;
     }
-    if (url.pathname !== "/mcp" && url.pathname !== "/mcp/") {
+    const isMcp = url.pathname === "/mcp" || url.pathname === "/mcp/";
+    const isOauth = url.pathname.startsWith("/.well-known/oauth-") || url.pathname.startsWith("/oauth/");
+    if (!isMcp && !isOauth) {
       nres.writeHead(404, { "Content-Type": "application/json" }).end('{"error":"Không có đường dẫn này. Dùng POST /mcp."}');
       return;
     }
@@ -51,7 +56,7 @@ const server = createServer(async (nreq, nres) => {
       body: method === "GET" || method === "HEAD" || method === "OPTIONS" ? undefined : Buffer.concat(chunks),
     });
 
-    const res = await handleHttp(req);
+    const res = isOauth ? ((await handleOAuth(req, url)) ?? new Response('{"error":"Không có đường dẫn này."}', { status: 404, headers: { "Content-Type": "application/json" } })) : await handleHttp(req);
     const out: Record<string, string> = {};
     res.headers.forEach((v, k) => (out[k] = v));
     nres.writeHead(res.status, out).end(Buffer.from(await res.arrayBuffer()));
@@ -63,6 +68,9 @@ const server = createServer(async (nreq, nres) => {
 });
 
 // Dọn file sổ PDF tạm quá hạn: ngay khi khởi động rồi mỗi giờ. Lỗi dọn không được làm sập server.
+const sweepAuth = () => sweepOAuth().then((n) => n && console.log(`[mcp-server] đã dọn ${n} bản ghi OAuth`)).catch((e) => console.error("[mcp-server] dọn OAuth lỗi:", e));
+setTimeout(sweepAuth, 45_000).unref();
+setInterval(sweepAuth, 3600_000).unref();
 const sweep = () => sweepExports(admin).then((n) => n && console.log(`[mcp-server] đã dọn ${n} file sổ tạm`)).catch((e) => console.error("[mcp-server] dọn file tạm lỗi:", e));
 setTimeout(sweep, 30_000).unref();
 setInterval(sweep, 3600_000).unref();
