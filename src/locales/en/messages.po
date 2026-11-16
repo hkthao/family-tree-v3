@@ -13845,6 +13845,11 @@ msgstr "Full platform administration: every clan (read + write), user accounts, 
 msgid "Toàn quyền quản trị nền tảng.{0}"
 msgstr "Full platform administration rights.{0}"
 
+#: src/components/ApiTokensSection.tsx
+#: src/components/ApiTokensSection.tsx
+msgid "Tôi"
+msgstr "Me"
+
 #: src/components/ThemeToggle.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Tối"
@@ -13942,8 +13947,8 @@ msgid "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu 
 msgstr "Tokens for outside AIs (Claude, ChatGPT…) to look up the tree; revoke when a leak is suspected."
 
 #: src/pages/clan/Settings.tsx
-msgid "Token để Claude, ChatGPT… làm việc với gia phả bằng đúng quyền của bạn."
-msgstr "Tokens for Claude, ChatGPT… to work with the tree using exactly your permissions."
+msgid "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; token chỉ hoạt động trong họ này, với quyền của người tạo."
+msgstr "Tokens for Claude, ChatGPT… to work with this clan's family tree. You can see and revoke every token in this clan; tokens only work inside this clan, with the creator's permissions."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token không dùng được"

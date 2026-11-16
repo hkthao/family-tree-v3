@@ -273,7 +273,7 @@ export default function Settings() {
         <CardHeader>
           <CardTitle>{t`Kết nối AI`}</CardTitle>
           <CardDescription>
-            {t`Token để Claude, ChatGPT… làm việc với gia phả bằng đúng quyền của bạn.`}
+            {t`Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; token chỉ hoạt động trong họ này, với quyền của người tạo.`}
           </CardDescription>
         </CardHeader>
         <CardContent>

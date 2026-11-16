@@ -10,7 +10,8 @@ sống 2 phút cho chủ token rồi truy vấn bằng JWT đó. Nhờ vậy RLS
 của app áp dụng nguyên vẹn, không có bản luật thứ hai để lệch.
 
 - **Ai tạo token:** chỉ admin dòng họ (*Cài đặt dòng họ → Kết nối AI*) hoặc admin hệ thống
-  (*Quản trị → Kết nối AI*, xem/thu hồi mọi token). Token gắn 1 người + 1 dòng họ, hạn 30/90/365 ngày.
+  (*Quản trị → Kết nối AI*, xem/thu hồi mọi token). Admin dòng họ xem và thu hồi được MỌI token của dòng họ mình
+  (kể cả của admin khác), không thấy token dòng họ khác hay token admin hệ thống (RLS `api_tokens_clan_admin_*`). Token gắn 1 người + 1 dòng họ, hạn 30/90/365 ngày.
   DB chỉ lưu SHA-256; bản rõ hiện đúng một lần.
 - **Ba gói:** `read` · `propose` (đề xuất vào `contributions`, admin duyệt mới ghi) ·
   `write` (ghi thẳng: thêm/sửa/ghi chú/xoá mềm).
