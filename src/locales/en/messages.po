@@ -2725,10 +2725,6 @@ msgstr "Select for bulk actions"
 msgid "Chọn dòng họ và quyền cho AI, bấm \"Cho phép\""
 msgstr "Choose the clan and the AI's permissions, then click \"Allow\""
 
-#: src/pages/ConnectAiAuthorize.tsx
-msgid "Chọn dòng họ…"
-msgstr "Choose a clan…"
-
 #: src/pages/clan/Kinship.tsx
 msgid "Chọn đủ hai người để xem kết quả."
 msgstr "Choose both people to see the result."
