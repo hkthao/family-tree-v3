@@ -13,6 +13,7 @@ export interface NewFeature {
 }
 
 export const NEW_FEATURES: NewFeature[] = [
+  { path: "ket-noi-ai", since: "2026-11-16" },
   { path: "relations", since: "2026-11-12" },
   { path: "mosaics", since: "2026-11-11" },
   { path: "map", since: "2026-11-06" },

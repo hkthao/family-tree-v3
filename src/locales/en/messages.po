@@ -2676,6 +2676,14 @@ msgstr "Waiting for admin confirmation"
 msgid "Cho AI bên ngoài làm việc với gia phả"
 msgstr "Let an outside AI work with the family tree"
 
+#: src/lib/navModel.tsx
+msgid "Cho Claude, ChatGPT… làm việc với gia phả; xem và thu hồi kết nối."
+msgstr "Let Claude, ChatGPT… work with the family tree; view and revoke connections."
+
+#: src/pages/clan/AiConnect.tsx
+msgid "Cho Claude, ChatGPT… tra cứu và cập nhật gia phả bằng đúng quyền của bạn. Xem và thu hồi mọi kết nối của dòng họ."
+msgstr "Let Claude, ChatGPT… look up and update the family tree with your own permissions. View and revoke every connection of the clan."
+
 #: src/pages/CustomsDetail.tsx
 msgid "chờ duyệt"
 msgstr "pending review"
@@ -7393,7 +7401,11 @@ msgid "Kéo, phóng to, chọn người làm tâm"
 msgstr "Drag, zoom, choose a center person"
 
 #: src/lib/adminScreens.tsx
+#: src/lib/navModel.tsx
+#: src/lib/pageTitle.ts
 #: src/pages/admin/KetNoiAiPage.tsx
+#: src/pages/clan/AiConnect.tsx
+#: src/pages/clan/AiConnect.tsx
 #: src/pages/clan/Settings.tsx
 msgid "Kết nối AI"
 msgstr "AI connection"
@@ -14031,8 +14043,8 @@ msgid "Token để AI bên ngoài (Claude, ChatGPT…) tra cứu gia phả; thu 
 msgstr "Tokens for outside AIs (Claude, ChatGPT…) to look up the tree; revoke when a leak is suspected."
 
 #: src/pages/clan/Settings.tsx
-msgid "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; token chỉ hoạt động trong họ này, với quyền của người tạo."
-msgstr "Tokens for Claude, ChatGPT… to work with this clan's family tree. You can see and revoke every token in this clan; tokens only work inside this clan, with the creator's permissions."
+msgid "Token để Claude, ChatGPT… làm việc với gia phả của dòng họ này. Bạn xem và thu hồi được mọi token trong họ; AI luôn làm việc với quyền của người cấp."
+msgstr "Tokens for Claude, ChatGPT… to work with this clan's family tree. You can see and revoke every token in the clan; the AI always works with the permissions of whoever granted it."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Token không dùng được"
