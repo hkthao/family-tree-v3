@@ -1407,6 +1407,10 @@ msgstr "Tap the '+' button to create the first site."
 msgid "Bấm nút '+' để tạo token đầu tiên."
 msgstr "Press '+' to create the first token."
 
+#: src/components/ClanApiTokensTab.tsx
+msgid "Bấm nút '+' để tạo token, hoặc kết nối từ ChatGPT/Claude (xem Hướng dẫn kết nối)."
+msgstr "Press '+' to create a token, or connect from ChatGPT/Claude (see the Connection guide)."
+
 #: src/pages/admin/Announcements.tsx
 msgid "Bấm nút '+' để viết tin đầu tiên."
 msgstr "Tap the '+' button to write the first announcement."
@@ -3169,6 +3173,7 @@ msgid "Chưa có tỉnh/thành nào"
 msgstr "No provinces / cities yet"
 
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 msgid "Chưa có token nào"
 msgstr "No tokens yet"
 
@@ -4980,6 +4985,7 @@ msgstr "loading…"
 #: src/components/ApiTokensSection.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/CalendarFeedPanel.tsx
+#: src/components/ClanApiTokensTab.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/LoadingState.tsx
 #: src/components/MapOverviewCard.tsx
@@ -7205,8 +7211,9 @@ msgstr "How to use Dòng Họ Việt: create a clan, add people, draw the family
 msgid "Hướng dẫn dùng từng tính năng."
 msgstr "How to use each feature."
 
-#: src/components/admin/ApiTokensAdminTab.tsx
 #: src/components/ApiTokensSection.tsx
+#: src/pages/admin/KetNoiAiPage.tsx
+#: src/pages/clan/AiConnect.tsx
 msgid "Hướng dẫn kết nối"
 msgstr "Connection guide"
 
@@ -7779,6 +7786,7 @@ msgid "Không có tỉnh/thành nào khớp"
 msgstr "No matching provinces / cities"
 
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 msgid "Không có token nào khớp"
 msgstr "No tokens match"
 
@@ -8869,6 +8877,7 @@ msgid "Lọc theo quy mô"
 msgstr "Filter by size"
 
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/Feedback.tsx
 #: src/pages/admin/Users.tsx
@@ -8900,6 +8909,7 @@ msgid "Lọc tỉnh / thành phố"
 msgstr "Filter provinces / cities"
 
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 msgid "Lọc token"
 msgstr "Filter tokens"
 
@@ -9660,6 +9670,7 @@ msgid "Mọi thứ khác."
 msgstr "Anything else."
 
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 #: src/pages/admin/Announcements.tsx
 msgid "Mọi trạng thái"
 msgstr "All statuses"
@@ -13212,6 +13223,7 @@ msgid "thứ {0}"
 msgstr "No. {0}"
 
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/Clans.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -13709,6 +13721,10 @@ msgstr "Search by room name…"
 msgid "Tìm theo tên token, người tạo, dòng họ…"
 msgstr "Search by token name, creator, clan…"
 
+#: src/components/ClanApiTokensTab.tsx
+msgid "Tìm theo tên token, người tạo…"
+msgstr "Search by token name or creator…"
+
 #: src/pages/clan/People.tsx
 msgid "Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
 msgstr "Search by name, nickname, place of birth, biography…"
@@ -13754,6 +13770,7 @@ msgid "Tìm tỉnh/thành"
 msgstr "Find provinces / cities"
 
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 msgid "Tìm token"
 msgstr "Search tokens"
 
@@ -13943,6 +13960,8 @@ msgstr "Full platform administration rights.{0}"
 
 #: src/components/ApiTokensSection.tsx
 #: src/components/ApiTokensSection.tsx
+#: src/components/ClanApiTokensTab.tsx
+#: src/components/ClanApiTokensTab.tsx
 msgid "Tôi"
 msgstr "Me"
 
@@ -14052,6 +14071,7 @@ msgstr "The token can't be used"
 
 #: src/components/admin/ApiTokensAdminTab.tsx
 #: src/components/ApiTokenPanels.tsx
+#: src/components/ClanApiTokensTab.tsx
 msgid "Token mới"
 msgstr "New token"
 
