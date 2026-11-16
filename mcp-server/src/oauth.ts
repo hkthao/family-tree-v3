@@ -11,7 +11,7 @@
  *
  * Mô hình: một lần cấp quyền = một hàng `api_tokens` (kết nối: người + dòng họ + gói, hạn trượt 90 ngày), thu hồi ở danh sách token.
  * Access token (1 giờ) và refresh token (xoay vòng, phát hiện dùng lại → thu hồi cả kết nối) chỉ lưu băm trong `oauth_tokens`.
- * Client luôn là client công khai (không bí mật) bảo vệ bằng PKCE. Không cấp gói `admin` qua OAuth.
+ * Client luôn là client công khai (không bí mật) bảo vệ bằng PKCE. Gói `admin` (không gắn dòng họ) chỉ cấp cho admin hệ thống.
  */
 
 import { timingSafeEqual } from "node:crypto";
@@ -21,10 +21,12 @@ import { admin, randomSecret, sha256Hex } from "./db.ts";
 
 const ACCESS_TTL_S = 3600;
 const GRANT_TTL_DAYS = 90;
+/** Kết nối admin hệ thống mạnh hơn nhiều nên hạn trượt ngắn hơn: bỏ quên 30 ngày là tự hết. */
+const ADMIN_GRANT_TTL_DAYS = 30;
 const CODE_TTL_S = 300;
 const MAX_CLIENTS = 5000;
 const SCOPES = ["read", "propose", "write"] as const;
-export type OAuthScope = (typeof SCOPES)[number];
+export type OAuthScope = (typeof SCOPES)[number] | "admin";
 
 /** Đường dẫn trang cấp quyền trong app (FE). */
 export const AUTHORIZE_PATH = "/ket-noi-ai/cap-quyen";
@@ -230,17 +232,22 @@ async function approve(req: Request): Promise<Response> {
   if ("error" in r) return reply({ ok: false, error: r.error }, 400);
 
   const scope = str(b.scope) as OAuthScope;
-  const clanId = str(b.clan_id);
-  if (!SCOPES.includes(scope)) return reply({ ok: false, error: "Gói quyền không hợp lệ." }, 400);
-  if (!/^[0-9a-f-]{36}$/i.test(clanId)) return reply({ ok: false, error: "Chưa chọn dòng họ." }, 400);
+  const isAdminScope = scope === "admin";
+  const clanId = isAdminScope ? "" : str(b.clan_id);
+  if (!isAdminScope && !(SCOPES as readonly string[]).includes(scope)) return reply({ ok: false, error: "Gói quyền không hợp lệ." }, 400);
+  if (!isAdminScope && !/^[0-9a-f-]{36}$/i.test(clanId)) return reply({ ok: false, error: "Chưa chọn dòng họ." }, 400);
 
   // Chỉ admin của chính dòng họ đó (hoặc admin hệ thống) được cấp quyền cho AI — như khi tạo token tay.
   const [{ data: member }, { data: profile }] = await Promise.all([
-    admin.from("clan_members").select("role").eq("clan_id", clanId).eq("user_id", user.id).maybeSingle(),
+    isAdminScope
+      ? Promise.resolve({ data: null })
+      : admin.from("clan_members").select("role").eq("clan_id", clanId).eq("user_id", user.id).maybeSingle(),
     admin.from("profiles").select("is_suspended, is_platform_admin").eq("id", user.id).maybeSingle(),
   ]);
   if (profile?.is_suspended) return reply({ ok: false, error: "Tài khoản đang bị khoá." }, 403);
-  if (member?.role !== "admin" && !profile?.is_platform_admin) {
+  // Gói admin hệ thống: CHỈ admin hệ thống, không gắn dòng họ (mỗi lệnh tự truyền clan_id).
+  if (isAdminScope && !profile?.is_platform_admin) return reply({ ok: false, error: "Chỉ admin hệ thống mới cấp được gói này." }, 403);
+  if (!isAdminScope && member?.role !== "admin" && !profile?.is_platform_admin) {
     return reply({ ok: false, error: "Chỉ quản trị dòng họ mới được kết nối AI cho dòng họ này." }, 403);
   }
 
@@ -249,7 +256,7 @@ async function approve(req: Request): Promise<Response> {
     code_hash: await sha256Hex(code),
     client_id: r.client.client_id,
     user_id: user.id,
-    clan_id: clanId,
+    clan_id: isAdminScope ? null : clanId,
     scope,
     redirect_uri: str(b.redirect_uri),
     code_challenge: str(b.code_challenge),
@@ -271,6 +278,8 @@ async function approve(req: Request): Promise<Response> {
 }
 
 // ─── Token ────────────────────────────────────────────────────────────────────────
+const grantDays = (scope: string) => (scope === "admin" ? ADMIN_GRANT_TTL_DAYS : GRANT_TTL_DAYS);
+
 async function issuePair(grantId: string, clientId: string, scope: string, refreshDays = GRANT_TTL_DAYS) {
   const access = randomSecret("gat_");
   const refresh = randomSecret("grt_");
@@ -318,14 +327,14 @@ async function exchangeCode(b: Record<string, unknown>): Promise<Response> {
       token_hash: await sha256Hex(randomSecret("unused_")), // không ai giữ bản rõ: kết nối chỉ dùng qua oauth_tokens
       token_prefix: "oauth",
       scope: row.scope,
-      expires_at: new Date(Date.now() + GRANT_TTL_DAYS * 86_400_000).toISOString(),
+      expires_at: new Date(Date.now() + grantDays(row.scope as string) * 86_400_000).toISOString(),
       oauth_client_id: client.client_id,
     })
     .select("id")
     .single();
   if (error || !grant) return oauthError("server_error", "Không tạo được kết nối.", 500);
   await admin.from("oauth_codes").update({ grant_id: grant.id }).eq("code_hash", hash);
-  return reply(await issuePair(grant.id as string, client.client_id, row.scope as string));
+  return reply(await issuePair(grant.id as string, client.client_id, row.scope as string, grantDays(row.scope as string)));
 }
 
 async function refresh(b: Record<string, unknown>): Promise<Response> {
@@ -352,8 +361,9 @@ async function refresh(b: Record<string, unknown>): Promise<Response> {
     return oauthError("invalid_grant", "refresh_token đã được dùng.");
   }
   // Hạn kết nối trượt: còn dùng thì còn sống, bỏ quên 90 ngày thì tự hết.
-  await admin.from("api_tokens").update({ expires_at: new Date(Date.now() + GRANT_TTL_DAYS * 86_400_000).toISOString() }).eq("id", row.grant_id);
-  return reply(await issuePair(row.grant_id as string, row.client_id as string, grant.scope as string));
+  const days = grantDays(grant.scope as string);
+  await admin.from("api_tokens").update({ expires_at: new Date(Date.now() + days * 86_400_000).toISOString() }).eq("id", row.grant_id);
+  return reply(await issuePair(row.grant_id as string, row.client_id as string, grant.scope as string, days));
 }
 
 async function token(req: Request): Promise<Response> {

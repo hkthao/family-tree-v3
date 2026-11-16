@@ -1000,6 +1000,10 @@ msgstr "Any AI using this token will be blocked immediately."
 msgid "AI gửi thêm/sửa/ghi chú vào hàng chờ Đóng góp. Chỉ ghi vào gia phả khi admin dòng họ duyệt."
 msgstr "The AI sends additions, edits and notes to the Contributions queue. Nothing reaches the tree until a clan admin approves."
 
+#: src/pages/ConnectAiAuthorize.tsx
+msgid "AI làm việc trên mọi dòng họ và các chức năng quản trị, chỉ khi bạn còn là admin hệ thống. Lệnh nguy hiểm buộc xác nhận kèm lý do, mọi lệnh được ghi nhật ký. Thu hồi ở Quản trị → Kết nối AI."
+msgstr "The AI works across every clan and the admin functions, only while you remain a system admin. Dangerous commands require confirmation with a reason, and every command is logged. Revoke it in Admin → AI connection."
+
 #: src/components/apiTokenMeta.ts
 msgid "AI thêm, sửa, xoá người ngay, với đúng quyền hiện tại của người tạo token (bị hạ vai trò thì token hạ theo). Mọi thay đổi ghi vào nhật ký dưới tên người tạo và khôi phục được."
 msgstr "The AI adds, edits and deletes people immediately, with the token creator's current permissions (lowered along with their role). Every change is logged under the creator's name and can be restored."
@@ -2531,8 +2535,8 @@ msgid "Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tà
 msgstr "Just the year is fine. Tap 'Enter in the lunar calendar' if the document gives a lunar date."
 
 #: src/components/McpGuidePanel.tsx
-msgid "Chỉ quản trị dòng họ mới cấp được. Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
-msgstr "Only clan admins can grant this. The connection appears in Clan settings → AI connection, where you can revoke it any time."
+msgid "Chỉ quản trị dòng họ mới cấp được (admin hệ thống có thêm lựa chọn dùng cho mọi dòng họ). Kết nối hiện trong Cài đặt dòng họ → Kết nối AI, thu hồi ở đó bất cứ lúc nào."
+msgstr "Only clan admins can grant this (system admins also get an option covering every clan). The connection appears in Clan settings → AI connection, where you can revoke it any time."
 
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "Chỉ quản trị dòng họ mới kết nối được AI. Tài khoản này chưa quản trị dòng họ nào."
