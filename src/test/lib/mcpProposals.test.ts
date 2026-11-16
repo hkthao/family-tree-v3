@@ -20,7 +20,7 @@ describe("mcp specs", () => {
   it("phân gói: read thấy tool đọc; propose/write loại trừ nhau", () => {
     const names = (scope: "read" | "propose" | "write") =>
       MCP_TOOLS.filter((t) => scopeAllows(scope, t.needs)).map((t) => t.name);
-    for (const n of ["propose_add_person", "create_person", "update_person", "delete_person", "append_person_note"]) {
+    for (const n of ["propose_add_person", "create_person", "update_person", "delete_person", "append_person_note", "set_person_photo", "link_relation", "create_branch", "update_clan_info"]) {
       expect(names("read")).not.toContain(n);
     }
     expect(names("propose")).toContain("propose_add_person");
@@ -35,7 +35,7 @@ describe("mcp specs", () => {
   });
 
   it("changes trong schema khớp EDITABLE_FIELDS", () => {
-    const edit = MCP_TOOLS.find((t) => t.name === "update_person")!;
+    const edit = MCP_TOOLS.find((t) => t.name === "propose_edit_person")!;
     const props = (edit.inputSchema.properties as any).changes.properties;
     expect(Object.keys(props).sort()).toEqual([...EDITABLE_FIELDS].sort());
   });

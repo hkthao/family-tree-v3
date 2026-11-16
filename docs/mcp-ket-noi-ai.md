@@ -23,13 +23,57 @@ của app áp dụng nguyên vẹn, không có bản luật thứ hai để lệ
 
 ## Tool
 
-| Tool | Gói | Việc |
-|---|---|---|
-| `clan_stats`, `search_person`, `get_person`, `get_relatives` | mọi gói | tra cứu người, cha mẹ/vợ chồng/con |
-| `get_kinship`, `upcoming_anniversaries`, `search_book` | mọi gói | xưng hô, giỗ (âm→dương), phả ký/di sản/tiểu sử |
-| `list_my_proposals` | mọi gói | trạng thái đề xuất đã gửi |
-| `propose_add_person` / `propose_edit_person` / `propose_add_note` | propose | chờ duyệt |
-| `create_person` / `update_person` / `append_person_note` / `delete_person` | write | ghi thẳng |
+**Tra cứu (mọi gói):** `clan_stats`, `search_person`, `list_persons` (lọc + phân trang), `get_person`, `get_relatives`,
+`get_tree` (cây hậu duệ/tổ tiên dạng chữ), `get_kinship` (xưng hô), `upcoming_anniversaries`, `search_book`,
+`list_branches`, `list_events`, `get_clan_info`, `get_book_texts`, `list_my_proposals`, **`export_clan_book`** (PDF).
+
+**Đề xuất (gói propose):** `propose_add_person`, `propose_edit_person`, `propose_add_note` — vào hàng chờ Đóng góp.
+
+**Ghi thẳng (gói write):**
+- Người: `create_person` (mọi trường + nối quan hệ ngay lúc tạo), `update_person` (mọi trường, `null` = xoá trống, ngày
+  `YYYY`/`YYYY-MM`/`YYYY-MM-DD`), `append_person_note`, `delete_person` (xoá mềm, cần `confirm`), `restore_person`.
+- Quan hệ: `link_relation`, `unlink_relation` (cha/mẹ, con, vợ/chồng — dùng RPC của app nên chặn vòng lặp, cùng giới…),
+  `set_spouse_order`.
+- Ảnh đại diện: `set_person_photo` (https URL hoặc base64; nén 512px JPEG như app; chống SSRF), `remove_person_photo`.
+- Chi: `create_branch`, `update_branch`, `delete_branch`. Sự kiện: `create_event`, `update_event`, `delete_event`.
+- Dòng họ & sổ: `update_clan_info` (chỉ tên, mô tả, offset đời — CỐ Ý không đổi được chế độ công khai/giới hạn/tính năng),
+  `update_book_texts`.
+
+### Xuất sổ gia phả PDF (`export_clan_book`)
+
+Dựng bằng chính `ClanBookPdf` của app. Lưu file tạm trong bucket private `book-exports` (`<uid>/mcp-<clan>-<băm>.pdf`) và
+trả **link tải có hạn 30 phút** (signed URL). Không tạo link chia sẻ công khai nên bìa không có mã QR.
+
+- **Cache:** khoá = băm của dữ liệu sổ + thông tin dòng họ + tuỳ chọn + mã dựng sổ + mốc cập nhật từng người. Không có gì
+  đổi thì trả lại file đã dựng (~30 ms thay vì vài chục giây). Đổi ảnh/dữ liệu/tuỳ chọn/bố cục sổ → tự dựng mới.
+- **Dọn:** giữ tối đa 3 bản gần nhất mỗi (người, dòng họ); `sweepExports` chạy mỗi giờ xoá bản `mcp-*` quá
+  `MCP_EXPORT_KEEP_HOURS` (mặc định 72) giờ; không đụng file của Mini App Zalo.
+- **Tài nguyên:** chạy từng cái một; trần 1000 người (cao hơn thì báo lỗi, hãy xuất trong app); container giới hạn 1 GB RAM, V8 heap 600 MB. Đo thực tế (máy dev):
+  50 người ≈ 1 s, 500 người ≈ 23 s, 800 người ≈ 56 s (RAM đỉnh ~0,8 GB). Dòng họ rất lớn nên xuất trong app.
+- **Số trang mục lục:** dàn trang cả cuốn MỘT lần rồi dàn lại riêng trang mục lục với số trang thật (trước đây dựng cả
+  cuốn hai lần chỉ để lấy số trang). Có chốt an toàn: không đúng bố cục dự kiến thì quay về dựng hai lượt.
+
+## Token ADMIN HỆ THỐNG (gói `admin`)
+
+Tạo ở *Quản trị → Kết nối AI* (chọn quyền "Admin hệ thống"), chỉ admin hệ thống tạo được và chỉ cho chính mình. Không gắn
+dòng họ (`api_tokens.clan_id` null): mỗi lệnh theo dòng họ truyền thêm `clan_id` (lấy từ `admin_list_clans`).
+
+- **Sống chừng nào chủ token còn là admin hệ thống** — kiểm lại ở MỖI lượt gọi; bị gỡ quyền hoặc bị khoá → 401 ngay.
+- **Không có quyền nào lớn hơn admin UI:** vẫn chạy bằng JWT ngắn hạn của chủ token nên RLS giữ nguyên; lệnh tài khoản đi
+  qua chính edge function `admin-action` (nó tự kiểm lại quyền).
+- **Tool theo dòng họ** (mọi tool đọc + ghi, kể cả `export_clan_book`) dùng được trên bất kỳ dòng họ, kèm `clan_id`.
+  Không dùng được `propose_*` (admin ghi thẳng).
+- **Tool quản trị (`admin_*`):** `platform_stats`, `list_users` / `set_user_limits` / `user_action` (suspend, unsuspend,
+  signout, grant/revoke platform admin, delete), `list_clans` / `set_clan_limits`, `list_contributions` /
+  `review_contribution` (duyệt/từ chối/cần thêm thông tin trên MỌI dòng họ), `list_feedback` / `update_feedback`,
+  `list/create/update/delete_announcement`, `get_settings` / `set_setting`, `list_failed_notifications` /
+  `clear_failed_notification`, `list_api_tokens` / `revoke_api_token`, `audit_log`.
+- **Chốt an toàn:** xoá tài khoản, khoá, cấp/thu quyền admin, đổi cấu hình, xoá thông báo, thu hồi token đều bắt buộc
+  `confirm: true` + `reason` (5–500 ký tự). Không tự khoá/xoá/hạ quyền chính mình, không thu hồi token đang dùng. Cố ý
+  KHÔNG có tool xoá dòng họ hay xoá sạch danh mục.
+- **Nhật ký:** mọi lệnh của token admin (tool, dòng họ, tham số đã rút gọn, kết quả) ghi vào `mcp_admin_log`; xem bằng
+  `admin_audit_log`. Ngoài ra thay đổi dữ liệu gia phả vẫn vào audit theo dòng họ dưới tên chủ token.
+- **Chưa có:** nhập gia phả lịch sử (Gia phả vua chúa), danh mục địa giới, Podcast — các màn này còn là việc chuyên biệt.
 
 ## Kiến trúc
 
@@ -59,9 +103,9 @@ JWT_SECRET=super-secret-jwt-token-with-at-least-32-characters-long node mcp-serv
 
 ## Triển khai (làm tay lần đầu)
 
-1. **Migration** `20261115100000_api_tokens.sql` lên DB self-host (xem [[project_migrations_manual_selfhost]]; ghi `schema_migrations`).
-2. **Máy web** (45.119.85.97): tạo `/opt/gia-pha-mcp/mcp.env` từ `deploy/mcp.env.example`, `chmod 600`.
-   `JWT_SECRET` + `SERVICE_ROLE_KEY` là khoá quyền cao — lấy ở `/root/supabase/.env` trên máy DB.
+1. **Migration** `20261115100000_api_tokens.sql` rồi `20261116100000_api_tokens_admin.sql` lên DB self-host (xem [[project_migrations_manual_selfhost]]; ghi `schema_migrations`).
+2. **Máy web** (máy chạy FE; địa chỉ thật xem doc vận hành ngoài repo): tạo `/opt/gia-pha-mcp/mcp.env` từ `deploy/mcp.env.example`, `chmod 600`.
+   `JWT_SECRET` + `SERVICE_ROLE_KEY` là khoá quyền cao — lấy ở file `.env` của Supabase self-host trên máy DB (`<supabase-dir>/.env`).
 3. **nginx** của genealogy-app: chèn `deploy/nginx-mcp-location.conf` vào server block giapha.thaohk.com,
    `docker exec genealogy-app-nginx-1 nginx -t && nginx -s reload`.
 4. Chạy workflow **deploy-mcp** (Actions, thủ công): build image `Dockerfile.mcp` → GHCR → `docker compose -f docker-compose.mcp.yml up -d`

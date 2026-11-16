@@ -951,6 +951,10 @@ msgstr "90 ngày"
 msgid "Admin đã xác nhận"
 msgstr "Admin đã xác nhận"
 
+#: src/components/apiTokenMeta.ts
+msgid "Admin hệ thống"
+msgstr "Admin hệ thống"
+
 #. placeholder {0}: submitterContact || t`thông tin bạn đã ghi`
 #: src/components/ContributeDialog.tsx
 msgid "Admin sẽ liên hệ qua {0} nếu cần."
@@ -13684,6 +13688,10 @@ msgstr "toàn cảnh"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Toàn màn hình"
 msgstr "Toàn màn hình"
+
+#: src/components/apiTokenMeta.ts
+msgid "Toàn quyền quản trị nền tảng: mọi dòng họ (đọc + ghi), tài khoản người dùng, đóng góp, góp ý, thông báo, cấu hình, token. Thao tác nguy hiểm (xoá tài khoản, cấp quyền admin, đổi cấu hình…) buộc xác nhận + ghi lý do; mọi lệnh được ghi nhật ký. Token chết ngay nếu người tạo không còn là admin hệ thống."
+msgstr "Toàn quyền quản trị nền tảng: mọi dòng họ (đọc + ghi), tài khoản người dùng, đóng góp, góp ý, thông báo, cấu hình, token. Thao tác nguy hiểm (xoá tài khoản, cấp quyền admin, đổi cấu hình…) buộc xác nhận + ghi lý do; mọi lệnh được ghi nhật ký. Token chết ngay nếu người tạo không còn là admin hệ thống."
 
 #. placeholder {0}: isSelf && " Không tự đổi quyền của chính mình."
 #: src/pages/admin/Users.tsx

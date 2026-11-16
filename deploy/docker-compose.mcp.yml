@@ -12,6 +12,10 @@ services:
     image: ${MCP_IMAGE:-ghcr.io/hkthao/family-tree-v3-mcp:latest}
     container_name: family-tree-v3-mcp
     restart: unless-stopped
+    # Máy web chỉ ~2 GB và còn chạy FE + nginx + Umami: chặn server MCP (dựng sổ PDF rất tốn RAM) ở 1 GB để nếu
+    # có sự cố thì chỉ container này bị OOM-kill rồi tự khởi động lại, không kéo sập FE.
+    mem_limit: 1g
+    memswap_limit: 1g
     env_file: /opt/gia-pha-mcp/mcp.env
     networks:
       genealogy-app_app-network: {}

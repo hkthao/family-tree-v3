@@ -5,22 +5,32 @@
  * (Claude, ChatGPT…), không phải cụ lớn tuổi; nhưng dữ liệu trả về giữ tiếng Việt.
  */
 
+import { personProperties } from "./fields.ts";
+
 export interface McpToolSpec {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
   /**
    * Gói quyền token cần có. 'read' = ai cũng gọi được; 'propose' / 'write' là hai gói loại
-   * trừ nhau: propose chỉ gửi vào hàng chờ duyệt, write ghi thẳng như chính chủ token.
+   * trừ nhau: propose chỉ gửi vào hàng chờ duyệt, write ghi thẳng như chính chủ token; 'admin' = chức năng quản trị
+   * hệ thống (chỉ token admin).
    */
   needs: Scope;
 }
 
-export type Scope = "read" | "propose" | "write";
+export type Scope = "read" | "propose" | "write" | "admin";
 
-/** Gói `scope` của token có được gọi tool cần `needs` không. */
+/**
+ * Gói `scope` của token có được gọi tool cần `needs` không.
+ *  - tool đọc: mọi gói;
+ *  - propose / write: chỉ đúng gói đó — RIÊNG `admin` cũng gọi được tool `write` (ghi thẳng trên dòng họ nó chọn);
+ *  - tool quản trị hệ thống (`needs: "admin"`): chỉ gói admin.
+ */
 export function scopeAllows(scope: Scope, needs: Scope): boolean {
-  return needs === "read" || scope === needs;
+  if (needs === "read") return true;
+  if (scope === "admin") return needs === "write" || needs === "admin";
+  return scope === needs;
 }
 
 const obj = (properties: Record<string, unknown>, required: string[] = []) => ({
@@ -184,22 +194,83 @@ export const MCP_TOOLS: McpToolSpec[] = [
     ),
   },
   {
+    name: "list_persons",
+    needs: "read",
+    description:
+      "List/filter people with pagination (max 50 per page): by name text, branch, generation, gender, living or not. Use offset to page. Returns id, years, generation and sibling order.",
+    inputSchema: obj({
+      q: { type: "string", description: "Name text (accent-insensitive)" },
+      branch_id: { type: "string" },
+      generation: { type: "integer" },
+      gender: { type: "string", enum: ["M", "F"] },
+      is_living: { type: "boolean" },
+      limit: { type: "integer", description: "1-50, default 25" },
+      offset: { type: "integer" },
+    }),
+  },
+  {
+    name: "get_tree",
+    needs: "read",
+    description:
+      "Indented text tree: descendants (with spouses) or ancestors of one person, up to 8 generations. Good for reading the family structure at a glance.",
+    inputSchema: obj(
+      {
+        person_id: personId,
+        direction: { type: "string", enum: ["descendants", "ancestors"], description: "Default descendants" },
+        depth: { type: "integer", description: "Generations to show, 1-8, default 3" },
+      },
+      ["person_id"],
+    ),
+  },
+  {
+    name: "list_branches",
+    needs: "read",
+    description: "List clan branches (chi/nhánh) with ids, ancestral house and head.",
+    inputSchema: obj({}),
+  },
+  {
+    name: "list_events",
+    needs: "read",
+    description: "List the clan's own events (reunions, memorials, tomb visits…), solar or lunar dated.",
+    inputSchema: obj({}),
+  },
+  {
+    name: "get_clan_info",
+    needs: "read",
+    description: "Clan name, description, visibility, headcount and display settings.",
+    inputSchema: obj({}),
+  },
+  {
+    name: "get_book_texts",
+    needs: "read",
+    description: "The clan book's hand-written parts: preface, chronicle (phả ký), appendices and compilation info.",
+    inputSchema: obj({}),
+  },
+  {
+    name: "export_clan_book",
+    needs: "read",
+    description:
+      "Build the clan's family-book PDF (cover, table of contents, tree diagrams, per-person pages) and return a time-limited download link (30 min). The file is temporary and cleaned up automatically. Slow for big clans (seconds to minutes); only one export runs at a time. The cover has no QR code (no public share link is created).",
+    inputSchema: obj({
+      tree: { type: "boolean", description: "Include tree diagrams, default true" },
+      folder_tree: { type: "boolean", description: "Include the folder-style tree page, default true" },
+      detail: { type: "boolean", description: "Include per-person detail pages, default true" },
+      tree_per_page: { type: "integer", minimum: 4, maximum: 60, description: "Max members per diagram page" },
+      tree_single_page: { type: "boolean", description: "Draw the whole diagram on one page, default true" },
+      watermark: { type: "string", enum: ["phoenix", "dragon", "none"], description: "Faint background image, default phoenix" },
+    }),
+  },
+  {
     name: "create_person",
     needs: "write",
     description:
-      "Add a new person to the tree DIRECTLY, with the same permissions as the token owner. Optionally link as child or spouse of an existing person. Check search_person first to avoid duplicates.",
+      "Add a new person DIRECTLY (same permissions as the token owner). Accepts every person field. Optionally link at creation: relation_as child|spouse|parent of relation_of_person_id (use other_parent_id to pick which marriage a child belongs to). Check search_person first to avoid duplicates.",
     inputSchema: obj(
       {
-        full_name: { type: "string" },
-        gender: { type: "string", enum: ["M", "F"] },
-        is_living: { type: "boolean" },
-        birth_date: { type: "string", description: "YYYY-MM-DD" },
-        death_date: { type: "string", description: "YYYY-MM-DD" },
-        birth_place: { type: "string" },
-        burial_place: { type: "string" },
-        bio: { type: "string" },
-        relation_as: { type: "string", enum: ["child", "spouse"] },
+        ...personProperties(),
+        relation_as: { type: "string", enum: ["child", "spouse", "parent"], description: "How the NEW person relates to relation_of_person_id" },
         relation_of_person_id: personId,
+        other_parent_id: { type: "string", description: "With relation_as=child: the child's other parent (picks the right marriage)" },
       },
       ["full_name", "gender"],
     ),
@@ -208,11 +279,8 @@ export const MCP_TOOLS: McpToolSpec[] = [
     name: "update_person",
     needs: "write",
     description:
-      "Change fields of an existing person DIRECTLY. Only the fields you pass change. Every change is recorded in the audit log under the token owner.",
-    inputSchema: obj(
-      { person_id: personId, changes: CHANGES_SCHEMA },
-      ["person_id", "changes"],
-    ),
+      "Change fields of an existing person DIRECTLY; only the fields in `changes` change, pass null to clear an optional field. Dates accept YYYY-MM-DD, YYYY-MM or YYYY. Recorded in the audit log under the token owner.",
+    inputSchema: obj({ person_id: personId, changes: { type: "object", additionalProperties: false, properties: personProperties() } }, ["person_id", "changes"]),
   },
   {
     name: "append_person_note",
@@ -224,7 +292,344 @@ export const MCP_TOOLS: McpToolSpec[] = [
     name: "delete_person",
     needs: "write",
     description:
-      "Soft-delete a person (restorable from the audit log). Works only if the token owner may delete people in the app (editor/admin). Set confirm=true only after the user explicitly asked for this deletion.",
+      "Soft-delete a person (recover with restore_person). Works only if the token owner may delete people in the app. Set confirm=true only after the user explicitly asked for this deletion.",
     inputSchema: obj({ person_id: personId, confirm: { type: "boolean" } }, ["person_id", "confirm"]),
   },
+  {
+    name: "restore_person",
+    needs: "write",
+    description: "Restore a soft-deleted person by id.",
+    inputSchema: obj({ person_id: personId }, ["person_id"]),
+  },
+  {
+    name: "link_relation",
+    needs: "write",
+    description:
+      "Link two EXISTING people. relation says what other_person_id is to person_id: parent (other is father/mother of person), child (other is a child of person; optional other_parent_id picks the marriage) or spouse. Cycles and same-sex pairs are refused by the server.",
+    inputSchema: obj(
+      {
+        person_id: personId,
+        relation: { type: "string", enum: ["parent", "child", "spouse"] },
+        other_person_id: personId,
+        other_parent_id: { type: "string", description: "Only with relation=child" },
+      },
+      ["person_id", "relation", "other_person_id"],
+    ),
+  },
+  {
+    name: "unlink_relation",
+    needs: "write",
+    description: "Remove a parent/child/spouse link between two people. Neither person is deleted.",
+    inputSchema: obj(
+      { person_id: personId, relation: { type: "string", enum: ["parent", "child", "spouse"] }, other_person_id: personId },
+      ["person_id", "relation", "other_person_id"],
+    ),
+  },
+  {
+    name: "set_spouse_order",
+    needs: "write",
+    description: "Set the order of a person's marriages (first wife/husband first). spouse_ids must list every spouse in the desired order.",
+    inputSchema: obj({ person_id: personId, spouse_ids: { type: "array", items: { type: "string" } } }, ["person_id", "spouse_ids"]),
+  },
+  {
+    name: "set_person_photo",
+    needs: "write",
+    description:
+      "Set a person's profile photo from an https image_url OR image_base64 (JPEG/PNG/WebP, ≤10 MB). It is resized to 512px JPEG like the app does. Private/internal addresses are refused.",
+    inputSchema: obj({ person_id: personId, image_url: { type: "string" }, image_base64: { type: "string" } }, ["person_id"]),
+  },
+  {
+    name: "remove_person_photo",
+    needs: "write",
+    description: "Remove a person's profile photo.",
+    inputSchema: obj({ person_id: personId }, ["person_id"]),
+  },
+  {
+    name: "create_branch",
+    needs: "write",
+    description: "Create a branch (chi/nhánh). Assign people with update_person { branch_id }.",
+    inputSchema: obj(
+      { name: { type: "string" }, head_person_id: { type: ["string", "null"] }, ancestral_house: { type: ["string", "null"] }, notes: { type: ["string", "null"] } },
+      ["name"],
+    ),
+  },
+  {
+    name: "update_branch",
+    needs: "write",
+    description: "Change a branch; only the fields you pass change (null clears optional ones).",
+    inputSchema: obj(
+      { branch_id: { type: "string" }, name: { type: "string" }, head_person_id: { type: ["string", "null"] }, ancestral_house: { type: ["string", "null"] }, notes: { type: ["string", "null"] } },
+      ["branch_id"],
+    ),
+  },
+  {
+    name: "delete_branch",
+    needs: "write",
+    description: "Soft-delete a branch. confirm=true only after the user explicitly asked.",
+    inputSchema: obj({ branch_id: { type: "string" }, confirm: { type: "boolean" } }, ["branch_id", "confirm"]),
+  },
+  {
+    name: "create_event",
+    needs: "write",
+    description:
+      "Create a clan event. Give EXACTLY ONE of date_solar (YYYY-MM-DD) or lunar_month (+ lunar_day, optional lunar_year / lunar_is_leap). is_yearly defaults true.",
+    inputSchema: obj(
+      {
+        title: { type: "string" },
+        event_type: { type: "string", enum: ["custom", "reunion", "memorial", "tomb_visit"] },
+        date_solar: { type: ["string", "null"] },
+        lunar_year: { type: ["integer", "null"] },
+        lunar_month: { type: ["integer", "null"] },
+        lunar_day: { type: ["integer", "null"] },
+        lunar_is_leap: { type: "boolean" },
+        is_yearly: { type: "boolean" },
+        related_person_id: { type: ["string", "null"] },
+        notes: { type: ["string", "null"] },
+      },
+      ["title"],
+    ),
+  },
+  {
+    name: "update_event",
+    needs: "write",
+    description: "Change an event; only the fields you pass change. To switch between solar and lunar dating set the other group to null.",
+    inputSchema: obj(
+      {
+        event_id: { type: "string" },
+        title: { type: "string" },
+        event_type: { type: "string", enum: ["custom", "reunion", "memorial", "tomb_visit"] },
+        date_solar: { type: ["string", "null"] },
+        lunar_year: { type: ["integer", "null"] },
+        lunar_month: { type: ["integer", "null"] },
+        lunar_day: { type: ["integer", "null"] },
+        lunar_is_leap: { type: "boolean" },
+        is_yearly: { type: "boolean" },
+        related_person_id: { type: ["string", "null"] },
+        notes: { type: ["string", "null"] },
+      },
+      ["event_id"],
+    ),
+  },
+  {
+    name: "delete_event",
+    needs: "write",
+    description: "Delete an event. confirm=true only after the user explicitly asked.",
+    inputSchema: obj({ event_id: { type: "string" }, confirm: { type: "boolean" } }, ["event_id", "confirm"]),
+  },
+  {
+    name: "update_clan_info",
+    needs: "write",
+    description:
+      "Change the clan's name, description or generation_offset (admin only). Visibility, public flags, limits and feature toggles are deliberately NOT editable here.",
+    inputSchema: obj({ name: { type: "string" }, description: { type: ["string", "null"] }, generation_offset: { type: "integer", minimum: 0, maximum: 3 } }),
+  },
+  {
+    name: "update_book_texts",
+    needs: "write",
+    description:
+      "Write the clan book's parts: preface, phaky, ngoai_pha, phu_khao and info fields (place_line, origin_place, ancestral_hall, ancestor_anniversary, chief_name, compilers, compiled_year, contact). Only passed fields change; null clears.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: Object.fromEntries(
+        ["place_line", "origin_place", "ancestral_hall", "ancestor_anniversary", "chief_name", "compilers", "compiled_year", "contact", "preface", "phaky", "ngoai_pha", "phu_khao"].map((k) => [k, { type: ["string", "null"] }]),
+      ),
+      required: [],
+    },
+  },
 ];
+
+// ─── Token ADMIN HỆ THỐNG ──────────────────────────────────────────────────
+
+const clanIdProp = { type: "string", description: "Clan id (UUID) — from admin_list_clans. Required for admin tokens because they are not bound to one clan." };
+
+/** Token admin không gắn dòng họ: mọi tool theo dòng họ nhận thêm `clan_id` (bắt buộc). */
+export function withClanId(t: McpToolSpec): McpToolSpec {
+  const schema = t.inputSchema as { properties?: Record<string, unknown>; required?: string[] };
+  return {
+    ...t,
+    inputSchema: {
+      ...t.inputSchema,
+      properties: { clan_id: clanIdProp, ...(schema.properties ?? {}) },
+      required: ["clan_id", ...(schema.required ?? [])],
+    },
+  };
+}
+
+const uuidProp = (d: string) => ({ type: "string", description: d });
+const dangerous = {
+  confirm: { type: "boolean", description: "Must be true — only after the human explicitly asked for this exact action" },
+  reason: { type: "string", description: "Why (min 5 chars). Recorded in the admin log." },
+};
+
+export const MCP_ADMIN_TOOLS: McpToolSpec[] = [
+  { name: "admin_platform_stats", needs: "admin", description: "Platform-wide DB statistics (counts, sizes, recent failed notifications).", inputSchema: obj({}) },
+  {
+    name: "admin_list_users",
+    needs: "admin",
+    description: "List user accounts (name, email, limits, suspended / platform-admin flags). Filter by name or email text; paginate with offset.",
+    inputSchema: obj({ q: { type: "string" }, limit: { type: "integer", description: "1-100, default 30" }, offset: { type: "integer" } }),
+  },
+  {
+    name: "admin_set_user_limits",
+    needs: "admin",
+    description: "Set how many clans a user may create (max_clans).",
+    inputSchema: obj({ user_id: uuidProp("User id"), max_clans: { type: "integer", minimum: 0, maximum: 1000 } }, ["user_id", "max_clans"]),
+  },
+  {
+    name: "admin_user_action",
+    needs: "admin",
+    description:
+      "Account action: suspend, unsuspend, signout (drop sessions), grant_platform_admin / revoke_platform_admin, or delete (PERMANENT, removes the account). suspend, delete and the platform-admin actions need confirm=true and a reason. You cannot suspend, delete or demote yourself.",
+    inputSchema: obj(
+      {
+        user_id: uuidProp("Target user id"),
+        action: { type: "string", enum: ["suspend", "unsuspend", "signout", "grant_platform_admin", "revoke_platform_admin", "delete"] },
+        ...dangerous,
+      },
+      ["user_id", "action"],
+    ),
+  },
+  {
+    name: "admin_list_clans",
+    needs: "admin",
+    description: "List every clan with owner, headcount and limits. Filter by name text; sort by newest|name|members|updated; paginate with offset.",
+    inputSchema: obj({
+      q: { type: "string" },
+      sort: { type: "string", enum: ["newest", "name", "members", "updated"] },
+      limit: { type: "integer", description: "1-100, default 30" },
+      offset: { type: "integer" },
+    }),
+  },
+  {
+    name: "admin_set_clan_limits",
+    needs: "admin",
+    description: "Set a clan's person and account limits.",
+    inputSchema: obj({ clan_id: clanIdProp, max_persons: { type: "integer", minimum: 1 }, max_users: { type: "integer", minimum: 1 } }, ["clan_id"]),
+  },
+  {
+    name: "admin_list_contributions",
+    needs: "admin",
+    description: "Contribution proposals across ALL clans (default status pending). Each shows clan, type, target person and the proposed data.",
+    inputSchema: obj({
+      clan_id: { type: "string" },
+      status: { type: "string", enum: ["pending", "approved", "rejected", "needs_info"] },
+      limit: { type: "integer", description: "1-50, default 20" },
+    }),
+  },
+  {
+    name: "admin_review_contribution",
+    needs: "admin",
+    description: "Approve (applies the change to the tree), reject, or mark needs_info for a pending contribution. Approving writes real data.",
+    inputSchema: obj(
+      { contribution_id: uuidProp("Contribution id"), decision: { type: "string", enum: ["approve", "reject", "needs_info"] }, note: { type: "string", description: "Reviewer note shown to the submitter" } },
+      ["contribution_id", "decision"],
+    ),
+  },
+  {
+    name: "admin_list_feedback",
+    needs: "admin",
+    description: "User feedback / bug reports (newest first), optionally by status.",
+    inputSchema: obj({ status: { type: "string", enum: ["new", "seen", "resolved", "spam"] }, limit: { type: "integer", description: "1-100, default 30" } }),
+  },
+  {
+    name: "admin_update_feedback",
+    needs: "admin",
+    description: "Update a feedback item: status, category, internal admin_note, or admin_reply shown to the sender.",
+    inputSchema: obj(
+      {
+        feedback_id: uuidProp("Feedback id"),
+        status: { type: "string", enum: ["new", "seen", "resolved", "spam"] },
+        category: { type: "string", enum: ["bug", "idea", "question", "other"] },
+        admin_note: { type: ["string", "null"] },
+        admin_reply: { type: ["string", "null"] },
+      },
+      ["feedback_id"],
+    ),
+  },
+  { name: "admin_list_announcements", needs: "admin", description: "All announcements including drafts and expired ones.", inputSchema: obj({}) },
+  {
+    name: "admin_create_announcement",
+    needs: "admin",
+    description: "Create an announcement. Omit published_at for a draft; is_public=true shows it on the public changelog page.",
+    inputSchema: obj(
+      {
+        title: { type: "string" },
+        body: { type: "string" },
+        level: { type: "string", enum: ["info", "update", "warning", "critical"] },
+        is_public: { type: "boolean" },
+        published_at: { type: ["string", "null"], description: "ISO datetime; null = draft" },
+        expires_at: { type: ["string", "null"], description: "ISO datetime; null = never" },
+      },
+      ["title", "body"],
+    ),
+  },
+  {
+    name: "admin_update_announcement",
+    needs: "admin",
+    description: "Change an announcement; only the fields you pass change.",
+    inputSchema: obj(
+      {
+        announcement_id: uuidProp("Announcement id"),
+        title: { type: "string" },
+        body: { type: "string" },
+        level: { type: "string", enum: ["info", "update", "warning", "critical"] },
+        is_public: { type: "boolean" },
+        published_at: { type: ["string", "null"] },
+        expires_at: { type: ["string", "null"] },
+      },
+      ["announcement_id"],
+    ),
+  },
+  {
+    name: "admin_delete_announcement",
+    needs: "admin",
+    description: "Delete an announcement permanently.",
+    inputSchema: obj({ announcement_id: uuidProp("Announcement id"), ...dangerous }, ["announcement_id", "confirm", "reason"]),
+  },
+  {
+    name: "admin_get_settings",
+    needs: "admin",
+    description: "Platform settings (key/value). Pass key for one value, or omit to list all keys.",
+    inputSchema: obj({ key: { type: "string" } }),
+  },
+  {
+    name: "admin_set_setting",
+    needs: "admin",
+    description: "Set a platform setting (value null deletes the value). Changes platform-wide behaviour: confirm=true and a reason are required.",
+    inputSchema: obj({ key: { type: "string" }, value: { type: ["string", "null"] }, ...dangerous }, ["key", "value", "confirm", "reason"]),
+  },
+  {
+    name: "admin_list_failed_notifications",
+    needs: "admin",
+    description: "Recently failed email/push notifications from the platform stats.",
+    inputSchema: obj({}),
+  },
+  {
+    name: "admin_clear_failed_notification",
+    needs: "admin",
+    description: "Dismiss one failed-notification entry.",
+    inputSchema: obj({ notification_id: uuidProp("Failed notification id") }, ["notification_id"]),
+  },
+  { name: "admin_list_api_tokens", needs: "admin", description: "Every MCP token on the platform (never the secret): owner, clan, scope, expiry, last use.", inputSchema: obj({}) },
+  {
+    name: "admin_revoke_api_token",
+    needs: "admin",
+    description: "Revoke any MCP token immediately (use when a leak is suspected). You cannot revoke the token you are using.",
+    inputSchema: obj({ token_id: uuidProp("Token id from admin_list_api_tokens"), ...dangerous }, ["token_id", "confirm", "reason"]),
+  },
+  {
+    name: "admin_audit_log",
+    needs: "admin",
+    description: "Log of what admin MCP tokens did (tool, clan, arguments, result). Newest first.",
+    inputSchema: obj({ limit: { type: "integer", description: "1-100, default 30" }, tool: { type: "string", description: "Filter by exact tool name" } }),
+  },
+];
+
+/** Danh sách tool một gói được thấy; token admin thấy tool theo dòng họ (kèm clan_id) và tool quản trị. */
+export function toolsForScope(scope: Scope): McpToolSpec[] {
+  if (scope === "admin") {
+    return [...MCP_TOOLS.filter((t) => t.needs === "read" || t.needs === "write").map(withClanId), ...MCP_ADMIN_TOOLS];
+  }
+  return MCP_TOOLS.filter((t) => scopeAllows(scope, t.needs));
+}
