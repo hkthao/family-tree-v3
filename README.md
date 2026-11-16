@@ -1,23 +1,39 @@
 # family-tree-v3
 
-Web app SaaS đa-dòng-họ (multi-tenant) để quản lý và hiển thị gia phả quy mô lớn. Mobile-first, đóng gói PWA, tối ưu cho người lớn tuổi.
+Web app SaaS đa-dòng-họ (multi-tenant) để quản lý và hiển thị gia phả quy mô lớn. Mobile-first, đóng gói PWA, tối ưu cho người lớn tuổi. Chạy production tại <https://giapha.thaohk.com>.
 
-Toàn bộ thiết kế chi tiết ở [`plan.md`](./plan.md) (kiến trúc, schema, RLS, design system, lunar dates, events, Supabase local).
+Thiết kế chi tiết ở [`plan.md`](./plan.md) (kiến trúc, schema, RLS, design system, lịch âm, sự kiện). Mỗi tính năng lớn có plan riêng trong [`docs/`](./docs) (`plan-*.md`).
 
 ## Tech stack
 
 | Lớp | Lựa chọn |
 |---|---|
-| Frontend | React 18 + TypeScript + Vite, Tailwind + shadcn/ui |
+| Frontend | React 18 + TypeScript + Vite, Tailwind + shadcn/ui, PWA |
 | Fonts | Be Vietnam Pro (body) + Noto Serif (tên dòng họ) |
-| Backend | Supabase (Postgres 17 + Auth + Storage + RLS) |
-| Cây gia phả | `family-chart` (sẽ thêm ở Phase 1) |
+| Backend | Supabase self-host (Postgres 17 + Auth + Storage + RLS + Edge Functions) |
+| Dữ liệu client | React Query + IndexedDB (cache theo `data_version`) |
+| Cây / đồ thị | `family-chart`, d3, `3d-force-graph`, Three.js (`@react-three/fiber`) |
+| Xuất bản | `@react-pdf/renderer` (sổ gia phả PDF), GEDCOM, Excel (`xlsx`) |
+| Đa ngôn ngữ | Lingui — tiếng Việt là ngôn ngữ gốc, có bản tiếng Anh |
+| Kết nối AI | Máy chủ MCP riêng ở [`mcp-server/`](./mcp-server) |
 | Testing | Vitest (unit + RLS integration) |
-| CI | GitHub Actions |
+| CI/CD | GitHub Actions |
+
+## Tính năng chính
+
+- **Gia phả**: dòng họ, chi họ, thành viên, quan hệ cha mẹ / vợ chồng / con, cây gia phả, đường trực hệ, máy tính xưng hô họ hàng, gộp người trùng.
+- **Lịch âm & sự kiện**: quy đổi âm–dương, ngày giỗ, nhắc sự kiện qua email và web push, xuất iCal.
+- **Nhập / xuất**: import Excel, import/export GEDCOM, xuất sổ gia phả PDF, thẻ QR cá nhân.
+- **Cộng đồng dòng họ**: bảng tin, đóng góp có duyệt, thông gia, Sổ tay Văn hoá (`/so-tay`), di sản, phòng ký ức, share-link.
+- **Quản trị**: phân quyền theo dòng họ, audit log + khôi phục, trang quản trị nền tảng.
+- **Kết nối AI (MCP)**: Claude / ChatGPT / client MCP tra cứu và chỉnh sửa gia phả qua OAuth 2.1 hoặc token cá nhân; quyền thật không vượt quá vai trò của người cấp. Xem [`docs/mcp-ket-noi-ai.md`](./docs/mcp-ket-noi-ai.md).
+- **Zalo Mini App**: ứng dụng xem gia phả trong Zalo, nằm ở [`zalo/`](./zalo).
+
+Trợ lý AI chat trong app đã được gỡ; AI ngoài dùng đường MCP ở trên.
 
 ## Yêu cầu hệ thống
 
-- **Node 22** (xem `.nvmrc` nếu có).
+- **Node 22** (xem `.nvmrc`).
 - **Docker Desktop** đang chạy (Supabase CLI dựng container Postgres + Auth + Storage + Studio).
 - **npm 10+**.
 
@@ -59,13 +75,20 @@ App mở ở `http://localhost:5173`.
 | `npm run dev` | Vite dev server, hot reload |
 | `npm run build` | Type check + production build |
 | `npm run preview` | Phục vụ bản build cục bộ |
+| `npm run typecheck` | Kiểm kiểu cho app và test (`tsc -b` + `tsconfig.test.json`) |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest watch mode |
+| `npm run test:rls` | RLS integration tests (cần Supabase local chạy) |
 | `npm run db:start` / `db:stop` | Bật / tắt Supabase local (Docker) |
 | `npm run db:reset` | Reset DB sạch, chạy lại tất cả migrations |
 | `npm run db:status` | In ra URL, keys, Studio URL |
 | `npm run db:types` | Sinh `src/lib/database.types.ts` từ schema |
+| `npm run i18n:extract` | Trích chuỗi cần dịch vào `src/locales/*/messages.po` |
+| `npm run i18n:status` | Xem số chuỗi còn thiếu bản dịch |
 | `npm run seed` | Nạp fixtures: 2 clan giả (50 và 500 thành viên) + users mọi role |
-| `npm test` | Vitest watch mode |
-| `npm run test:rls` | Chạy RLS integration tests (yêu cầu Supabase local chạy) |
+| `npm run seed:board` / `seed:customs` | Nạp bảng tin mẫu / bài Sổ tay Văn hoá mẫu |
+
+> Dùng `npm run typecheck`, không dùng `tsc --noEmit -p .` (không kiểm gì vì `tsconfig.json` chỉ chứa references).
 
 ## Truy cập Supabase local
 
@@ -80,45 +103,51 @@ App mở ở `http://localhost:5173`.
 
 ```
 src/
-  components/
-    ui/           shadcn primitives (Button, Input, Card, Alert, ...)
-    AuthLayout.tsx, RequireAuth.tsx
-  hooks/          useAuth
-  lib/            supabase.ts, database.types.ts, utils.ts
-  pages/          Login, Signup, Home
-  test/
-    rls/          33 RLS integration tests
-    supabase-helpers.ts
+  components/     UI dùng chung; ui/ là shadcn primitives
+  hooks/          useAuth, ...
+  lib/            logic miền (lịch âm, xưng hô, GEDCOM, PDF, cây, queries/…)
+  locales/        vi (gốc) + en — Lingui .po
+  pages/          các màn hình; admin/, clan/, docs/ là nhóm con
+  test/           unit tests; rls/ là RLS integration tests
 supabase/
-  config.toml             cấu hình local (ports, auth, storage)
-  migrations/             SQL forward-only, prefix timestamp
-scripts/
-  seed-fixtures.ts        Vietnamese fixtures cho dev
-plan.md                   thiết kế chi tiết (1003 dòng)
+  config.toml     cấu hình local
+  migrations/     SQL forward-only, prefix timestamp
+  functions/      Edge Functions (thông báo, share, đóng góp, Zalo, …) + _shared/
+mcp-server/       máy chủ MCP + OAuth 2.1 (Node, build bằng build.mjs)
+zalo/             Zalo Mini App (app riêng, chung repo)
+landing/          trang giới thiệu tĩnh + hướng dẫn
+deploy/           compose + nginx mẫu cho máy chủ MCP / Umami
+scripts/          seed, migrate, build landing, kiểm tra giao diện
+docs/             plan-*.md, changelog, tài liệu MCP, hardening
+plan.md           thiết kế tổng thể
 ```
 
 ## Bảo mật
 
 - **RLS là chốt chặn thật**, không phải frontend. Mọi sửa schema/policy phải kèm test RLS (xem `src/test/rls/`).
-- **Service role key** chỉ dùng trong Edge Function + script seed local. KHÔNG bao giờ để ở frontend.
-- Migrations là **forward-only**. Rollback = migration mới đảo ngược.
+- **Service role key** chỉ dùng trong Edge Function, máy chủ MCP (để tra token/vai trò) và script seed. KHÔNG bao giờ để ở frontend.
+- Migrations là **forward-only**. Rollback = migration mới đảo ngược. Deploy không tự áp migration lên production — áp tay và ghi `schema_migrations`.
 - Soft delete cho `persons`/`families`/`branches` (cột `deleted_at`); hard delete chỉ khi xoá clan.
+- **MCP**: token chỉ lưu băm; mọi lượt gọi kiểm lại vai trò hiện tại; dữ liệu truy vấn bằng JWT ngắn hạn của chủ token nên RLS vẫn áp dụng. Gói `admin` hệ thống không có xoá tài khoản, cấp/thu quyền admin hay đổi cấu hình nền tảng (chống prompt injection).
+- Không đưa IP / hostname / đường dẫn máy chủ thật vào repo; dùng placeholder.
 
-## Trạng thái phát triển
+## Triển khai
 
-- ✅ **Phase 0** — Setup, schema, RLS, triggers, RLS tests, auth pages, seed, CI
-- ✅ **Phase 1** — CRUD clan/persons/families, danh bạ list+grid, family-chart tree, import Excel, dashboard, cache (React Query + IndexedDB + data_version), tài khoản cá nhân
-- ✅ **Phase 2** — Share-link + Edge Function, audit/restore, platform admin UI, xuất PDF sổ gia phả
-- ✅ **Phase 3** — Quy đổi lịch âm, sự kiện + thông báo (email + web push), kinship UI, GEDCOM import/export, đường trực hệ
-- 🚧 **Đang mở rộng** — Bảng tin/posts, đóng góp (contributions workflow), thông gia (in-laws), QR cá nhân, gộp người trùng, AI gợi ý mô tả, video hướng dẫn
-- 🆕 **Sổ tay Văn hoá** (`/so-tay`, MVP) — tra cứu phong tục/nghi lễ toàn nền tảng (không theo dòng họ). Đọc: mọi user; soạn/sửa: **platform admin**. Nội dung lưu `custom_entries` (sections plain-text, không HTML → an toàn XSS). Tìm theo tình huống nhờ `src/lib/customsSynonyms.ts` (mở rộng bằng cách thêm cặp đồng nghĩa). Seed 15 bài (`npm run seed:customs`) **là nội dung tham khảo, để `status='needs_review'` — admin đọc & xác minh trước khi chuyển `published`**.
+Workflow trong `.github/workflows/`:
 
-App đã chạy production tại <https://giapha.thaohk.com> — vẫn tiếp tục thêm tính năng theo phản hồi cộng đồng.
+| Workflow | Việc |
+|---|---|
+| `test.yml` | Chạy test khi push lên `main` và trên pull request |
+| `deploy-vps.yml` | Build và đưa frontend lên máy chủ web (chạy tay) |
+| `deploy-functions.yml` | Đưa Edge Functions (chạy tay) |
+| `deploy-mcp.yml` | Build image và thay container máy chủ MCP (chạy tay) |
 
-Lộ trình chi tiết: xem `plan.md` mục 21.
+## Dữ liệu tách khỏi code
+
+Dữ liệu gia phả lịch sử và bài Sổ tay Văn hoá nằm ở repo riêng `family-tree-data`, không commit chung repo code.
 
 ## Đóng góp
 
-Mỗi tính năng phải kèm test (Vitest unit + RLS integration). Mục test "chưa có test = chưa xong" áp dụng từ Phase 0.
+Mỗi tính năng phải kèm test (Vitest unit + RLS integration): chưa có test = chưa xong.
 
 Commit messages dùng [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `chore:`, `docs:`, `test:`.
