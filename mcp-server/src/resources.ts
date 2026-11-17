@@ -1,5 +1,5 @@
 /**
- * Thao tác CRUD cho Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng và thống kê Bản đồ.
+ * Thao tác CRUD cho Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng, Dòng thời gian một người và thống kê Bản đồ.
  * Khai báo trường nằm ở resourceDefs.ts; file này là phần thực thi.
  *
  * Quyền (hai lớp, giống ops.ts):
@@ -433,6 +433,55 @@ async function deleteTile(c: Ctx, a: Args): Promise<string> {
   return "Đã xoá mảnh ghép.";
 }
 
+// ─── Dòng thời gian một người ──────────────────────────────────────────
+
+const MAX_TIMELINE = 100;
+
+async function getTimeline(c: Ctx, a: Args): Promise<string> {
+  only(a, ["person_id"]);
+  const person = await personInClan(c, a.person_id);
+  const { data, error } = await c.db.from("person_timeline").select("id, year, era, body").eq("clan_id", c.clanId).eq("person_id", person).order("year").order("sort");
+  if (error) throw new Error(error.message);
+  return data?.length ? JSON.stringify(data, null, 1) : "Người này chưa có mốc nào trong dòng thời gian.";
+}
+
+async function setTimeline(c: Ctx, a: Args): Promise<string> {
+  only(a, ["person_id", "entries", "mode", "confirm"]);
+  const person = await personInClan(c, a.person_id);
+  const mode = a.mode === undefined ? "append" : await check(c, "mode", { k: "enum", v: ["append", "replace"], req: true }, a.mode);
+  if (!Array.isArray(a.entries)) throw new UserError("entries phải là mảng các mốc {year, era?, body}.");
+  if (a.entries.length > MAX_TIMELINE) throw new UserError(`Tối đa ${MAX_TIMELINE} mốc mỗi lần.`);
+  const rows: { year: number; era: string | null; body: string }[] = [];
+  for (const [i, e] of a.entries.entries()) {
+    if (!e || typeof e !== "object" || Array.isArray(e)) throw new UserError(`entries[${i}] phải là object {year, era?, body}.`);
+    const en = e as Args;
+    for (const k of Object.keys(en)) if (!["year", "era", "body"].includes(k)) throw new UserError(`entries[${i}].${k} không hợp lệ. Cho phép: year, era, body.`);
+    const year = (await check(c, `entries[${i}].year`, { k: "int", min: -3000, max: 3000, req: true }, en.year)) as number;
+    const body = (await check(c, `entries[${i}].body`, { k: "str", max: 1000, req: true }, en.body)) as string;
+    const era = en.era === undefined ? null : ((await shortText(c, `entries[${i}].era`, en.era, 40)) as string | null);
+    rows.push({ year, era, body });
+  }
+
+  const { data: old, error: e0 } = await c.db.from("person_timeline").select("id, sort").eq("clan_id", c.clanId).eq("person_id", person);
+  if (e0) throw new Error(e0.message);
+  if (mode === "replace" && old?.length) needConfirm(a);
+  if (mode === "append" && !rows.length) throw new UserError("entries rỗng — không có gì để thêm.");
+
+  const base = mode === "append" ? Math.max(-1, ...(old ?? []).map((o) => o.sort as number)) + 1 : 0;
+  if (rows.length) {
+    const { error } = await c.db.from("person_timeline").insert(rows.map((r, i) => ({ ...r, clan_id: c.clanId, person_id: person, sort: base + i })));
+    if (error) throw new UserError(error.message);
+  }
+  // Thay thế: chèn bản mới trước rồi mới xoá bản cũ (giống app) — lỗi giữa chừng không làm mất mốc đã có.
+  if (mode === "replace" && old?.length) {
+    const { error } = await c.db.from("person_timeline").delete().eq("clan_id", c.clanId).in("id", old.map((o) => o.id as string));
+    if (error) throw new UserError(error.message);
+  }
+  return mode === "append"
+    ? `Đã thêm ${rows.length} mốc vào dòng thời gian (tổng ${(old?.length ?? 0) + rows.length}).`
+    : `Đã thay dòng thời gian: ${rows.length} mốc (bỏ ${old?.length ?? 0} mốc cũ).`;
+}
+
 // ─── Bản đồ ────────────────────────────────────────────────────────────
 
 async function mapStats(c: Ctx, a: Args): Promise<string> {
@@ -464,6 +513,8 @@ export const RESOURCE_OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> 
   list_mosaic_tiles: listTiles,
   set_mosaic_tile_status: setTileStatus,
   delete_mosaic_tile: deleteTile,
+  get_person_timeline: getTimeline,
+  set_person_timeline: setTimeline,
   map_stats: mapStats,
 };
 

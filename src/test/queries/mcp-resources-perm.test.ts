@@ -117,6 +117,28 @@ describe("MCP resources: phân quyền với phiên thật", () => {
     expect((await run(editor, "remove_resting_place_occupant", { resting_place_id: rp, person_id: personA, confirm: true })).ok).toBe(true);
   });
 
+  it("dòng thời gian: biên tập thêm/thay được, thay cần confirm, người xem & khác họ bị chặn", async () => {
+    const tl = (u: TestUser, a: Record<string, unknown>, clan = A) => run(u, "set_person_timeline", { person_id: personA, ...a }, clan);
+    expect((await tl(editor, { entries: [{ year: 1990, era: "Canh Ngọ", body: "Sinh ra" }, { year: 2010, body: "Lập gia đình" }] })).ok).toBe(true);
+    expect((await tl(editor, { entries: [{ year: 2000, body: "Tốt nghiệp" }] })).ok).toBe(true);
+    let rows = JSON.parse((await run(viewer, "get_person_timeline", { person_id: personA })).text);
+    expect(rows.map((r: { year: number }) => r.year)).toEqual([1990, 2000, 2010]);
+    expect((await tl(editor, { entries: [{ year: 1990, body: "x", extra: 1 }] })).ok).toBe(false);
+    expect((await tl(editor, { entries: [{ year: 1990, body: "  " }] })).ok).toBe(false);
+    expect((await tl(editor, { entries: [{ year: 1.5, body: "x" }] })).ok).toBe(false);
+    const noConfirm = await tl(editor, { mode: "replace", entries: [{ year: 1995, body: "Mới" }] });
+    expect(noConfirm.ok).toBe(false);
+    expect(noConfirm.text).toMatch(/confirm/);
+    expect((await tl(editor, { mode: "replace", entries: [{ year: 1995, body: "Mới" }], confirm: true })).ok).toBe(true);
+    rows = JSON.parse((await run(editor, "get_person_timeline", { person_id: personA })).text);
+    expect(rows).toHaveLength(1);
+    expect((await tl(viewer, { entries: [{ year: 1999, body: "người xem" }] })).ok).toBe(false);
+    expect((await tl(outsider, { entries: [{ year: 1999, body: "người ngoài" }] })).ok).toBe(false);
+    expect((await run(editor, "set_person_timeline", { person_id: personB, entries: [{ year: 1999, body: "khác họ" }] })).ok).toBe(false);
+    expect((await run(admin, "set_person_timeline", { person_id: personA, entries: [{ year: 1999, body: "chéo" }] }, B)).ok).toBe(false);
+    expect((await svc.from("person_timeline").select("id").eq("person_id", personA)).data).toHaveLength(1);
+  });
+
   it("phòng ký ức: chỉ link https, đúng một nguồn ảnh, người phải cùng họ", async () => {
     const room = idOf((await run(editor, "create_memory_room", { name: "Phòng test" })).text);
     expect((await run(editor, "add_memory_room_item", { memory_room_id: room, kind: "photo", image_url: "http://x.example/a.jpg" })).ok).toBe(false);
