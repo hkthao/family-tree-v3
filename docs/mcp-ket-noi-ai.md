@@ -40,6 +40,36 @@ của app áp dụng nguyên vẹn, không có bản luật thứ hai để lệ
 - Dòng họ & sổ: `update_clan_info` (chỉ tên, mô tả, offset đời — CỐ Ý không đổi được chế độ công khai/giới hạn/tính năng),
   `update_book_texts`.
 
+### Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng, Bản đồ
+
+Mỗi mục có `list_*` (đọc, mọi gói; truyền `id` để đọc một mục đầy đủ, danh sách tự cắt chữ dài), `create_*`, `update_*`
+(chỉ trường được truyền thay đổi, `null` xoá trống) và `delete_*` (gói write; cần `confirm`). Khai báo trường nằm ở
+`mcp-server/src/resourceDefs.ts`, thực thi ở `resources.ts`.
+
+| Mục | Tool |
+|---|---|
+| Bảng tin | `list_posts`, `create_post`, `update_post`, `moderate_post` (đăng/ẩn/ghim…), `delete_post` (ẩn bài) |
+| Phòng ký ức | `list/create/update/delete_memory_room(s)`, `list_memory_room_items`, `add_memory_room_item`, `update_memory_room_item`, `remove_memory_room_item` |
+| Ảnh ghép | `list/create/update/delete_mosaic(s)`, `set_mosaic_dashboard`, `list_mosaic_tiles`, `set_mosaic_tile_status`, `delete_mosaic_tile` |
+| Di sản | `list/create/update/delete_heritage_item(s)`, `add_heritage_person`, `remove_heritage_person` |
+| Mộ phần | `list/create/update/delete_resting_place(s)`, `add/remove_resting_place_occupant`, `list_resting_place_occupants`, `add_resting_place_relocation` |
+| Quỹ họ | `list/create/update/delete_fund_transaction(s)`, `fund_summary` (tổng thu/chi/số dư) |
+| Bảng vàng | `list/create/update/delete_honor_entr(y|ies)` |
+| Bản đồ | `map_stats` (chỉ đọc: số người/mộ/di sản theo tỉnh, không có tên hay địa chỉ) |
+
+**Phân quyền (hai lớp, kiểm bằng `src/test/queries/mcp-resources-perm.test.ts` với phiên đăng nhập thật):**
+- Gói token: tool ghi chỉ gói `write`/`admin` thấy và gọi được; `read`/`propose` chỉ thấy tool đọc.
+- RLS của app theo VAI TRÒ THẬT của chủ token: Bảng vàng, Quỹ họ, Di sản, Mộ phần, Phòng ký ức, Ảnh ghép cần quyền biên tập
+  (người xem chỉ đọc). Bảng tin: quản trị đăng thẳng, thành viên khác chỉ gửi được bài **chờ duyệt**, chỉ quản trị kiểm duyệt.
+- Code tự kiểm thêm những điều RLS không làm: mọi truy vấn khoá theo dòng họ đang chọn; id cha (di sản, mộ phần, phòng,
+  bức ảnh ghép, bài đăng), `person_id`, `event_id` phải thuộc CÙNG dòng họ — nếu không, token nhiều họ hoặc admin hệ thống
+  có thể bị lái sang họ khác. Chỉ nhận trường đã khai báo (không ghi được `clan_id`, `deleted_at`, `created_by`, `status`/
+  `pinned` của bài, `is_public`…); link ảnh/mô hình chỉ `https`; mọi lệnh xoá/gỡ cần `confirm`.
+- Cố ý KHÔNG làm: tải ảnh lên (Ảnh ghép, Di sản, Mộ phần dùng ảnh tải lên trong app), đổi chế độ công khai của phòng/di sản,
+  bình luận Bảng tin.
+- Dữ liệu tài chính (Quỹ họ) mọi thành viên đã đọc được trong app nên token đọc cũng đọc được; mọi thay đổi vẫn ghi vào
+  `fund_audit` dưới tên chủ token.
+
 ### Xuất sổ gia phả PDF (`export_clan_book`)
 
 Dựng bằng chính `ClanBookPdf` của app. Lưu file tạm trong bucket private `book-exports` (`<uid>/mcp-<clan>-<băm>.pdf`) và

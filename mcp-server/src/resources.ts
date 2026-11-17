@@ -1,0 +1,479 @@
+/**
+ * Thao tác CRUD cho Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng và thống kê Bản đồ.
+ * Khai báo trường nằm ở resourceDefs.ts; file này là phần thực thi.
+ *
+ * Quyền (hai lớp, giống ops.ts):
+ *  1. Gói của token: tool ghi chỉ gói `write`/`admin` gọi được (kiểm ở handler theo `needs` trong spec).
+ *  2. RLS của app: mọi truy vấn chạy bằng client mang JWT của CHỦ TOKEN, nên vai trò thật của họ trong dòng họ quyết định
+ *     (đa số mục cần quyền biên tập; Bảng tin: thành viên viết bài chờ duyệt, quản trị mới đăng thẳng/kiểm duyệt).
+ *
+ * RLS KHÔNG đủ trong ba chuyện — nên code tự kiểm, nếu không một token gắn nhiều dòng họ (hoặc admin hệ thống) có thể
+ * bị lái sang dòng họ khác mà người dùng cũng có quyền:
+ *  - mọi truy vấn/ghi đều lọc `clan_id` = dòng họ đang chọn của token;
+ *  - id CHA (di sản, mộ phần, phòng, bức ảnh ghép, bài đăng) phải thuộc dòng họ đó trước khi thao tác con/RPC;
+ *  - `person_id`, `event_id` gắn vào bản ghi phải thuộc cùng dòng họ (khoá ngoại không tự kiểm điều này).
+ * Ngoài ra: chỉ nhận trường đã khai báo (không có mass-assignment), link ảnh/mô hình chỉ https, mọi lệnh xoá đòi confirm.
+ */
+
+import { EXTRA_SPECS, RESOURCES, type FieldDef, type ResourceDef } from "./resourceDefs.ts";
+import { UserError, UUID_RE } from "./fields.ts";
+import type { Ctx } from "./ops.ts";
+
+type Args = Record<string, unknown>;
+
+const DENIED = "Không ghi được: không tìm thấy, hoặc chủ token không đủ quyền với thao tác này.";
+const MAX_LIST = 50;
+const CLIP = 400;
+
+const uuid = (v: unknown, name: string): string => {
+  if (typeof v !== "string" || !UUID_RE.test(v)) throw new UserError(`${name} phải là id (UUID) — lấy từ tool list_* tương ứng.`);
+  return v;
+};
+
+const needConfirm = (a: Args) => {
+  if (a.confirm !== true) throw new UserError("Cần confirm=true — chỉ đặt sau khi người dùng đã yêu cầu rõ ràng.");
+};
+
+/** Id của người trong CHÍNH dòng họ này (khoá ngoại person_id không tự kiểm cùng dòng họ). */
+async function personInClan(c: Ctx, id: unknown, name = "person_id"): Promise<string> {
+  const pid = uuid(id, name);
+  const { data, error } = await c.db.from("persons").select("id").eq("clan_id", c.clanId).eq("id", pid).is("deleted_at", null).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new UserError(`${name} không thuộc dòng họ này (xem search_person).`);
+  return pid;
+}
+
+/** Bản ghi cha phải thuộc dòng họ đang chọn (và chưa xoá mềm nếu bảng có xoá mềm). */
+async function parentInClan(c: Ctx, table: string, id: unknown, name: string, soft: boolean): Promise<string> {
+  const pid = uuid(id, name);
+  let q = c.db.from(table).select("id").eq("clan_id", c.clanId).eq("id", pid);
+  if (soft) q = q.is("deleted_at", null);
+  const { data, error } = await q.maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new UserError(`${name} không thuộc dòng họ này hoặc không tồn tại.`);
+  return pid;
+}
+
+const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s));
+
+/** Kiểm một giá trị theo khai báo trường; trả giá trị đã chuẩn hoá. */
+async function check(c: Ctx, name: string, f: FieldDef, v: unknown): Promise<unknown> {
+  if (v === null) {
+    if ("req" in f && f.req) throw new UserError(`${name} không được để trống.`);
+    return null;
+  }
+  switch (f.k) {
+    case "str": {
+      if (typeof v !== "string") throw new UserError(`${name} phải là chuỗi.`);
+      const t = v.trim();
+      if (t.length > f.max) throw new UserError(`${name} quá dài (tối đa ${f.max}).`);
+      if (!t && f.req) throw new UserError(`${name} không được để trống.`);
+      return t || null;
+    }
+    case "url": {
+      if (typeof v !== "string") throw new UserError(`${name} phải là chuỗi.`);
+      const t = v.trim();
+      if (!t) return null;
+      if (t.length > f.max || !/^https:\/\/[^\s]+$/i.test(t)) throw new UserError(`${name} phải là liên kết https hợp lệ.`);
+      return t;
+    }
+    case "enum":
+      if (typeof v !== "string" || !f.v.includes(v)) throw new UserError(`${name} phải là một trong: ${f.v.join(", ")}.`);
+      return v;
+    case "int":
+      if (!Number.isInteger(v) || (v as number) < f.min || (v as number) > f.max) throw new UserError(`${name} phải là số nguyên ${f.min}–${f.max}.`);
+      return v;
+    case "num":
+      if (typeof v !== "number" || !Number.isFinite(v) || (f.gt ? v <= f.min : v < f.min) || (f.max !== undefined && v > f.max)) {
+        throw new UserError(`${name} phải là số ${f.gt ? ">" : "≥"} ${f.min}${f.max !== undefined ? ` và ≤ ${f.max}` : ""}.`);
+      }
+      return v;
+    case "bool":
+      if (typeof v !== "boolean") throw new UserError(`${name} phải là true/false.`);
+      return v;
+    case "date":
+      if (typeof v !== "string" || !isDate(v)) throw new UserError(`${name} phải dạng YYYY-MM-DD.`);
+      return v;
+    case "person":
+      return personInClan(c, v, name);
+    case "uuid": {
+      const id = uuid(v, name);
+      // event_id của bài đăng: sự kiện phải thuộc dòng họ này.
+      if (name === "event_id") await parentInClan(c, "events", id, name, false);
+      return id;
+    }
+  }
+}
+
+/** Đọc các trường của tài nguyên từ đầu vào; từ chối khoá lạ (không cho ghi cột ngoài danh sách). */
+async function parseFields(c: Ctx, r: ResourceDef, a: Args, creating: boolean, metaKeys: string[]): Promise<Record<string, unknown>> {
+  for (const k of Object.keys(a)) {
+    if (!(k in r.fields) && !metaKeys.includes(k)) throw new UserError(`Trường "${k}" không được phép. Cho phép: ${Object.keys(r.fields).join(", ")}.`);
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, f] of Object.entries(r.fields)) {
+    if (a[k] === undefined) {
+      if (creating && "req" in f && f.req) throw new UserError(`${k} là bắt buộc.`);
+      continue;
+    }
+    out[k] = await check(c, k, f, a[k]);
+  }
+  if (Object.keys(out).length === 0) throw new UserError("Không có trường nào để ghi.");
+  return out;
+}
+
+const clip = (v: unknown): unknown =>
+  typeof v === "string" && v.length > CLIP ? `${v.slice(0, CLIP)}… (đã cắt bớt — gọi lại với id để đọc đủ)` : v;
+
+// ─── CRUD chung ────────────────────────────────────────────────────────
+
+async function listOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
+  const allowed = ["id", "q", "limit", "offset", ...(r.filters ?? [])];
+  for (const k of Object.keys(a)) if (!allowed.includes(k)) throw new UserError(`Tham số "${k}" không hợp lệ. Cho phép: ${allowed.join(", ")}.`);
+  const limit = Math.min(Math.max(Number.isInteger(a.limit) ? (a.limit as number) : 25, 1), MAX_LIST);
+  const offset = Math.max(Number.isInteger(a.offset) ? (a.offset as number) : 0, 0);
+  const cols = ["id", ...Object.keys(r.fields), ...(r.extraCols ?? [])].join(", ");
+  let q = c.db.from(r.table).select(cols, { count: "exact" }).eq("clan_id", c.clanId);
+  if (r.soft) q = q.is("deleted_at", null);
+  if (a.id !== undefined) q = q.eq("id", uuid(a.id, "id"));
+  if (a.q !== undefined && r.searchCol) {
+    if (typeof a.q !== "string") throw new UserError("q phải là chuỗi.");
+    q = q.ilike(r.searchCol, `%${a.q.trim().replace(/[\\%_]/g, (m) => `\\${m}`)}%`);
+  }
+  for (const f of r.filters ?? []) {
+    if (a[f] === undefined) continue;
+    if (a[f] === null) throw new UserError(`${f} không được null.`);
+    await check(c, f, r.fields[f], a[f]);
+    q = q.eq(f, a[f] as string);
+  }
+  // Bảng tin: mặc định ẩn bài đã gỡ (như app); lọc status=hidden để xem.
+  if (r.key === "post" && a.status === undefined) q = q.neq("status", "hidden");
+  for (const [col, asc] of r.order) q = q.order(col, { ascending: asc, nullsFirst: false });
+  const { data, count, error } = await q.range(offset, offset + limit - 1);
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as unknown as Record<string, unknown>[];
+  if (!rows.length) return `Không có ${r.plural.replace(/_/g, " ")} nào${a.id !== undefined || a.q !== undefined ? " khớp" : ""}.`;
+  const out = a.id !== undefined ? rows : rows.map((row) => Object.fromEntries(Object.entries(row).map(([k, v]) => [k, clip(v)])));
+  return JSON.stringify({ total: count ?? rows.length, shown: rows.length, offset, rows: out }, null, 1);
+}
+
+async function createOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
+  const patch = await parseFields(c, r, a, true, []);
+  const { data, error } = await c.db.from(r.table).insert({ ...patch, clan_id: c.clanId }).select("id").single();
+  if (error) throw new UserError(error.message);
+  return `Đã tạo ${r.key.replace(/_/g, " ")} (id ${data.id}).`;
+}
+
+async function updateOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
+  const idKey = `${r.key}_id`;
+  const id = uuid(a[idKey], idKey);
+  const patch = await parseFields(c, r, a, false, [idKey]);
+  let q = c.db.from(r.table).update(patch).eq("clan_id", c.clanId).eq("id", id);
+  if (r.soft) q = q.is("deleted_at", null);
+  const { data, error } = await q.select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? `Đã cập nhật ${r.key.replace(/_/g, " ")}.` : DENIED;
+}
+
+async function deleteOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
+  const idKey = `${r.key}_id`;
+  for (const k of Object.keys(a)) if (![idKey, "confirm"].includes(k)) throw new UserError(`Tham số "${k}" không hợp lệ.`);
+  const id = uuid(a[idKey], idKey);
+  needConfirm(a);
+  const q = r.soft
+    ? c.db.from(r.table).update({ deleted_at: new Date().toISOString() }).eq("clan_id", c.clanId).eq("id", id).is("deleted_at", null)
+    : c.db.from(r.table).delete().eq("clan_id", c.clanId).eq("id", id);
+  const { data, error } = await q.select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? `Đã xoá ${r.key.replace(/_/g, " ")}.` : DENIED;
+}
+
+// ─── Bảng tin ──────────────────────────────────────────────────────────
+
+const POST = RESOURCES.find((r) => r.key === "post")!;
+
+/** Quản trị dòng họ đăng thẳng; thành viên khác bắt buộc vào hàng chờ duyệt (RLS cũng ép như vậy). */
+async function createPost(c: Ctx, a: Args): Promise<string> {
+  const patch = await parseFields(c, POST, a, true, []);
+  const { data: isAdmin } = await c.db.rpc("is_clan_admin", { target_clan: c.clanId });
+  const status = isAdmin === true ? "published" : "pending";
+  const { data, error } = await c.db.from("clan_posts").insert({ ...patch, clan_id: c.clanId, author_id: c.userId, status }).select("id").single();
+  if (error) throw new UserError(error.message);
+  return status === "published"
+    ? `Đã đăng bài lên Bảng tin (id ${data.id}).`
+    : `Đã gửi bài (id ${data.id}) — đang chờ quản trị dòng họ duyệt mới hiện trên Bảng tin.`;
+}
+
+/** Bài phải thuộc dòng họ đang chọn: RPC kiểm duyệt chỉ kiểm quyền ở dòng họ CỦA BÀI nên phải tự kiểm trước. */
+async function moderate(c: Ctx, postId: string, action: string, note: unknown): Promise<string> {
+  await parentInClan(c, "clan_posts", postId, "post_id", false);
+  const n = note === undefined ? undefined : typeof note === "string" && note.length <= 500 ? note : (() => { throw new UserError("note tối đa 500 ký tự."); })();
+  const { error } = await c.db.rpc("clan_post_moderate", { p_post_id: postId, p_action: action, p_note: n });
+  if (error) throw new UserError(error.message);
+  return "Đã kiểm duyệt bài.";
+}
+
+const POST_ACTIONS = ["publish", "reject", "hide", "unhide", "pin", "unpin"];
+async function moderatePost(c: Ctx, a: Args): Promise<string> {
+  for (const k of Object.keys(a)) if (!["post_id", "action", "note"].includes(k)) throw new UserError(`Tham số "${k}" không hợp lệ.`);
+  if (typeof a.action !== "string" || !POST_ACTIONS.includes(a.action)) throw new UserError(`action phải là: ${POST_ACTIONS.join(", ")}.`);
+  return moderate(c, uuid(a.post_id, "post_id"), a.action, a.note);
+}
+
+async function deletePost(c: Ctx, a: Args): Promise<string> {
+  for (const k of Object.keys(a)) if (!["post_id", "confirm"].includes(k)) throw new UserError(`Tham số "${k}" không hợp lệ.`);
+  const id = uuid(a.post_id, "post_id");
+  needConfirm(a);
+  await moderate(c, id, "hide", undefined);
+  return "Đã gỡ bài khỏi Bảng tin (ẩn, nhật ký kiểm duyệt vẫn giữ).";
+}
+
+// ─── Quỹ họ ────────────────────────────────────────────────────────────
+
+async function fundSummary(c: Ctx, a: Args): Promise<string> {
+  for (const k of Object.keys(a)) if (!["from", "to"].includes(k)) throw new UserError(`Tham số "${k}" không hợp lệ.`);
+  let q = c.db.from("fund_transactions").select("direction, amount, fund").eq("clan_id", c.clanId).is("deleted_at", null);
+  if (a.from !== undefined) q = q.gte("occurred_on", String(await check(c, "from", { k: "date" }, a.from)));
+  if (a.to !== undefined) q = q.lte("occurred_on", String(await check(c, "to", { k: "date" }, a.to)));
+  const { data, error } = await q.range(0, 9999);
+  if (error) throw new Error(error.message);
+  const funds = new Map<string, { in: number; out: number }>();
+  let tin = 0;
+  let tout = 0;
+  for (const t of data ?? []) {
+    const amt = Number(t.amount);
+    const f = funds.get(t.fund as string) ?? { in: 0, out: 0 };
+    if (t.direction === "in") { f.in += amt; tin += amt; } else { f.out += amt; tout += amt; }
+    funds.set(t.fund as string, f);
+  }
+  return JSON.stringify(
+    {
+      giao_dich: data?.length ?? 0,
+      tong_thu: tin,
+      tong_chi: tout,
+      so_du: tin - tout,
+      theo_quy: [...funds].map(([fund, v]) => ({ fund, thu: v.in, chi: v.out, so_du: v.in - v.out })).sort((x, y) => x.fund.localeCompare(y.fund, "vi")),
+    },
+    null,
+    1,
+  );
+}
+
+// ─── Mục con ───────────────────────────────────────────────────────────
+
+function only(a: Args, keys: string[]) {
+  for (const k of Object.keys(a)) if (!keys.includes(k)) throw new UserError(`Tham số "${k}" không hợp lệ. Cho phép: ${keys.join(", ")}.`);
+}
+const shortText = (c: Ctx, name: string, v: unknown, max: number) => check(c, name, { k: "str", max }, v);
+
+async function addHeritagePerson(c: Ctx, a: Args): Promise<string> {
+  only(a, ["heritage_item_id", "person_id", "role_note"]);
+  const item = await parentInClan(c, "heritage_items", a.heritage_item_id, "heritage_item_id", true);
+  const person = await personInClan(c, a.person_id);
+  const role_note = a.role_note === undefined ? null : await shortText(c, "role_note", a.role_note, 300);
+  const { error } = await c.db.from("heritage_people").insert({ item_id: item, person_id: person, clan_id: c.clanId, role_note });
+  if (error) throw new UserError(error.message);
+  return "Đã gắn người vào mục di sản.";
+}
+
+async function removeHeritagePerson(c: Ctx, a: Args): Promise<string> {
+  only(a, ["heritage_item_id", "person_id", "confirm"]);
+  needConfirm(a);
+  const item = await parentInClan(c, "heritage_items", a.heritage_item_id, "heritage_item_id", true);
+  const { data, error } = await c.db.from("heritage_people").delete().eq("clan_id", c.clanId).eq("item_id", item).eq("person_id", uuid(a.person_id, "person_id")).select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? "Đã gỡ người khỏi mục di sản." : DENIED;
+}
+
+async function addOccupant(c: Ctx, a: Args): Promise<string> {
+  only(a, ["resting_place_id", "person_id", "note"]);
+  const place = await parentInClan(c, "resting_places", a.resting_place_id, "resting_place_id", true);
+  const person = await personInClan(c, a.person_id);
+  const note = a.note === undefined ? null : await shortText(c, "note", a.note, 300);
+  const { error } = await c.db.from("resting_place_occupants").insert({ resting_place_id: place, person_id: person, clan_id: c.clanId, note });
+  if (error) throw new UserError(error.message);
+  return "Đã ghi nhận người an nghỉ tại nơi này.";
+}
+
+async function removeOccupant(c: Ctx, a: Args): Promise<string> {
+  only(a, ["resting_place_id", "person_id", "confirm"]);
+  needConfirm(a);
+  const place = await parentInClan(c, "resting_places", a.resting_place_id, "resting_place_id", true);
+  const { data, error } = await c.db.from("resting_place_occupants").delete().eq("clan_id", c.clanId).eq("resting_place_id", place).eq("person_id", uuid(a.person_id, "person_id")).select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? "Đã gỡ người khỏi nơi an nghỉ." : DENIED;
+}
+
+async function listOccupants(c: Ctx, a: Args): Promise<string> {
+  only(a, ["resting_place_id"]);
+  const place = await parentInClan(c, "resting_places", a.resting_place_id, "resting_place_id", true);
+  const { data, error } = await c.db.from("resting_place_occupants").select("person_id, note").eq("clan_id", c.clanId).eq("resting_place_id", place);
+  if (error) throw new Error(error.message);
+  if (!data?.length) return "Chưa ghi nhận ai an nghỉ tại nơi này.";
+  const { data: ps } = await c.db.from("persons").select("id, full_name").eq("clan_id", c.clanId).in("id", data.map((o) => o.person_id as string));
+  const name = new Map((ps ?? []).map((p) => [p.id as string, p.full_name as string]));
+  return data.map((o) => `${o.person_id} · ${name.get(o.person_id as string) ?? "?"}${o.note ? ` · ${o.note}` : ""}`).join("\n");
+}
+
+async function addRelocation(c: Ctx, a: Args): Promise<string> {
+  only(a, ["resting_place_id", "from_label", "moved_on", "note"]);
+  const place = await parentInClan(c, "resting_places", a.resting_place_id, "resting_place_id", true);
+  const row = {
+    resting_place_id: place,
+    clan_id: c.clanId,
+    from_label: a.from_label === undefined ? null : await shortText(c, "from_label", a.from_label, 300),
+    moved_on: a.moved_on === undefined ? null : await check(c, "moved_on", { k: "date" }, a.moved_on),
+    note: a.note === undefined ? null : await shortText(c, "note", a.note, 1000),
+  };
+  const { error } = await c.db.from("resting_place_relocations").insert(row);
+  if (error) throw new UserError(error.message);
+  return "Đã ghi nhận lần dời mộ.";
+}
+
+// ─── Phòng ký ức ───────────────────────────────────────────────────────
+
+async function listRoomItems(c: Ctx, a: Args): Promise<string> {
+  only(a, ["memory_room_id"]);
+  const room = await parentInClan(c, "memory_rooms", a.memory_room_id, "memory_room_id", true);
+  const { data, error } = await c.db.from("memory_room_items").select("id, kind, person_id, image_url, model_url, caption, subtitle, sort").eq("clan_id", c.clanId).eq("room_id", room).order("sort", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data?.length ? JSON.stringify(data, null, 1) : "Phòng chưa có khung ảnh nào.";
+}
+
+async function addRoomItem(c: Ctx, a: Args): Promise<string> {
+  only(a, ["memory_room_id", "kind", "person_id", "image_url", "model_url", "caption", "subtitle"]);
+  const room = await parentInClan(c, "memory_rooms", a.memory_room_id, "memory_room_id", true);
+  const kind = await check(c, "kind", { k: "enum", v: ["photo", "model"], req: true }, a.kind);
+  const row: Record<string, unknown> = { room_id: room, clan_id: c.clanId, kind };
+  if (kind === "photo") {
+    if (a.model_url !== undefined) throw new UserError("Khung ảnh không dùng model_url.");
+    const hasP = a.person_id !== undefined && a.person_id !== null;
+    const hasU = a.image_url !== undefined && a.image_url !== null;
+    if (hasP === hasU) throw new UserError("Khung ảnh cần ĐÚNG MỘT trong person_id (ảnh của thành viên) hoặc image_url (link https).");
+    if (hasP) row.person_id = await personInClan(c, a.person_id);
+    else row.image_url = await check(c, "image_url", { k: "url", max: 1000 }, a.image_url);
+  } else {
+    if (a.person_id !== undefined || a.image_url !== undefined) throw new UserError("Hiện vật 3D chỉ dùng model_url.");
+    if (a.model_url === undefined || a.model_url === null) throw new UserError("kind=model cần model_url (link https tới GLB/GLTF).");
+    row.model_url = await check(c, "model_url", { k: "url", max: 1000 }, a.model_url);
+  }
+  if (a.caption !== undefined) row.caption = await shortText(c, "caption", a.caption, 300);
+  if (a.subtitle !== undefined) row.subtitle = await shortText(c, "subtitle", a.subtitle, 300);
+  const { data, error } = await c.db.from("memory_room_items").insert(row).select("id").single();
+  if (error) throw new UserError(error.message);
+  return `Đã thêm khung vào phòng (id ${data.id}).`;
+}
+
+async function updateRoomItem(c: Ctx, a: Args): Promise<string> {
+  only(a, ["item_id", "caption", "subtitle"]);
+  const id = uuid(a.item_id, "item_id");
+  const patch: Record<string, unknown> = {};
+  if (a.caption !== undefined) patch.caption = await shortText(c, "caption", a.caption, 300);
+  if (a.subtitle !== undefined) patch.subtitle = await shortText(c, "subtitle", a.subtitle, 300);
+  if (!Object.keys(patch).length) throw new UserError("Không có trường nào để ghi.");
+  const { data, error } = await c.db.from("memory_room_items").update(patch).eq("clan_id", c.clanId).eq("id", id).select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? "Đã cập nhật khung." : DENIED;
+}
+
+async function removeRoomItem(c: Ctx, a: Args): Promise<string> {
+  only(a, ["item_id", "confirm"]);
+  const id = uuid(a.item_id, "item_id");
+  needConfirm(a);
+  const { data, error } = await c.db.from("memory_room_items").delete().eq("clan_id", c.clanId).eq("id", id).select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? "Đã gỡ khung khỏi phòng." : DENIED;
+}
+
+// ─── Ảnh ghép ──────────────────────────────────────────────────────────
+
+async function setMosaicDashboard(c: Ctx, a: Args): Promise<string> {
+  only(a, ["mosaic_id", "on"]);
+  const id = await parentInClan(c, "clan_mosaics", a.mosaic_id, "mosaic_id", false);
+  if (typeof a.on !== "boolean") throw new UserError("on phải là true/false.");
+  // Chỉ một bức hiện ở Tổng quan: bật bức này thì gỡ cờ của các bức khác trong họ (giống app).
+  if (a.on) {
+    const { error: e1 } = await c.db.from("clan_mosaics").update({ show_on_dashboard: false }).eq("clan_id", c.clanId).neq("id", id);
+    if (e1) throw new UserError(e1.message);
+  }
+  const { data, error } = await c.db.from("clan_mosaics").update({ show_on_dashboard: a.on }).eq("clan_id", c.clanId).eq("id", id).select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? (a.on ? "Đã hiện bức ảnh ghép này ở Tổng quan." : "Đã gỡ bức ảnh ghép khỏi Tổng quan.") : DENIED;
+}
+
+async function listTiles(c: Ctx, a: Args): Promise<string> {
+  only(a, ["mosaic_id"]);
+  const m = await parentInClan(c, "clan_mosaics", a.mosaic_id, "mosaic_id", false);
+  const { data, error } = await c.db.from("clan_mosaic_tiles").select("id, user_id, person_id, caption, status, position, created_at").eq("clan_id", c.clanId).eq("mosaic_id", m).order("position", { ascending: true }).limit(200);
+  if (error) throw new Error(error.message);
+  return data?.length ? JSON.stringify(data, null, 1) : "Bức ảnh ghép chưa có mảnh nào.";
+}
+
+async function setTileStatus(c: Ctx, a: Args): Promise<string> {
+  only(a, ["tile_id", "status"]);
+  const id = uuid(a.tile_id, "tile_id");
+  const status = await check(c, "status", { k: "enum", v: ["approved", "hidden"], req: true }, a.status);
+  const { data, error } = await c.db.from("clan_mosaic_tiles").update({ status }).eq("clan_id", c.clanId).eq("id", id).select("id");
+  if (error) throw new UserError(error.message);
+  return data?.length ? `Đã đặt mảnh ghép: ${status}.` : DENIED;
+}
+
+async function deleteTile(c: Ctx, a: Args): Promise<string> {
+  only(a, ["tile_id", "confirm"]);
+  const id = uuid(a.tile_id, "tile_id");
+  needConfirm(a);
+  const { data: tile } = await c.db.from("clan_mosaic_tiles").select("id, photo_path").eq("clan_id", c.clanId).eq("id", id).maybeSingle();
+  const { data, error } = await c.db.from("clan_mosaic_tiles").delete().eq("clan_id", c.clanId).eq("id", id).select("id");
+  if (error) throw new UserError(error.message);
+  if (!data?.length) return DENIED;
+  // Chỉ dọn ảnh do chính tính năng tải lên; ảnh thành viên và link ngoài là ảnh dùng chung (giống app).
+  if (tile && typeof tile.photo_path === "string" && tile.photo_path.includes("/mosaic/")) {
+    await c.db.storage.from("person-photos").remove([tile.photo_path]);
+  }
+  return "Đã xoá mảnh ghép.";
+}
+
+// ─── Bản đồ ────────────────────────────────────────────────────────────
+
+async function mapStats(c: Ctx, a: Args): Promise<string> {
+  only(a, ["include_deceased"]);
+  if (a.include_deceased !== undefined && typeof a.include_deceased !== "boolean") throw new UserError("include_deceased phải là true/false.");
+  const { data, error } = await c.db.rpc("clan_map_stats", { p_clan: c.clanId, p_include_deceased: a.include_deceased ?? true });
+  if (error) throw new UserError(error.message);
+  return JSON.stringify(data, null, 1);
+}
+
+// ─── Đăng ký ───────────────────────────────────────────────────────────
+
+export const RESOURCE_OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> = {
+  create_post: createPost,
+  moderate_post: moderatePost,
+  delete_post: deletePost,
+  fund_summary: fundSummary,
+  add_heritage_person: addHeritagePerson,
+  remove_heritage_person: removeHeritagePerson,
+  add_resting_place_occupant: addOccupant,
+  remove_resting_place_occupant: removeOccupant,
+  list_resting_place_occupants: listOccupants,
+  add_resting_place_relocation: addRelocation,
+  list_memory_room_items: listRoomItems,
+  add_memory_room_item: addRoomItem,
+  update_memory_room_item: updateRoomItem,
+  remove_memory_room_item: removeRoomItem,
+  set_mosaic_dashboard: setMosaicDashboard,
+  list_mosaic_tiles: listTiles,
+  set_mosaic_tile_status: setTileStatus,
+  delete_mosaic_tile: deleteTile,
+  map_stats: mapStats,
+};
+
+for (const r of RESOURCES) {
+  RESOURCE_OPS[`list_${r.plural}`] = (c, a) => listOf(r, c, a);
+  if (!r.customCreate) RESOURCE_OPS[`create_${r.key}`] = (c, a) => createOf(r, c, a);
+  RESOURCE_OPS[`update_${r.key}`] = (c, a) => updateOf(r, c, a);
+  if (!r.customDelete) RESOURCE_OPS[`delete_${r.key}`] = (c, a) => deleteOf(r, c, a);
+}
+
+/** Mọi tên tool do file này xử lý — test đối chiếu với spec để không có tool thiếu hàm hoặc hàm thiếu spec. */
+export const RESOURCE_TOOL_NAMES = Object.keys(RESOURCE_OPS);
+export const _EXTRA_SPEC_NAMES = EXTRA_SPECS.map((t) => t.name);

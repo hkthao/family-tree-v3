@@ -13,6 +13,8 @@ Cập nhật ngày 16/11:
 
 • XUẤT SỔ GIA PHẢ PDF QUA AI — nhận link tải có thời hạn. Nếu dữ liệu dòng họ không đổi, lần sau trả lại ngay file cũ, không dựng lại.
 
+• AI QUẢN LÝ THÊM CÁC MỤC CỦA DÒNG HỌ — Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng công đức: xem, thêm, sửa, xoá (xoá phải xác nhận) và xem số liệu Bản đồ. AI chỉ làm được những gì vai trò của bạn trong dòng họ cho phép: người xem chỉ đọc, bài của thành viên vẫn phải chờ quản trị duyệt.
+
 • SỔ GIA PHẢ PDF NHANH HƠN — mục lục có số trang được dàn trang một lần thay vì hai.
 
 • TOKEN CHO QUẢN TRỊ HỆ THỐNG — mục Quản trị → Kết nối AI. Token này thao tác được mọi dòng họ và các chức năng quản trị; lệnh nguy hiểm phải xác nhận kèm lý do và mọi lệnh đều được ghi nhật ký.
