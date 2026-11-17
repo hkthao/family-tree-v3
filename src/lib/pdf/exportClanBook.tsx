@@ -1,13 +1,14 @@
 import type { ClanBookDocProps } from "@/lib/pdf/clanBook.worker";
 
 import type { BookWatermarkId } from "@/lib/pdf/bookWatermarks";
-import { makeQrDataUrl } from "@/lib/cards/exportCard";
+import { bookFilename } from "@/lib/pdf/bookFilename";
+import { makeCoverQr } from "@/lib/pdf/coverQr";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { HONOR_CATEGORY_LABEL } from "@/lib/queries/honor";
+import { tryServerExport } from "@/lib/pdf/exportService";
 import { withExportSlot } from "@/lib/pdf/exportSlot";
 import { getClanBookData } from "@/lib/queries/clan-book";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
-import { getOrCreateTreeShareLink } from "@/lib/queries/share-links";
 
 export interface ExportClanBookOptions {
   tree?: boolean;
@@ -70,16 +71,8 @@ export async function buildClanBookPdf(
       return { data, photoByPersonId, coverByItemId };
     },
   );
-  // QR trang bìa → link gia phả công khai (ai cũng xem được, không cần
-  // đăng nhập). Lỗi (vd không tạo được link) thì bỏ qua, không có QR.
-  let coverQrDataUri: string | undefined;
-  try {
-    const link = await getOrCreateTreeShareLink(clan.id);
-    const url = `${options.shareOrigin ?? window.location.origin}/share/${link.token}`;
-    coverQrDataUri = (await makeQrDataUrl(url, "#00000000")) ?? undefined;
-  } catch {
-    /* không có QR */
-  }
+  // QR trang bìa → link gia phả công khai; lỗi thì không có QR.
+  const coverQrDataUri = await makeCoverQr(clan.id, options.shareOrigin ?? window.location.origin);
 
   const docProps = {
     clan,
@@ -105,14 +98,8 @@ export async function buildClanBookPdf(
     (await renderInWorker(docProps, onProgress)) ??
     (await renderOnMainThread(docProps));
 
-  const safe = clan.name
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .replace(/[^a-zA-Z0-9-_]/g, "_");
-  const today = new Date().toISOString().slice(0, 10);
-  return { blob, filename: `gia-pha_${safe}_${today}.pdf` };
+  const filename = bookFilename(clan.name);
+  return { blob, filename };
 }
 
 /**
@@ -123,6 +110,10 @@ export async function downloadClanBookPdf(
   clan: ClanDetail,
   options: ExportClanBookOptions = {},
 ): Promise<{ filename: string; bytes: number }> {
+  // Ưu tiên máy chủ xuất sổ (nhẹ cho máy người dùng); không dùng được thì dựng ngay tại trình duyệt.
+  const viaServer = await tryServerExport(clan, options);
+  if (viaServer) return viaServer;
+
   const { blob, filename } = await buildClanBookPdf(clan, options);
 
   const url = URL.createObjectURL(blob);

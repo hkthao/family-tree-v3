@@ -3628,6 +3628,18 @@ export type Database = {
           id: string
         }[]
       }
+      cancel_export_job: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      create_export_job: {
+        Args: { p_clan: string; p_options?: Json }
+        Returns: Json
+      }
+      get_export_job: {
+        Args: { p_id: string }
+        Returns: Json
+      }
       acquire_export_slot: {
         Args: { p_clan: string }
         Returns: Json

@@ -1,0 +1,14 @@
+# book-worker trên máy chủ xuất sổ riêng. Không mở cổng nào: worker chỉ đi ra tới Supabase (kéo việc từ export_jobs).
+# Bí mật ở ./worker.env (chmod 600), KHÔNG nằm trong repo — mẫu: deploy/book-worker/worker.env.example.
+name: book-worker
+
+services:
+  worker:
+    image: book-worker:local
+    build: .
+    container_name: book-worker
+    restart: unless-stopped
+    # Máy yếu: chặn ở 1,1 GB để job quá nặng chỉ làm container này bị OOM-kill rồi tự khởi động lại, không kéo sập sshd.
+    mem_limit: 1100m
+    memswap_limit: 1100m
+    env_file: ./worker.env
