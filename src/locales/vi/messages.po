@@ -763,10 +763,6 @@ msgstr "<0>{0}</0><1> · {1} đoạn · {2} câu hỏi</1>"
 msgid "<0>{fromName}</0> gọi <1>{toName}</1> là"
 msgstr "<0>{fromName}</0> gọi <1>{toName}</1> là"
 
-#: src/pages/clan/People.tsx
-msgid "<0>{withGaps}</0> người còn thiếu thông tin · <1>Bổ sung →</1>"
-msgstr "<0>{withGaps}</0> người còn thiếu thông tin · <1>Bổ sung →</1>"
-
 #: src/pages/clan/Import.tsx
 msgid "<0>• <1>ID</1>: mã tạm bạn tự đặt (vd C1, V1…) — cha/mẹ/vợ/chồng nối theo ID này, <2>không theo tên</2>.</0><3>• <4>ID Vợ/Chồng</4> <5>(mới)</5>: nối cặp vợ chồng trực tiếp — dâu/rể chỉ cần điền ID người trong họ, không cần qua con. Mẹo: vợ 2 đặt ID thêm chữ \"b\" (vd C2 → vợ V2, vợ hai V2b).</3><6>• <7>Thuỷ tổ</7> <8>(mới)</8>: đánh \"x\" cho đời 1 (khỏi phải đánh dấu sau khi nhập). Chỉ Họ tên + Giới tính là bắt buộc.</6>"
 msgstr "<0>• <1>ID</1>: mã tạm bạn tự đặt (vd C1, V1…) — cha/mẹ/vợ/chồng nối theo ID này, <2>không theo tên</2>.</0><3>• <4>ID Vợ/Chồng</4> <5>(mới)</5>: nối cặp vợ chồng trực tiếp — dâu/rể chỉ cần điền ID người trong họ, không cần qua con. Mẹo: vợ 2 đặt ID thêm chữ \"b\" (vd C2 → vợ V2, vợ hai V2b).</3><6>• <7>Thuỷ tổ</7> <8>(mới)</8>: đánh \"x\" cho đời 1 (khỏi phải đánh dấu sau khi nhập). Chỉ Họ tên + Giới tính là bắt buộc.</6>"
@@ -1864,6 +1860,10 @@ msgstr "Bỏ qua"
 msgid "Bổ sung {0}"
 msgstr "Bổ sung {0}"
 
+#: src/pages/clan/People.tsx
+msgid "Bổ sung →"
+msgstr "Bổ sung →"
+
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/pages/clan/ContributionDetail.tsx
@@ -2738,10 +2738,14 @@ msgstr "Chọn {title}"
 msgid "Chọn ảnh"
 msgstr "Chọn ảnh"
 
+#: src/pages/clan/People.tsx
+msgid "Chọn cả {total} kết quả"
+msgstr "Chọn cả {total} kết quả"
+
 #. placeholder {0}: data.rows.length
 #: src/pages/clan/People.tsx
-msgid "Chọn cả trang này ({0})"
-msgstr "Chọn cả trang này ({0})"
+msgid "Chọn cả trang ({0})"
+msgstr "Chọn cả trang ({0})"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Chọn cả trang này ({count})"
@@ -2863,10 +2867,6 @@ msgstr "Chọn tất cả"
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "Chọn tất cả {0} dòng họ"
 msgstr "Chọn tất cả {0} dòng họ"
-
-#: src/pages/clan/People.tsx
-msgid "Chọn tất cả {total} kết quả khớp bộ lọc"
-msgstr "Chọn tất cả {total} kết quả khớp bộ lọc"
 
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
@@ -6995,6 +6995,10 @@ msgstr "Họ này chưa công khai thông tin người sống."
 msgid "Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa."
 msgstr "Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa."
 
+#: src/pages/clan/People.tsx
+msgid "Hồ sơ"
+msgstr "Hồ sơ"
+
 #. placeholder {0}: missing.join(", ")
 #: src/components/MyProfileCard.tsx
 msgid "Hồ sơ của bạn còn thiếu {0}. Bổ sung để người thân dễ nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên cây."
@@ -8380,6 +8384,8 @@ msgstr "Làm lại (Ctrl+Shift+Z)"
 #: src/components/RefreshButton.tsx
 #: src/pages/admin/Health.tsx
 #: src/pages/admin/Health.tsx
+#: src/pages/Clans.tsx
+#: src/pages/Clans.tsx
 msgid "Làm mới"
 msgstr "Làm mới"
 
@@ -10297,6 +10303,10 @@ msgstr "Người chưa có bố/mẹ trong cây — bổ sung để gắn vào �
 #: src/pages/clan/PersonDetail.tsx
 msgid "Người còn sống"
 msgstr "Người còn sống"
+
+#: src/pages/clan/People.tsx
+msgid "người còn thiếu thông tin"
+msgstr "người còn thiếu thông tin"
 
 #: src/components/ClanFormFields.tsx
 msgid "Người đã mất: hiện ngày giỗ và tuổi thọ"
