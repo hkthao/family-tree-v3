@@ -50,7 +50,7 @@ const ASSET_DIR = process.env.PDF_ASSET_DIR ?? path.resolve(process.cwd(), "publ
 const asset = (p: string) => path.join(ASSET_DIR, p);
 
 let assetsReady = false;
-function useLocalAssets() {
+export function useLocalAssets() {
   if (assetsReady) return;
   pdfAssets.font400 = asset("fonts/be-vietnam-pro-400.ttf");
   pdfAssets.font600 = asset("fonts/be-vietnam-pro-600.ttf");
@@ -131,7 +131,7 @@ async function renderWithToc(doc: (extra?: { tocPages?: Record<string, number>; 
 /** Một sổ một lúc: dựng PDF ngốn bộ nhớ, máy web chỉ ~2 GB và còn chạy cả FE. */
 let busy = false;
 
-async function photoDataUris(db: SupabaseClient, items: { id: string; path: string }[]): Promise<Map<string, string>> {
+export async function photoDataUris(db: SupabaseClient, items: { id: string; path: string }[]): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   if (items.length === 0) return out;
   const paths = [...new Set(items.map((i) => i.path))];
