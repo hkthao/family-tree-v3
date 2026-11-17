@@ -2814,6 +2814,10 @@ msgstr "Choose calendar"
 msgid "Chọn loại bài"
 msgstr "Choose post type"
 
+#: src/pages/clan/GoodDays.tsx
+msgid "Chọn loại thông tin hiện ở chi tiết ngày."
+msgstr "Choose which details to show for each day."
+
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
@@ -8844,6 +8848,10 @@ msgstr "Filter feedback"
 msgid "Lọc người dùng"
 msgstr "Filter users"
 
+#: src/pages/clan/Audit.tsx
+msgid "Lọc nhật ký"
+msgstr "Filter log"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Lọc tập"
 msgstr "Filter episodes"
@@ -13737,6 +13745,10 @@ msgstr "Search by sender name…"
 msgid "Tìm theo tên người, ghi chú…"
 msgstr "Search by person name, note…"
 
+#: src/pages/clan/Audit.tsx
+msgid "Tìm theo tên người, gia đình, chi…"
+msgstr "Search by person, family or branch name…"
+
 #: src/pages/clan/Events.tsx
 msgid "Tìm theo tên người, ngày giỗ, sự kiện…"
 msgstr "Search by person name, anniversary, event…"
@@ -13815,6 +13827,10 @@ msgstr "Search the menu"
 #: src/components/AppDrawer.tsx
 msgid "Tìm trong menu…"
 msgstr "Search the menu…"
+
+#: src/pages/clan/Audit.tsx
+msgid "Tìm trong nhật ký"
+msgstr "Search the log"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Tìm trong nội dung / liên hệ / ghi chú"
@@ -14522,6 +14538,7 @@ msgid "Tuỳ chọn cây"
 msgstr "Tree options"
 
 #: src/components/TodayHubCard.tsx
+#: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Tuỳ chọn hiển thị"
 msgstr "Display options"
