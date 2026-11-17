@@ -244,7 +244,8 @@ export default function RestingPlaces() {
                   className="flex min-w-0 items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
                 >
                   <div
-                    className={`min-h-14 w-14 shrink-0 self-stretch overflow-hidden rounded-lg border grid place-items-center ${
+                    // Điện thoại: bỏ hẳn cột ảnh/icon cho gọn, chữ được cả bề ngang.
+                    className={`min-h-14 w-14 shrink-0 self-stretch overflow-hidden rounded-lg border grid place-items-center max-sm:hidden ${
                       thumb
                         ? "bg-muted"
                         : CHIP_TONE_CLASS[KIND_STYLE[p.kind].tone]

@@ -222,8 +222,8 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
         className="group flex h-full min-w-0 flex-col rounded-xl border bg-card p-4 transition-all hover:border-primary hover:shadow-md"
       >
         <div className="flex min-w-0 gap-3.5">
-          {/* Ảnh bìa / placeholder — bo góc, có viền mảnh cho gọn gàng */}
-          <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted/60 ring-1 ring-border">
+          {/* Ảnh bìa / placeholder — bo góc, có viền mảnh cho gọn gàng. Điện thoại: bỏ hẳn cho gọn, chữ được cả bề ngang. */}
+          <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted/60 ring-1 ring-border max-sm:hidden">
             {entry.cover_image_url ? (
               <img
                 src={entry.cover_image_url}
