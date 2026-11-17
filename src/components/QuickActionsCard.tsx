@@ -1,4 +1,6 @@
 import { t } from "@lingui/core/macro";
+
+import { exportStageLabel } from "@/lib/pdf/exportStageLabel";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -89,6 +91,7 @@ function ExportPdfTile({
   onClick?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState<Parameters<typeof exportStageLabel>[0]>(null);
   const [err, setErr] = useState<string | null>(null);
 
   async function run() {
@@ -97,12 +100,13 @@ function ExportPdfTile({
     setErr(null);
     try {
       const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
-      await downloadClanBookPdf(clan, { tree: true, detail: true });
+      await downloadClanBookPdf(clan, { tree: true, detail: true, onProgress: setStage });
       track("export", { kind: "clan_book_pdf", from: "dashboard" });
     } catch (e) {
       setErr((e as Error).message);
     } finally {
       setBusy(false);
+      setStage(null);
     }
   }
 
@@ -121,7 +125,7 @@ function ExportPdfTile({
         <IconDownload />
       </span>
       <span className="truncate text-sm font-medium leading-tight">
-        {busy ? t`Đang xuất…` : t`Xuất PDF`}
+        {busy ? exportStageLabel(stage) : t`Xuất PDF`}
       </span>
     </button>
   );

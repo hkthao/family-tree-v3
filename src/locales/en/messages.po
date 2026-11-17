@@ -4649,6 +4649,10 @@ msgstr "Pending"
 msgid "Đang chờ ({pendingTotal})"
 msgstr "Pending ({pendingTotal})"
 
+#: src/lib/pdf/exportStageLabel.ts
+msgid "Đang chờ tới lượt…"
+msgstr "Waiting for your turn…"
+
 #: src/pages/clan/People.tsx
 msgid "Đang chọn…"
 msgstr "Selecting…"
@@ -4660,6 +4664,10 @@ msgstr "Redirecting to Google…"
 #: src/pages/clan/AddChild.tsx
 msgid "Đang có bố/mẹ khác — sẽ ghi đè khi gắn."
 msgstr "Already has other parents — they will be overwritten when linked."
+
+#: src/lib/pdf/exportStageLabel.ts
+msgid "Đang dàn trang…"
+msgstr "Laying out pages…"
 
 #: src/pages/admin/Announcements.tsx
 msgid "Đang đăng"
@@ -5167,16 +5175,11 @@ msgstr "Working…"
 msgid "Đăng xuất"
 msgstr "Sign out"
 
-#: src/components/ExportPdfButton.tsx
-msgid "Đang xuất PDF…"
-msgstr "Exporting PDF…"
-
 #: src/components/CsvExportButton.tsx
 #: src/components/GedcomButtons.tsx
-#: src/components/QuickActionsCard.tsx
+#: src/lib/pdf/exportStageLabel.ts
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Relations.tsx
-#: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/Share.tsx

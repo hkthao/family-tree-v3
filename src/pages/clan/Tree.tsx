@@ -88,6 +88,7 @@ import { getTreeData } from "@/lib/queries/tree";
 
 import "family-chart/styles/family-chart.css";
 
+import { exportStageLabel } from "@/lib/pdf/exportStageLabel";
 import { Trans } from "@lingui/react/macro";
 import { t, msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
@@ -2026,6 +2027,7 @@ const EXPORT_DENSITY: { v: number; label: string }[] = lazyMessages([
 function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState<Parameters<typeof exportStageLabel>[0]>(null);
   const [open, setOpen] = useState(false);
   const [perPage, setPerPage] = useState(24);
   const [folderTree, setFolderTree] = useState(true);
@@ -2045,6 +2047,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         treeSinglePage: singlePage,
         folderTree,
         watermark: watermark || null,
+        onProgress: setStage,
       });
       track("export", { kind: "clan_book_pdf", from: "tree" });
       toast.success(t`Đã tải sổ PDF`);
@@ -2052,6 +2055,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
       toast.error(t`Không xuất được`, { description: (e as Error).message });
     } finally {
       setBusy(false);
+      setStage(null);
     }
   }
 
@@ -2069,7 +2073,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
       >
         <IconDownload className="h-4 w-4 sm:mr-1.5" />
         <span className="hidden sm:inline">
-          {busy ? t`Đang xuất…` : t`Xuất sổ`}
+          {busy ? exportStageLabel(stage) : t`Xuất sổ`}
         </span>
       </Button>
       <SidePanel

@@ -17,7 +17,7 @@ import { createContext, useContext } from "react";
 import { bioToPlainText } from "@/lib/bio";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanBookData } from "@/lib/queries/clan-book";
-import { HONOR_CATEGORY_LABEL, type HonorCategory } from "@/lib/queries/honor";
+import type { HonorCategory } from "@/lib/queries/honor";
 import type { PersonDetail } from "@/lib/queries/persons";
 import { displayGenLabel } from "@/lib/displayGeneration";
 import { formatPartialDate } from "@/lib/partialDate";
@@ -449,6 +449,18 @@ function formatDmy(iso: string): string {
 
 // ─── Document ───────────────────────────────────────────────────────
 
+/**
+ * Nhãn nhóm Bảng vàng mặc định (tiếng Việt). KHÔNG import từ queries/honor: file đó kéo theo
+ * Supabase client + i18n, mà sổ này còn chạy trong Web Worker (không có `window`). Nơi gọi muốn
+ * theo ngôn ngữ đang chọn thì truyền `honorLabels`.
+ */
+const HONOR_LABELS_VI: Record<HonorCategory, string> = {
+  donation_money: "Công đức (tiền)",
+  donation_labor: "Đóng góp công sức",
+  academic: "Thành tích học tập",
+  other: "Khác",
+};
+
 interface Props {
   clan: ClanDetail;
   data: ClanBookData;
@@ -488,9 +500,11 @@ interface Props {
    * số trang chân trang của nó đúng.
    */
   tocOnly?: boolean;
+  /** Nhãn nhóm Bảng vàng theo ngôn ngữ đang chọn; thiếu thì dùng tiếng Việt. */
+  honorLabels?: Record<HonorCategory, string>;
 }
 
-export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri, tocPages, tocOnly }: Props) {
+export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri, tocPages, tocOnly, honorLabels }: Props) {
   ensurePdfFontRegistered();
   // Toàn bộ sổ dùng MỘT font — font đã chọn ở cây (không còn trộn với Be Vietnam Pro).
   styles.page.fontFamily = pdfSerifFamily();
@@ -1096,7 +1110,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
             return (
               <View key={cat}>
                 <Text style={[styles.honorSubhead, serifStyle()]}>
-                  {HONOR_CATEGORY_LABEL[cat]}
+                  {(honorLabels ?? HONOR_LABELS_VI)[cat]}
                 </Text>
                 {items.map((h) => (
                   <View key={h.id} style={styles.honorRow} wrap={false}>

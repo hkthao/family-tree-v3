@@ -3628,6 +3628,10 @@ export type Database = {
           id: string
         }[]
       }
+      acquire_export_slot: {
+        Args: { p_clan: string }
+        Returns: Json
+      }
       admin_import_giapha: {
         Args: { p_clan_id: string; p_families: Json; p_persons: Json }
         Returns: Json
@@ -3923,6 +3927,10 @@ export type Database = {
         Returns: number
       }
       prune_share_view_rate: { Args: never; Returns: undefined }
+      release_export_slot: {
+        Args: { p_slot: string }
+        Returns: undefined
+      }
       recompute_generation_for_clan: {
         Args: { target_clan: string }
         Returns: undefined
