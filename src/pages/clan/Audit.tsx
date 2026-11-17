@@ -4,10 +4,11 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
@@ -21,6 +22,7 @@ import {
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -79,12 +81,24 @@ export default function Audit() {
   const entityType = (sp.get("type") ?? "") as AuditEntity | "";
   const action = (sp.get("act") ?? "") as AuditAction | "";
   const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
+  // Ô tìm: gõ xong 300ms mới ghi URL (?q=) và về trang đầu.
+  const search = sp.get("q") ?? "";
+  const [searchText, setSearchText] = useState(search);
+  useEffect(() => {
+    const h = setTimeout(() => {
+      if (searchText !== search)
+        patch({ q: searchText.trim() || null, page: null });
+    }, 300);
+    return () => clearTimeout(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText]);
 
   const params = {
     page,
     pageSize: PAGE_SIZE,
     entityType: entityType || null,
     action: action || null,
+    search: search || null,
   };
 
   const { data, isFetching } = useQuery({
@@ -109,41 +123,53 @@ export default function Audit() {
         icon={<IconRefresh className="h-7 w-7" />}
         title={t`Nhật ký`}
         description={t`Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục.`}
-        actionsBelow
-        actions={
-          <>
-            <Select
-              aria-label={t`Lọc theo đối tượng`}
-              value={entityType}
-              onChange={(e) =>
-                patch({ type: e.target.value || null, page: null })
-              }
-              icon={<IconUsers />}
-              className="h-9 w-auto text-sm min-w-0"
-            >
-              <option value="">{t`Mọi đối tượng`}</option>
-              <option value="person">{t`Người`}</option>
-              <option value="family">{t`Gia đình`}</option>
-              <option value="branch">{t`Chi`}</option>
-              <option value="person_link">{t`Liên kết dòng họ`}</option>
-            </Select>
-            <Select
-              aria-label={t`Lọc theo hành động`}
-              value={action}
-              onChange={(e) =>
-                patch({ act: e.target.value || null, page: null })
-              }
-              icon={<IconPencil />}
-              className="h-9 w-auto text-sm min-w-0"
-            >
-              <option value="">{t`Mọi hành động`}</option>
-              <option value="insert">{t`Thêm mới`}</option>
-              <option value="update">{t`Sửa`}</option>
-              <option value="delete">{t`Xoá`}</option>
-            </Select>
-          </>
-        }
       />
+
+      {/* Tìm theo tên + icon Tuỳ chọn trong ô; lọc đối tượng / hành động nằm trong ngăn kéo (kiểu chung của app). */}
+      <CollapsibleFilters
+        activeCount={(entityType ? 1 : 0) + (action ? 1 : 0)}
+        onReset={() => patch({ type: null, act: null, page: null })}
+        title={t`Lọc nhật ký`}
+        search={(toggle) => (
+          <SearchInput
+            label={t`Tìm trong nhật ký`}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder={t`Tìm theo tên người, gia đình, chi…`}
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            aria-label={t`Lọc theo đối tượng`}
+            value={entityType}
+            onChange={(e) =>
+              patch({ type: e.target.value || null, page: null })
+            }
+            icon={<IconUsers />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">{t`Mọi đối tượng`}</option>
+            <option value="person">{t`Người`}</option>
+            <option value="family">{t`Gia đình`}</option>
+            <option value="branch">{t`Chi`}</option>
+            <option value="person_link">{t`Liên kết dòng họ`}</option>
+          </Select>
+          <Select
+            aria-label={t`Lọc theo hành động`}
+            value={action}
+            onChange={(e) => patch({ act: e.target.value || null, page: null })}
+            icon={<IconPencil />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">{t`Mọi hành động`}</option>
+            <option value="insert">{t`Thêm mới`}</option>
+            <option value="update">{t`Sửa`}</option>
+            <option value="delete">{t`Xoá`}</option>
+          </Select>
+        </div>
+      </CollapsibleFilters>
 
       {!data ? (
         <p className="text-muted-foreground">{t`Đang tải…`}</p>

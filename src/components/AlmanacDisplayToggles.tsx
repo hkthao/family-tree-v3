@@ -56,10 +56,32 @@ export function useAlmanacPrefs() {
 export function AlmanacDisplayToggles({
   prefs,
   toggle,
+  list = false,
 }: {
   prefs: AlmanacPrefs;
   toggle: (key: AlmanacPrefKey) => void;
+  /** Trong ngăn kéo Tuỳ chọn: mỗi loại một dòng có ô đánh dấu, full chiều ngang (kiểu chung của app). */
+  list?: boolean;
 }) {
+  if (list)
+    return (
+      <div className="flex flex-col gap-2">
+        {ALMANAC_PREF_ITEMS.map((it) => (
+          <label
+            key={it.key}
+            className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-base hover:bg-muted/40"
+          >
+            <input
+              type="checkbox"
+              checked={prefs[it.key]}
+              onChange={() => toggle(it.key)}
+              className="h-5 w-5 shrink-0 accent-primary"
+            />
+            {it.label}
+          </label>
+        ))}
+      </div>
+    );
   return (
     <div className="flex flex-wrap gap-2">
       {ALMANAC_PREF_ITEMS.map((it) => {

@@ -15,7 +15,11 @@ export type AuditEntity = "person" | "family" | "branch" | "person_link";
  * trigger blocks rollback to pending, and re-inserting a revoked link
  * would collide with the partial unique index.
  */
-export const RESTORABLE_ENTITY_TYPES: AuditEntity[] = ["person", "family", "branch"];
+export const RESTORABLE_ENTITY_TYPES: AuditEntity[] = [
+  "person",
+  "family",
+  "branch",
+];
 
 export function isRestorableEntity(t: AuditEntity): boolean {
   return RESTORABLE_ENTITY_TYPES.includes(t);
@@ -38,6 +42,8 @@ export interface ListAuditParams {
   pageSize: number;
   entityType?: AuditEntity | null;
   action?: AuditAction | null;
+  /** Tìm theo tên (người: full_name, gia đình/chi: name) ở bản trước hoặc sau thay đổi. */
+  search?: string | null;
 }
 
 export interface ListAuditResult {
@@ -67,6 +73,19 @@ export async function listAudit(
 
   if (params.entityType) q = q.eq("entity_type", params.entityType);
   if (params.action) q = q.eq("action", params.action);
+  // Bỏ ký tự đặc biệt của cú pháp `or` PostgREST (dấu phẩy, ngoặc) và ký tự đại diện của ilike.
+  const term = (params.search ?? "").replace(/[,()*%\\]/g, " ").trim();
+  if (term) {
+    const like = `%${term}%`;
+    q = q.or(
+      [
+        `before->>full_name.ilike.${like}`,
+        `after->>full_name.ilike.${like}`,
+        `before->>name.ilike.${like}`,
+        `after->>name.ilike.${like}`,
+      ].join(","),
+    );
+  }
 
   const { data, error, count } = await q;
   if (error) throw new Error(error.message);

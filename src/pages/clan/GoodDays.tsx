@@ -31,9 +31,12 @@ import {
   IconHome,
   IconMapPin,
   IconScroll,
+  IconSliders,
   IconUsers,
   IconWallet,
 } from "@/components/icons";
+import { FilterDrawer } from "@/components/FilterDrawer";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ACTIVITIES,
@@ -192,21 +195,31 @@ export default function GoodDays() {
         description={t`Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn.`}
       />
 
-      {/* Tuỳ chọn hiển thị — bật/tắt từng loại thông tin cho gọn. */}
-      <div>
-        <button
+      {/* Tuỳ chọn hiển thị: nút "Tuỳ chọn" mở ngăn kéo bên phải, cùng kiểu các màn khác. */}
+      <div className="flex justify-end">
+        <Button
           type="button"
-          onClick={() => setShowOpts((v) => !v)}
-          className="text-sm text-primary hover:underline"
+          variant="outline"
+          size="sm"
+          className="h-10 gap-1.5"
+          onClick={() => setShowOpts(true)}
+          aria-haspopup="dialog"
+          aria-expanded={showOpts}
         >
-          ⚙ {t`Tuỳ chọn hiển thị`} {showOpts ? "▲" : "▼"}
-        </button>
-        {showOpts && (
-          <div className="mt-2 rounded-lg border bg-muted/20 p-3">
-            <AlmanacDisplayToggles prefs={prefs} toggle={toggle} />
-          </div>
-        )}
+          <IconSliders className="h-4 w-4" />
+          {t`Tuỳ chọn hiển thị`}
+        </Button>
       </div>
+      <FilterDrawer
+        open={showOpts}
+        onClose={() => setShowOpts(false)}
+        title={t`Tuỳ chọn hiển thị`}
+      >
+        <p className="text-sm text-muted-foreground">
+          {t`Chọn loại thông tin hiện ở chi tiết ngày.`}
+        </p>
+        <AlmanacDisplayToggles prefs={prefs} toggle={toggle} list />
+      </FilterDrawer>
 
       {/* Lịch tháng âm–dương — bấm một ngày để xem chi tiết bên dưới. */}
       <MonthCalendar
@@ -226,117 +239,120 @@ export default function GoodDays() {
         dayEvents={eventsByDay.get(selectedIso) ?? []}
       />
 
-      {/* ─── Công cụ tìm ngày đẹp cho một việc ─────────────────── */}
-      <div className="border-t pt-4">
-        <h2 className="mb-1 text-lg font-semibold">{t`Tìm ngày đẹp cho việc lớn`}</h2>
-        <p className="text-sm text-muted-foreground">
-          {t`Chọn việc và khoảng thời gian, hệ thống liệt kê sẵn những ngày đẹp.`}
-        </p>
-      </div>
+      {/* ─── Công cụ tìm ngày đẹp cho một việc: gom trong MỘT thẻ (chọn việc → khoảng thời gian → kết quả). */}
+      <div className="space-y-5 rounded-xl border bg-card p-4 shadow-sm sm:p-5">
+        <div>
+          <h2 className="clan-name mb-1 text-xl font-semibold">{t`Tìm ngày đẹp cho việc lớn`}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t`Chọn việc và khoảng thời gian, hệ thống liệt kê sẵn những ngày đẹp.`}
+          </p>
+        </div>
 
-      {/* BƯỚC 1 — Chọn việc. Nút to, có emoji, dễ bấm. */}
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-muted-foreground">
-          {t`1. Bạn muốn xem ngày cho việc gì?`}
-        </p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <ActivityButton
-            active={activity === "all"}
-            onClick={() => setActivity("all")}
-            Icon={ACTIVITY_ICON.all}
-            label={t`Tất cả ngày tốt`}
-          />
-          {ACTIVITIES.map((a) => (
+        {/* BƯỚC 1 — Chọn việc. Nút to, có emoji, dễ bấm. */}
+        <section className="space-y-2">
+          <p className="text-sm font-semibold text-muted-foreground">
+            {t`1. Bạn muốn xem ngày cho việc gì?`}
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <ActivityButton
-              key={a.key}
-              active={activity === a.key}
-              onClick={() => setActivity(a.key)}
-              Icon={ACTIVITY_ICON[a.key]}
-              label={a.label}
+              active={activity === "all"}
+              onClick={() => setActivity("all")}
+              Icon={ACTIVITY_ICON.all}
+              label={t`Tất cả ngày tốt`}
             />
-          ))}
-        </div>
-      </section>
-
-      {/* BƯỚC 2 — Chọn khoảng thời gian. */}
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-muted-foreground">
-          {t`2. Trong khoảng thời gian nào?`}
-        </p>
-        <div className="grid grid-cols-4 gap-2">
-          {RANGE_OPTIONS.map((r) => (
-            <button
-              key={r.key}
-              type="button"
-              onClick={() => setRange(r.key)}
-              aria-pressed={range === r.key}
-              className={`whitespace-nowrap rounded-lg border px-2 py-2.5 text-sm font-medium transition-colors sm:text-base ${
-                range === r.key
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "bg-card hover:bg-muted/50"
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-
-        {range === "custom" && (
-          <div className="flex items-center gap-2 rounded-lg border bg-muted/20 p-3 text-sm">
-            <span className="shrink-0 text-muted-foreground">{t`Từ`}</span>
-            <input
-              type="date"
-              value={customFrom}
-              max={customTo}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
-            />
-            <span className="shrink-0 text-muted-foreground">{t`đến`}</span>
-            <input
-              type="date"
-              value={customTo}
-              min={customFrom}
-              onChange={(e) => setCustomTo(e.target.value)}
-              className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
-            />
+            {ACTIVITIES.map((a) => (
+              <ActivityButton
+                key={a.key}
+                active={activity === a.key}
+                onClick={() => setActivity(a.key)}
+                Icon={ACTIVITY_ICON[a.key]}
+                label={a.label}
+              />
+            ))}
           </div>
-        )}
-      </section>
+        </section>
 
-      {/* KẾT QUẢ */}
-      <section className="space-y-3">
-        <p className="text-base">
-          {results.length > 0 ? (
-            <>
-              Có <strong className="text-primary">{results.length}</strong> ngày
-              đẹp cho <strong>{activityLabel}</strong>.
-            </>
-          ) : (
-            <>{t`Không tìm thấy ngày đẹp phù hợp trong khoảng này.`}</>
+        {/* BƯỚC 2 — Chọn khoảng thời gian. */}
+        <section className="space-y-2">
+          <p className="text-sm font-semibold text-muted-foreground">
+            {t`2. Trong khoảng thời gian nào?`}
+          </p>
+          <div className="grid grid-cols-4 gap-2">
+            {RANGE_OPTIONS.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => setRange(r.key)}
+                aria-pressed={range === r.key}
+                className={`whitespace-nowrap rounded-lg border px-2 py-2.5 text-sm font-medium transition-colors sm:text-base ${
+                  range === r.key
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "bg-card hover:bg-muted/50"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          {range === "custom" && (
+            <div className="flex items-center gap-2 rounded-lg border bg-muted/20 p-3 text-sm">
+              <span className="shrink-0 text-muted-foreground">{t`Từ`}</span>
+              <input
+                type="date"
+                value={customFrom}
+                max={customTo}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
+              />
+              <span className="shrink-0 text-muted-foreground">{t`đến`}</span>
+              <input
+                type="date"
+                value={customTo}
+                min={customFrom}
+                onChange={(e) => setCustomTo(e.target.value)}
+                className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
+              />
+            </div>
           )}
-        </p>
+        </section>
 
-        {results.length === 0 ? (
-          <Alert>
-            <AlertDescription>
-              <Trans>
+        {/* KẾT QUẢ */}
+        <section className="space-y-3">
+          <p className="text-base">
+            {results.length > 0 ? (
+              <>
+                Có <strong className="text-primary">{results.length}</strong>{" "}
+                ngày đẹp cho <strong>{activityLabel}</strong>.
+              </>
+            ) : (
+              <>{t`Không tìm thấy ngày đẹp phù hợp trong khoảng này.`}</>
+            )}
+          </p>
+
+          {results.length === 0 ? (
+            <Alert>
+              <AlertDescription>
                 <Trans>
                   <Trans>
-                    Thử mở rộng khoảng thời gian hoặc chọn việc khác. Những ngày
-                    còn lại là ngày bình thường hoặc nên tránh cho việc này.
+                    <Trans>
+                      Thử mở rộng khoảng thời gian hoặc chọn việc khác. Những
+                      ngày còn lại là ngày bình thường hoặc nên tránh cho việc
+                      này.
+                    </Trans>
                   </Trans>
                 </Trans>
-              </Trans>
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <ul className="space-y-2.5">
-            {results.map((d) => (
-              <GoodDayRow key={d.iso} day={d} prefs={prefs} />
-            ))}
-          </ul>
-        )}
-      </section>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <ul className="space-y-2.5">
+              {results.map((d) => (
+                <GoodDayRow key={d.iso} day={d} prefs={prefs} />
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
 
       <p className="rounded-md border bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
         <Trans>
