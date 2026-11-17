@@ -22,7 +22,8 @@ export function ReadOnlyFieldset({
       className={cn(
         "m-0 min-w-0 space-y-3 border-0 p-0",
         readOnly &&
-          "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100 [&_[data-edit-only]]:hidden",
+          // `read-view` (index.css): ô nhập hiện như chữ để ĐỌC — bỏ khung/nền/icon/mũi tên, ẩn dòng trống.
+          "read-view [&_:disabled]:!cursor-default [&_:disabled]:!opacity-100 [&_[data-edit-only]]:hidden",
         className,
       )}
     >

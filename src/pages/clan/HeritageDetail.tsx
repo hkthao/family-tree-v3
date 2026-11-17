@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type ReactNode } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { PanelLink } from "@/components/panel/PanelLink";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { InfoRow } from "@/components/InfoRow";
+import { PersonViewLink } from "@/components/panel/PersonViewLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconCamera,
@@ -88,9 +90,18 @@ function fmtDuration(sec: number | null): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function HeritageDetail() {
+/** Hiện trong ngăn kéo XEM (thay cho form khoá ô): lấy id từ đây, bỏ breadcrumb, xoá xong thì đóng ngăn kéo. */
+export interface EmbeddedHeritage {
+  id: string;
+  onClose: () => void;
+}
+
+export default function HeritageDetail({
+  embedded,
+}: { embedded?: EmbeddedHeritage } = {}) {
   const { clan } = useClanContext();
-  const { itemId } = useParams<{ itemId: string }>();
+  const { itemId: routeId } = useParams<{ itemId: string }>();
+  const itemId = embedded?.id ?? routeId;
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
@@ -284,7 +295,8 @@ export default function HeritageDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
       toast.success(t`Đã xoá`);
-      navigate(`/clans/${clan.id}/heritage`);
+      if (embedded) embedded.onClose();
+      else navigate(`/clans/${clan.id}/heritage`);
     },
     onError: (e) =>
       toast.error(t`Không xoá được`, { description: (e as Error).message }),
@@ -323,265 +335,200 @@ export default function HeritageDetail() {
         ? "story"
         : "memorial";
 
-  return (
-    <div className="space-y-3">
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clan.id}` },
-          { label: t`Di sản dòng họ`, to: `/clans/${clan.id}/heritage` },
-          { label: item.title },
-        ]}
-      />
-      <PageHeader
-        icon={<IconScroll className="h-7 w-7" />}
-        title={item.title}
-        description={HERITAGE_CATEGORY_LABEL[item.category]}
-        actionsBelow
-        actions={
-          <div className="flex flex-wrap gap-2">
-            {canAdmin && (
-              <>
+  // Ảnh / ghi âm / video / thêm liên kết. Trong ngăn kéo XEM: đặt SAU nội dung để mở ra là đọc được ngay, ẩn khối trống
+  // và công cụ thêm/xoá (sửa ở trang đầy đủ hoặc nút "Sửa").
+  const canEditMedia = canEdit && !embedded;
+  const mediaBlock = (
+    <>
+      {/* Ảnh */}
+      {(photos.length > 0 || canEditMedia) && (
+        <Card>
+          <CardHeader>
+            <SectionTitle icon={<IconCamera className="h-4 w-4" />}>
+              Hình ảnh
+              {photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}
+            </SectionTitle>
+          </CardHeader>
+          <CardContent>
+            {photos.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {photos.map((ph) => (
+                  <div
+                    key={ph.id}
+                    className="relative aspect-square overflow-hidden rounded-md bg-muted"
+                  >
+                    {srcOf(ph) ? (
+                      <button
+                        type="button"
+                        onClick={() => setLightboxIdx(lightboxIndexOf(ph))}
+                        className="h-full w-full cursor-zoom-in"
+                        aria-label={t`Xem ảnh lớn`}
+                      >
+                        <img
+                          src={srcOf(ph)}
+                          alt={ph.caption ?? ""}
+                          referrerPolicy="no-referrer"
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    ) : (
+                      <div className="h-full w-full grid place-items-center">
+                        <IconScroll className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    )}
+                    {canEditMedia && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeMediaM.mutate({ id: ph.id, path: ph.path })
+                        }
+                        className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background"
+                        aria-label={t`Xoá ảnh`}
+                      >
+                        <IconX className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+          {canEditMedia && (
+            <CardFooter className="justify-end gap-2 border-t pt-4">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadPhotoM.mutate(f);
+                  e.target.value = "";
+                }}
+              />
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadPhotoM.mutate(f);
+                  e.target.value = "";
+                }}
+              />
+              <div className="flex flex-wrap justify-end gap-2 w-full">
                 <Button
                   size="sm"
-                  onClick={() => {
-                    setCardOpen(true);
-                    if (!qrM.data) qrM.mutate();
-                  }}
+                  variant="outline"
+                  disabled={
+                    uploadPhotoM.isPending ||
+                    photos.length >= MAX_PHOTOS ||
+                    overQuota
+                  }
+                  onClick={() => fileRef.current?.click()}
                 >
-                  <IconSparkles className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">{t`Thiệp`}</span>
+                  <IconPlus className="h-4 w-4 mr-1" />{" "}
+                  {uploadPhotoM.isPending ? t`Đang tải…` : t`Tải ảnh`}
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
+                  disabled={
+                    addPhotoLinkM.isPending || photos.length >= MAX_PHOTOS
+                  }
+                  title={t`Dán link ảnh có sẵn trên mạng — không tốn dung lượng`}
                   onClick={() => {
-                    setQrOpen(true);
-                    if (!qrM.data) qrM.mutate();
+                    const u = window.prompt(t`Dán link ảnh (https://…):`);
+                    if (u?.trim()) addPhotoLinkM.mutate(u.trim());
                   }}
                 >
-                  <IconQrCode className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">QR</span>
-                </Button>
-              </>
-            )}
-            {canEdit && (
-              <>
-                <Button size="sm" variant="outline" asChild>
-                  <PanelLink
-                    to={`/clans/${clan.id}/heritage/${item.id}/edit`}
-                    panel="heritage-edit"
-                    panelParams={{ pid: item.id }}
-                  >
-                    <IconPencil className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">{t`Sửa`}</span>
-                  </PanelLink>
+                  <IconLink className="h-4 w-4 mr-1" /> {t`Liên kết ngoài`}
                 </Button>
                 <Button
                   size="sm"
-                  variant="destructive-outline"
-                  onClick={() =>
-                    askConfirm({
-                      title: t`Xoá mục di sản này?`,
-                      description: t`Xoá cả ảnh và ghi âm kèm theo.`,
-                      confirmLabel: t`Xoá`,
-                      destructive: true,
-                    }).then((ok) => ok && deleteM.mutate())
+                  disabled={
+                    uploadPhotoM.isPending ||
+                    photos.length >= MAX_PHOTOS ||
+                    overQuota
                   }
+                  onClick={() => cameraRef.current?.click()}
                 >
-                  <IconTrash className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">{t`Xoá`}</span>
+                  <IconCamera className="h-4 w-4 mr-1" /> {t`Chụp ảnh`}
                 </Button>
-              </>
-            )}
-          </div>
-        }
-      />
-
-      {/* Ảnh */}
-      <Card>
-        <CardHeader>
-          <SectionTitle icon={<IconCamera className="h-4 w-4" />}>
-            Hình ảnh
-            {photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}
-          </SectionTitle>
-        </CardHeader>
-        <CardContent>
-          {photos.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
-          ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {photos.map((ph) => (
-                <div
-                  key={ph.id}
-                  className="relative aspect-square overflow-hidden rounded-md bg-muted"
-                >
-                  {srcOf(ph) ? (
-                    <button
-                      type="button"
-                      onClick={() => setLightboxIdx(lightboxIndexOf(ph))}
-                      className="h-full w-full cursor-zoom-in"
-                      aria-label={t`Xem ảnh lớn`}
-                    >
-                      <img
-                        src={srcOf(ph)}
-                        alt={ph.caption ?? ""}
-                        referrerPolicy="no-referrer"
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ) : (
-                    <div className="h-full w-full grid place-items-center">
-                      <IconScroll className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  {canEdit && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        removeMediaM.mutate({ id: ph.id, path: ph.path })
-                      }
-                      className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background"
-                      aria-label={t`Xoá ảnh`}
-                    >
-                      <IconX className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+              </div>
+            </CardFooter>
           )}
-        </CardContent>
-        {canEdit && (
-          <CardFooter className="justify-end gap-2 border-t pt-4">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) uploadPhotoM.mutate(f);
-                e.target.value = "";
-              }}
-            />
-            <input
-              ref={cameraRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) uploadPhotoM.mutate(f);
-                e.target.value = "";
-              }}
-            />
-            <div className="flex flex-wrap justify-end gap-2 w-full">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={
-                  uploadPhotoM.isPending ||
-                  photos.length >= MAX_PHOTOS ||
-                  overQuota
-                }
-                onClick={() => fileRef.current?.click()}
-              >
-                <IconPlus className="h-4 w-4 mr-1" />{" "}
-                {uploadPhotoM.isPending ? t`Đang tải…` : t`Tải ảnh`}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={
-                  addPhotoLinkM.isPending || photos.length >= MAX_PHOTOS
-                }
-                title={t`Dán link ảnh có sẵn trên mạng — không tốn dung lượng`}
-                onClick={() => {
-                  const u = window.prompt(t`Dán link ảnh (https://…):`);
-                  if (u?.trim()) addPhotoLinkM.mutate(u.trim());
-                }}
-              >
-                <IconLink className="h-4 w-4 mr-1" /> {t`Liên kết ngoài`}
-              </Button>
-              <Button
-                size="sm"
-                disabled={
-                  uploadPhotoM.isPending ||
-                  photos.length >= MAX_PHOTOS ||
-                  overQuota
-                }
-                onClick={() => cameraRef.current?.click()}
-              >
-                <IconCamera className="h-4 w-4 mr-1" /> {t`Chụp ảnh`}
-              </Button>
-            </div>
-          </CardFooter>
-        )}
-      </Card>
+        </Card>
+      )}
 
       {/* Ghi âm kể chuyện */}
-      <Card>
-        <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
-          <SectionTitle icon={<IconMicrophone className="h-4 w-4" />}>
-            Ghi âm kể chuyện
-            {audios.length > 0 ? ` (${audios.length}/${MAX_AUDIO})` : ""}
-          </SectionTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {audios.length > 0 && (
-            <ul className="space-y-2">
-              {audios.map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-center gap-2 rounded-md border bg-card px-3 py-2"
-                >
-                  <audio
-                    controls
-                    preload="none"
-                    src={srcOf(a)}
-                    className="h-9 flex-1 min-w-0"
-                  />
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {fmtDuration(a.duration_sec)}
-                  </span>
-                  {canEdit && (
-                    <button
-                      type="button"
-                      aria-label={t`Xoá ghi âm`}
-                      onClick={() =>
-                        removeMediaM.mutate({ id: a.id, path: a.path })
-                      }
-                      className="shrink-0 text-muted-foreground hover:text-foreground"
-                    >
-                      <IconX className="h-4 w-4" />
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          {canEdit && audios.length < MAX_AUDIO && !overQuota && (
-            <AudioRecorder
-              disabled={uploadAudioM.isPending}
-              onSave={(blob, ext, durationSec) =>
-                uploadAudioM.mutate({ blob, ext, durationSec })
-              }
-            />
-          )}
-          {canEdit && overQuota && (
-            <p className="text-sm text-red-600">
-              <Trans>
-              Dòng họ đã dùng hết {formatBytes(HERITAGE_CLAN_QUOTA_BYTES)} — hãy
-              xoá bớt ảnh/ghi âm cũ trước khi thêm.
-              </Trans>
-            </p>
-          )}
-          {audios.length === 0 && !canEdit && (
-            <p className="text-sm text-muted-foreground">{t`Chưa có ghi âm.`}</p>
-          )}
-        </CardContent>
-      </Card>
+      {(audios.length > 0 || canEditMedia) && (
+        <Card>
+          <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
+            <SectionTitle icon={<IconMicrophone className="h-4 w-4" />}>
+              Ghi âm kể chuyện
+              {audios.length > 0 ? ` (${audios.length}/${MAX_AUDIO})` : ""}
+            </SectionTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {audios.length > 0 && (
+              <ul className="space-y-2">
+                {audios.map((a) => (
+                  <li
+                    key={a.id}
+                    className="flex items-center gap-2 rounded-md border bg-card px-3 py-2"
+                  >
+                    <audio
+                      controls
+                      preload="none"
+                      src={srcOf(a)}
+                      className="h-9 flex-1 min-w-0"
+                    />
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {fmtDuration(a.duration_sec)}
+                    </span>
+                    {canEditMedia && (
+                      <button
+                        type="button"
+                        aria-label={t`Xoá ghi âm`}
+                        onClick={() =>
+                          removeMediaM.mutate({ id: a.id, path: a.path })
+                        }
+                        className="shrink-0 text-muted-foreground hover:text-foreground"
+                      >
+                        <IconX className="h-4 w-4" />
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {canEditMedia && audios.length < MAX_AUDIO && !overQuota && (
+              <AudioRecorder
+                disabled={uploadAudioM.isPending}
+                onSave={(blob, ext, durationSec) =>
+                  uploadAudioM.mutate({ blob, ext, durationSec })
+                }
+              />
+            )}
+            {canEditMedia && overQuota && (
+              <p className="text-sm text-red-600">
+                <Trans>
+                  Dòng họ đã dùng hết {formatBytes(HERITAGE_CLAN_QUOTA_BYTES)} —
+                  hãy xoá bớt ảnh/ghi âm cũ trước khi thêm.
+                </Trans>
+              </p>
+            )}
+            {audios.length === 0 && !canEditMedia && (
+              <p className="text-sm text-muted-foreground">{t`Chưa có ghi âm.`}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Video (chỉ qua link ngoài) */}
       {videos.length > 0 && (
@@ -616,7 +563,7 @@ export default function HeritageDetail() {
                         />
                       )}
                     </div>
-                    {canEdit && (
+                    {canEditMedia && (
                       <button
                         type="button"
                         aria-label={t`Xoá video`}
@@ -637,7 +584,7 @@ export default function HeritageDetail() {
       )}
 
       {/* Thêm liên kết ngoài — không tốn dung lượng VPS */}
-      {canEdit && (
+      {canEditMedia && (
         <Card>
           <CardHeader>
             <SectionTitle
@@ -647,9 +594,9 @@ export default function HeritageDetail() {
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
               <Trans>
-              Dán link ảnh / video / âm thanh đã đăng ở nơi khác.
-              <strong>Không tính vào dung lượng</strong> của họ — dùng khi
-              đã đầy, hoặc muốn nhúng video YouTube.
+                Dán link ảnh / video / âm thanh đã đăng ở nơi khác.
+                <strong>Không tính vào dung lượng</strong> của họ — dùng khi đã
+                đầy, hoặc muốn nhúng video YouTube.
               </Trans>
             </p>
             <div className="flex flex-wrap gap-2">
@@ -730,9 +677,9 @@ export default function HeritageDetail() {
                 </p>
                 <p className="text-xs">
                   <Trans>
-                  Lưu ý: link phải bắt đầu bằng <code>https://</code> và để chế
-                  độ ai có link đều xem được, nếu không người trong họ sẽ không
-                  mở được.
+                    Lưu ý: link phải bắt đầu bằng <code>https://</code> và để
+                    chế độ ai có link đều xem được, nếu không người trong họ sẽ
+                    không mở được.
                   </Trans>
                 </p>
               </div>
@@ -740,6 +687,86 @@ export default function HeritageDetail() {
           </CardContent>
         </Card>
       )}
+    </>
+  );
+
+  return (
+    <div className="space-y-3">
+      {!embedded && (
+        <Breadcrumb
+          items={[
+            { label: clan.name, to: `/clans/${clan.id}` },
+            { label: t`Di sản dòng họ`, to: `/clans/${clan.id}/heritage` },
+            { label: item.title },
+          ]}
+        />
+      )}
+      <PageHeader
+        icon={<IconScroll className="h-7 w-7" />}
+        title={item.title}
+        description={HERITAGE_CATEGORY_LABEL[item.category]}
+        actionsBelow
+        actions={
+          <div className="flex flex-wrap gap-2">
+            {canAdmin && (
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setCardOpen(true);
+                    if (!qrM.data) qrM.mutate();
+                  }}
+                >
+                  <IconSparkles className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{t`Thiệp`}</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQrOpen(true);
+                    if (!qrM.data) qrM.mutate();
+                  }}
+                >
+                  <IconQrCode className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">QR</span>
+                </Button>
+              </>
+            )}
+            {canEdit && (
+              <>
+                <Button size="sm" variant="outline" asChild>
+                  <PanelLink
+                    to={`/clans/${clan.id}/heritage/${item.id}/edit`}
+                    panel="heritage-edit"
+                    panelParams={{ pid: item.id }}
+                  >
+                    <IconPencil className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">{t`Sửa`}</span>
+                  </PanelLink>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive-outline"
+                  onClick={() =>
+                    askConfirm({
+                      title: t`Xoá mục di sản này?`,
+                      description: t`Xoá cả ảnh và ghi âm kèm theo.`,
+                      confirmLabel: t`Xoá`,
+                      destructive: true,
+                    }).then((ok) => ok && deleteM.mutate())
+                  }
+                >
+                  <IconTrash className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{t`Xoá`}</span>
+                </Button>
+              </>
+            )}
+          </div>
+        }
+      />
+
+      {!embedded && mediaBlock}
 
       {/* Nội dung */}
       {(item.summary || item.body || sections.length > 0) && (
@@ -897,7 +924,9 @@ export default function HeritageDetail() {
             <ul className="space-y-1.5">
               {item.people.map((p) => (
                 <li key={p.link_id}>
-                  <Link
+                  <PersonViewLink
+                    inPanel={!!embedded}
+                    personId={p.person_id}
                     to={`/clans/${clan.id}/people/${p.person_id}`}
                     className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
                   >
@@ -910,7 +939,7 @@ export default function HeritageDetail() {
                         </p>
                       )}
                     </div>
-                  </Link>
+                  </PersonViewLink>
                 </li>
               ))}
             </ul>
@@ -946,6 +975,7 @@ export default function HeritageDetail() {
           onClose={() => setLightboxIdx(null)}
         />
       )}
+      {embedded && mediaBlock}
     </div>
   );
 }
@@ -968,15 +998,7 @@ function SectionTitle({
   );
 }
 
-function Row({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex gap-3">
-      <span className="w-32 shrink-0 text-muted-foreground">{label}</span>
-      <span className="min-w-0 flex-1 break-words">{value}</span>
-    </div>
-  );
-}
+const Row = InfoRow;
 
 /** Bộ ghi âm cho người lớn tuổi: nút to, hiện đồng hồ, nghe thử trước khi lưu. */
 function AudioRecorder({
@@ -999,7 +1021,7 @@ function AudioRecorder({
       <div className="space-y-2 rounded-md border p-3">
         <p className="text-sm font-medium">
           <Trans>
-          Nghe thử trước khi lưu ({fmtDuration(rec.result.durationSec)}):
+            Nghe thử trước khi lưu ({fmtDuration(rec.result.durationSec)}):
           </Trans>
         </p>
         <audio controls src={rec.result.url} className="w-full" />
@@ -1038,8 +1060,8 @@ function AudioRecorder({
       <div className="flex items-center gap-3 rounded-md border p-3">
         <span className="inline-flex items-center gap-2 text-base font-medium text-red-600">
           <Trans>
-          <span className="h-3 w-3 animate-pulse rounded-full bg-red-600" />
-          Đang ghi… {fmtDuration(rec.seconds)} / {fmtDuration(rec.maxSeconds)}
+            <span className="h-3 w-3 animate-pulse rounded-full bg-red-600" />
+            Đang ghi… {fmtDuration(rec.seconds)} / {fmtDuration(rec.maxSeconds)}
           </Trans>
         </span>
         <Button
@@ -1068,8 +1090,8 @@ function AudioRecorder({
       {rec.error && <p className="text-sm text-red-600">{rec.error}</p>}
       <p className="text-sm text-muted-foreground">
         <Trans>
-        Tối đa {Math.round(HERITAGE_AUDIO_MAX_SEC / 60)} phút mỗi đoạn. Hãy kể
-        tự nhiên bằng lời của bạn.
+          Tối đa {Math.round(HERITAGE_AUDIO_MAX_SEC / 60)} phút mỗi đoạn. Hãy kể
+          tự nhiên bằng lời của bạn.
         </Trans>
       </p>
     </div>

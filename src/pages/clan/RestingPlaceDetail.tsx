@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { PanelLink } from "@/components/panel/PanelLink";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { InfoRow } from "@/components/InfoRow";
+import { PersonViewLink } from "@/components/panel/PersonViewLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconBell,
@@ -62,9 +64,18 @@ import { t } from "@lingui/core/macro";
 // Giới hạn ảnh / nơi an nghỉ — chặn phình dung lượng storage Supabase.
 const MAX_GRAVE_PHOTOS = 12;
 
-export default function RestingPlaceDetail() {
+/** Hiện trong ngăn kéo XEM (thay cho form khoá ô): lấy id từ đây, bỏ breadcrumb, xoá xong thì đóng ngăn kéo. */
+export interface EmbeddedRestingPlace {
+  id: string;
+  onClose: () => void;
+}
+
+export default function RestingPlaceDetail({
+  embedded,
+}: { embedded?: EmbeddedRestingPlace } = {}) {
   const { clan } = useClanContext();
-  const { graveId } = useParams<{ graveId: string }>();
+  const { graveId: routeId } = useParams<{ graveId: string }>();
+  const graveId = embedded?.id ?? routeId;
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
@@ -126,7 +137,8 @@ export default function RestingPlaceDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["resting-places", clan.id] });
       toast.success(t`Đã xoá`);
-      navigate(`/clans/${clan.id}/graves`);
+      if (embedded) embedded.onClose();
+      else navigate(`/clans/${clan.id}/graves`);
     },
     onError: (e) =>
       toast.error(t`Không xoá được`, { description: (e as Error).message }),
@@ -218,15 +230,108 @@ export default function RestingPlaceDetail() {
   const title =
     place.name || place.location_name || RESTING_PLACE_KIND_LABEL[place.kind];
 
+  // Ảnh. Trong ngăn kéo XEM: đặt SAU thông tin, ẩn khi trống và bỏ công cụ thêm/xoá ảnh.
+  const canEditMedia = canEdit && !embedded;
+  const photosBlock = (
+    <>
+      {/* Photos */}
+      {(place.photos.length > 0 || canEditMedia) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Hình ảnh
+              {place.photos.length > 0
+                ? ` (${place.photos.length}/${MAX_GRAVE_PHOTOS})`
+                : ""}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {place.photos.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {place.photos.map((ph) => (
+                  <div
+                    key={ph.id}
+                    className="relative aspect-square overflow-hidden rounded-md bg-muted"
+                  >
+                    {photoUrls?.get(ph.path) ? (
+                      <img
+                        src={photoUrls.get(ph.path)}
+                        alt={ph.caption ?? ""}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full grid place-items-center">
+                        <IconGrave className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    )}
+                    {canEditMedia && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removePhotoM.mutate({ id: ph.id, path: ph.path })
+                        }
+                        className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background"
+                        aria-label={t`Xoá ảnh`}
+                      >
+                        <IconX className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+          {canEditMedia && (
+            <CardFooter className="justify-end gap-2 border-t pt-4">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadM.mutate(f);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={
+                  uploadM.isPending || place.photos.length >= MAX_GRAVE_PHOTOS
+                }
+                onClick={() => fileRef.current?.click()}
+                title={
+                  place.photos.length >= MAX_GRAVE_PHOTOS
+                    ? t`Tối đa ${MAX_GRAVE_PHOTOS} ảnh`
+                    : undefined
+                }
+              >
+                <IconPlus className="h-4 w-4 mr-1" />
+                {uploadM.isPending ? t`Đang tải…` : t`Thêm ảnh`}
+              </Button>
+            </CardFooter>
+          )}
+        </Card>
+      )}
+    </>
+  );
+
   return (
     <div className="space-y-3">
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clan.id}` },
-          { label: t`Mộ phần & tro cốt`, to: `/clans/${clan.id}/graves` },
-          { label: title },
-        ]}
-      />
+      {!embedded && (
+        <Breadcrumb
+          items={[
+            { label: clan.name, to: `/clans/${clan.id}` },
+            { label: t`Mộ phần & tro cốt`, to: `/clans/${clan.id}/graves` },
+            { label: title },
+          ]}
+        />
+      )}
       <PageHeader
         icon={<IconGrave className="h-7 w-7" />}
         title={title}
@@ -275,88 +380,7 @@ export default function RestingPlaceDetail() {
         }
       />
 
-      {/* Photos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Hình ảnh
-            {place.photos.length > 0
-              ? ` (${place.photos.length}/${MAX_GRAVE_PHOTOS})`
-              : ""}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {place.photos.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
-          ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {place.photos.map((ph) => (
-                <div
-                  key={ph.id}
-                  className="relative aspect-square overflow-hidden rounded-md bg-muted"
-                >
-                  {photoUrls?.get(ph.path) ? (
-                    <img
-                      src={photoUrls.get(ph.path)}
-                      alt={ph.caption ?? ""}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full grid place-items-center">
-                      <IconGrave className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  {canEdit && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        removePhotoM.mutate({ id: ph.id, path: ph.path })
-                      }
-                      className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background"
-                      aria-label={t`Xoá ảnh`}
-                    >
-                      <IconX className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-        {canEdit && (
-          <CardFooter className="justify-end gap-2 border-t pt-4">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) uploadM.mutate(f);
-                e.target.value = "";
-              }}
-            />
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={
-                uploadM.isPending || place.photos.length >= MAX_GRAVE_PHOTOS
-              }
-              onClick={() => fileRef.current?.click()}
-              title={
-                place.photos.length >= MAX_GRAVE_PHOTOS
-                  ? t`Tối đa ${MAX_GRAVE_PHOTOS} ảnh`
-                  : undefined
-              }
-            >
-              <IconPlus className="h-4 w-4 mr-1" />
-              {uploadM.isPending ? t`Đang tải…` : t`Thêm ảnh`}
-            </Button>
-          </CardFooter>
-        )}
-      </Card>
+      {!embedded && photosBlock}
 
       {/* Thông tin */}
       <Card>
@@ -369,15 +393,17 @@ export default function RestingPlaceDetail() {
             value={RESTING_PLACE_KIND_LABEL[place.kind]}
           />
           {place.cemetery_name && (
-            <div className="flex gap-3">
-              <span className="w-32 shrink-0 text-muted-foreground">{t`Cơ sở`}</span>
-              <Link
-                to={`/clans/${clan.id}/graves?cemetery=${place.cemetery_id}`}
-                className="min-w-0 flex-1 break-words text-primary hover:underline"
-              >
-                {place.cemetery_name}
-              </Link>
-            </div>
+            <InfoRow
+              label={t`Cơ sở`}
+              value={
+                <Link
+                  to={`/clans/${clan.id}/graves?cemetery=${place.cemetery_id}`}
+                  className="text-primary hover:underline"
+                >
+                  {place.cemetery_name}
+                </Link>
+              }
+            />
           )}
           <Row label={t`Nơi`} value={place.location_name} />
           <Row label={t`Vị trí chi tiết`} value={place.location_detail} />
@@ -420,7 +446,9 @@ export default function RestingPlaceDetail() {
             <ul className="space-y-1.5">
               {place.occupants.map((o) => (
                 <li key={o.occupant_id}>
-                  <Link
+                  <PersonViewLink
+                    inPanel={!!embedded}
+                    personId={o.person_id}
                     to={`/clans/${clan.id}/people/${o.person_id}`}
                     className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
                   >
@@ -433,7 +461,7 @@ export default function RestingPlaceDetail() {
                         </p>
                       )}
                     </div>
-                  </Link>
+                  </PersonViewLink>
                 </li>
               ))}
             </ul>
@@ -671,16 +699,9 @@ export default function RestingPlaceDetail() {
         title={title}
         description={t`Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ.`}
       />
+      {embedded && photosBlock}
     </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex gap-3">
-      <span className="w-32 shrink-0 text-muted-foreground">{label}</span>
-      <span className="min-w-0 flex-1 break-words">{value}</span>
-    </div>
-  );
-}
+const Row = InfoRow;

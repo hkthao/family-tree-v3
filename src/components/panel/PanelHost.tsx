@@ -25,6 +25,10 @@ const EditPersonForm = lazy(() =>
 
 const InlawsNew = lazy(() => import("@/pages/clan/InlawsNew"));
 const RestingPlaceForm = lazy(() => import("@/pages/clan/RestingPlaceForm"));
+// Ngăn kéo XEM dùng trang đọc (không phải form khoá ô): dễ đọc trên điện thoại hơn.
+const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
+const RestingPlaceDetail = lazy(() => import("@/pages/clan/RestingPlaceDetail"));
+const HeritageDetail = lazy(() => import("@/pages/clan/HeritageDetail"));
 const HeritageForm = lazy(() => import("@/pages/clan/HeritageForm"));
 const BoardPostForm = lazy(() =>
   import("@/components/BoardPostForm").then((m) => ({
@@ -67,7 +71,7 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
       (current === "person-edit" || current === "person-view"),
   });
 
-  // Xem nhanh (chỉ đọc): cùng form sửa nhưng khoá mọi ô; nút "Sửa" chuyển sang trang chi tiết của người đó.
+  // Xem nhanh: trang chi tiết dạng đọc (ảnh, thông tin, quan hệ, tiểu sử); bấm người thân mở ngăn kéo người đó.
   if (current === "person-view" && pid) {
     return (
       <SidePanel
@@ -79,13 +83,7 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
         guard={false}
       >
         <Suspense fallback={<Loading />}>
-          <EditPersonForm
-            clanId={clanId}
-            personId={pid}
-            readOnly
-            onSaved={close}
-            onCancel={close}
-          />
+          <PersonDetail embedded={{ id: pid, onClose: close }} />
         </Suspense>
       </SidePanel>
     );
@@ -133,7 +131,7 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
     );
   }
 
-  // Xem (chỉ đọc): dùng lại đúng form sửa nhưng khoá mọi ô; nút "Sửa" mới chuyển sang route sửa.
+  // Xem: trang chi tiết dạng đọc; nút "Sửa" trong đó mở ngăn kéo sửa.
   if (current === "grave-view" && pid) {
     return (
       <SidePanel
@@ -144,14 +142,7 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
         guard={false}
       >
         <Suspense fallback={<Loading />}>
-          <RestingPlaceForm
-            embedded={{
-              id: pid,
-              readOnly: true,
-              onDone: close,
-              onCancel: close,
-            }}
-          />
+          <RestingPlaceDetail embedded={{ id: pid, onClose: close }} />
         </Suspense>
       </SidePanel>
     );
@@ -167,14 +158,7 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
         guard={false}
       >
         <Suspense fallback={<Loading />}>
-          <HeritageForm
-            embedded={{
-              id: pid,
-              readOnly: true,
-              onDone: close,
-              onCancel: close,
-            }}
-          />
+          <HeritageDetail embedded={{ id: pid, onClose: close }} />
         </Suspense>
       </SidePanel>
     );

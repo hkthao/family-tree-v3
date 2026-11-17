@@ -540,3 +540,71 @@ html[data-bg="on"] aside.bg-background {
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
+
+/* Ngăn kéo XEM dùng lại form ở chế độ chỉ đọc (components/ui/readonly-fieldset.tsx): ô nhập bị khoá hiện như CHỮ
+ * để đọc thay vì trông như form điền thông tin — ưu tiên điện thoại. Nhãn nhỏ nhạt ở trên, giá trị ở dưới; bỏ khung,
+ * nền, icon trong ô, mũi tên ô chọn, nút lịch; ẩn những dòng trống (ô có placeholder mà chưa nhập). */
+.read-view input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="color"]):not([type="range"]),
+.read-view textarea,
+.read-view select {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0.125rem 0 !important;
+  color: hsl(var(--foreground)) !important;
+  -webkit-text-fill-color: hsl(var(--foreground));
+  opacity: 1 !important;
+  -webkit-appearance: none;
+  appearance: none;
+  resize: none;
+  white-space: pre-wrap;
+}
+.read-view textarea {
+  field-sizing: content;
+}
+.read-view input::placeholder,
+.read-view textarea::placeholder {
+  color: transparent;
+}
+.read-view input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+/* Icon trái của ô nhập và mũi tên của ô chọn (span đặt tuyệt đối trong wrapper .relative). */
+.read-view .relative > span.pointer-events-none {
+  display: none;
+}
+.read-view label {
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+  font-size: 0.875rem;
+}
+/* Dòng trống: nhãn + đúng một ô đang hiện placeholder (chưa nhập) → ẩn cả dòng. */
+.read-view div:has(> label + input:placeholder-shown),
+.read-view div:has(> label + textarea:placeholder-shown),
+.read-view div:has(> label + .relative > input:placeholder-shown) {
+  display: none;
+}
+/* Dấu (*) bắt buộc và nhóm lựa chọn: khi đọc chỉ cần thấy GIÁ TRỊ đã chọn. */
+.read-view label > span.text-destructive[aria-hidden="true"] {
+  display: none;
+}
+.read-view input[type="radio"] {
+  display: none;
+}
+/* Mỗi nhãn bọc đúng một nút radio: ẩn những lựa chọn không được chọn. */
+.read-view label:has(input[type="radio"]:not(:checked)) {
+  display: none;
+}
+.read-view label:has(input[type="radio"]:checked) {
+  border-color: transparent !important;
+  background: transparent !important;
+  padding-left: 0 !important;
+  color: hsl(var(--foreground));
+  font-size: 1rem;
+}
+/* Nút chọn kiểu "Thu / Chi" (SegmentedButton): chỉ giữ lựa chọn đang bật. */
+.read-view [role="group"] button[aria-pressed="false"] {
+  display: none;
+}
