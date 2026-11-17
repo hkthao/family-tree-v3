@@ -51,6 +51,7 @@ import {
 } from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { DrawerViewActions } from "@/components/ui/form-actions";
 import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
@@ -668,13 +669,13 @@ export default function PersonDetail({
 
                 flex-wrap: bốn nút × 100px + khoảng cách vượt khung 360px,
                 không cho xuống dòng thì nút đầu bị đẩy khuất mép trái. */}
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionsRow embedded={!!embedded}>
               {canEdit ? (
                 <Button
                   asChild
-                  variant="outline"
+                  variant={embedded ? "default" : "outline"}
                   size="sm"
-                  className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
+                  className={embedded ? "order-last" : PAGE_BTN}
                 >
                   <PanelLink
                     to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}
@@ -693,7 +694,7 @@ export default function PersonDetail({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
+                    className={embedded ? undefined : PAGE_BTN}
                     onClick={() => setContribOpen(true)}
                     aria-label={t`Đề xuất sửa`}
                     title={t`Đề xuất sửa`}
@@ -715,14 +716,15 @@ export default function PersonDetail({
                     generation: person.generation,
                     photo_path: person.photo_path,
                   }}
-                  className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
+                  variant={embedded ? "outline" : undefined}
+                  className={embedded ? undefined : PAGE_BTN}
                 />
               )}
               {canCreateQr && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
+                  className={embedded ? undefined : PAGE_BTN}
                   data-testid="person-qr-button"
                   onClick={() => {
                     setQrOpen(true);
@@ -740,7 +742,11 @@ export default function PersonDetail({
                   variant="destructive-outline"
                   size="sm"
                   data-testid="delete-person-button"
-                  className="min-w-0 flex-1 px-2 hover:bg-destructive/10 sm:w-[100px] sm:flex-none"
+                  className={
+                    embedded
+                      ? "order-first hover:bg-destructive/10"
+                      : `${PAGE_BTN} hover:bg-destructive/10`
+                  }
                   onClick={async () => {
                     const ok = await askConfirm({
                       title: t`Xoá ${person.full_name}?`,
@@ -758,7 +764,7 @@ export default function PersonDetail({
                   {deleteMutation.isPending ? t`Đang xoá…` : t`Xoá`}
                 </Button>
               )}
-            </div>
+            </ActionsRow>
 
             <QrCodeModal
               open={qrOpen}
@@ -873,6 +879,25 @@ export default function PersonDetail({
         )}
       </div>
     </EmbeddedPersonContext.Provider>
+  );
+}
+
+/** Nút ở trang đầy đủ: điện thoại chia đều một hàng, máy tính rộng cố định 100px. */
+const PAGE_BTN = "min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none";
+
+/** Hàng nút cuối: trang đầy đủ là một hàng dồn phải; trong ngăn kéo là thanh dính đáy chung của ngăn kéo xem. */
+function ActionsRow({
+  embedded,
+  children,
+}: {
+  embedded: boolean;
+  children: React.ReactNode;
+}) {
+  if (embedded) return <DrawerViewActions>{children}</DrawerViewActions>;
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      {children}
+    </div>
   );
 }
 

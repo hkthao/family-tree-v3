@@ -36,6 +36,7 @@ export function FilterableSelect({
   filterPlaceholder = t`Gõ để tìm (không cần dấu)`,
   filterLabel,
   className,
+  rightSlot,
 }: {
   id?: string;
   icon?: ReactNode;
@@ -49,6 +50,8 @@ export function FilterableSelect({
   filterLabel: string;
   /** Ghi đè lớp của ô bấm (vd. `h-10 text-sm` để thấp bằng nút `size="sm"`). */
   className?: string;
+  /** Nút nhỏ (h-8 w-8) nằm TRONG ô, sau mũi tên — vd. Tuỳ chọn, Làm mới. Nhớ chừa `pr-*` ở className. */
+  rightSlot?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -182,15 +185,30 @@ export function FilterableSelect({
           {icon}
         </span>
       )}
-      <span
-        className={cn(
-          "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-transform",
-          open && "rotate-180",
-        )}
-        aria-hidden="true"
-      >
-        <IconChevronDown className="h-4 w-4" />
-      </span>
+      {rightSlot ? (
+        <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+          <span
+            className={cn(
+              "pointer-events-none px-1.5 text-muted-foreground transition-transform",
+              open && "rotate-180",
+            )}
+            aria-hidden="true"
+          >
+            <IconChevronDown className="h-4 w-4" />
+          </span>
+          {rightSlot}
+        </div>
+      ) : (
+        <span
+          className={cn(
+            "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-transform",
+            open && "rotate-180",
+          )}
+          aria-hidden="true"
+        >
+          <IconChevronDown className="h-4 w-4" />
+        </span>
+      )}
 
       {open &&
         rect &&

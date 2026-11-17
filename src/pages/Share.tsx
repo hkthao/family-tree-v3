@@ -1046,7 +1046,7 @@ export default function Share() {
                   : "hidden"
               }
             >
-              {/* Thanh công cụ gọn: ô chọn người trung tâm (có ô tìm) + nút phễu mở ngăn kéo "Tuỳ chọn cây". */}
+              {/* Thanh công cụ gọn: ô chọn người trung tâm (có ô tìm), icon Tuỳ chọn cây nằm trong ô. */}
               <div className="container flex max-w-6xl shrink-0 items-center gap-2 py-3 print-hide">
                 <div className="min-w-0 flex-1">
                   <FilterableSelect
@@ -1058,22 +1058,22 @@ export default function Share() {
                     emptyLabel={t`Chọn thuỷ tổ làm trung tâm`}
                     filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
                     filterLabel={t`Tìm người làm trung tâm`}
-                    className="h-10 text-sm"
+                    className="h-10 pr-[4.25rem] text-sm"
+                    rightSlot={
+                      <button
+                        type="button"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+                        onClick={() => setShowOpts(true)}
+                        aria-haspopup="dialog"
+                        aria-expanded={showOpts}
+                        aria-label={t`Tuỳ chọn cây`}
+                        title={t`Tuỳ chọn`}
+                      >
+                        <IconSliders className="h-4 w-4" />
+                      </button>
+                    }
                   />
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 gap-1.5"
-                  onClick={() => setShowOpts(true)}
-                  aria-haspopup="dialog"
-                  aria-expanded={showOpts}
-                  aria-label={t`Tuỳ chọn cây`}
-                >
-                  <IconSliders className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t`Tuỳ chọn`}</span>
-                </Button>
               </div>
 
               <FilterDrawer

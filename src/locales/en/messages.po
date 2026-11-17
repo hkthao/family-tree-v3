@@ -1259,8 +1259,8 @@ msgid "App vừa cập nhật"
 msgstr "The app was just updated"
 
 #: src/pages/clan/MosaicDetail.tsx
-msgid "Avatar của tôi"
-msgstr "My avatar"
+msgid "Avatar"
+msgstr "Avatar"
 
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Avatar mặc định"
@@ -1345,10 +1345,6 @@ msgstr "Tap \"Sync now\" to pull them in."
 #: src/components/ShareLinksSection.tsx
 msgid "Bấm “Tạo link mới” để tạo link công khai cho cây gia phả."
 msgstr "Tap “Create a new link” to make a public link for the family tree."
-
-#: src/pages/clan/Events.tsx
-msgid "Bấm “Tuỳ chọn” để đổi cách xem, chọn khoảng thời gian, đăng ký hoặc xuất lịch."
-msgstr "Tap “Options” to change the view, pick a time range, or subscribe to / export the calendar."
 
 #: src/pages/clan/Merge.tsx
 msgid "Bấm × để chọn lại."
@@ -2031,6 +2027,7 @@ msgstr "How the tree diagram is laid out"
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
 #: src/pages/clan/Events.tsx
+#: src/pages/clan/Mosaics.tsx
 msgid "Cách xem"
 msgstr "How to view"
 
@@ -4539,8 +4536,8 @@ msgid "Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông 
 msgstr "Paste or engrave this QR code at the grave / tower — scan it to see the resting-place information."
 
 #: src/pages/clan/MosaicDetail.tsx
-msgid "Dán link ảnh"
-msgstr "Paste a photo link"
+msgid "Dán link"
+msgstr "Paste link"
 
 #: src/components/HeritagePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
@@ -5234,7 +5231,6 @@ msgstr "A catalogue of graves and cemeteries."
 #: src/components/InlawFamilyCard.tsx
 #: src/components/InlawFamilyCard.tsx
 #: src/pages/clan/Events.tsx
-#: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
@@ -8338,6 +8334,7 @@ msgid "Kiểu đường nối tự động"
 msgstr "Automatic connector style"
 
 #: src/pages/clan/MosaicDetail.tsx
+#: src/pages/clan/MosaicDetail.tsx
 #: src/pages/Clans.tsx
 msgid "Kiểu hiển thị"
 msgstr "Display style"
@@ -11185,6 +11182,10 @@ msgstr "Mandarins – examination graduates"
 msgid "Quản lý & công cụ"
 msgstr "Management & tools"
 
+#: src/pages/clan/MosaicDetail.tsx
+msgid "Quản lý bức ảnh"
+msgstr "Manage mosaic"
+
 #: src/pages/clan/People.tsx
 msgid "Quản lý chi"
 msgstr "Manage branches"
@@ -12670,7 +12671,6 @@ msgstr "Done when dong-ho-viet shows as connected."
 msgid "Thay nội dung đang có bằng mẫu?"
 msgstr "Replace the existing text with the template?"
 
-#: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
@@ -14477,7 +14477,9 @@ msgstr "Customize the home page"
 #: src/components/HeaderActions.tsx
 #: src/components/HeaderActions.tsx
 #: src/components/PersonAddressCard.tsx
-#: src/pages/clan/Tree.tsx
+#: src/pages/clan/MosaicDetail.tsx
+#: src/pages/clan/MosaicDetail.tsx
+#: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
@@ -14491,6 +14493,10 @@ msgstr "Options"
 #: src/pages/clan/GoodDays.tsx
 msgid "Tùy chọn"
 msgstr "Custom"
+
+#: src/pages/clan/MosaicDetail.tsx
+msgid "Tuỳ chọn bức ảnh"
+msgstr "Mosaic options"
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Tuỳ chọn canvas"
@@ -15154,6 +15160,7 @@ msgstr "View photo"
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/RestingPlacePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Xem ảnh lớn"
 msgstr "View large photo"
 

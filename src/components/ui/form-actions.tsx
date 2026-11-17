@@ -59,7 +59,20 @@ export function FormActions({
  * cỡ sm (h-10) — bằng các nút Xuất sổ / Chia sẻ — dù form khai báo size nào.
  */
 export const PANEL_ACTIONS_CLASS =
-  "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row flex-wrap items-center justify-end gap-2 border-t bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:px-5 [&>*]:h-10 [&>*]:w-auto [&>*]:flex-none [&>*]:px-4";
+  "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row flex-wrap items-center justify-end gap-2 border-t bg-background px-4 py-3 sm:-mx-5 sm:px-5 [&>*]:h-10 [&>*]:w-auto [&>*]:flex-none [&>*]:px-4";
+
+/**
+ * Thanh nút của ngăn kéo XEM (người, nơi an nghỉ, di sản…): cùng thanh dính đáy với form, thứ tự
+ * phá huỷ → phụ → chính (Sửa ngoài cùng phải). Điện thoại: các nút chia đều một hàng thay vì
+ * rớt dòng (bốn nút co theo nội dung tràn khung 320–375px).
+ */
+export function DrawerViewActions({ children }: { children: React.ReactNode }) {
+  return (
+    <PanelActionBar className="max-sm:flex-nowrap max-sm:[&>*]:min-w-0 max-sm:[&>*]:flex-1 max-sm:[&>*]:px-2">
+      {children}
+    </PanelActionBar>
+  );
+}
 
 /**
  * Thanh nút dính đáy của ngăn kéo + một khoảng đệm 1rem phía trên để nội dung

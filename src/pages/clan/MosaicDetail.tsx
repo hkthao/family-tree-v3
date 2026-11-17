@@ -6,6 +6,7 @@ import { IconTextarea } from "@/components/mosaic/IconTextarea";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
+import { FilterDrawer } from "@/components/FilterDrawer";
 import {
   IconPuzzle,
   IconCheck,
@@ -13,6 +14,7 @@ import {
   IconLink,
   IconPencil,
   IconScroll,
+  IconSliders,
   IconTrash,
   IconUnlock,
   IconUsers,
@@ -87,6 +89,7 @@ export default function MosaicDetail() {
   };
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showOpts, setShowOpts] = useState(false);
   const [selected, setSelected] = useState<MosaicTile | null>(null);
 
   const mosaicKey = ["mosaic", mosaicId];
@@ -207,18 +210,13 @@ export default function MosaicDetail() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        {!canEdit && mosaic.status === "open" && !canAddMore && (
-          <span className="text-sm text-muted-foreground">
-            <Trans>
-            Bạn đã góp đủ {quota} mảnh.
-            </Trans>
-          </span>
-        )}
+      {/* Một hàng gọn: Sắp xếp + icon Tuỳ chọn. Kiểu hiển thị và Sửa / Hoàn tất / Xoá nằm trong ngăn kéo Tuỳ chọn. */}
+      <div className="flex items-center gap-2">
         {canMoveAny && tiles.length > 0 && (
           <Button
             size="sm"
             variant={arrange ? "default" : "outline"}
+            className="h-10"
             onClick={() => setArrange((v) => !v)}
           >
             {arrange ? (
@@ -229,34 +227,68 @@ export default function MosaicDetail() {
             {arrange ? t`Xong` : t`Sắp xếp`}
           </Button>
         )}
-        <SegmentedControl ariaLabel={t`Kiểu hiển thị`}>
-          <SegmentedButton
-            active={variant === "grid"}
-            onClick={() => pickVariant("grid")}
-          >
-            {t`Lưới`}
-          </SegmentedButton>
-          <SegmentedButton
-            active={variant === "puzzle"}
-            onClick={() => pickVariant("puzzle")}
-          >
-            Puzzle
-          </SegmentedButton>
-        </SegmentedControl>
+        <Button
+          size="sm"
+          variant="outline"
+          className="ml-auto h-10 shrink-0 gap-1.5 px-3"
+          onClick={() => setShowOpts(true)}
+          aria-haspopup="dialog"
+          aria-expanded={showOpts}
+          aria-label={t`Tuỳ chọn`}
+          title={t`Tuỳ chọn`}
+        >
+          <IconSliders className="h-4 w-4" />
+          {t`Tuỳ chọn`}
+        </Button>
+      </div>
+      {!canEdit && mosaic.status === "open" && !canAddMore && (
+        <p className="text-sm text-muted-foreground">
+          <Trans>Bạn đã góp đủ {quota} mảnh.</Trans>
+        </p>
+      )}
+      <FilterDrawer
+        open={showOpts}
+        onClose={() => setShowOpts(false)}
+        title={t`Tuỳ chọn bức ảnh`}
+      >
+        <section className="flex flex-col gap-2">
+          <p className="text-base font-medium">{t`Kiểu hiển thị`}</p>
+          <SegmentedControl ariaLabel={t`Kiểu hiển thị`} className="flex">
+            <SegmentedButton
+              active={variant === "grid"}
+              onClick={() => pickVariant("grid")}
+              className="flex-1"
+            >
+              {t`Lưới`}
+            </SegmentedButton>
+            <SegmentedButton
+              active={variant === "puzzle"}
+              onClick={() => pickVariant("puzzle")}
+              className="flex-1"
+            >
+              Puzzle
+            </SegmentedButton>
+          </SegmentedControl>
+        </section>
         {canEdit && (
-          <>
+          <section className="flex flex-col gap-2 border-t pt-4 [&>button]:w-full [&>button]:justify-start">
+            <p className="text-base font-medium">{t`Quản lý bức ảnh`}</p>
             <Button
-              size="sm"
               variant="outline"
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setShowOpts(false);
+                setEditing(true);
+              }}
             >
               <IconPencil className="mr-1.5 h-4 w-4" />
               {t`Sửa`}
             </Button>
             <Button
-              size="sm"
               variant="outline"
-              onClick={() => toggleStatusM.mutate()}
+              onClick={() => {
+                setShowOpts(false);
+                toggleStatusM.mutate();
+              }}
             >
               {mosaic.status === "open" ? (
                 <IconCheck className="mr-1.5 h-4 w-4" />
@@ -266,9 +298,9 @@ export default function MosaicDetail() {
               {mosaic.status === "open" ? t`Hoàn tất` : t`Mở lại`}
             </Button>
             <Button
-              size="sm"
-              variant="outline"
+              variant="destructive-outline"
               onClick={async () => {
+                setShowOpts(false);
                 const ok = await confirm({
                   title: t`Xoá bức "${mosaic.title}"?`,
                   description: t`Toàn bộ mảnh trong bức sẽ bị xoá.`,
@@ -284,9 +316,9 @@ export default function MosaicDetail() {
               <IconTrash className="mr-1.5 h-4 w-4" />
               {t`Xoá`}
             </Button>
-          </>
+          </section>
         )}
-      </div>
+      </FilterDrawer>
 
       {arrange && (
         <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
@@ -490,38 +522,32 @@ function AddTileForm({
         saveM.mutate();
       }}
     >
-      <div
-        className="flex flex-wrap gap-2"
-        role="group"
-        aria-label={t`Nguồn ảnh`}
-      >
+      {/* Nguồn ảnh: một nhóm chia đều một hàng (ba nút rời rớt dòng trên điện thoại). */}
+      <SegmentedControl ariaLabel={t`Nguồn ảnh`} className="flex">
         {avatar && (
-          <Button
-            type="button"
-            size="sm"
-            variant={mode === "avatar" ? "default" : "outline"}
+          <SegmentedButton
+            active={mode === "avatar"}
             onClick={() => setMode("avatar")}
+            className="flex-1 px-2"
           >
-            {t`Avatar của tôi`}
-          </Button>
+            {t`Avatar`}
+          </SegmentedButton>
         )}
-        <Button
-          type="button"
-          size="sm"
-          variant={mode === "file" ? "default" : "outline"}
+        <SegmentedButton
+          active={mode === "file"}
           onClick={() => setMode("file")}
+          className="flex-1 px-2"
         >
           {t`Tải ảnh lên`}
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant={mode === "url" ? "default" : "outline"}
+        </SegmentedButton>
+        <SegmentedButton
+          active={mode === "url"}
           onClick={() => setMode("url")}
+          className="flex-1 px-2"
         >
-          {t`Dán link ảnh`}
-        </Button>
-      </div>
+          {t`Dán link`}
+        </SegmentedButton>
+      </SegmentedControl>
 
       {mode === "avatar" ? (
         <p className="text-xs text-muted-foreground">
@@ -697,9 +723,7 @@ function EditMosaicForm({
           onChange={(e) => setSlots(Number(e.target.value) || minSlots)}
         />
         <p className="text-xs text-muted-foreground">
-          <Trans>
-          Tối thiểu {minSlots} (đang có mảnh ở ô xa nhất).
-          </Trans>
+          <Trans>Tối thiểu {minSlots} (đang có mảnh ở ô xa nhất).</Trans>
         </p>
       </div>
       <div className="space-y-1.5">

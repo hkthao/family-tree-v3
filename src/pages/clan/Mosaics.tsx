@@ -6,6 +6,7 @@ import { MAX_SLOTS, normalizeSlots } from "@/components/mosaic/jigsaw";
 import { IconTextarea } from "@/components/mosaic/IconTextarea";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
 import {
@@ -120,8 +121,11 @@ export default function Mosaics() {
         }
       />
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="min-w-0 sm:flex-1">
+      {/* Tìm kiếm + icon Tuỳ chọn trong ô; cách xem (danh sách / thẻ) nằm trong ngăn kéo, cùng kiểu mọi màn danh sách. */}
+      <CollapsibleFilters
+        activeCount={viewMode !== "list" ? 1 : 0}
+        onReset={() => setViewMode("list")}
+        search={(toggle) => (
           <SearchInput
             label={t`Tìm bức ảnh`}
             value={searchText}
@@ -129,29 +133,32 @@ export default function Mosaics() {
               setSearchText(e.target.value);
             }}
             placeholder={t`Tìm theo tên, mô tả…`}
+            rightSlot={toggle}
           />
-        </div>
-        <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
-          <SegmentedButton
-            active={viewMode === "list"}
-            onClick={() => setViewMode("list")}
-            title={t`Danh sách`}
-            ariaLabel={t`Danh sách`}
-            variant="icon-md"
-          >
-            <IconList className="h-4 w-4" />
-          </SegmentedButton>
-          <SegmentedButton
-            active={viewMode === "grid"}
-            onClick={() => setViewMode("grid")}
-            title={t`Thẻ`}
-            ariaLabel={t`Thẻ`}
-            variant="icon-md"
-          >
-            <IconGrid className="h-4 w-4" />
-          </SegmentedButton>
-        </SegmentedControl>
-      </div>
+        )}
+      >
+        <section className="flex flex-col gap-2">
+          <p className="text-base font-medium">{t`Cách xem`}</p>
+          <SegmentedControl ariaLabel={t`Chế độ hiển thị`} className="flex">
+            <SegmentedButton
+              active={viewMode === "list"}
+              onClick={() => setViewMode("list")}
+              className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
+            >
+              <IconList className="h-4 w-4" />
+              {t`Danh sách`}
+            </SegmentedButton>
+            <SegmentedButton
+              active={viewMode === "grid"}
+              onClick={() => setViewMode("grid")}
+              className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
+            >
+              <IconGrid className="h-4 w-4" />
+              {t`Thẻ`}
+            </SegmentedButton>
+          </SegmentedControl>
+        </section>
+      </CollapsibleFilters>
 
       {isLoading ? (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
@@ -282,7 +289,7 @@ function MosaicListItem({
           <p className="truncate font-medium">{mosaic.title}</p>
           <p className="text-sm text-muted-foreground">
             <Trans>
-            {mosaic.tileCount}/{mosaic.slots} mảnh
+              {mosaic.tileCount}/{mosaic.slots} mảnh
             </Trans>
           </p>
           {mosaic.description && (
@@ -322,7 +329,7 @@ function MosaicGridCard({
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             <Trans>
-            {mosaic.tileCount}/{mosaic.slots} mảnh
+              {mosaic.tileCount}/{mosaic.slots} mảnh
             </Trans>
           </p>
         </div>

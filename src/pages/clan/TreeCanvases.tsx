@@ -15,6 +15,7 @@ import {
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { SearchInput } from "@/components/SearchInput";
 import { SidePanel } from "@/components/SidePanel";
 import {
@@ -212,8 +213,10 @@ export default function TreeCanvases() {
       )}
 
       {data && data.length > 0 && (
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="min-w-0 sm:flex-1">
+        <CollapsibleFilters
+          activeCount={sort !== "recent" ? 1 : 0}
+          onReset={() => setSort("recent")}
+          search={(toggle) => (
             <SearchInput
               label={t`Tìm cây`}
               value={search}
@@ -222,25 +225,25 @@ export default function TreeCanvases() {
                 setPage(1);
               }}
               placeholder={t`Tìm theo tên cây…`}
+              rightSlot={toggle}
             />
-          </div>
+          )}
+        >
           <Select
             aria-label={t`Sắp xếp`}
             value={sort}
             onChange={(e) => setSort(e.target.value as "recent" | "name")}
-            className="h-10 w-auto text-sm"
+            className="h-11 w-full text-base"
           >
             <option value="recent">{t`Mới cập nhật`}</option>
             <option value="name">{t`Tên A → Z`}</option>
           </Select>
-        </div>
+        </CollapsibleFilters>
       )}
 
       {data && data.length > 0 && total === 0 && (
         <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
-          <Trans>
-          Không có cây nào khớp "{search}".
-          </Trans>
+          <Trans>Không có cây nào khớp "{search}".</Trans>
         </p>
       )}
 
@@ -275,8 +278,8 @@ export default function TreeCanvases() {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     <Trans>
-                    {shown} người · {c.layout.extras.length} thẻ/chữ thêm ·{" "}
-                    {c.layout.links.length} đường nối
+                      {shown} người · {c.layout.extras.length} thẻ/chữ thêm ·{" "}
+                      {c.layout.links.length} đường nối
                     </Trans>
                   </p>
                 </Link>

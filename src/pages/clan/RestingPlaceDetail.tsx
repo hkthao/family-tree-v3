@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { PanelLink } from "@/components/panel/PanelLink";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { InfoRow } from "@/components/InfoRow";
 import { PersonViewLink } from "@/components/panel/PersonViewLink";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -25,6 +26,7 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import { DrawerViewActions } from "@/components/ui/form-actions";
 import {
   Card,
   CardContent,
@@ -213,6 +215,7 @@ export default function RestingPlaceDetail({
   // QR tại mộ (clan admin) — public share link of this resting place.
   const canAdmin = isClanAdmin(clan);
   const [qrOpen, setQrOpen] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const qrM = useMutation({
     mutationFn: () => getOrCreateRestingPlaceShareLink(clan.id, graveId!),
     onError: (e) =>
@@ -232,6 +235,10 @@ export default function RestingPlaceDetail({
 
   // Ảnh. Trong ngăn kéo XEM: đặt SAU thông tin, ẩn khi trống và bỏ công cụ thêm/xoá ảnh.
   const canEditMedia = canEdit && !embedded;
+  const photoImages = place.photos.flatMap((ph) => {
+    const src = photoUrls?.get(ph.path);
+    return src ? [{ src, caption: ph.caption }] : [];
+  });
   const photosBlock = (
     <>
       {/* Photos */}
@@ -256,13 +263,26 @@ export default function RestingPlaceDetail({
                     className="relative aspect-square overflow-hidden rounded-md bg-muted"
                   >
                     {photoUrls?.get(ph.path) ? (
-                      <img
-                        src={photoUrls.get(ph.path)}
-                        alt={ph.caption ?? ""}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover"
-                      />
+                      <button
+                        type="button"
+                        className="block h-full w-full"
+                        onClick={() =>
+                          setLightboxIdx(
+                            photoImages.findIndex(
+                              (im) => im.src === photoUrls.get(ph.path),
+                            ),
+                          )
+                        }
+                        aria-label={t`Xem ảnh lớn`}
+                      >
+                        <img
+                          src={photoUrls.get(ph.path)}
+                          alt={ph.caption ?? ""}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
                     ) : (
                       <div className="h-full w-full grid place-items-center">
                         <IconGrave className="h-5 w-5 text-muted-foreground" />
@@ -321,6 +341,53 @@ export default function RestingPlaceDetail({
     </>
   );
 
+  // Trang đầy đủ: nút ở đầu trang; ngăn kéo xem: thanh dính đáy chung (Xoá → QR → Sửa).
+  const actionButtons = (
+    <>
+      {canAdmin && (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setQrOpen(true);
+            if (!qrM.data) qrM.mutate();
+          }}
+        >
+          <IconQrCode className="h-4 w-4 mr-1" /> QR
+        </Button>
+      )}
+      <Button
+        size="sm"
+        variant={embedded ? "default" : "outline"}
+        className={embedded ? "order-last" : undefined}
+        asChild
+      >
+        <PanelLink
+          to={`/clans/${clan.id}/graves/${place.id}/edit`}
+          panel="grave-edit"
+          panelParams={{ pid: place.id }}
+        >
+          <IconPencil className="h-4 w-4 mr-1" /> {t`Sửa`}
+        </PanelLink>
+      </Button>
+      <Button
+        size="sm"
+        variant="destructive-outline"
+        className={embedded ? "order-first" : undefined}
+        onClick={() =>
+          askConfirm({
+            title: t`Xoá nơi an nghỉ này?`,
+            description: t`Xoá bản ghi mộ phần / tro cốt (không xoá hồ sơ người).`,
+            confirmLabel: t`Xoá`,
+            destructive: true,
+          }).then((ok) => ok && deleteM.mutate())
+        }
+      >
+        <IconTrash className="h-4 w-4 mr-1" /> {t`Xoá`}
+      </Button>
+    </>
+  );
+
   return (
     <div className="space-y-3">
       {!embedded && (
@@ -338,44 +405,8 @@ export default function RestingPlaceDetail({
         description={RESTING_PLACE_KIND_LABEL[place.kind]}
         actionsBelow
         actions={
-          canEdit ? (
-            <div className="flex gap-2">
-              {canAdmin && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setQrOpen(true);
-                    if (!qrM.data) qrM.mutate();
-                  }}
-                >
-                  <IconQrCode className="h-4 w-4 mr-1" /> QR
-                </Button>
-              )}
-              <Button size="sm" variant="outline" asChild>
-                <PanelLink
-                  to={`/clans/${clan.id}/graves/${place.id}/edit`}
-                  panel="grave-edit"
-                  panelParams={{ pid: place.id }}
-                >
-                  <IconPencil className="h-4 w-4 mr-1" /> {t`Sửa`}
-                </PanelLink>
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive-outline"
-                onClick={() =>
-                  askConfirm({
-                    title: t`Xoá nơi an nghỉ này?`,
-                    description: t`Xoá bản ghi mộ phần / tro cốt (không xoá hồ sơ người).`,
-                    confirmLabel: t`Xoá`,
-                    destructive: true,
-                  }).then((ok) => ok && deleteM.mutate())
-                }
-              >
-                <IconTrash className="h-4 w-4 mr-1" /> {t`Xoá`}
-              </Button>
-            </div>
+          canEdit && !embedded ? (
+            <div className="flex gap-2">{actionButtons}</div>
           ) : undefined
         }
       />
@@ -700,6 +731,17 @@ export default function RestingPlaceDetail({
         description={t`Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ.`}
       />
       {embedded && photosBlock}
+      {lightboxIdx !== null && photoImages.length > 0 && (
+        <ImageLightbox
+          images={photoImages}
+          index={Math.max(0, lightboxIdx)}
+          onIndexChange={setLightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+        />
+      )}
+      {embedded && canEdit && (
+        <DrawerViewActions>{actionButtons}</DrawerViewActions>
+      )}
     </div>
   );
 }

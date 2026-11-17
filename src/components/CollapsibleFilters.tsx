@@ -17,7 +17,6 @@ export function CollapsibleFilters({
   activeCount = 0,
   actions,
   search,
-  labelled = false,
   onReset,
   title,
 }: {
@@ -29,8 +28,6 @@ export function CollapsibleFilters({
   actions?: ReactNode;
   /** Ô tìm kiếm, nhận nút phễu để nhét vào rightSlot. */
   search?: (toggle: ReactNode) => ReactNode;
-  /** Nút mở ngăn kéo LUÔN có chữ "Tuỳ chọn" (cạnh ô tìm kiếm) thay vì chỉ một icon nhỏ trong ô. */
-  labelled?: boolean;
   /** Có thì ngăn kéo hiện nút "Đặt lại". */
   onReset?: () => void;
   title?: string;
@@ -44,19 +41,17 @@ export function CollapsibleFilters({
       aria-expanded={open}
       aria-label={t`Bộ lọc & tuỳ chọn`}
       className={`relative inline-flex items-center justify-center rounded-md text-sm ${
-        search && !labelled
+        search
           ? "h-8 w-8 text-muted-foreground hover:bg-muted"
-          : labelled
-            ? "h-12 shrink-0 gap-1.5 border bg-card px-3.5 font-medium hover:bg-muted"
-            : "h-10 gap-1.5 border bg-card px-3"
+          : "h-10 gap-1.5 border bg-card px-3"
       }`}
     >
       <IconSliders className="h-4 w-4" />
-      {(!search || labelled) && t`Tuỳ chọn`}
+      {!search && t`Tuỳ chọn`}
       {activeCount > 0 && (
         <span
           className={`rounded-full bg-primary px-1.5 text-xs text-primary-foreground ${
-            search && !labelled
+            search
               ? "absolute -right-0.5 -top-0.5 h-4 min-w-4 px-1 text-[10px] leading-4"
               : ""
           }`}
@@ -84,7 +79,9 @@ export function CollapsibleFilters({
         onReset={onReset}
         title={title}
       >
-        {typeof children === "function" ? children(() => setOpen(false)) : children}
+        {typeof children === "function"
+          ? children(() => setOpen(false))
+          : children}
       </FilterDrawer>
     </>
   );
