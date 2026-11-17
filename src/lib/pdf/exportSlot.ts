@@ -45,7 +45,8 @@ async function acquire(clanId: string, onQueued?: () => void): Promise<string | 
   for (;;) {
     const { data, error } = await supabase.rpc("acquire_export_slot", { p_clan: clanId });
     if (error) {
-      if (error.code === "42501") throw new Error(error.message);
+      // Chỉ chặn khi đúng là không thuộc dòng họ; lỗi quyền hạ tầng khác thì chạy luôn không cần chỗ.
+      if (error.code === "42501" && /clan member/i.test(error.message)) throw new Error(error.message);
       return null;
     }
     const r = data as { granted?: boolean; slot_id?: string } | null;
