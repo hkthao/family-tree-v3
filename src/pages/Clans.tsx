@@ -32,6 +32,7 @@ import {
 } from "@/components/HistoricalClansSection";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
+import { IconRefresh } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
 import { Pagination } from "@/components/Pagination";
@@ -177,6 +178,18 @@ export default function Clans() {
     staleTime: 10 * 60 * 1000,
   });
   const active = tab === "mine" ? mineQ : communityQ;
+  const refreshing =
+    active.isFetching ||
+    mineCount.isFetching ||
+    communityCount.isFetching ||
+    historicalQ.isFetching;
+  const refreshAll = () =>
+    Promise.all([
+      active.refetch(),
+      mineCount.refetch(),
+      communityCount.refetch(),
+      historicalQ.refetch(),
+    ]);
   const data = tab === "historical" ? undefined : active.data;
   const isLoading = tab !== "historical" && active.isLoading;
   const error = tab === "historical" ? null : active.error;
@@ -286,7 +299,24 @@ export default function Clans() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t`Tìm dòng họ (gõ không dấu được)`}
-                  rightSlot={toggle}
+                  className="pr-[4.75rem]"
+                  rightSlot={
+                    <>
+                      {toggle}
+                      <button
+                        type="button"
+                        onClick={() => void refreshAll()}
+                        disabled={refreshing}
+                        aria-label={t`Làm mới`}
+                        title={t`Làm mới`}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-60"
+                      >
+                        <IconRefresh
+                          className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+                        />
+                      </button>
+                    </>
+                  }
                 />
               </div>
             )}

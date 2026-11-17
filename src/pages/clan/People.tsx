@@ -410,7 +410,7 @@ export default function People() {
         description={
           view === "kinship"
             ? t`Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt.`
-            : t`Danh sách thành viên với lọc, tìm kiếm và import hàng loạt.`
+            : <span className="max-sm:hidden">{t`Danh sách thành viên với lọc, tìm kiếm và import hàng loạt.`}</span>
         }
       />
 
@@ -473,8 +473,8 @@ export default function People() {
               setSort("generation");
             }}
             search={(toggle) => (
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="min-w-0 sm:flex-1">
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
                   <SearchInput
                     label={t`Tìm theo tên`}
                     value={search}
@@ -494,9 +494,8 @@ export default function People() {
                     }
                   />
                 </div>
-                {/* Mobile: hàng riêng dưới ô tìm kiếm (kiểu xem trái, thao tác phải) để ô
-            tìm kiếm đủ rộng để gõ; sm+: cùng một hàng. */}
-                <div className="flex items-center justify-between gap-2 sm:justify-start">
+                {/* Kiểu xem + thao tác nằm cùng hàng với ô tìm kiếm cho gọn. */}
+                <div className="flex shrink-0 items-center gap-2">
                   <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
                     <SegmentedButton
                       active={viewMode === "list"}
@@ -807,7 +806,7 @@ export default function People() {
           ) : viewMode === "list" ? (
             <ul className="divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
               {canEdit && (
-                <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 bg-muted/30">
+                <li className="flex flex-wrap items-center gap-x-3 gap-y-0.5 px-3 py-1.5 bg-muted/30">
                   <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
                     <input
                       type="checkbox"
@@ -820,7 +819,7 @@ export default function People() {
                       }
                       className="h-4 w-4 accent-primary"
                     />
-                    {t`Chọn cả trang này (${data.rows.length})`}
+                    {t`Chọn cả trang (${data.rows.length})`}
                   </label>
                   {total > data.rows.length && selected.size < total && (
                     <button
@@ -831,7 +830,7 @@ export default function People() {
                     >
                       {selectAllMatchingM.isPending
                         ? t`Đang chọn…`
-                        : t`Chọn tất cả ${total} kết quả khớp bộ lọc`}
+                        : t`Chọn cả ${total} kết quả`}
                     </button>
                   )}
                 </li>
@@ -1255,13 +1254,14 @@ function CompactCompletion({
     <Link
       to={`/clans/${clanId}/todo`}
       aria-label={t`Hồ sơ đầy đủ ${percent}%, ${withGaps} người còn thiếu thông tin. Mở việc cần làm`}
-      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border bg-card px-3 py-2 text-sm hover:border-primary transition-colors"
+      className="flex items-center gap-x-3 rounded-md border bg-card px-3 py-1.5 text-sm hover:border-primary transition-colors"
     >
       <span className="shrink-0">
-        {t`Hồ sơ đầy đủ`}{" "}
+        <span className="max-sm:hidden">{t`Hồ sơ đầy đủ`}</span>
+        <span className="sm:hidden">{t`Hồ sơ`}</span>{" "}
         <span className="tabular-nums font-semibold">{percent}%</span>
       </span>
-      <div className="h-1.5 min-w-[80px] flex-1 overflow-hidden rounded-full bg-muted">
+      <div className="h-1.5 min-w-[40px] flex-1 overflow-hidden rounded-full bg-muted">
         <div
           className={`h-full ${tone} transition-[width] duration-500`}
           style={{ width: `${percent}%` }}
@@ -1269,10 +1269,9 @@ function CompactCompletion({
       </div>
       {withGaps > 0 ? (
         <span className="shrink-0 text-xs text-muted-foreground">
-          <Trans>
-          <span className="tabular-nums">{withGaps}</span> người còn thiếu thông
-          tin · <span className="text-primary">Bổ sung →</span>
-          </Trans>
+          <span className="tabular-nums">{withGaps}</span>{" "}
+          <span className="max-sm:hidden">{t`người còn thiếu thông tin`} · </span>
+          <span className="text-primary">{t`Bổ sung →`}</span>
         </span>
       ) : (
         <span className="shrink-0 text-xs text-emerald-600">{t`Tất cả đã đầy đủ ✓`}</span>
