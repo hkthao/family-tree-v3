@@ -1,10 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { IconDownload } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import { t } from "@lingui/core/macro";
+
+import { exportStageLabel } from "@/lib/pdf/exportStageLabel";
 interface Props {
   clan: ClanDetail;
   variant?: "default" | "outline";
@@ -18,10 +21,11 @@ interface Props {
  * click so the initial app payload doesn't carry it.
  */
 export function ExportPdfButton({ clan, variant = "outline", size }: Props) {
+  const [stage, setStage] = useState<Parameters<typeof exportStageLabel>[0]>(null);
   const m = useMutation({
     mutationFn: async () => {
       const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
-      return downloadClanBookPdf(clan, { tree: true, detail: true });
+      return downloadClanBookPdf(clan, { tree: true, detail: true, onProgress: setStage });
     },
   });
 
@@ -34,7 +38,7 @@ export function ExportPdfButton({ clan, variant = "outline", size }: Props) {
         disabled={m.isPending}
       >
         <IconDownload className="h-4 w-4 mr-1.5" />
-        {m.isPending ? t`Đang xuất PDF…` : t`Xuất sổ gia phả PDF`}
+        {m.isPending ? exportStageLabel(stage) : t`Xuất sổ gia phả PDF`}
       </Button>
       {m.error && (
         <p className="text-xs text-destructive">{(m.error as Error).message}</p>

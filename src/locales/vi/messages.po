@@ -4649,6 +4649,10 @@ msgstr "Đang chờ"
 msgid "Đang chờ ({pendingTotal})"
 msgstr "Đang chờ ({pendingTotal})"
 
+#: src/lib/pdf/exportStageLabel.ts
+msgid "Đang chờ tới lượt…"
+msgstr "Đang chờ tới lượt…"
+
 #: src/pages/clan/People.tsx
 msgid "Đang chọn…"
 msgstr "Đang chọn…"
@@ -4660,6 +4664,10 @@ msgstr "Đang chuyển tới Google…"
 #: src/pages/clan/AddChild.tsx
 msgid "Đang có bố/mẹ khác — sẽ ghi đè khi gắn."
 msgstr "Đang có bố/mẹ khác — sẽ ghi đè khi gắn."
+
+#: src/lib/pdf/exportStageLabel.ts
+msgid "Đang dàn trang…"
+msgstr "Đang dàn trang…"
 
 #: src/pages/admin/Announcements.tsx
 msgid "Đang đăng"
@@ -5167,16 +5175,11 @@ msgstr "Đang xử lý…"
 msgid "Đăng xuất"
 msgstr "Đăng xuất"
 
-#: src/components/ExportPdfButton.tsx
-msgid "Đang xuất PDF…"
-msgstr "Đang xuất PDF…"
-
 #: src/components/CsvExportButton.tsx
 #: src/components/GedcomButtons.tsx
-#: src/components/QuickActionsCard.tsx
+#: src/lib/pdf/exportStageLabel.ts
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Relations.tsx
-#: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/Share.tsx

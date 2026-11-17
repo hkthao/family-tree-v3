@@ -31,6 +31,18 @@ const pkg = JSON.parse(readFileSync(path.resolve(__dirname, "package.json"), "ut
 };
 
 export default defineConfig({
+  // Web Worker dựng sổ PDF (src/lib/pdf/clanBook.worker.tsx): cần cùng polyfill Buffer
+  // cho react-pdf. KHÔNG thêm plugin React: nó chèn mã làm nóng module (dùng `window`) vào worker;
+  // JSX do esbuild lo, và đồ thị import của sổ PDF không dùng macro Lingui.
+  worker: {
+    format: "es",
+    plugins: () => [
+      nodePolyfills({
+        include: ["buffer", "stream", "util"],
+        globals: { Buffer: true, global: true, process: true },
+      }),
+    ],
+  },
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __APP_COMMIT__: JSON.stringify(readCommitSha()),
