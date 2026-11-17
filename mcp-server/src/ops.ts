@@ -14,6 +14,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { normalizePerson, PERSON_FIELDS, UserError, UUID_RE } from "./fields.ts";
 import { exportClanBook } from "./book.tsx";
 import { loadAvatar } from "./photo.ts";
+import { RESOURCE_OPS } from "./resources.ts";
 
 export interface Ctx {
   db: SupabaseClient;
@@ -601,4 +602,5 @@ export const OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> = {
   get_book_texts: (c) => getBookTexts(c),
   export_clan_book: exportClanBook,
   update_book_texts: updateBookTexts,
+  ...RESOURCE_OPS,
 };

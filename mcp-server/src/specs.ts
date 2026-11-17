@@ -6,6 +6,7 @@
  */
 
 import { personProperties } from "./fields.ts";
+import { EXTRA_SPECS, resourceSpecs } from "./resourceDefs.ts";
 
 export interface McpToolSpec {
   name: string;
@@ -448,6 +449,9 @@ export const MCP_TOOLS: McpToolSpec[] = [
       required: [],
     },
   },
+  // Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng, Bản đồ — xem resourceDefs.ts.
+  ...resourceSpecs(),
+  ...EXTRA_SPECS,
 ];
 
 // ─── Token ADMIN HỆ THỐNG ──────────────────────────────────────────────────
