@@ -33,6 +33,7 @@ import { ShareCardDialog } from "@/components/ShareCardDialog";
 import type { CardGenre } from "@/lib/cards/types";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import { DrawerViewActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
@@ -690,6 +691,76 @@ export default function HeritageDetail({
     </>
   );
 
+  // Trang đầy đủ: nút chỉ icon ở đầu trang (điện thoại); ngăn kéo xem: thanh dính đáy chung có nhãn
+  // (Xoá → Thiệp → QR → Sửa).
+  const iconCls = embedded ? "h-4 w-4 mr-1.5" : "h-4 w-4 sm:mr-1";
+  const labelCls = embedded ? undefined : "hidden sm:inline";
+  const actionButtons = (
+    <>
+      {canAdmin && (
+        <>
+          <Button
+            size="sm"
+            variant={embedded ? "outline" : "default"}
+            onClick={() => {
+              setCardOpen(true);
+              if (!qrM.data) qrM.mutate();
+            }}
+          >
+            <IconSparkles className={iconCls} />
+            <span className={labelCls}>{t`Thiệp`}</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setQrOpen(true);
+              if (!qrM.data) qrM.mutate();
+            }}
+          >
+            <IconQrCode className={iconCls} />
+            <span className={labelCls}>QR</span>
+          </Button>
+        </>
+      )}
+      {canEdit && (
+        <>
+          <Button
+            size="sm"
+            variant={embedded ? "default" : "outline"}
+            className={embedded ? "order-last" : undefined}
+            asChild
+          >
+            <PanelLink
+              to={`/clans/${clan.id}/heritage/${item.id}/edit`}
+              panel="heritage-edit"
+              panelParams={{ pid: item.id }}
+            >
+              <IconPencil className={iconCls} />
+              <span className={labelCls}>{t`Sửa`}</span>
+            </PanelLink>
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive-outline"
+            className={embedded ? "order-first" : undefined}
+            onClick={() =>
+              askConfirm({
+                title: t`Xoá mục di sản này?`,
+                description: t`Xoá cả ảnh và ghi âm kèm theo.`,
+                confirmLabel: t`Xoá`,
+                destructive: true,
+              }).then((ok) => ok && deleteM.mutate())
+            }
+          >
+            <IconTrash className={iconCls} />
+            <span className={labelCls}>{t`Xoá`}</span>
+          </Button>
+        </>
+      )}
+    </>
+  );
+
   return (
     <div className="space-y-3">
       {!embedded && (
@@ -707,62 +778,9 @@ export default function HeritageDetail({
         description={HERITAGE_CATEGORY_LABEL[item.category]}
         actionsBelow
         actions={
-          <div className="flex flex-wrap gap-2">
-            {canAdmin && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setCardOpen(true);
-                    if (!qrM.data) qrM.mutate();
-                  }}
-                >
-                  <IconSparkles className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">{t`Thiệp`}</span>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setQrOpen(true);
-                    if (!qrM.data) qrM.mutate();
-                  }}
-                >
-                  <IconQrCode className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">QR</span>
-                </Button>
-              </>
-            )}
-            {canEdit && (
-              <>
-                <Button size="sm" variant="outline" asChild>
-                  <PanelLink
-                    to={`/clans/${clan.id}/heritage/${item.id}/edit`}
-                    panel="heritage-edit"
-                    panelParams={{ pid: item.id }}
-                  >
-                    <IconPencil className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">{t`Sửa`}</span>
-                  </PanelLink>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive-outline"
-                  onClick={() =>
-                    askConfirm({
-                      title: t`Xoá mục di sản này?`,
-                      description: t`Xoá cả ảnh và ghi âm kèm theo.`,
-                      confirmLabel: t`Xoá`,
-                      destructive: true,
-                    }).then((ok) => ok && deleteM.mutate())
-                  }
-                >
-                  <IconTrash className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">{t`Xoá`}</span>
-                </Button>
-              </>
-            )}
-          </div>
+          embedded ? undefined : (
+            <div className="flex flex-wrap gap-2">{actionButtons}</div>
+          )
         }
       />
 
@@ -976,6 +994,9 @@ export default function HeritageDetail({
         />
       )}
       {embedded && mediaBlock}
+      {embedded && (canAdmin || canEdit) && (
+        <DrawerViewActions>{actionButtons}</DrawerViewActions>
+      )}
     </div>
   );
 }

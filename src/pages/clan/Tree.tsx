@@ -22,6 +22,7 @@ import {
 import { FilterDrawer } from "@/components/FilterDrawer";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { SidePanel } from "@/components/SidePanel";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { PanelActionBar } from "@/components/ui/form-actions";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { PageHeader } from "@/components/PageHeader";
@@ -329,6 +330,8 @@ export default function Tree() {
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
   // gạt để tiết kiệm chỗ; desktop luôn hiện. Mặc định ẩn trên mobile.
   const [showOpts, setShowOpts] = useState(false);
+  // Điện thoại: nút Phòng ký ức / Xuất sổ / Chia sẻ nằm trong ngăn kéo Tuỳ chọn (một hàng riêng thì rớt dòng).
+  const isPhone = !useMediaQuery("(min-width: 640px)");
   // Tuỳ chọn hiển thị thêm trên thẻ — nay là cài đặt cấp dòng họ (quản
   // trị bật/tắt ở Cài đặt dòng họ), áp đồng nhất cho mọi người xem cây.
   const showDeceasedDetails = clan.display_death_details;
@@ -1425,6 +1428,7 @@ export default function Tree() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="flex min-w-0 items-center gap-2 sm:flex-1">
             <div className="min-w-0 flex-1">
+              {/* Tuỳ chọn + làm mới: icon trong ô, cùng kiểu ô tìm kiếm ở mọi màn danh sách. */}
               <FilterableSelect
                 id="tree-focal"
                 icon={<IconUser />}
@@ -1434,32 +1438,35 @@ export default function Tree() {
                 emptyLabel={t`Chọn thuỷ tổ làm trung tâm`}
                 filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
                 filterLabel={t`Tìm người làm trung tâm`}
-                className="h-10 text-sm"
+                className="h-10 pr-[6.25rem] text-sm"
+                rightSlot={
+                  <>
+                    <button
+                      type="button"
+                      className={`inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted ${showOpts ? "text-primary" : "text-muted-foreground"}`}
+                      onClick={() => setShowOpts((v) => !v)}
+                      aria-haspopup="dialog"
+                      aria-expanded={showOpts}
+                      aria-label={t`Tuỳ chọn`}
+                      title={t`Tuỳ chọn`}
+                    >
+                      <IconSliders className="h-4 w-4" />
+                    </button>
+                    <RefreshButton
+                      clanId={clan.id}
+                      cachedVersion={clan.data_version}
+                      compact
+                      className="h-8 w-8 border-0 bg-transparent text-muted-foreground shadow-none hover:bg-muted"
+                    />
+                  </>
+                }
               />
             </div>
-            {/* Phễu mở/đóng "Tuỳ chọn" + làm mới: nút riêng cạnh ô chọn. */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className={`shrink-0 px-0 sm:px-3 w-10 sm:w-auto ${showOpts ? "border-primary text-primary" : ""}`}
-              onClick={() => setShowOpts((v) => !v)}
-              aria-expanded={showOpts}
-              aria-label={t`Tuỳ chọn`}
-              title={t`Tuỳ chọn`}
-            >
-              <IconSliders className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">{t`Tuỳ chọn`}</span>
-            </Button>
-            <RefreshButton
-              clanId={clan.id}
-              cachedVersion={clan.data_version}
-              compact
-              className="h-10 w-10 shrink-0"
-            />
           </div>
-          {/* Mobile: hàng riêng dưới ô tìm kiếm cho ô tìm kiếm đủ rộng để gõ. */}
-          <div className="flex items-center justify-end gap-2">
+          {/* Hàng dưới ô tìm kiếm (điện thoại: chỉ còn nút Về Thuỷ tổ khi cần, các nút còn lại ở ngăn kéo Tuỳ chọn). */}
+          <div
+            className={`flex items-center justify-end gap-2 ${defaultFocal && focal !== defaultFocal ? "" : "max-sm:hidden"}`}
+          >
             {defaultFocal && focal !== defaultFocal && (
               <Button
                 type="button"
@@ -1480,7 +1487,7 @@ export default function Tree() {
                 <span className="hidden sm:inline">{t`Về Thuỷ tổ`}</span>
               </Button>
             )}
-            {actionButtons}
+            {!isPhone && actionButtons}
           </div>
         </div>
       </div>
@@ -1520,6 +1527,12 @@ export default function Tree() {
           onClose={() => setShowOpts(false)}
           title={t`Tuỳ chọn cây`}
         >
+          {isPhone && (
+            // Cùng các nút của hàng trên máy tính, hiện đủ nhãn, xếp dọc full chiều ngang.
+            <div className="space-y-2 border-b pb-3 [&>div]:flex-col [&>div]:items-stretch [&_:is(a,button)]:w-full [&_:is(a,button)]:justify-start [&_:is(a,button)>span]:!inline [&_:is(a,button)>svg]:mr-1.5 [&_div.relative]:w-full">
+              {actionButtons}
+            </div>
+          )}
           <TreeOptionsPanel
             prefs={prefs}
             mode={mode}
@@ -2027,7 +2040,8 @@ const EXPORT_DENSITY: { v: number; label: string }[] = lazyMessages([
 function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
-  const [stage, setStage] = useState<Parameters<typeof exportStageLabel>[0]>(null);
+  const [stage, setStage] =
+    useState<Parameters<typeof exportStageLabel>[0]>(null);
   const [open, setOpen] = useState(false);
   const [perPage, setPerPage] = useState(24);
   const [folderTree, setFolderTree] = useState(true);

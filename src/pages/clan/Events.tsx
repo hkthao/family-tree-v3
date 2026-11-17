@@ -242,7 +242,7 @@ export default function Events() {
           { label: t`Sự kiện` },
         ]}
       />
-      {/* Màn này CHỈ có: thanh tìm kiếm + nút "Tuỳ chọn" + một dòng gợi ý. Cách xem, khoảng thời gian, đăng ký lịch,
+      {/* Màn này CHỈ có: thanh tìm kiếm (icon "Tuỳ chọn" trong ô). Cách xem, khoảng thời gian, đăng ký lịch,
           xuất .ics và làm mới đều nằm trong ngăn kéo "Tuỳ chọn" (mọi cỡ màn hình). */}
       <PageHeader
         icon={<IconCalendar className="h-7 w-7" />}
@@ -250,9 +250,8 @@ export default function Events() {
         description={t`Giỗ, sinh nhật, sự kiện chung của dòng họ.`}
       />
 
-      {/* Tìm kiếm + nút Tuỳ chọn (ngăn kéo bên phải) + gợi ý để người dùng biết mở. */}
+      {/* Tìm kiếm + icon Tuỳ chọn trong ô (ngăn kéo bên phải), cùng kiểu mọi màn danh sách. */}
       <CollapsibleFilters
-        labelled
         activeCount={
           (view !== "list" ? 1 : 0) +
           (view !== "calendar" && daysAhead !== 90 ? 1 : 0)
@@ -262,22 +261,13 @@ export default function Events() {
           setView("list");
         }}
         search={(toggle) => (
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <div className="min-w-0 flex-1">
-                <SearchInput
-                  label={t`Tìm sự kiện`}
-                  value={queryText}
-                  onChange={(e) => setQueryText(e.target.value)}
-                  placeholder={t`Tìm theo tên người, ngày giỗ, sự kiện…`}
-                />
-              </div>
-              {toggle}
-            </div>
-            <p className="px-1 text-xs text-muted-foreground">
-              {t`Bấm “Tuỳ chọn” để đổi cách xem, chọn khoảng thời gian, đăng ký hoặc xuất lịch.`}
-            </p>
-          </div>
+          <SearchInput
+            label={t`Tìm sự kiện`}
+            value={queryText}
+            onChange={(e) => setQueryText(e.target.value)}
+            placeholder={t`Tìm theo tên người, ngày giỗ, sự kiện…`}
+            rightSlot={toggle}
+          />
         )}
       >
         {(close) => (

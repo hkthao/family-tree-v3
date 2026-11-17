@@ -422,11 +422,12 @@ function RoomForm({
 
         <fieldset className="space-y-1.5">
           <legend className="text-sm font-medium">{t`Tông phòng`}</legend>
-          <div className="flex flex-wrap gap-2">
+          <div role="group" className="flex flex-wrap gap-2">
             {GALLERY_PRESETS.map((p) => (
               <button
                 key={p.id}
                 type="button"
+                aria-pressed={theme === p.id}
                 onClick={() => setTheme(p.id)}
                 className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm transition ${
                   theme === p.id
@@ -449,30 +450,33 @@ function RoomForm({
           )}
         </fieldset>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="room-cover">{t`Ảnh đại diện (tuỳ chọn)`}</Label>
-          <div className="flex items-center gap-2">
-            <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-md border bg-muted">
-              {coverUrl.trim() ? (
-                <img
-                  src={coverUrl.trim()}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <IconCube className="h-5 w-5 text-muted-foreground" />
-              )}
+        {/* Xem: ảnh đại diện trống thì bỏ cả mục (không hiện ô gợi ý "Dán URL…"). */}
+        {(!readOnly || coverUrl.trim()) && (
+          <div className="space-y-1.5">
+            <Label htmlFor="room-cover">{t`Ảnh đại diện (tuỳ chọn)`}</Label>
+            <div className="flex items-center gap-2">
+              <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-md border bg-muted">
+                {coverUrl.trim() ? (
+                  <img
+                    src={coverUrl.trim()}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <IconCube className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <Input
+                id="room-cover"
+                icon={<IconLink />}
+                value={coverUrl}
+                onChange={(e) => setCoverUrl(e.target.value)}
+                placeholder={t`Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định`}
+                className="min-w-0 flex-1"
+              />
             </div>
-            <Input
-              id="room-cover"
-              icon={<IconLink />}
-              value={coverUrl}
-              onChange={(e) => setCoverUrl(e.target.value)}
-              placeholder={t`Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định`}
-              className="min-w-0 flex-1"
-            />
           </div>
-        </div>
+        )}
 
         {!room && (
           <label className="flex items-start gap-3">
