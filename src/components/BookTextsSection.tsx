@@ -2,6 +2,7 @@ import { lazyAs } from "@/lib/i18n/lazy";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { friendlyError } from "@/components/ErrorState";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BOOK_TEMPLATES, fillTemplate } from "@/lib/bookTemplates";
 import { useConfirm } from "@/components/ConfirmDialog";
-import { Select } from "@/components/ui/select";
 import {
   getClanBookTexts,
   saveClanBookTexts,
@@ -29,41 +29,39 @@ const FIELDS: {
   hint: string;
   placeholder: string;
   rows: number;
-}[] = lazyAs<{
-  key: TextKey;
-  label: string;
-  hint: string;
-  placeholder: string;
-  rows: number;
-}[]>([
+}[] = lazyAs<
+  {
+    key: TextKey;
+    label: string;
+    hint: string;
+    placeholder: string;
+    rows: number;
+  }[]
+>([
   {
     key: "preface",
-    placeholder:
-      msg`Vì sao làm phả, ai làm, làm thế nào; lời kêu gọi con cháu bổ sung; lời cảm ơn, ngày viết, người chủ trì…`,
+    placeholder: msg`Vì sao làm phả, ai làm, làm thế nào; lời kêu gọi con cháu bổ sung; lời cảm ơn, ngày viết, người chủ trì…`,
     label: msg`Lời nói đầu`,
     hint: msg`Mục đích, lý do làm phả; ai làm, làm thế nào; ưu khuyết và lời kêu gọi hậu duệ bổ sung; lời cảm ơn, ngày viết, người chủ trì. Nên ngắn gọn, súc tích.`,
     rows: 7,
   },
   {
     key: "phaky",
-    placeholder:
-      msg`Thuỷ tổ và tổ quán; các chi, các đời; truyền thống lao động, văn hoá, học tập, yêu nước; đặc điểm và phương hướng của dòng họ…`,
+    placeholder: msg`Thuỷ tổ và tổ quán; các chi, các đời; truyền thống lao động, văn hoá, học tập, yêu nước; đặc điểm và phương hướng của dòng họ…`,
     label: msg`Phả ký`,
     hint: msg`Lịch sử dòng họ: phát tích, vị tổ khai cơ và tiểu sử; tổ quán (địa lý, lịch sử xóm ấp, đình miếu); truyền thống lao động, văn hoá, yêu nước; đặc điểm dòng họ và phương hướng xây dựng dòng họ văn hoá. Số liệu nam/nữ, số đời, từng chi được sổ tự thêm từ dữ liệu. Xuống dòng để tách đoạn.`,
     rows: 14,
   },
   {
     key: "ngoai_pha",
-    placeholder:
-      msg`Nhà thờ họ, hội đồng gia tộc; các lễ cúng chính và văn khấn; ruộng hương hỏa, quỹ họ; mộ phần…`,
+    placeholder: msg`Nhà thờ họ, hội đồng gia tộc; các lễ cúng chính và văn khấn; ruộng hương hỏa, quỹ họ; mộ phần…`,
     label: msg`Ngoại phả`,
     hint: msg`Các lễ cúng chính và văn khấn; nhà thờ họ, hội đồng gia tộc; ruộng hương hỏa, kỵ điền. Ngày giỗ, quan hệ cưới gả, mộ phần được sổ tự lập từ dữ liệu.`,
     rows: 8,
   },
   {
     key: "phu_khao",
-    placeholder:
-      msg`Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…`,
+    placeholder: msg`Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…`,
     label: msg`Phụ khảo`,
     hint: msg`Địa chí xóm ấp từ xưa đến nay, đình làng, chợ, bến đò, nghề truyền thống. Di sản đã nhập ở mục Di sản sẽ tự in kèm.`,
     rows: 8,
@@ -108,18 +106,21 @@ export function BookTextsSection({
   const templatePicker = (field: TextKey) =>
     canEdit ? (
       <div className="flex items-center gap-2">
-        <Select
-          className="h-10 w-full flex-1"
-          aria-label={t`Chọn mẫu`}
-          value={tplPick[field] ?? BOOK_TEMPLATES[0].id}
-          onChange={(e) => setTplPick({ ...tplPick, [field]: e.target.value })}
-        >
-          {BOOK_TEMPLATES.map((tpl) => (
-            <option key={tpl.id} value={tpl.id}>
-              {t`Mẫu: ${tpl.name}`}
-            </option>
-          ))}
-        </Select>
+        <div className="min-w-0 flex-1">
+          <FilterableSelect
+            className="h-10"
+            aria-label={t`Chọn mẫu`}
+            value={tplPick[field] ?? BOOK_TEMPLATES[0].id}
+            onChange={(v) => setTplPick({ ...tplPick, [field]: v })}
+            options={BOOK_TEMPLATES.map((tpl) => ({
+              value: tpl.id,
+              label: t`Mẫu: ${tpl.name}`,
+            }))}
+            emptyLabel={t`Chọn mẫu`}
+            filterLabel={t`Chọn mẫu`}
+            required
+          />
+        </div>
         <Button
           size="sm"
           type="button"

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { Chip, type ChipTone } from "@/components/Chip";
 import { formatRelative } from "@/components/ClanPostCard";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
@@ -25,7 +26,6 @@ import { Pagination } from "@/components/Pagination";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { LIST_PAGE_SIZE_OPTIONS, useSearchBox } from "@/hooks/useClientPaging";
@@ -173,22 +173,16 @@ export default function Board() {
         )}
       >
         <div className="flex flex-col gap-3">
-          <Select
+          <FilterableSelect
             value={type}
-            onChange={(e) =>
-              patch({ loai: e.target.value || null, trang: null })
-            }
+            onChange={(v) => patch({ loai: v || null, trang: null })}
             aria-label={t`Lọc theo loại bài`}
             icon={<IconTag />}
-            className="h-11 w-full text-base"
-          >
-            <option value="">{t`Mọi loại`}</option>
-            {TYPES.map((t) => (
-              <option key={t} value={t}>
-                {TYPE_LABEL[t]}
-              </option>
-            ))}
-          </Select>
+            options={TYPES.map((x) => ({ value: x, label: TYPE_LABEL[x] }))}
+            emptyLabel={t`Mọi loại`}
+            filterLabel={t`Lọc theo loại bài`}
+            className="h-11 text-base"
+          />
         </div>
       </CollapsibleFilters>
 

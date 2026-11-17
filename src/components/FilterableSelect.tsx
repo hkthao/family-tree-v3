@@ -37,6 +37,8 @@ export function FilterableSelect({
   filterLabel,
   className,
   rightSlot,
+  required = false,
+  "aria-label": ariaLabel,
 }: {
   id?: string;
   icon?: ReactNode;
@@ -52,6 +54,9 @@ export function FilterableSelect({
   className?: string;
   /** Nút nhỏ (h-8 w-8) nằm TRONG ô, sau mũi tên — vd. Tuỳ chọn, Làm mới. Nhớ chừa `pr-*` ở className. */
   rightSlot?: ReactNode;
+  /** Ô bắt buộc: không có dòng rỗng "bỏ chọn" trong danh sách (emptyLabel chỉ là chữ khi chưa chọn). */
+  required?: boolean;
+  "aria-label"?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -69,8 +74,8 @@ export function FilterableSelect({
   const listId = useId();
 
   const all = useMemo<FilterableOption[]>(
-    () => [{ value: "", label: emptyLabel }, ...options],
-    [options, emptyLabel],
+    () => (required ? options : [{ value: "", label: emptyLabel }, ...options]),
+    [options, emptyLabel, required],
   );
   const shown = useMemo(() => {
     const q = unaccent(query);
@@ -166,6 +171,7 @@ export function FilterableSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
+        aria-label={ariaLabel}
         onClick={() => (open ? close() : setOpen(true))}
         className={cn(
           "flex h-12 w-full items-center rounded-md border border-input bg-background px-3 py-2 pr-9 text-left text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",

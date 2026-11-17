@@ -22,6 +22,7 @@ import {
 } from "react-konva";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import {
   IconCheck,
@@ -2373,19 +2374,21 @@ export default function TreeCanvas() {
         <div className="flex flex-1 flex-col space-y-3">
           <label className="block space-y-1 text-sm">
             <span className="font-medium">{t`Khổ giấy`}</span>
-            <Select
+            <FilterableSelect
               value={preset}
-              onChange={(e) =>
-                setPreset(e.target.value as PaperPreset | "custom")
-              }
-            >
-              <option value="A4">A4 (21 × 29,7 cm)</option>
-              <option value="A3">A3 (29,7 × 42 cm)</option>
-              <option value="A2">A2 (42 × 59,4 cm)</option>
-              <option value="A1">A1 (59,4 × 84,1 cm)</option>
-              <option value="A0">A0 (84,1 × 118,9 cm)</option>
-              <option value="custom">{t`Tuỳ chỉnh (cm)`}</option>
-            </Select>
+              onChange={(v) => setPreset(v as PaperPreset | "custom")}
+              options={[
+                { value: "A4", label: "A4 (21 × 29,7 cm)" },
+                { value: "A3", label: "A3 (29,7 × 42 cm)" },
+                { value: "A2", label: "A2 (42 × 59,4 cm)" },
+                { value: "A1", label: "A1 (59,4 × 84,1 cm)" },
+                { value: "A0", label: "A0 (84,1 × 118,9 cm)" },
+                { value: "custom", label: t`Tuỳ chỉnh (cm)` },
+              ]}
+              emptyLabel={t`Chọn khổ giấy`}
+              filterLabel={t`Khổ giấy`}
+              required
+            />
           </label>
           {preset === "custom" ? (
             <div className="grid grid-cols-2 gap-3">
@@ -2429,8 +2432,8 @@ export default function TreeCanvas() {
           </label>
           <p className="text-xs text-muted-foreground">
             <Trans>
-            Khổ giấy: {(pageMm.w / 10).toFixed(1)} ×{" "}
-            {(pageMm.h / 10).toFixed(1)} cm (tối đa 500 cm mỗi cạnh).
+              Khổ giấy: {(pageMm.w / 10).toFixed(1)} ×{" "}
+              {(pageMm.h / 10).toFixed(1)} cm (tối đa 500 cm mỗi cạnh).
             </Trans>
           </p>
           <FormActions>

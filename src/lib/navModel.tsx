@@ -1,8 +1,4 @@
-import {
-  useCallback,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useState, type ReactNode } from "react";
 
 import {
   IconAward,
@@ -12,6 +8,7 @@ import {
   IconCalendar,
   IconCopy,
   IconCube,
+  IconDownload,
   IconGlobe,
   IconGrid,
   IconMicrophone,
@@ -22,6 +19,7 @@ import {
   IconMail,
   IconMapPin,
   IconPuzzle,
+  IconQrCode,
   IconScroll,
   IconSettings,
   IconShield,
@@ -226,7 +224,11 @@ export function isItemActive(
   navLinkActive: boolean,
   alsoActive?: string[],
 ): boolean {
-  if (alsoActive?.some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`)))
+  if (
+    alsoActive?.some(
+      (p) => location.pathname === p || location.pathname.startsWith(`${p}/`),
+    )
+  )
     return true;
   return to.includes("?") ? isTabActive(to, location) : navLinkActive;
 }
@@ -519,6 +521,27 @@ export function buildSections(
           badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
         });
       }
+      // Công cụ trước đây nằm trong thẻ "Quản lý & công cụ" ở Cài đặt — đưa ra hub (và tìm kiếm toàn cục, cùng nguồn).
+      workItems.push(
+        {
+          to: `/clans/${clanId}/so-gia-pha`,
+          label: t`Thông tin & Sổ gia phả`,
+          hint: t`Sửa tên, mô tả, chi; soạn lời nói đầu, phả ký, ngoại phả.`,
+          icon: <IconBook className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/qr-export`,
+          label: t`Xuất QR cá nhân`,
+          hint: t`Mã QR từng người để in/khắc — quét ra trang cá nhân.`,
+          icon: <IconQrCode className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/settings#xuat-du-lieu`,
+          label: t`Xuất / nhập dữ liệu`,
+          hint: t`GEDCOM, CSV — đem dữ liệu đi hoặc nạp từ phần mềm khác.`,
+          icon: <IconDownload className={ic} />,
+        },
+      );
       workItems.push({
         to: `/clans/${clanId}/settings`,
         label: t`Cài đặt dòng họ`,
@@ -610,7 +633,6 @@ export function buildSections(
   return sections;
 }
 
-
 /** Trang "Tất cả tính năng" của một dòng họ: mọi mục ngoài sáu mục lõi, gom theo nhóm. */
 export function menuHubPath(clanId: string): string {
   return `/clans/${clanId}/menu`;
@@ -636,7 +658,8 @@ export function toDrawerSections(
   const general = sections.filter((x) => x.id === "global");
   const admin = sections.filter((x) => x.id === "platform-admin");
   const rest = sections.filter(
-    (x) => x.id !== "clan-core" && x.id !== "global" && x.id !== "platform-admin",
+    (x) =>
+      x.id !== "clan-core" && x.id !== "global" && x.id !== "platform-admin",
   );
   // Cộng giá trị THẬT của badge (số, hoặc chuỗi như "12"/"99+"), không đếm mỗi badge chuỗi là 1.
   const badge = rest.reduce(
@@ -644,7 +667,14 @@ export function toDrawerSections(
       n +
       sec.items.reduce((m, i) => {
         const b = i.badge;
-        return m + (typeof b === "number" ? b : typeof b === "string" ? parseInt(b, 10) || 1 : 0);
+        return (
+          m +
+          (typeof b === "number"
+            ? b
+            : typeof b === "string"
+              ? parseInt(b, 10) || 1
+              : 0)
+        );
       }, 0),
     0,
   );

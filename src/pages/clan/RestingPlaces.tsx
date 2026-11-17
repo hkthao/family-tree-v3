@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { FabGroup } from "@/components/FabGroup";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CHIP_TONE_CLASS, Chip } from "@/components/Chip";
@@ -158,20 +159,19 @@ export default function RestingPlaces() {
           )}
         >
           <div className="flex flex-col gap-3">
-            <Select
+            <FilterableSelect
               value={kind}
-              onChange={(e) => patchAndResetPage({ kind: e.target.value })}
+              onChange={(v) => patchAndResetPage({ kind: v })}
               aria-label={t`Lọc theo hình thức`}
               icon={<IconGrave />}
-              className="h-11 w-full text-base"
-            >
-              <option value="">{t`Mọi hình thức`}</option>
-              {KINDS.map((k) => (
-                <option key={k} value={k}>
-                  {RESTING_PLACE_KIND_LABEL[k]}
-                </option>
-              ))}
-            </Select>
+              options={KINDS.map((k) => ({
+                value: k,
+                label: RESTING_PLACE_KIND_LABEL[k],
+              }))}
+              emptyLabel={t`Mọi hình thức`}
+              filterLabel={t`Lọc theo hình thức`}
+              className="h-11 text-base"
+            />
             {(cemeteries ?? []).length > 0 && (
               <Select
                 value={cemeteryId}

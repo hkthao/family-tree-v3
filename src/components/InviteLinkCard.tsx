@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IconLink, IconShare2, IconTrash } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import {
   Card,
   CardContent,
@@ -39,9 +40,12 @@ const ROLE_DESC: Record<InviteRole, string> = lazyMessages({
 export function InviteLinkCard({
   clanId,
   clanName,
+  bare = false,
 }: {
   clanId: string;
   clanName: string;
+  /** Trong ngăn kéo: bỏ khung thẻ, nút "Tạo link mời" nằm ở thanh nút dính đáy của ngăn kéo. */
+  bare?: boolean;
 }) {
   const toast = useToast();
   const qc = useQueryClient();
@@ -98,109 +102,127 @@ export function InviteLinkCard({
     }
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t`Mời bằng link`}</CardTitle>
-        <CardDescription>
+  const description = (
+    <>
+      <Trans>
+        <Trans>
           <Trans>
-            <Trans>
-              <Trans>
-                Tạo 1 link gửi vào nhóm họ (Zalo/Facebook). Người thân bấm vào,
-                đăng nhập là tham gia được — không cần biết trước hay đăng ký
-                sẵn.
-              </Trans>
-            </Trans>
+            Tạo 1 link gửi vào nhóm họ (Zalo/Facebook). Người thân bấm vào, đăng
+            nhập là tham gia được — không cần biết trước hay đăng ký sẵn.
           </Trans>
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <fieldset className="space-y-2">
-          <legend className="text-base font-medium mb-1">{t`Quyền khi tham gia`}</legend>
-          {(["viewer", "editor"] as InviteRole[]).map((r) => (
-            <label key={r} className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="radio"
-                checked={role === r}
-                onChange={() => setRole(r)}
-                className="mt-1 h-5 w-5 accent-primary shrink-0"
-              />
-              <div>
-                <p className="font-medium">{ROLE_LABEL[r]}</p>
-                <p className="text-sm text-muted-foreground">{ROLE_DESC[r]}</p>
-              </div>
-            </label>
-          ))}
-        </fieldset>
+        </Trans>
+      </Trans>
+    </>
+  );
+  const body = (
+    <>
+      <fieldset className="space-y-2">
+        <legend className="text-base font-medium mb-1">{t`Quyền khi tham gia`}</legend>
+        {(["viewer", "editor"] as InviteRole[]).map((r) => (
+          <label key={r} className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="radio"
+              checked={role === r}
+              onChange={() => setRole(r)}
+              className="mt-1 h-5 w-5 accent-primary shrink-0"
+            />
+            <div>
+              <p className="font-medium">{ROLE_LABEL[r]}</p>
+              <p className="text-sm text-muted-foreground">{ROLE_DESC[r]}</p>
+            </div>
+          </label>
+        ))}
+      </fieldset>
 
-        {invites && invites.length > 0 && (
-          <ul className="space-y-2 pt-1">
-            {invites.map((inv) => (
-              <li
-                key={inv.id}
-                className="flex items-center gap-2 rounded-md border p-2.5"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">
-                    <Trans>
+      {invites && invites.length > 0 && (
+        <ul className="space-y-2 pt-1">
+          {invites.map((inv) => (
+            <li
+              key={inv.id}
+              className="flex items-center gap-2 rounded-md border p-2.5"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">
+                  <Trans>
                     {ROLE_LABEL[inv.role]}{" "}
                     <span className="text-muted-foreground font-normal">
                       · {inv.use_count} lượt tham gia
                     </span>
-                    </Trans>
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {urlFor(inv.token)}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-9 p-0 shrink-0"
-                  aria-label={t`Chép link`}
-                  title={t`Chép link`}
-                  onClick={() => copy(inv.token)}
-                >
-                  <IconLink className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-9 p-0 shrink-0"
-                  aria-label={t`Chia sẻ link`}
-                  title={t`Chia sẻ link`}
-                  onClick={() => share(inv.token)}
-                >
-                  <IconShare2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive-outline"
-                  size="sm"
-                  className="h-9 w-9 p-0 shrink-0"
-                  aria-label={t`Thu hồi link`}
-                  title={t`Thu hồi link`}
-                  disabled={revokeM.isPending}
-                  onClick={() => revokeM.mutate(inv.id)}
-                >
-                  <IconTrash className="h-4 w-4" />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
+                  </Trans>
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {urlFor(inv.token)}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 shrink-0"
+                aria-label={t`Chép link`}
+                title={t`Chép link`}
+                onClick={() => copy(inv.token)}
+              >
+                <IconLink className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 p-0 shrink-0"
+                aria-label={t`Chia sẻ link`}
+                title={t`Chia sẻ link`}
+                onClick={() => share(inv.token)}
+              >
+                <IconShare2 className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="destructive-outline"
+                size="sm"
+                className="h-9 w-9 p-0 shrink-0"
+                aria-label={t`Thu hồi link`}
+                title={t`Thu hồi link`}
+                disabled={revokeM.isPending}
+                onClick={() => revokeM.mutate(inv.id)}
+              >
+                <IconTrash className="h-4 w-4" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+  const createButton = (
+    <Button
+      type="button"
+      onClick={() => createM.mutate()}
+      disabled={createM.isPending}
+    >
+      <IconLink className="h-4 w-4 mr-1.5" />
+      {createM.isPending ? t`Đang tạo…` : t`Tạo link mời`}
+    </Button>
+  );
+
+  if (bare)
+    return (
+      <div className="flex flex-1 flex-col space-y-4">
+        <p className="text-sm text-muted-foreground">{description}</p>
+        {body}
+        <FormActions>{createButton}</FormActions>
+      </div>
+    );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t`Mời bằng link`}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">{body}</CardContent>
       <CardFooter className="justify-end border-t pt-4">
-        <Button
-          type="button"
-          onClick={() => createM.mutate()}
-          disabled={createM.isPending}
-        >
-          <IconLink className="h-4 w-4 mr-1.5" />
-          {createM.isPending ? t`Đang tạo…` : t`Tạo link mời`}
-        </Button>
+        {createButton}
       </CardFooter>
     </Card>
   );

@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import { IconX } from "@/components/icons";
 import { ActionArea, Button } from "@/components/ui/button";
@@ -28,10 +29,19 @@ export function FilterDrawer({
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // Khoá cuộn trang phía sau (iOS: trang cuộn dưới ngăn kéo làm thanh công cụ co giãn, lệch khung).
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open, onClose]);
 
-  return (
+  // Portal ra <body> (giống SidePanel): nằm trong trang có `transform` (hiệu ứng chuyển trang, lớp GPU)
+  // thì `position: fixed` bị tính theo khung đó → ngăn kéo lệch xuống, hở phía trên.
+  if (typeof document === "undefined") return null;
+  return createPortal(
     <div
       className={`print-hide fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}
       aria-hidden={!open}
@@ -50,6 +60,10 @@ export function FilterDrawer({
         className={`absolute right-0 top-0 flex h-full w-[min(22rem,90vw)] flex-col border-l bg-background shadow-xl transition-transform duration-200 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         <header className="flex items-center justify-between gap-2 border-b px-4 h-14 shrink-0">
           <h2 className="text-base font-semibold">{heading}</h2>
@@ -83,6 +97,7 @@ export function FilterDrawer({
           </footer>
         </ActionArea>
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 }

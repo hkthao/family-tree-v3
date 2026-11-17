@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
+import { Fab } from "@/components/Fab";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -17,6 +18,7 @@ import { useToast } from "@/components/Toast";
 import {
   IconCalendar,
   IconCheck,
+  IconLink,
   IconMail,
   IconPencil,
   IconSearch,
@@ -27,15 +29,12 @@ import {
 } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
+import { FormActions } from "@/components/ui/form-actions";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
+import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
@@ -63,7 +62,6 @@ import {
   type ClanRole,
 } from "@/lib/queries/members";
 
-import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
@@ -84,6 +82,8 @@ export default function Members() {
   });
 
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteTab, setInviteTab] = useState<"link" | "email">("link");
   const [inviteRole, setInviteRole] = useState<ClanRole>("viewer");
   const [inviteMessage, setInviteMessage] = useState<{
     kind: "success" | "error";
@@ -175,94 +175,118 @@ export default function Members() {
         icon={<IconUserPlus className="h-7 w-7" />}
         title={t`Thành viên`}
         description={t`Mời người, đổi vai trò, gỡ thành viên.`}
+        actionsBelow
+        actions={
+          <Fab onClick={() => setInviteOpen(true)} label={t`Mời thành viên`} />
+        }
       />
 
-      <InviteLinkCard clanId={clanId} clanName={clan.name} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t`Mời bằng email`}</CardTitle>
-          <CardDescription>
-            <Trans>
-              <Trans>
-                <Trans>
-                  Người được mời cần có sẵn tài khoản (đã đăng ký bằng email
-                  tương ứng). Chưa có cơ chế gửi mail mời tự động.
-                </Trans>
-              </Trans>
-            </Trans>
-          </CardDescription>
-        </CardHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (inviteEmail.trim()) {
-              setInviteMessage(null);
-              inviteMutation.mutate();
-            }
-          }}
-        >
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="invite_email">Email</Label>
-              <Input
-                id="invite_email"
-                icon={<IconMail />}
-                type="email"
-                required
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="vd: anh@example.com"
-              />
-            </div>
-
-            <fieldset>
-              <legend className="text-base font-medium mb-2">{t`Vai trò`}</legend>
-              <div className="flex flex-wrap gap-3">
-                {(["viewer", "editor", "admin"] as ClanRole[]).map((r) => (
-                  <label
-                    key={r}
-                    className="flex items-center gap-3 cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      checked={inviteRole === r}
-                      onChange={() => setInviteRole(r)}
-                      className="h-5 w-5 accent-primary shrink-0"
-                    />
-                    <span>{ROLE_LABEL[r]}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            {inviteMessage && (
-              <Alert
-                variant={
-                  inviteMessage.kind === "error" ? "destructive" : "default"
-                }
-              >
-                <AlertDescription>{inviteMessage.text}</AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-          <CardFooter className="justify-end border-t pt-4">
-            <Button
-              type="submit"
-              disabled={inviteMutation.isPending || !inviteEmail.trim()}
+      {/* Mời người: nút "+" nổi mở ngăn kéo có hai tab (link / email) thay cho hai thẻ dài trên trang. */}
+      <SidePanel
+        open={inviteOpen}
+        title={t`Mời thành viên`}
+        subtitle={clan.name}
+        onClose={() => setInviteOpen(false)}
+        size="lg"
+      >
+        <div className="flex flex-1 flex-col space-y-4">
+          <SegmentedControl ariaLabel={t`Cách mời`} className="flex">
+            <SegmentedButton
+              active={inviteTab === "link"}
+              onClick={() => setInviteTab("link")}
+              className="inline-flex flex-1 items-center justify-center gap-1.5"
             >
-              {inviteMutation.isPending ? (
-                t`Đang mời…`
-              ) : (
-                <>
-                  <IconUserPlus className="h-4 w-4 mr-1.5" />
-                  {t`Mời`}
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+              <IconLink className="h-4 w-4" />
+              {t`Bằng link`}
+            </SegmentedButton>
+            <SegmentedButton
+              active={inviteTab === "email"}
+              onClick={() => setInviteTab("email")}
+              className="inline-flex flex-1 items-center justify-center gap-1.5"
+            >
+              <IconMail className="h-4 w-4" />
+              {t`Bằng email`}
+            </SegmentedButton>
+          </SegmentedControl>
+          {inviteTab === "link" ? (
+            <InviteLinkCard clanId={clanId} clanName={clan.name} bare />
+          ) : (
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (inviteEmail.trim()) {
+                  setInviteMessage(null);
+                  inviteMutation.mutate();
+                }
+              }}
+            >
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  {t`Người được mời cần có sẵn tài khoản (đã đăng ký bằng email tương ứng). Chưa có cơ chế gửi mail mời tự động.`}
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="invite_email">Email</Label>
+                  <Input
+                    id="invite_email"
+                    icon={<IconMail />}
+                    type="email"
+                    required
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="vd: anh@example.com"
+                  />
+                </div>
+
+                <fieldset>
+                  <legend className="text-base font-medium mb-2">{t`Vai trò`}</legend>
+                  <div className="flex flex-wrap gap-3">
+                    {(["viewer", "editor", "admin"] as ClanRole[]).map((r) => (
+                      <label
+                        key={r}
+                        className="flex items-center gap-3 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          checked={inviteRole === r}
+                          onChange={() => setInviteRole(r)}
+                          className="h-5 w-5 accent-primary shrink-0"
+                        />
+                        <span>{ROLE_LABEL[r]}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                {inviteMessage && (
+                  <Alert
+                    variant={
+                      inviteMessage.kind === "error" ? "destructive" : "default"
+                    }
+                  >
+                    <AlertDescription>{inviteMessage.text}</AlertDescription>
+                  </Alert>
+                )}
+              </div>
+              <FormActions>
+                <Button
+                  type="submit"
+                  disabled={inviteMutation.isPending || !inviteEmail.trim()}
+                >
+                  {inviteMutation.isPending ? (
+                    t`Đang mời…`
+                  ) : (
+                    <>
+                      <IconUserPlus className="h-4 w-4 mr-1.5" />
+                      {t`Mời`}
+                    </>
+                  )}
+                </Button>
+              </FormActions>
+            </form>
+          )}
+        </div>
+      </SidePanel>
 
       {/* Vai trò nằm trong ngăn kéo của phễu — như Danh bạ. */}
       <CollapsibleFilters

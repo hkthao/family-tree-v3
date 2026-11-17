@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { FabGroup } from "@/components/FabGroup";
 import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
@@ -136,20 +137,19 @@ export default function Customs() {
           )}
         >
           <div className="flex flex-col gap-3">
-            <Select
+            <FilterableSelect
               value={category}
-              onChange={(e) => setCat(e.target.value)}
+              onChange={setCat}
               aria-label={t`Lọc theo chủ đề`}
               icon={<IconTag />}
-              className="h-11 w-full text-base"
-            >
-              <option value="">{t`Mọi chủ đề`}</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {CUSTOM_CATEGORY_LABEL[c]}
-                </option>
-              ))}
-            </Select>
+              options={CATEGORIES.map((c) => ({
+                value: c,
+                label: CUSTOM_CATEGORY_LABEL[c],
+              }))}
+              emptyLabel={t`Mọi chủ đề`}
+              filterLabel={t`Lọc theo chủ đề`}
+              className="h-11 text-base"
+            />
             <Select
               value={region}
               onChange={(e) => setRegion(e.target.value)}
