@@ -5,7 +5,6 @@ import { bookFilename } from "@/lib/pdf/bookFilename";
 import { makeCoverQr } from "@/lib/pdf/coverQr";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { HONOR_CATEGORY_LABEL } from "@/lib/queries/honor";
-import { tryServerExport } from "@/lib/pdf/exportService";
 import { withExportSlot } from "@/lib/pdf/exportSlot";
 import { getClanBookData } from "@/lib/queries/clan-book";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
@@ -110,10 +109,6 @@ export async function downloadClanBookPdf(
   clan: ClanDetail,
   options: ExportClanBookOptions = {},
 ): Promise<{ filename: string; bytes: number }> {
-  // Ưu tiên máy chủ xuất sổ (nhẹ cho máy người dùng); không dùng được thì dựng ngay tại trình duyệt.
-  const viaServer = await tryServerExport(clan, options);
-  if (viaServer) return viaServer;
-
   const { blob, filename } = await buildClanBookPdf(clan, options);
 
   const url = URL.createObjectURL(blob);
