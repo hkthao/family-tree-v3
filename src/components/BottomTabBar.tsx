@@ -38,7 +38,10 @@ export function BottomTabBar({ tabs }: Props) {
     <nav
       // Hidden on lg+: at that width the left drawer is already pinned
       // and serves the navigation role.
-      className="fixed bottom-0 left-0 right-0 z-20 border-t border-gold/30 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
+      // iOS Safari: khi cuộn, thanh công cụ của trình duyệt thu/giãn làm phần `fixed` trễ một nhịp và lộ một dải nội dung
+      // phía dưới thanh tab. Hai biện pháp: (1) lên lớp đồ hoạ riêng (translateZ) để vẽ đồng bộ với cuộn; (2) kéo dài nền
+      // xuống dưới mép (after:) để dải hở thoáng qua cũng có nền che, thay vì lòi nội dung trang.
+      className="fixed bottom-0 left-0 right-0 z-20 border-t border-gold/30 bg-background pb-[env(safe-area-inset-bottom)] [transform:translateZ(0)] [backface-visibility:hidden] after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-28 after:bg-background lg:hidden"
       aria-label={t`Điều hướng chính`}
     >
       <ul
