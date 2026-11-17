@@ -533,7 +533,7 @@ function FundForm({
     >
       <fieldset
         disabled={readOnly}
-        className={`m-0 min-w-0 space-y-3 border-0 p-0 ${readOnly ? "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100" : ""}`}
+        className={`m-0 min-w-0 space-y-3 border-0 p-0 ${readOnly ? "read-view [&_:disabled]:!cursor-default [&_:disabled]:!opacity-100" : ""}`}
       >
         <SegmentedControl ariaLabel={t`Loại giao dịch`} className="w-full">
           <SegmentedButton
