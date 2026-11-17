@@ -7,6 +7,7 @@ import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { EmptyState } from "@/components/EmptyState";
 import { IconTile } from "@/components/IconTile";
 import {
@@ -166,25 +167,74 @@ export default function ClanFund() {
         description={t`Sổ thu/chi minh bạch — mọi thành viên đều xem được.`}
         actionsBelow
         actions={
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onExportPdf}
-              disabled={exporting || txs.length === 0}
-            >
-              <IconDownload className="mr-1 h-4 w-4" />
-              {exporting ? t`Đang xuất…` : t`Xuất PDF`}
-            </Button>
-            {canEdit && (
-              <Fab
-                onClick={() => setPanel({ mode: "new" })}
-                label={t`Ghi giao dịch`}
-              />
-            )}
-          </div>
+          canEdit ? (
+            <Fab
+              onClick={() => setPanel({ mode: "new" })}
+              label={t`Ghi giao dịch`}
+            />
+          ) : undefined
         }
       />
+
+      {/* Tìm kiếm đặt TRÊN thẻ số dư. Lọc thu/chi, quỹ và Xuất PDF nằm trong ngăn kéo Tuỳ chọn (icon trong ô). */}
+      <CollapsibleFilters
+        activeCount={(dirFilter ? 1 : 0) + (fundFilter ? 1 : 0)}
+        onReset={() => {
+          paging.patchAndResetPage({ dir: null, quy: null });
+        }}
+        title={t`Tuỳ chọn sổ quỹ`}
+        search={(toggle) => (
+          <SearchInput
+            label={t`Tìm giao dịch`}
+            value={searchText}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+            }}
+            placeholder={t`Tìm theo quỹ, mục đích, ghi chú, số tiền…`}
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={dirFilter}
+            onChange={(e) => {
+              setDirFilter(e.target.value as FundDirection | "");
+            }}
+            aria-label={t`Lọc thu / chi`}
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">{t`Cả thu và chi`}</option>
+            <option value="in">{t`Chỉ khoản thu`}</option>
+            <option value="out">{t`Chỉ khoản chi`}</option>
+          </Select>
+          <FilterableSelect
+            value={fundFilter}
+            onChange={setFundFilter}
+            icon={<IconWallet />}
+            options={summary.byFund.map((f) => ({
+              value: f.fund,
+              label: f.fund,
+            }))}
+            emptyLabel={t`Mọi quỹ`}
+            filterLabel={t`Lọc theo quỹ`}
+            className="h-11 text-base"
+          />
+        </div>
+        {/* Xuất PDF: thao tác phụ, nằm trong ngăn kéo cho đầu trang gọn. */}
+        <div className="border-t pt-4">
+          <Button
+            variant="outline"
+            className="w-full justify-start"
+            onClick={onExportPdf}
+            disabled={exporting || txs.length === 0}
+          >
+            <IconDownload className="mr-1.5 h-4 w-4" />
+            {exporting ? t`Đang xuất…` : t`Xuất PDF sổ quỹ`}
+          </Button>
+        </div>
+      </CollapsibleFilters>
 
       {/* Số dư + tổng thu/chi */}
       <div className="rounded-xl border bg-card shadow-sm p-4">
@@ -202,18 +252,18 @@ export default function ClanFund() {
         </p>
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
           <Trans>
-          <span>
-            <span className="text-muted-foreground">Tổng thu: </span>
-            <b className="text-emerald-600 dark:text-emerald-400 tabular-nums">
-              {formatVnd(summary.totalIn)}
-            </b>
-          </span>
-          <span>
-            <span className="text-muted-foreground">Tổng chi: </span>
-            <b className="text-destructive tabular-nums">
-              {formatVnd(summary.totalOut)}
-            </b>
-          </span>
+            <span>
+              <span className="text-muted-foreground">Tổng thu: </span>
+              <b className="text-emerald-600 dark:text-emerald-400 tabular-nums">
+                {formatVnd(summary.totalIn)}
+              </b>
+            </span>
+            <span>
+              <span className="text-muted-foreground">Tổng chi: </span>
+              <b className="text-destructive tabular-nums">
+                {formatVnd(summary.totalOut)}
+              </b>
+            </span>
           </Trans>
         </div>
         {summary.byFund.length > 1 && (
@@ -281,58 +331,6 @@ export default function ClanFund() {
           />
         )}
       </SidePanel>
-
-      {/* Thu/chi và quỹ nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm) — như Danh bạ. */}
-      <CollapsibleFilters
-        activeCount={(dirFilter ? 1 : 0) + (fundFilter ? 1 : 0)}
-        onReset={() => {
-          paging.patchAndResetPage({ dir: null, quy: null });
-        }}
-        title={t`Lọc giao dịch`}
-        search={(toggle) => (
-          <SearchInput
-            label={t`Tìm giao dịch`}
-            value={searchText}
-            onChange={(e) => {
-              setSearchText(e.target.value);
-            }}
-            placeholder={t`Tìm theo quỹ, mục đích, ghi chú, số tiền…`}
-            rightSlot={toggle}
-          />
-        )}
-      >
-        <div className="flex flex-col gap-3">
-          <Select
-            value={dirFilter}
-            onChange={(e) => {
-              setDirFilter(e.target.value as FundDirection | "");
-            }}
-            aria-label={t`Lọc thu / chi`}
-            icon={<IconTag />}
-            className="h-11 w-full text-base"
-          >
-            <option value="">{t`Cả thu và chi`}</option>
-            <option value="in">{t`Chỉ khoản thu`}</option>
-            <option value="out">{t`Chỉ khoản chi`}</option>
-          </Select>
-          <Select
-            value={fundFilter}
-            onChange={(e) => {
-              setFundFilter(e.target.value);
-            }}
-            aria-label={t`Lọc theo quỹ`}
-            icon={<IconWallet />}
-            className="h-11 w-full text-base"
-          >
-            <option value="">{t`Mọi quỹ`}</option>
-            {summary.byFund.map((f) => (
-              <option key={f.fund} value={f.fund}>
-                {f.fund}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </CollapsibleFilters>
 
       {isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">

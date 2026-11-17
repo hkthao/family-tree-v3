@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -74,7 +75,13 @@ export default function DanhMucDiaGioiPage() {
       {/* Chọn danh mục (Tỉnh/Thành hay Xã/Phường) và các bộ lọc nằm trong ngăn kéo
           bên phải (phễu trong ô tìm kiếm); trang chỉ còn một danh sách. */}
       <CollapsibleFilters
-        activeCount={isProvinces ? (region ? 1 : 0) : (provinceCode ? 1 : 0) + (kind ? 1 : 0)}
+        activeCount={
+          isProvinces
+            ? region
+              ? 1
+              : 0
+            : (provinceCode ? 1 : 0) + (kind ? 1 : 0)
+        }
         onReset={() => {
           setRegion("");
           setProvinceCode("");
@@ -140,20 +147,19 @@ export default function DanhMucDiaGioiPage() {
           ) : (
             <>
               <Label htmlFor="ward-prov">{t`Tỉnh/thành`}</Label>
-              <Select
+              <FilterableSelect
                 id="ward-prov"
                 icon={<IconMapPin />}
                 value={provinceCode}
-                onChange={(e) => setProvinceCode(e.target.value)}
-                className="h-11 w-full text-base"
-              >
-                <option value="">{t`Tất cả tỉnh/thành`}</option>
-                {provinces.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.name}
-                  </option>
-                ))}
-              </Select>
+                onChange={setProvinceCode}
+                options={provinces.map((p) => ({
+                  value: p.code,
+                  label: p.name,
+                }))}
+                emptyLabel={t`Tất cả tỉnh/thành`}
+                filterLabel={t`Tìm tỉnh/thành`}
+                className="h-11 text-base"
+              />
               <Label htmlFor="ward-kind-filter">{t`Loại đơn vị`}</Label>
               <Select
                 id="ward-kind-filter"
@@ -223,7 +229,9 @@ function DivisionRow({
       >
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium">{title}</span>
-          <span className="block truncate text-sm text-muted-foreground">{meta}</span>
+          <span className="block truncate text-sm text-muted-foreground">
+            {meta}
+          </span>
         </span>
       </button>
     </li>
@@ -271,14 +279,24 @@ function SelectionBar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md border bg-primary/5 px-3 py-2 text-sm">
-      <span className="mr-1 font-medium">
-        {t`Đã chọn ${count} ${unit}`}
-      </span>
-      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={onDelete}>
+      <span className="mr-1 font-medium">{t`Đã chọn ${count} ${unit}`}</span>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={busy}
+        onClick={onDelete}
+      >
         <IconTrash className="mr-1.5 h-4 w-4" />
         {busy ? t`Đang xoá…` : t`Xoá đã chọn`}
       </Button>
-      <Button type="button" size="sm" variant="outline" disabled={busy} onClick={onClear}>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={busy}
+        onClick={onClear}
+      >
         <IconX className="mr-1.5 h-4 w-4" />
         {t`Bỏ chọn`}
       </Button>
@@ -303,7 +321,13 @@ function LoadingBox() {
 
 // ───────────── Tỉnh / Thành ─────────────────────────────────────────
 
-function ProvincesTab({ search, region }: { search: string; region: VnRegion | "" }) {
+function ProvincesTab({
+  search,
+  region,
+}: {
+  search: string;
+  region: VnRegion | "";
+}) {
   const qc = useQueryClient();
   const confirm = useConfirm();
   const toast = useToast();
@@ -346,7 +370,8 @@ function ProvincesTab({ search, region }: { search: string; region: VnRegion | "
           description: t`Tỉnh còn xã/phường hoặc đang được dùng trong địa chỉ thành viên.`,
         });
     },
-    onError: (e) => toast.error(t`Không xoá được`, { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const all = provincesQ.data ?? [];
@@ -371,7 +396,9 @@ function ProvincesTab({ search, region }: { search: string; region: VnRegion | "
 
       {provincesQ.error && (
         <Alert variant="destructive">
-          <AlertDescription>{(provincesQ.error as Error).message}</AlertDescription>
+          <AlertDescription>
+            {(provincesQ.error as Error).message}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -384,8 +411,7 @@ function ProvincesTab({ search, region }: { search: string; region: VnRegion | "
           onDelete={async () => {
             const ok = await confirm({
               title: t`Xoá ${selected.size} tỉnh/thành đã chọn?`,
-              description:
-                t`Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ. Tỉnh bị chặn sẽ được giữ lại.`,
+              description: t`Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ. Tỉnh bị chặn sẽ được giữ lại.`,
               confirmLabel: t`Xoá`,
               destructive: true,
             });
@@ -414,7 +440,9 @@ function ProvincesTab({ search, region }: { search: string; region: VnRegion | "
         <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
           <SelectPageRow
             count={rows.length}
-            allSelected={rows.length > 0 && rows.every((r) => selected.has(r.code))}
+            allSelected={
+              rows.length > 0 && rows.every((r) => selected.has(r.code))
+            }
             onToggle={(checked) =>
               setSelected((prev) => {
                 const next = new Set(prev);
@@ -432,7 +460,9 @@ function ProvincesTab({ search, region }: { search: string; region: VnRegion | "
               title={p.name}
               meta={t`Mã ${p.code} · ${VN_REGION_LABEL[p.region]} · ${countsQ.data?.[p.code] ?? 0} xã/phường`}
               selected={selected.has(p.code)}
-              onToggleSelect={() => setSelected((prev) => toggleInSet(prev, p.code))}
+              onToggleSelect={() =>
+                setSelected((prev) => toggleInSet(prev, p.code))
+              }
               onClick={() => setEditing(p)}
             />
           ))}
@@ -465,8 +495,7 @@ function ProvincesTab({ search, region }: { search: string; region: VnRegion | "
                 : async () => {
                     const ok = await confirm({
                       title: t`Xoá "${editing.name}"?`,
-                      description:
-                        t`Chỉ xoá được khi tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ.`,
+                      description: t`Chỉ xoá được khi tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ.`,
                       confirmLabel: t`Xoá`,
                       destructive: true,
                     });
@@ -568,7 +597,11 @@ function ProvinceForm({
       </div>
       <FormActions>
         {onDelete && (
-          <Button type="button" variant="destructive-outline" onClick={onDelete}>
+          <Button
+            type="button"
+            variant="destructive-outline"
+            onClick={onDelete}
+          >
             <IconTrash className="mr-1.5 h-4 w-4" />
             {t`Xoá`}
           </Button>
@@ -620,9 +653,18 @@ function WardsTab({
   // Đổi bộ lọc thì về trang đầu.
   useEffect(() => setPage(0), [provinceCode, kind, pageSize]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  useEffect(() => setSelected(new Set()), [page, search, provinceCode, kind, pageSize]);
+  useEffect(
+    () => setSelected(new Set()),
+    [page, search, provinceCode, kind, pageSize],
+  );
 
-  const params = { provinceCode: provinceCode || null, kind: kind || null, search, page, pageSize };
+  const params = {
+    provinceCode: provinceCode || null,
+    kind: kind || null,
+    search,
+    page,
+    pageSize,
+  };
   const wardsQ = useQuery({
     queryKey: queryKeys.vnWards(params),
     queryFn: () => listWards(params),
@@ -660,7 +702,8 @@ function WardsTab({
           description: t`Đơn vị đang được dùng trong địa chỉ thành viên.`,
         });
     },
-    onError: (e) => toast.error(t`Không xoá được`, { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const provinces = provincesQ.data ?? [];
@@ -712,7 +755,9 @@ function WardsTab({
         <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
           <SelectPageRow
             count={rows.length}
-            allSelected={rows.length > 0 && rows.every((r) => selected.has(r.code))}
+            allSelected={
+              rows.length > 0 && rows.every((r) => selected.has(r.code))
+            }
             onToggle={(checked) =>
               setSelected((prev) => {
                 const next = new Set(prev);
@@ -730,7 +775,9 @@ function WardsTab({
               title={`${VN_WARD_KIND_LABEL[w.kind]} ${w.name}`}
               meta={t`Mã ${w.code} · ${provinceName(w.province_code)}`}
               selected={selected.has(w.code)}
-              onToggleSelect={() => setSelected((prev) => toggleInSet(prev, w.code))}
+              onToggleSelect={() =>
+                setSelected((prev) => toggleInSet(prev, w.code))
+              }
               onClick={() => setEditing(w)}
             />
           ))}
@@ -849,17 +896,15 @@ function WardForm({
         <Label htmlFor="ward-form-prov" required>
           {t`Tỉnh/thành`}
         </Label>
-        <Select
+        <FilterableSelect
           id="ward-form-prov"
           value={provinceCode}
-          onChange={(e) => setProvinceCode(e.target.value)}
-        >
-          {provinces.map((p) => (
-            <option key={p.code} value={p.code}>
-              {p.name}
-            </option>
-          ))}
-        </Select>
+          onChange={setProvinceCode}
+          options={provinces.map((p) => ({ value: p.code, label: p.name }))}
+          emptyLabel={t`Chọn tỉnh/thành`}
+          filterLabel={t`Tìm tỉnh/thành`}
+          required
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="ward-kind" required>
@@ -892,7 +937,11 @@ function WardForm({
       </div>
       <FormActions>
         {onDelete && (
-          <Button type="button" variant="destructive-outline" onClick={onDelete}>
+          <Button
+            type="button"
+            variant="destructive-outline"
+            onClick={onDelete}
+          >
             <IconTrash className="mr-1.5 h-4 w-4" />
             {t`Xoá`}
           </Button>
@@ -902,7 +951,9 @@ function WardForm({
         </Button>
         <Button
           type="submit"
-          disabled={saveM.isPending || !code.trim() || !name.trim() || !provinceCode}
+          disabled={
+            saveM.isPending || !code.trim() || !name.trim() || !provinceCode
+          }
         >
           <IconCheck className="mr-1.5 h-4 w-4" />
           {saveM.isPending ? t`Đang lưu…` : row ? t`Cập nhật` : t`Thêm`}

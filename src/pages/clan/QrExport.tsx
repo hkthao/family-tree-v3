@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
@@ -16,7 +17,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
@@ -162,20 +162,21 @@ export default function QrExport() {
       {/* Filter row — single flex-wrap line, matching the People page
           toolbar so admin tools feel like one family. */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={branchId}
-          onChange={(e) => setBranchId(e.target.value)}
-          aria-label={t`Lọc theo chi`}
-          icon={<IconTree />}
-          className={`${CTRL} flex-1 min-w-[160px]`}
-        >
-          <option value="">{t`Tất cả chi`}</option>
-          {branches?.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </Select>
+        <div className="min-w-[160px] flex-1">
+          <FilterableSelect
+            value={branchId}
+            onChange={setBranchId}
+            aria-label={t`Lọc theo chi`}
+            icon={<IconTree />}
+            options={(branches ?? []).map((b) => ({
+              value: b.id,
+              label: b.name,
+            }))}
+            emptyLabel={t`Tất cả chi`}
+            filterLabel={t`Lọc theo chi`}
+            className={CTRL}
+          />
+        </div>
         <Input
           type="number"
           icon={<IconUsers />}
@@ -227,16 +228,14 @@ export default function QrExport() {
           {!isFetching && (
             <span className="text-muted-foreground">
               <Trans>
-              {" · "}
-              {selected.size} đã chọn
+                {" · "}
+                {selected.size} đã chọn
               </Trans>
             </span>
           )}
           {(rows?.length ?? 0) >= MAX_PER_EXPORT && (
             <span className="ml-2 text-amber-600 dark:text-amber-400">
-              <Trans>
-              · Giới hạn {MAX_PER_EXPORT} người mỗi lần
-              </Trans>
+              <Trans>· Giới hạn {MAX_PER_EXPORT} người mỗi lần</Trans>
             </span>
           )}
         </p>

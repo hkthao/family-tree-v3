@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { AppHeader } from "@/components/AppHeader";
 import { IconCheck, IconList, IconTag, IconUpload } from "@/components/icons";
 import { useToast } from "@/components/Toast";
@@ -187,12 +188,12 @@ export default function CustomsImport({
       )}
       <p className="text-sm text-muted-foreground">
         <Trans>
-        Dán nhiều bài, mỗi bài bắt đầu bằng <code>#</code> Tiêu đề. Trong mỗi
-        bài: đoạn mở đầu là mô tả ngắn, mỗi <code>##</code> là một đoạn,
-        <code> ![chú thích](https://…)</code> làm ảnh minh hoạ, đoạn
-        <code> ## Câu hỏi thường gặp</code> với các <code>###</code> thành FAQ.
-        Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong
-        lần nhập này.
+          Dán nhiều bài, mỗi bài bắt đầu bằng <code>#</code> Tiêu đề. Trong mỗi
+          bài: đoạn mở đầu là mô tả ngắn, mỗi <code>##</code> là một đoạn,
+          <code> ![chú thích](https://…)</code> làm ảnh minh hoạ, đoạn
+          <code> ## Câu hỏi thường gặp</code> với các <code>###</code> thành
+          FAQ. Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài
+          trong lần nhập này.
         </Trans>
       </p>
 
@@ -233,18 +234,19 @@ export default function CustomsImport({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="i-cat">{t`Chủ đề (áp dụng cho tất cả)`}</Label>
-          <Select
+          <FilterableSelect
             id="i-cat"
             icon={<IconTag />}
             value={category}
-            onChange={(e) => setCategory(e.target.value as CustomCategory)}
-          >
-            {CATS.map((c) => (
-              <option key={c} value={c}>
-                {CUSTOM_CATEGORY_LABEL[c]}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => setCategory(v as CustomCategory)}
+            options={CATS.map((c) => ({
+              value: c,
+              label: CUSTOM_CATEGORY_LABEL[c],
+            }))}
+            emptyLabel={t`Chọn chủ đề`}
+            filterLabel={t`Chủ đề`}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="i-status">{t`Trạng thái`}</Label>
@@ -287,7 +289,7 @@ export default function CustomsImport({
         <div className="space-y-2">
           <Label className="block">
             <Trans>
-            Xem trước — {preview.length} bài, {importable.length} sẽ được tạo
+              Xem trước — {preview.length} bài, {importable.length} sẽ được tạo
             </Trans>
           </Label>
           <ul className="rounded-xl border bg-card shadow-sm divide-y text-sm">
@@ -298,13 +300,13 @@ export default function CustomsImport({
               >
                 <div className="min-w-0">
                   <Trans>
-                  <span className="font-medium">
-                    {p.title || t`(không tiêu đề)`}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    · {p.sections.length} đoạn · {p.faq.length} câu hỏi
-                  </span>
+                    <span className="font-medium">
+                      {p.title || t`(không tiêu đề)`}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {p.sections.length} đoạn · {p.faq.length} câu hỏi
+                    </span>
                   </Trans>
                 </div>
                 {p.skip ? (
@@ -323,9 +325,7 @@ export default function CustomsImport({
       {result && (
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-1 text-sm">
           <p className="font-medium text-emerald-700">
-            <Trans>
-            Đã tạo {result.created.length} bài.
-            </Trans>
+            <Trans>Đã tạo {result.created.length} bài.</Trans>
           </p>
           {result.skipped.length > 0 && (
             <p className="text-amber-700">

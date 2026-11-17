@@ -326,10 +326,10 @@ export default function Todo() {
         </Alert>
       )}
 
-      {/* Tabs — wrap horizontally on narrow viewports so labels stay
-          readable. Each tab carries its current count as a pill. */}
+      {/* Tab: MỘT hàng, cuộn ngang trên màn hẹp (xuống dòng thì bốn tab xếp chồng dọc, chiếm nửa màn).
+          Tràn sát mép màn trên điện thoại để thấy là còn tab phía sau. Mỗi tab kèm số đếm. */}
       <div
-        className="flex flex-wrap gap-2"
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 [&::-webkit-scrollbar]:hidden"
         role="tablist"
         aria-label={t`Nhóm việc cần làm`}
       >
@@ -342,10 +342,15 @@ export default function Todo() {
               type="button"
               role="tab"
               aria-selected={active}
-              onClick={() => {
+              onClick={(e) => {
                 setCategory(cat);
+                e.currentTarget.scrollIntoView({
+                  behavior: "smooth",
+                  inline: "nearest",
+                  block: "nearest",
+                });
               }}
-              className={`inline-flex items-center gap-2 px-3 h-9 text-sm rounded-md border transition-colors ${
+              className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-3 h-9 text-sm rounded-md border transition-colors ${
                 active
                   ? "bg-primary text-primary-foreground border-primary"
                   : "border-input bg-background hover:bg-muted/50"
@@ -390,8 +395,8 @@ export default function Todo() {
         <div className="sticky top-0 z-10 -mx-4 sm:mx-0 px-4 sm:px-3 py-2 bg-card border-y sm:border sm:rounded-md flex flex-wrap items-center gap-x-3 gap-y-2 shadow-sm">
           <span className="text-sm">
             <Trans>
-            Đã chọn <strong className="tabular-nums">{selected.size}</strong>{" "}
-            người
+              Đã chọn <strong className="tabular-nums">{selected.size}</strong>{" "}
+              người
             </Trans>
           </span>
           {/* Đẩy nút sang phải khi còn chỗ; hết chỗ thì cả cụm xuống dòng
@@ -460,7 +465,7 @@ export default function Todo() {
                     {row.generation !== null && (
                       <span className="text-xs text-muted-foreground shrink-0">
                         <Trans>
-                        Đời {row.generation - clan.generation_offset}
+                          Đời {row.generation - clan.generation_offset}
                         </Trans>
                       </span>
                     )}
@@ -573,9 +578,11 @@ function CompletionProgress({
       </div>
       <p className="text-sm text-muted-foreground">
         <Trans>
-        <span className="tabular-nums">{complete.toLocaleString(currentIntlTag())}</span>{" "}
-        / {total.toLocaleString(currentIntlTag())} người có đủ năm sinh và quan hệ
-        cha/mẹ. Cùng nhau bổ sung để kéo lên 100%.
+          <span className="tabular-nums">
+            {complete.toLocaleString(currentIntlTag())}
+          </span>{" "}
+          / {total.toLocaleString(currentIntlTag())} người có đủ năm sinh và
+          quan hệ cha/mẹ. Cùng nhau bổ sung để kéo lên 100%.
         </Trans>
       </p>
     </section>

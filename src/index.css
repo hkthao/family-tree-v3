@@ -608,3 +608,15 @@ html[data-bg="on"] aside.bg-background {
 .read-view [role="group"] button[aria-pressed="false"] {
   display: none;
 }
+
+/* Ô chọn có lọc (FilterableSelect, nút role=combobox) trong ngăn kéo xem: hiện như chữ thường. */
+.read-view button[role="combobox"] {
+  border-color: transparent;
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  height: auto;
+  min-height: 0;
+  opacity: 1;
+  cursor: default;
+}

@@ -108,6 +108,7 @@ export function GlobalSearch({
     setQuery("");
     setDebounced("");
     setFocus(0);
+    // Dự phòng khi autoFocus không ăn (vd mở bằng phím tắt trong lúc trang đang bận).
     const t = setTimeout(() => inputRef.current?.focus(), 30);
     return () => clearTimeout(t);
   }, [open]);
@@ -261,8 +262,11 @@ export function GlobalSearch({
           >
             <div className="flex items-center gap-2 px-4 h-14 border-b shrink-0">
               <IconSearch className="h-5 w-5 text-muted-foreground shrink-0" />
+              {/* autoFocus: focus ngay lúc ô được gắn vào trang (vẫn trong cú chạm mở tìm kiếm) — iOS
+                  Safari chỉ bật bàn phím khi focus() chạy trong thao tác của người dùng, gọi trễ thì không. */}
               <input
                 ref={inputRef}
+                autoFocus
                 type="text"
                 value={query}
                 onChange={(e) => {

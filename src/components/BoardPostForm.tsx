@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { InSidePanelContext } from "@/components/panel/context";
 import { useToast } from "@/components/Toast";
 import {
@@ -10,6 +11,7 @@ import {
   IconCheck,
   IconPencil,
   IconScroll,
+  IconTag,
   IconX,
 } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -151,30 +153,22 @@ export function BoardPostForm({
       )}
 
       <ReadOnlyFieldset readOnly={readOnly} className="space-y-4">
-        <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">{t`Loại bài`}</legend>
-          <div className="flex flex-wrap gap-2">
-            {TYPE_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm ${
-                  type === opt.value
-                    ? "border-primary bg-primary/5"
-                    : "hover:bg-muted/40"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="post-type"
-                  checked={type === opt.value}
-                  onChange={() => setType(opt.value)}
-                  className="h-4 w-4 accent-primary"
-                />
-                {opt.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <div className="space-y-2">
+          <Label htmlFor="post-type">{t`Loại bài`}</Label>
+          <FilterableSelect
+            id="post-type"
+            icon={<IconTag />}
+            value={type}
+            onChange={(v) => setType(v as typeof type)}
+            options={TYPE_OPTIONS.map((o) => ({
+              value: o.value,
+              label: o.label,
+            }))}
+            emptyLabel={t`Chọn loại bài`}
+            filterLabel={t`Loại bài`}
+            required
+          />
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="post-title">{t`Tiêu đề (tuỳ chọn)`}</Label>

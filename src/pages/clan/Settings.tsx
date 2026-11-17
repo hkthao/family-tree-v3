@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
@@ -13,14 +13,7 @@ import {
   isFeatureEnabled,
   type ClanFeatureKey,
 } from "@/lib/clanFeatures";
-import {
-  IconBook,
-  IconCheck,
-  IconList,
-  IconQrCode,
-  IconSettings,
-  IconUsers,
-} from "@/components/icons";
+import { IconCheck, IconSettings } from "@/components/icons";
 import { ShareLinksSection } from "@/components/ShareLinksSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -58,6 +51,20 @@ export default function Settings() {
   useEffect(() => {
     setValues(clanFormFromClan(clan));
   }, [clan.id]);
+
+  // Mở từ hub / tìm kiếm với #xuat-du-lieu: cuộn tới thẻ Xuất / nhập dữ liệu.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash) return;
+    const t = window.setTimeout(
+      () =>
+        document
+          .getElementById(hash.slice(1))
+          ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      150,
+    );
+    return () => window.clearTimeout(t);
+  }, [hash]);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -169,60 +176,16 @@ export default function Settings() {
         </Card>
       </form>
 
-      <Card>
+      {/* Lối tắt Sổ gia phả / Thành viên / Nhật ký / Xuất QR đã ra trang hub "Tính năng" và tìm kiếm toàn cục;
+          ở đây chỉ còn các nút xuất/nhập (mục "Xuất / nhập dữ liệu" của hub trỏ tới #xuat-du-lieu). */}
+      <Card id="xuat-du-lieu" className="scroll-mt-20">
         <CardHeader>
-          <CardTitle>{t`Quản lý & công cụ`}</CardTitle>
+          <CardTitle>{t`Xuất / nhập dữ liệu`}</CardTitle>
           <CardDescription>
-            {t`Lối tắt tới các trang quản lý và xuất dữ liệu.`}
+            {t`Đem dữ liệu đi nơi khác hoặc nạp từ phần mềm khác.`}
           </CardDescription>
         </CardHeader>
         <CardContent className="divide-y p-0">
-          {[
-            {
-              title: t`Thông tin & Sổ gia phả`,
-              desc: t`Sửa tên, mô tả, chi (nhánh) và soạn lời nói đầu, phả ký, ngoại phả, phụ khảo.`,
-              to: `/clans/${clan.id}/so-gia-pha`,
-              icon: <IconBook className="h-4 w-4 mr-1.5" />,
-              label: t`Mở trang soạn`,
-            },
-            {
-              title: t`Thành viên`,
-              desc: t`Mời thêm tài khoản hoặc đổi vai trò. Giới hạn hiện tại: ${clan.max_users} tài khoản (do quản trị nền tảng đặt).`,
-              to: `/clans/${clan.id}/members`,
-              icon: <IconUsers className="h-4 w-4 mr-1.5" />,
-              label: t`Quản lý thành viên`,
-            },
-            {
-              title: t`Nhật ký chỉnh sửa`,
-              desc: t`Lịch sử thay đổi với người, gia đình, chi — có thể khôi phục.`,
-              to: `/clans/${clan.id}/audit`,
-              icon: <IconList className="h-4 w-4 mr-1.5" />,
-              label: t`Mở nhật ký`,
-            },
-            {
-              title: t`Xuất QR cá nhân`,
-              desc: t`Tạo mã QR cho từng người để in/khắc — quét ra trang cá nhân.`,
-              to: `/clans/${clan.id}/qr-export`,
-              icon: <IconQrCode className="h-4 w-4 mr-1.5" />,
-              label: t`Mở xuất QR`,
-            },
-          ].map((r) => (
-            <div
-              key={r.to}
-              className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
-            >
-              <div className="min-w-0">
-                <p className="font-medium">{r.title}</p>
-                <p className="text-sm text-muted-foreground">{r.desc}</p>
-              </div>
-              <Button size="sm" asChild variant="outline" className="shrink-0">
-                <Link to={r.to}>
-                  {r.icon}
-                  {r.label}
-                </Link>
-              </Button>
-            </div>
-          ))}
           <div className="flex flex-col gap-2 px-4 py-3 sm:px-5">
             <div className="min-w-0">
               <p className="font-medium">{t`Xuất / nhập GEDCOM`}</p>

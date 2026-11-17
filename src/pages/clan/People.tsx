@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import { displayGen } from "@/lib/displayGeneration";
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { FabGroup } from "@/components/FabGroup";
 import { RecordDates } from "@/components/RecordDates";
@@ -408,9 +409,11 @@ export default function People() {
         icon={<IconUsers className="h-7 w-7" />}
         title={t`Danh bạ`}
         description={
-          view === "kinship"
-            ? t`Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt.`
-            : <span className="max-sm:hidden">{t`Danh sách thành viên với lọc, tìm kiếm và import hàng loạt.`}</span>
+          view === "kinship" ? (
+            t`Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt.`
+          ) : (
+            <span className="max-sm:hidden">{t`Danh sách thành viên với lọc, tìm kiếm và import hàng loạt.`}</span>
+          )
         }
       />
 
@@ -554,20 +557,18 @@ export default function People() {
                   </Link>
                 </Button>
               )}
-              <Select
+              <FilterableSelect
                 icon={<IconGrid />}
                 value={branchId}
-                onChange={(e) => setBranchId(e.target.value)}
+                onChange={setBranchId}
                 aria-label={t`Lọc theo chi`}
-                className="w-full"
-              >
-                <option value="">{t`Tất cả chi`}</option>
-                {branches?.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </Select>
+                options={(branches ?? []).map((b) => ({
+                  value: b.id,
+                  label: b.name,
+                }))}
+                emptyLabel={t`Tất cả chi`}
+                filterLabel={t`Lọc theo chi`}
+              />
               <Select
                 icon={<IconUsers />}
                 value={generation}
@@ -580,9 +581,7 @@ export default function People() {
                 {maxGen
                   ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
                       <option key={g} value={g}>
-                        <Trans>
-                        Đời {g - clan.generation_offset}
-                        </Trans>
+                        <Trans>Đời {g - clan.generation_offset}</Trans>
                       </option>
                     ))
                   : null}
@@ -669,23 +668,20 @@ export default function People() {
           >
             <section className="space-y-2">
               <h3 className="text-sm font-semibold">
-                <Trans>
-                Đặt chi cho {selected.size} người đã chọn
-                </Trans>
+                <Trans>Đặt chi cho {selected.size} người đã chọn</Trans>
               </h3>
-              <Select
+              <FilterableSelect
                 icon={<IconGrid />}
                 value={bulkBranch}
-                onChange={(e) => setBulkBranch(e.target.value)}
+                onChange={setBulkBranch}
                 aria-label={t`Chi áp cho lựa chọn`}
-              >
-                <option value="">{t`(không có chi)`}</option>
-                {branches?.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </Select>
+                options={(branches ?? []).map((b) => ({
+                  value: b.id,
+                  label: b.name,
+                }))}
+                emptyLabel={t`(không có chi)`}
+                filterLabel={t`Chi áp cho lựa chọn`}
+              />
               <Button
                 type="button"
                 className="w-full"
@@ -711,8 +707,8 @@ export default function People() {
           >
             <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
               <Trans>
-                Đặt <strong>cùng một nơi ở</strong> cho {selected.size} người
-                đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì{" "}
+                Đặt <strong>cùng một nơi ở</strong> cho {selected.size} người đã
+                chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì{" "}
                 <strong>xoá</strong> nơi ở của họ.
               </Trans>
             </p>
@@ -1038,7 +1034,8 @@ function PersonListItem({
                   <p className="truncate">
                     {rel.father && (
                       <>
-                        <span className="font-medium">{t`Cha:`}</span> {rel.father}
+                        <span className="font-medium">{t`Cha:`}</span>{" "}
+                        {rel.father}
                       </>
                     )}
                     {rel.father && rel.mother && (
@@ -1209,9 +1206,7 @@ function PersonGridCard({
           </p>
           {dispGen !== null && (
             <p className="text-xs text-muted-foreground truncate">
-              <Trans>
-              Đời {dispGen}
-              </Trans>
+              <Trans>Đời {dispGen}</Trans>
             </p>
           )}
           {rel.spouses.length > 0 && (
@@ -1270,7 +1265,9 @@ function CompactCompletion({
       {withGaps > 0 ? (
         <span className="shrink-0 text-xs text-muted-foreground">
           <span className="tabular-nums">{withGaps}</span>{" "}
-          <span className="max-sm:hidden">{t`người còn thiếu thông tin`} · </span>
+          <span className="max-sm:hidden">
+            {t`người còn thiếu thông tin`} ·{" "}
+          </span>
           <span className="text-primary">{t`Bổ sung →`}</span>
         </span>
       ) : (

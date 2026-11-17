@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { AppHeader } from "@/components/AppHeader";
 import {
   IconBuildings,
@@ -18,7 +19,6 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { listCommunityClans, listMyClans } from "@/lib/queries/clans";
 import { queryKeys } from "@/lib/queries/keys";
@@ -280,22 +280,18 @@ function ConfirmForm({ token, userId }: { token: string; userId: string }) {
     <div className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="clan-b">{t`Dòng họ của bạn`}</Label>
-        <Select
+        <FilterableSelect
           id="clan-b"
           icon={<IconBuildings />}
           value={clanBId}
-          onChange={(e) => {
-            setClanBId(e.target.value);
+          onChange={(v) => {
+            setClanBId(v);
             setPicked(null);
           }}
-        >
-          <option value="">{t`— Chọn —`}</option>
-          {adminClans.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Select>
+          options={adminClans.map((c) => ({ value: c.id, label: c.name }))}
+          emptyLabel={t`— Chọn —`}
+          filterLabel={t`Tìm dòng họ`}
+        />
       </div>
 
       {clanBId && (
