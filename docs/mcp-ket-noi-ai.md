@@ -55,11 +55,12 @@ Mỗi mục có `list_*` (đọc, mọi gói; truyền `id` để đọc một m
 | Mộ phần | `list/create/update/delete_resting_place(s)`, `add/remove_resting_place_occupant`, `list_resting_place_occupants`, `add_resting_place_relocation` |
 | Quỹ họ | `list/create/update/delete_fund_transaction(s)`, `fund_summary` (tổng thu/chi/số dư) |
 | Bảng vàng | `list/create/update/delete_honor_entr(y|ies)` |
+| Dòng thời gian một người | `get_person_timeline`, `set_person_timeline` (`mode=append` thêm mốc sau các mốc cũ; `mode=replace` thay cả dòng, cần `confirm` khi đã có mốc; tối đa 100 mốc/lần) |
 | Bản đồ | `map_stats` (chỉ đọc: số người/mộ/di sản theo tỉnh, không có tên hay địa chỉ) |
 
 **Phân quyền (hai lớp, kiểm bằng `src/test/queries/mcp-resources-perm.test.ts` với phiên đăng nhập thật):**
 - Gói token: tool ghi chỉ gói `write`/`admin` thấy và gọi được; `read`/`propose` chỉ thấy tool đọc.
-- RLS của app theo VAI TRÒ THẬT của chủ token: Bảng vàng, Quỹ họ, Di sản, Mộ phần, Phòng ký ức, Ảnh ghép cần quyền biên tập
+- RLS của app theo VAI TRÒ THẬT của chủ token: Bảng vàng, Quỹ họ, Di sản, Mộ phần, Phòng ký ức, Ảnh ghép, Dòng thời gian cần quyền biên tập
   (người xem chỉ đọc). Bảng tin: quản trị đăng thẳng, thành viên khác chỉ gửi được bài **chờ duyệt**, chỉ quản trị kiểm duyệt.
 - Code tự kiểm thêm những điều RLS không làm: mọi truy vấn khoá theo dòng họ đang chọn; id cha (di sản, mộ phần, phòng,
   bức ảnh ghép, bài đăng), `person_id`, `event_id` phải thuộc CÙNG dòng họ — nếu không, token nhiều họ hoặc admin hệ thống

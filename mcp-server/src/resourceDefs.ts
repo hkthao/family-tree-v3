@@ -436,6 +436,40 @@ export const EXTRA_SPECS: McpToolSpec[] = [
     description: "Delete a mosaic tile. confirm=true only after the user explicitly asked.",
     inputSchema: obj({ tile_id: id("Id from list_mosaic_tiles"), confirm: { type: "boolean" } }, ["tile_id", "confirm"]),
   },
+  // Dòng thời gian một người
+  {
+    name: "get_person_timeline",
+    needs: "read",
+    description:
+      "A person's life timeline (Dòng thời gian): dated milestones shown on their profile, oldest first. Empty means none saved yet (the app then shows lines parsed from the biography).",
+    inputSchema: obj({ person_id: id("Person id from search_person") }, ["person_id"]),
+  },
+  {
+    name: "set_person_timeline",
+    needs: "write",
+    description:
+      "Write a person's life timeline. mode=append (default) adds entries after the existing ones; mode=replace swaps the whole timeline for `entries` (pass [] to clear) and needs confirm=true when entries already exist — only after the user explicitly asked. Entries are shown sorted by year; same-year entries keep the order given.",
+    inputSchema: obj(
+      {
+        person_id: id("Person id from search_person"),
+        entries: {
+          type: "array",
+          maxItems: 100,
+          items: obj(
+            {
+              year: { type: "integer", minimum: -3000, maximum: 3000, description: "Year (negative = BC)" },
+              era: { type: "string", maxLength: 40, description: "Can chi of the year, e.g. \"Nhâm Thìn\" (optional)" },
+              body: { type: "string", minLength: 1, maxLength: 1000, description: "What happened" },
+            },
+            ["year", "body"],
+          ),
+        },
+        mode: { type: "string", enum: ["append", "replace"] },
+        confirm: { type: "boolean" },
+      },
+      ["person_id", "entries"],
+    ),
+  },
   // Bản đồ
   {
     name: "map_stats",
