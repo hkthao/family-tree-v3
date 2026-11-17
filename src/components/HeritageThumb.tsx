@@ -34,7 +34,8 @@ export function HeritageThumb({
 
   return (
     <div
-      className={`${flush ? "min-h-14 w-14 self-stretch rounded-lg border" : `${className} rounded-md border`} shrink-0 overflow-hidden grid place-items-center ${showImg ? "bg-muted" : tint}`}
+      // Dòng danh sách (flush) trên điện thoại: bỏ hẳn cột ảnh/icon cho gọn, chữ được cả bề ngang.
+      className={`${flush ? "min-h-14 w-14 self-stretch rounded-lg border max-sm:hidden" : `${className} rounded-md border`} shrink-0 overflow-hidden grid place-items-center ${showImg ? "bg-muted" : tint}`}
     >
       {showImg ? (
         <img
