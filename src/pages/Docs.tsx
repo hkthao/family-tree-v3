@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { Article, ArticleHeader } from "@/components/Article";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { FeedRow } from "@/components/FeedRow";
@@ -158,15 +159,18 @@ function ArticleView({ article }: { article: DocArticle }) {
           ]}
         />
 
-        <PageHeader
-          icon={<IconScroll className="h-7 w-7" />}
-          title={article.title}
-          description={sectionLabelOf(article.slug)}
-        />
-
-        <article className="max-w-2xl">
-          <article.Body />
-        </article>
+        {/* Dạng bài báo (components/Article): chuyên mục → tít → thân bài, chữ serif to, không bọc thẻ. */}
+        <div className="max-w-2xl">
+          <Article>
+            <ArticleHeader
+              kicker={sectionLabelOf(article.slug)}
+              title={article.title}
+            />
+            <div className="mt-5 text-[17px] leading-8 sm:text-lg">
+              <article.Body />
+            </div>
+          </Article>
+        </div>
 
         {(prev || next) && (
           <nav className="grid grid-cols-2 gap-3 pt-8 border-t mt-8">

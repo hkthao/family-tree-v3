@@ -1,20 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
+import {
+  Article,
+  ArticleFactBox,
+  ArticleFigure,
+  ArticleFooter,
+  ArticleHeader,
+  ArticleList,
+  ArticleProse,
+  ArticleSection,
+} from "@/components/Article";
 import { CustomsShell } from "@/components/CustomsShell";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconArrowLeft,
   IconBook,
-  IconCalendar,
   IconCheck,
   IconHelp,
   IconLogIn,
   IconPencil,
   IconShare2,
   IconTrash,
-  IconUsers,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
@@ -36,7 +44,6 @@ import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
 export default function CustomsDetail() {
   const { entryId } = useParams<{ entryId: string }>();
   const isNew = entryId === "new"; // phòng khớp nhầm route
@@ -252,161 +259,106 @@ export default function CustomsDetail() {
         </div>
       </div>
 
-      {/* "Trang sách": chữ serif to, dễ đọc cho người lớn tuổi. Dùng token theme
-          (bg-card / text-*) nên tự hợp sáng-tối; theme này vốn là tông giấy ấm.
-          Hiển thị đầy đủ nội dung (không gập/mở) — không bắt bấm để xem. */}
-      <article className="rounded-2xl border shadow-sm px-5 py-7 sm:px-10 sm:py-10 font-serif bg-card text-card-foreground">
+      {/* Dạng bài báo (khuôn chung components/Article): không bọc thẻ, chuyên mục → tít → sapo → dòng thông tin →
+          ảnh lớn → các mục. Hiển thị đầy đủ nội dung (không gập/mở) — không bắt bấm để xem. */}
+      <Article>
         {entry.status !== "published" && (
-          <p className="mb-3 text-center text-xs text-accent">
-            — Bản {entry.status === "draft" ? t`nháp` : t`chờ duyệt`} —
+          <p className="mb-2 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+            Bản {entry.status === "draft" ? t`nháp` : t`chờ duyệt`}
           </p>
         )}
-
-        <h1 className="clan-name text-center text-3xl sm:text-4xl font-semibold leading-tight text-primary">
-          {entry.title}
-        </h1>
-        {entry.aliases.length > 0 && (
-          <p className="mt-1 text-center text-base italic text-muted-foreground">
-            <Trans>
-            Còn gọi: {entry.aliases.join(", ")}
-            </Trans>
-          </p>
-        )}
-
-        {/* Nhãn nhỏ giữa trang */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-          <span className="text-primary">
-            {CUSTOM_CATEGORY_LABEL[entry.category]}
-          </span>
-          {entry.mandatory_level && (
-            <span>· {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}</span>
-          )}
-          {entry.reliability != null && (
-            <span title={t`Độ tin cậy`} className="text-accent">
-              · {"★".repeat(entry.reliability)}
-            </span>
-          )}
-        </div>
-        {metaLine && (
-          <p className="mt-1 text-center text-sm text-muted-foreground">
-            {metaLine}
-          </p>
-        )}
-
-        <div className="mx-auto my-5 flex items-center justify-center gap-3 text-accent">
-          <span className="bg-border" style={{ height: 1, width: 60 }} />
-          <span className="text-sm">❧</span>
-          <span className="bg-border" style={{ height: 1, width: 60 }} />
-        </div>
+        <ArticleHeader
+          kicker={CUSTOM_CATEGORY_LABEL[entry.category]}
+          title={entry.title}
+          deck={entry.short_description}
+          meta={[
+            entry.aliases.length > 0
+              ? t`Còn gọi: ${entry.aliases.join(", ")}`
+              : null,
+            entry.mandatory_level
+              ? CUSTOM_MANDATORY_LABEL[entry.mandatory_level]
+              : null,
+            entry.reliability != null ? (
+              <span title={t`Độ tin cậy`} className="text-accent">
+                {"★".repeat(entry.reliability)}
+              </span>
+            ) : null,
+            metaLine || null,
+          ]}
+        />
 
         {entry.cover_image_url && (
-          <img
-            src={entry.cover_image_url}
-            alt={entry.title}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="mx-auto mb-6 w-full max-h-80 rounded-lg object-cover"
-          />
-        )}
-
-        {entry.short_description && (
-          <p className="text-lg sm:text-xl leading-relaxed text-card-foreground">
-            {entry.short_description}
-          </p>
+          <ArticleFigure src={entry.cover_image_url} alt={entry.title} />
         )}
 
         {(entry.timing || entry.applicable_to) && (
-          <div className="mt-4 space-y-1.5 text-base text-muted-foreground">
-            {entry.timing && (
-              <p className="flex items-center gap-2">
-                <IconCalendar className="h-4 w-4 shrink-0 text-accent" />
-                <span>
-                  <b>{t`Thời điểm:`}</b> {entry.timing}
-                </span>
-              </p>
-            )}
-            {entry.applicable_to && (
-              <p className="flex items-center gap-2">
-                <IconUsers className="h-4 w-4 shrink-0 text-accent" />
-                <span>
-                  <b>{t`Áp dụng:`}</b> {entry.applicable_to}
-                </span>
-              </p>
-            )}
-          </div>
+          <ArticleFactBox
+            title={t`Tóm lược`}
+            rows={[
+              { label: t`Thời điểm`, value: entry.timing },
+              { label: t`Áp dụng`, value: entry.applicable_to },
+            ]}
+          />
         )}
 
         {/* Các đoạn nội dung — hiện đầy đủ, chữ to, giãn dòng thoáng */}
         {entry.sections.map((s, i) => (
-          <section key={i} className="mt-7">
-            <h2 className="clan-name text-2xl font-semibold text-primary">
-              {s.heading || t`Phần ${i + 1}`}
-            </h2>
+          <ArticleSection key={i} title={s.heading || t`Phần ${i + 1}`}>
             {s.image_url && (
-              <figure className="mt-3">
+              <figure className="mb-3">
                 <img
                   src={s.image_url}
                   alt={s.image_caption || s.heading || ""}
                   loading="lazy"
                   referrerPolicy="no-referrer"
-                  className="w-full max-h-72 rounded-lg object-cover"
+                  className="max-h-72 w-full rounded-lg object-cover"
                 />
                 {s.image_caption && (
-                  <figcaption className="mt-1 text-center text-sm italic text-muted-foreground">
+                  <figcaption className="mt-1.5 font-sans text-sm italic text-muted-foreground">
                     {s.image_caption}
                   </figcaption>
                 )}
               </figure>
             )}
-            <p className="mt-2 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-[17px] sm:text-lg leading-8 text-card-foreground">
-              {s.body}
-            </p>
-          </section>
+            <ArticleProse>{s.body}</ArticleProse>
+          </ArticleSection>
         ))}
 
         {/* FAQ */}
         {entry.faq.length > 0 && (
-          <section className="mt-8">
-            <h2 className="clan-name text-2xl font-semibold text-primary">
-              {t`Câu hỏi thường gặp`}
-            </h2>
-            <dl className="mt-2 space-y-3">
+          <ArticleSection title={t`Câu hỏi thường gặp`}>
+            <dl className="space-y-3">
               {entry.faq.map((f, i) => (
                 <div key={i}>
-                  <dt className="text-lg font-semibold text-card-foreground">
-                    {f.q}
-                  </dt>
-                  <dd className="mt-0.5 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-[17px] leading-8 text-card-foreground">
+                  <dt className="text-lg font-semibold">{f.q}</dt>
+                  <dd className="mt-0.5 whitespace-pre-wrap break-words text-[17px] leading-8 [overflow-wrap:anywhere]">
                     {f.a}
                   </dd>
                 </div>
               ))}
             </dl>
-          </section>
+          </ArticleSection>
         )}
 
         {/* Bài liên quan */}
         {related && related.length > 0 && (
-          <section className="mt-8">
-            <h2 className="clan-name text-2xl font-semibold text-primary">
-              {t`Bài liên quan`}
-            </h2>
-            <ul className="mt-2 space-y-1.5">
+          <ArticleSection title={t`Bài liên quan`}>
+            <ArticleList>
               {related.map((r) => (
                 <li key={r.id}>
                   <Link
                     to={user ? `/so-tay/${r.id}` : `/xem/so-tay/${r.id}`}
-                    className="text-[17px] underline decoration-dotted underline-offset-4 text-primary"
+                    className="block py-2.5 font-serif text-[17px] text-primary hover:underline"
                   >
-                    → {r.title}
+                    {r.title}
                   </Link>
                 </li>
               ))}
-            </ul>
-          </section>
+            </ArticleList>
+          </ArticleSection>
         )}
 
-        <div className="mt-8 border-t pt-4 text-sm text-muted-foreground">
+        <ArticleFooter>
           {entry.sources && (
             <p className="flex items-start gap-2">
               <IconBook className="mt-0.5 h-4 w-4 shrink-0" />
@@ -415,12 +367,12 @@ export default function CustomsDetail() {
               </span>
             </p>
           )}
-          <p className="mt-1.5 flex items-start gap-2">
+          <p className="flex items-start gap-2">
             <IconHelp className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{t`Nội dung tham khảo; phong tục có thể khác nhau theo vùng/gia đình.`}</span>
           </p>
-        </div>
-      </article>
+        </ArticleFooter>
+      </Article>
     </CustomsShell>
   );
 }

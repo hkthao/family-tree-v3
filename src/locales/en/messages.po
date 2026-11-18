@@ -1217,14 +1217,14 @@ msgstr "Readable by anonymous visitors. Turn on when this is an update you want 
 msgid "Áp cho avatar của mọi thành viên trong họ."
 msgstr "Applies to the avatars of all members of the clan."
 
+#: src/pages/CustomsDetail.tsx
+msgid "Áp dụng"
+msgstr "Applies to"
+
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
 msgid "Áp dụng URL này"
 msgstr "Apply this URL"
-
-#: src/pages/CustomsDetail.tsx
-msgid "Áp dụng:"
-msgstr "Applies to:"
 
 #: src/pages/clan/AddParent.tsx
 msgid "App chặn nếu người đã chọn là con cháu của"
@@ -2184,6 +2184,8 @@ msgid "Cập nhật {0}"
 msgstr "Updated {0}"
 
 #: src/components/RecordDates.tsx
+#: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Cập nhật {updated}"
 msgstr "Updated {updated}"
 
@@ -2206,6 +2208,7 @@ msgstr "Update profile"
 msgid "Cập nhật lúc {0}"
 msgstr "Updated at {0}"
 
+#: src/pages/Changelog.tsx
 #: src/pages/Changelog.tsx
 msgid "Cập nhật mới"
 msgstr "What's new"
@@ -3106,10 +3109,6 @@ msgstr "There is no data in the clan yet."
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Chưa có dữ liệu."
 msgstr "No data yet."
-
-#: src/pages/clan/HeritageDetail.tsx
-msgid "Chưa có ghi âm."
-msgstr "No recordings yet."
 
 #: src/pages/admin/Feedback.tsx
 msgid "Chưa có ghi chú nội bộ."
@@ -5281,8 +5280,8 @@ msgid "Đánh dấu người cần in ở danh sách rồi bấm Xuất PDF."
 msgstr "Tick the people to print in the list, then tap Export PDF."
 
 #: src/pages/Announcements.tsx
-msgid "Đánh dấu tất cả ({unreadCount})"
-msgstr "Mark all ({unreadCount})"
+msgid "Đánh dấu tất cả đã đọc ({unreadCount})"
+msgstr "Mark all as read ({unreadCount})"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Danh mục"
@@ -6295,6 +6294,7 @@ msgstr "GEDCOM 5.5.1 is the standard for exchanging genealogy data. Importing cr
 msgid "GEDCOM, CSV — đem dữ liệu đi hoặc nạp từ phần mềm khác."
 msgstr "GEDCOM, CSV — take your data elsewhere or load it from other software."
 
+#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Share.tsx
 msgid "Ghi âm kể chuyện"
 msgstr "Recorded stories"
@@ -6304,7 +6304,6 @@ msgstr "Recorded stories"
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/InlawsNew.tsx
-#: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Ghi chú"
@@ -7022,6 +7021,8 @@ msgid "Hiệu lực (ngày)"
 msgstr "Valid for (days)"
 
 #: src/components/HeritagePhotosSection.tsx
+#: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Hình ảnh"
 msgstr "Photos"
 
@@ -8529,6 +8530,11 @@ msgstr "Founded / built in:"
 msgid "Lặp lại hằng năm"
 msgstr "Repeats every year"
 
+#. placeholder {0}: item.built_year
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Lập năm {0}"
+msgstr "Built in {0}"
+
 #: src/lib/bookTemplates.ts
 msgid "Lập phả lần đầu (từ ký ức, điền dã)"
 msgstr "Compiling for the first time (from memory, field research)"
@@ -9870,7 +9876,6 @@ msgstr "The purpose and reason for compiling the family book; who compiled it an
 msgid "Mức độ"
 msgstr "Level"
 
-#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Docs.tsx
 msgid "Mục lục"
 msgstr "Contents"
@@ -10363,6 +10368,10 @@ msgstr "Person"
 msgid "Người A"
 msgstr "Person A"
 
+#: src/pages/clan/RestingPlaceDetail.tsx
+msgid "Người an nghỉ"
+msgstr "Resting here"
+
 #. placeholder {0}: rp.occupants.length
 #: src/components/SharedRestingPlaceCard.tsx
 msgid "Người an nghỉ ({0})"
@@ -10463,14 +10472,10 @@ msgid "Người gửi"
 msgstr "Sender"
 
 #: src/components/EventDetailDialog.tsx
+#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Share.tsx
 msgid "Người liên quan"
 msgstr "Related people"
-
-#. placeholder {0}: item.people.length
-#: src/pages/clan/HeritageDetail.tsx
-msgid "Người liên quan ({0})"
-msgstr "Related people ({0})"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Người liên quan trong họ (tuỳ chọn)"
@@ -10861,6 +10866,11 @@ msgstr "resting places"
 msgid "Nơi an nghỉ"
 msgstr "Resting place"
 
+#. placeholder {0}: names.join(", ")
+#: src/pages/clan/RestingPlaceDetail.tsx
+msgid "Nơi an nghỉ của {0}."
+msgstr "Resting place of {0}."
+
 #: src/lib/navModel.tsx
 msgid "Nơi an nghỉ của các cụ, chỉ đường."
 msgstr "The ancestors' resting places, with directions."
@@ -10901,7 +10911,6 @@ msgstr "Connect this clan to another clan through a member: in-laws, ancestor–
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/Feedback.tsx
-#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Nội dung"
@@ -11300,10 +11309,6 @@ msgstr "Mandarins – examination graduates"
 #: src/components/QuickActionsCard.tsx
 msgid "Quản lý"
 msgstr "Manage"
-
-#: src/pages/clan/MosaicDetail.tsx
-msgid "Quản lý bức ảnh"
-msgstr "Manage mosaic"
 
 #: src/pages/clan/People.tsx
 msgid "Quản lý chi"
@@ -13253,13 +13258,13 @@ msgstr "Exit full screen"
 msgid "Thoát toàn màn hình (Esc)"
 msgstr "Exit full screen (Esc)"
 
+#: src/pages/CustomsDetail.tsx
+msgid "Thời điểm"
+msgstr "When"
+
 #: src/pages/CustomsForm.tsx
 msgid "Thời điểm (mô tả)"
 msgstr "When (description)"
-
-#: src/pages/CustomsDetail.tsx
-msgid "Thời điểm:"
-msgstr "When:"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Thời gian"
@@ -13285,6 +13290,7 @@ msgstr "La Cầu hamlet, Mỹ Thọ commune, Bình Lục district, Hà Nam provi
 msgid "thông báo"
 msgstr "announcements"
 
+#: src/components/AnnouncementPanel.tsx
 #: src/components/BoardPostForm.tsx
 #: src/components/ClanPostCard.tsx
 #: src/components/NotificationBell.tsx
@@ -13447,7 +13453,6 @@ msgstr "Try changing the status or removing some keywords."
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Thu gọn"
@@ -14296,6 +14301,10 @@ msgstr "User token"
 msgid "Token như mật khẩu: không gửi vào nhóm chat hay dán lên mạng. Nghi lộ thì thu hồi ngay."
 msgstr "A token is like a password: never post it in chat groups or online. Revoke it right away if you suspect a leak."
 
+#: src/pages/CustomsDetail.tsx
+msgid "Tóm lược"
+msgstr "At a glance"
+
 #: src/lib/tipCatalogue.ts
 msgid "Tombstone ghi ngày âm — bấm 'Nhập theo lịch Âm' khi sửa người."
 msgstr "The gravestone shows a lunar date — tap 'Enter by lunar calendar' when editing the person."
@@ -14495,6 +14504,10 @@ msgstr "and below"
 #: src/pages/clan/Events.tsx
 msgid "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
 msgstr "There are no birthdays, death anniversaries or custom events in the next {daysAhead} days. Add birth dates / death anniversaries for members, or create a custom event below."
+
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Trong bài này"
+msgstr "In this article"
 
 #: src/components/PersonAvatar.tsx
 msgid "Trống đồng"
@@ -15390,6 +15403,8 @@ msgstr "View photo"
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/RestingPlacePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Xem ảnh lớn"
 msgstr "View large photo"
@@ -15527,7 +15542,6 @@ msgstr "View all notifications"
 #: src/pages/admin/shared.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/GoodDays.tsx
-#: src/pages/clan/HeritageDetail.tsx
 msgid "Xem thêm"
 msgstr "Show more"
 

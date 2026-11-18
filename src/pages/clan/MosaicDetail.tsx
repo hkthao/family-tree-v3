@@ -251,6 +251,55 @@ export default function MosaicDetail() {
         open={showOpts}
         onClose={() => setShowOpts(false)}
         title={t`Tuỳ chọn bức ảnh`}
+        // Quản lý bức ảnh: thanh nút đáy chia đều như ngăn kéo Danh bạ (Xoá → Hoàn tất → Sửa), không còn nút Xong.
+        footer={
+          canEdit ? (
+            <>
+              <Button
+                variant="destructive-outline"
+                onClick={async () => {
+                  setShowOpts(false);
+                  const ok = await confirm({
+                    title: t`Xoá bức "${mosaic.title}"?`,
+                    description: t`Toàn bộ mảnh trong bức sẽ bị xoá.`,
+                    confirmLabel: t`Xoá`,
+                    destructive: true,
+                  });
+                  if (!ok) return;
+                  await deleteMosaic(mosaicId);
+                  qc.invalidateQueries({ queryKey: ["mosaics", clan.id] });
+                  navigate(`/clans/${clan.id}/mosaics`);
+                }}
+              >
+                <IconTrash className="mr-1.5 h-4 w-4" />
+                {t`Xoá`}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowOpts(false);
+                  toggleStatusM.mutate();
+                }}
+              >
+                {mosaic.status === "open" ? (
+                  <IconCheck className="mr-1.5 h-4 w-4" />
+                ) : (
+                  <IconUnlock className="mr-1.5 h-4 w-4" />
+                )}
+                {mosaic.status === "open" ? t`Hoàn tất` : t`Mở lại`}
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowOpts(false);
+                  setEditing(true);
+                }}
+              >
+                <IconPencil className="mr-1.5 h-4 w-4" />
+                {t`Sửa`}
+              </Button>
+            </>
+          ) : undefined
+        }
       >
         <ViewModeSelect
           label={t`Kiểu hiển thị`}
@@ -261,54 +310,6 @@ export default function MosaicDetail() {
             { value: "puzzle", label: "Puzzle" },
           ]}
         />
-        {canEdit && (
-          <section className="flex flex-col gap-2 border-t pt-4 [&>button]:w-full [&>button]:justify-start">
-            <p className="text-base font-medium">{t`Quản lý bức ảnh`}</p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowOpts(false);
-                setEditing(true);
-              }}
-            >
-              <IconPencil className="mr-1.5 h-4 w-4" />
-              {t`Sửa`}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowOpts(false);
-                toggleStatusM.mutate();
-              }}
-            >
-              {mosaic.status === "open" ? (
-                <IconCheck className="mr-1.5 h-4 w-4" />
-              ) : (
-                <IconUnlock className="mr-1.5 h-4 w-4" />
-              )}
-              {mosaic.status === "open" ? t`Hoàn tất` : t`Mở lại`}
-            </Button>
-            <Button
-              variant="destructive-outline"
-              onClick={async () => {
-                setShowOpts(false);
-                const ok = await confirm({
-                  title: t`Xoá bức "${mosaic.title}"?`,
-                  description: t`Toàn bộ mảnh trong bức sẽ bị xoá.`,
-                  confirmLabel: t`Xoá`,
-                  destructive: true,
-                });
-                if (!ok) return;
-                await deleteMosaic(mosaicId);
-                qc.invalidateQueries({ queryKey: ["mosaics", clan.id] });
-                navigate(`/clans/${clan.id}/mosaics`);
-              }}
-            >
-              <IconTrash className="mr-1.5 h-4 w-4" />
-              {t`Xoá`}
-            </Button>
-          </section>
-        )}
       </FilterDrawer>
 
       {arrange && (

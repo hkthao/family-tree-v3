@@ -162,7 +162,11 @@ export default function Changelog() {
         </ul>
       )}
 
-      <AnnouncementPanel row={viewing} onClose={() => setViewing(null)} />
+      <AnnouncementPanel
+        row={viewing}
+        onClose={() => setViewing(null)}
+        heading={t`Cập nhật mới`}
+      />
     </PlatformShell>
   );
 }
