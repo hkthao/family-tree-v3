@@ -39,7 +39,7 @@ export default function Docs() {
   const article = slug ? DOCS_BY_SLUG[slug] : null;
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
+    <div className="min-h-dvh bg-background pb-[env(safe-area-inset-bottom)] lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
         {article ? <ArticleView article={article} /> : <Index />}

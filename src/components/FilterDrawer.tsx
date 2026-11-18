@@ -43,7 +43,8 @@ export function FilterDrawer({
   if (typeof document === "undefined") return null;
   return createPortal(
     <div
-      className={`print-hide fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}
+      // 100dvh thay `inset-0`: Safari iOS có thanh công cụ dưới che đáy khung `inset-0` (xem SidePanel).
+      className={`print-hide fixed inset-x-0 top-0 z-50 h-[100dvh] ${open ? "" : "pointer-events-none"}`}
       aria-hidden={!open}
     >
       <button

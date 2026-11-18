@@ -69,7 +69,7 @@ export default function InlawsConfirm() {
   });
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
+    <div className="min-h-dvh bg-background pb-[env(safe-area-inset-bottom)] lg:pl-72">
       <AppHeader />
       <main className="container max-w-2xl py-6 px-4 space-y-5">
         <header className="space-y-1">

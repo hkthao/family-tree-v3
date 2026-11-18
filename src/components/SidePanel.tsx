@@ -141,7 +141,9 @@ export function SidePanel({
   // không bị `transform` của panel cha làm lệch `position: fixed`.
   return createPortal(
     <div
-      className={`print-hide fixed inset-0 z-50 flex justify-end bg-black/40 ${
+      // Cao theo khung nhìn THỰC (100dvh), không `inset-0`: trên Safari iOS `inset-0` = khung nhìn lớn nhất (thanh
+      // công cụ đã thu) nên khi thanh công cụ dưới đang hiện nó che mất đáy ngăn kéo (thanh nút, nội dung cuối).
+      className={`print-hide fixed inset-x-0 top-0 z-50 flex h-[100dvh] justify-end bg-black/40 ${
         closing
           ? "animate-out fade-out duration-200 fill-mode-forwards"
           : "animate-in fade-in"
