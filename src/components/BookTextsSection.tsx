@@ -1,4 +1,11 @@
 import { lazyAs } from "@/lib/i18n/lazy";
+import {
+  IconBook,
+  IconLayers,
+  IconLink,
+  IconList,
+  IconScroll,
+} from "@/components/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -69,6 +76,14 @@ const FIELDS: {
 ]);
 
 /** Soạn các phần văn bản của Sổ gia phả (lời nói đầu, phả ký, ngoại phả, phụ khảo). */
+/** Icon từng ô (mọi ô nhập có icon — docs/design-language.md); tách khỏi FIELDS vì lazyAs xử lý chuỗi dịch. */
+const FIELD_ICON: Record<TextKey, JSX.Element> = {
+  preface: <IconBook />,
+  phaky: <IconScroll />,
+  ngoai_pha: <IconLink />,
+  phu_khao: <IconList />,
+};
+
 export function BookTextsSection({
   clanId,
   clanName,
@@ -109,6 +124,7 @@ export function BookTextsSection({
         <div className="min-w-0 flex-1">
           <FilterableSelect
             className="h-10"
+            icon={<IconLayers />}
             aria-label={t`Chọn mẫu`}
             value={tplPick[field] ?? BOOK_TEMPLATES[0].id}
             onChange={(v) => setTplPick({ ...tplPick, [field]: v })}
@@ -194,6 +210,7 @@ export function BookTextsSection({
           <Label htmlFor={`book-${f.key}`}>{f.label}</Label>
           <Textarea
             id={`book-${f.key}`}
+            icon={FIELD_ICON[f.key]}
             rows={f.rows}
             placeholder={f.placeholder}
             value={form[f.key] ?? ""}

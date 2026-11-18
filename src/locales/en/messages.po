@@ -32,11 +32,6 @@ msgstr " — review it and then Save."
 msgid " · {0}"
 msgstr " · {0}"
 
-#. placeholder {0}: selected.size
-#: src/pages/clan/QrExport.tsx
-msgid " · {0} đã chọn"
-msgstr " · {0} selected"
-
 #. placeholder {0}: res.failed
 #: src/pages/Account.tsx
 msgid " · {0} thất bại"
@@ -242,10 +237,6 @@ msgstr "· Pending review"
 #: src/components/ClanPostCard.tsx
 msgid "· Đã ẩn"
 msgstr "· Hidden"
-
-#: src/pages/clan/QrExport.tsx
-msgid "· Giới hạn {MAX_PER_EXPORT} người mỗi lần"
-msgstr "· Limit of {MAX_PER_EXPORT} people at a time"
 
 #. placeholder {0}: new Date(link.expires_at).toLocaleDateString(currentIntlTag())
 #: src/components/ShareLinksSection.tsx
@@ -471,8 +462,8 @@ msgstr "{0} days ago"
 #: src/components/ClanPicker.tsx
 #: src/components/HistoricalClansSection.tsx
 #: src/pages/admin/Clans.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Heritage.tsx
-#: src/pages/clan/QrExport.tsx
 #: src/pages/clan/Relations.tsx
 msgid "{0} người"
 msgstr "{0} people"
@@ -1222,6 +1213,7 @@ msgid "Anon đọc được. Bật khi đây là cập nhật muốn quảng bá
 msgstr "Readable by anonymous visitors. Turn on when this is an update you want to promote publicly."
 
 #: src/components/ClanFormFields.tsx
+#: src/pages/clan/Settings.tsx
 msgid "Áp cho avatar của mọi thành viên trong họ."
 msgstr "Applies to the avatars of all members of the clan."
 
@@ -1402,6 +1394,10 @@ msgstr "Press '+' to create the first token."
 #: src/components/ClanApiTokensTab.tsx
 msgid "Bấm nút '+' để tạo token, hoặc kết nối từ ChatGPT/Claude (xem Hướng dẫn kết nối)."
 msgstr "Press '+' to create a token, or connect from ChatGPT/Claude (see the Connection guide)."
+
+#: src/pages/clan/Branches.tsx
+msgid "Bấm nút '+' để thêm chi đầu tiên."
+msgstr "Tap '+' to add the first branch."
 
 #: src/pages/admin/Announcements.tsx
 msgid "Bấm nút '+' để viết tin đầu tiên."
@@ -1709,8 +1705,8 @@ msgid "Bật thông báo trên iPhone/iPad"
 msgstr "Turn on notifications on iPhone/iPad"
 
 #: src/pages/clan/Settings.tsx
-msgid "Bật/tắt thông tin hiển thị và phần người ngoài được xem. Tên, mô tả, chi và nội dung sổ gia phả sửa ở trang “Thông tin & Sổ gia phả”."
-msgstr "Turn on or off the information shown and what outsiders may see. The name, description, branches and family book text are edited on the “Details & Family book” page."
+msgid "Bật/tắt thông tin hiển thị, phần người ngoài được xem và viền avatar. Tên, mô tả và nội dung sổ gia phả sửa ở trang “Thông tin & Sổ gia phả”; chi ở mục “Chi (nhánh)”."
+msgstr "Toggle what is displayed, what outsiders can see and the avatar frame. Name, description and the genealogy book text are edited on “Info & genealogy book”; branches under “Branches”."
 
 #: src/components/Tree3DView.tsx
 msgid "bay tới xem"
@@ -1815,10 +1811,6 @@ msgstr "Clear selection"
 #: src/pages/admin/PodcastPage.tsx
 msgid "Bỏ chọn để ẩn tập không phù hợp (không xoá khỏi kho)."
 msgstr "Untick to hide an unsuitable episode (it is not deleted from the library)."
-
-#: src/pages/clan/QrExport.tsx
-msgid "Bỏ chọn tất cả"
-msgstr "Deselect all"
 
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Bố cục đã lưu sẽ bị xoá vĩnh viễn."
@@ -1964,7 +1956,11 @@ msgstr "Income and expenses"
 msgid "Các cây tự thiết kế của dòng họ: kéo thả thẻ, nối đường, chọn nền rồi xuất PDF."
 msgstr "The clan's self-designed trees: drag cards, connect lines, choose a background, then export a PDF."
 
-#: src/pages/clan/BookInfo.tsx
+#: src/lib/navModel.tsx
+msgid "Các chi của dòng họ, trưởng chi, nhà thờ chi."
+msgstr "The clan's branches, branch heads and branch halls."
+
+#: src/pages/clan/Branches.tsx
 msgid "Các chi/nhánh của dòng họ. Mỗi người có thể thuộc một chi."
 msgstr "The clan's branches. Each person can belong to one branch."
 
@@ -1989,6 +1985,7 @@ msgid "Các mốc trong đời người, từ lúc sinh đến lúc mất. Mốc
 msgstr "Milestones in a person's life, from birth to death. The \"Birth\" and \"Death\" milestones are added automatically from the birth and death dates."
 
 #: src/components/BranchesSection.tsx
+#: src/pages/clan/Branches.tsx
 msgid "Các người đang thuộc chi này sẽ không còn chi."
 msgstr "People currently in this branch will no longer belong to a branch."
 
@@ -2478,12 +2475,20 @@ msgstr "Copy token"
 msgid "Chép token ngay — sẽ không hiện lại lần nữa. Mất thì tạo token mới."
 msgstr "Copy the token now — it will not be shown again. If lost, create a new one."
 
+#: src/pages/clan/Branches.tsx
+msgid "chi"
+msgstr "branches"
+
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Import.tsx
 msgid "Chi"
 msgstr "Branch"
 
-#: src/pages/clan/BookInfo.tsx
+#: src/lib/navModel.tsx
+#: src/lib/queries/global-search.ts
+#: src/pages/clan/Branches.tsx
+#: src/pages/clan/Branches.tsx
+#: src/pages/clan/Branches.tsx
 msgid "Chi (nhánh)"
 msgstr "Branch"
 
@@ -2550,6 +2555,10 @@ msgstr "Expenses only"
 #: src/pages/clan/ClanFund.tsx
 msgid "Chỉ khoản thu"
 msgstr "Income only"
+
+#: src/pages/clan/QrExport.tsx
+msgid "Chỉ người đã mất"
+msgstr "Deceased only"
 
 #: src/pages/clan/EditPerson.tsx
 msgid "Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu bia mộ ghi ngày âm."
@@ -2748,12 +2757,19 @@ msgstr "Select {title}"
 msgid "Chọn ảnh"
 msgstr "Choose an image"
 
+#. placeholder {0}: shown.length
+#: src/pages/clan/QrExport.tsx
+msgid "Chọn cả {0}"
+msgstr "Select all {0}"
+
 #: src/pages/clan/People.tsx
 msgid "Chọn cả {total} kết quả"
 msgstr "Select all {total} results"
 
 #. placeholder {0}: data.rows.length
+#. placeholder {0}: paging.paged.length
 #: src/pages/clan/People.tsx
+#: src/pages/clan/QrExport.tsx
 msgid "Chọn cả trang ({0})"
 msgstr "Select page ({0})"
 
@@ -2888,10 +2904,6 @@ msgstr "Choose which parts people outside the clan (signed in, but not members) 
 msgid "Chọn quan hệ với người này:"
 msgstr "Choose the relationship to this person:"
 
-#: src/pages/clan/QrExport.tsx
-msgid "Chọn tất cả"
-msgstr "Select all"
-
 #. placeholder {0}: clans.length
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "Chọn tất cả {0} dòng họ"
@@ -2974,6 +2986,7 @@ msgstr "The sync has never run. Check FB_PAGE_ID / FB_PAGE_TOKEN and the cron sc
 
 #: src/components/AddressPicker.tsx
 #: src/components/AddressPicker.tsx
+#: src/pages/clan/Branches.tsx
 msgid "Chưa chọn"
 msgstr "Not selected"
 
@@ -3036,6 +3049,10 @@ msgstr "No updates have been published yet. Please check back later."
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Chưa có cây nào"
 msgstr "No trees yet"
+
+#: src/pages/clan/Branches.tsx
+msgid "Chưa có chi nào"
+msgstr "No branches yet"
 
 #: src/components/BranchesSection.tsx
 msgid "Chưa có chi nào."
@@ -3659,10 +3676,6 @@ msgstr "My clans"
 msgid "Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng loạt rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên tự, ảnh, nơi sinh…) không được mang theo."
 msgstr "The same 9 columns as the Import from Excel template — export it to edit in bulk, then import it back. Fields outside these 9 columns (lunar dates, courtesy name, photos, place of birth…) are not carried over."
 
-#: src/pages/clan/BookInfo.tsx
-msgid "Cùng bộ ô với lúc tạo dòng họ."
-msgstr "The same fields as when the clan was created."
-
 #: src/pages/clan/Kinship.tsx
 msgid "Cùng một người."
 msgstr "The same person."
@@ -3808,6 +3821,12 @@ msgstr "{0} clans selected"
 #: src/pages/clan/People.tsx
 msgid "Đã chọn {0} người khớp bộ lọc"
 msgstr "Selected {0} people matching the filter"
+
+#. placeholder {0}: selected.size
+#. placeholder {1}: shown.length
+#: src/pages/clan/QrExport.tsx
+msgid "Đã chọn {0}/{1}"
+msgstr "{0}/{1} selected"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Đã chọn {count} {unit}"
@@ -4089,6 +4108,10 @@ msgstr "Settings saved"
 msgid "Đã lưu cài đặt theo dõi"
 msgstr "Follow settings saved"
 
+#: src/pages/clan/Branches.tsx
+msgid "Đã lưu chi"
+msgstr "Branch saved"
+
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Đã lưu đoạn ghi âm"
 msgstr "Recording saved"
@@ -4314,6 +4337,7 @@ msgid "Đã thêm cha/mẹ"
 msgstr "Parent added"
 
 #: src/components/BranchesSection.tsx
+#: src/pages/clan/Branches.tsx
 msgid "Đã thêm chi"
 msgstr "Branch added"
 
@@ -5060,6 +5084,7 @@ msgstr "loading…"
 #: src/pages/clan/BoardModeration.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/BoardPostEdit.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/ContributionDetail.tsx
@@ -5249,6 +5274,10 @@ msgstr "Mark as read"
 #: src/pages/clan/NewPerson.tsx
 msgid "Đánh dấu khi đây là gốc của dòng họ (đời 1). Có thể có nhiều Thuỷ tổ nếu nhiều chi tách lập."
 msgstr "Tick when this person is the root of the clan (generation 1). There can be several founding ancestors if several branches were founded separately."
+
+#: src/pages/clan/QrExport.tsx
+msgid "Đánh dấu người cần in ở danh sách rồi bấm Xuất PDF."
+msgstr "Tick the people to print in the list, then tap Export PDF."
 
 #: src/pages/Announcements.tsx
 msgid "Đánh dấu tất cả ({unreadCount})"
@@ -5735,10 +5764,6 @@ msgstr "Change branch for {0} people"
 msgid "Đời đến"
 msgstr "Generation to"
 
-#: src/pages/clan/QrExport.tsx
-msgid "Đổi điều kiện ở trên."
-msgstr "Change the conditions above."
-
 #: src/pages/clan/InlawsNew.tsx
 msgid "Đổi dòng họ"
 msgstr "Change clan"
@@ -5793,6 +5818,10 @@ msgstr "Generation {gen}: {n} people ({0})"
 #: src/pages/clan/QrExport.tsx
 msgid "Đời từ"
 msgstr "Generation from"
+
+#: src/pages/clan/QrExport.tsx
+msgid "Đổi từ khoá hoặc bộ lọc trong Tuỳ chọn."
+msgstr "Change the keyword or the filters in Options."
 
 #: src/pages/CustomsForm.tsx
 msgid "Đối tượng áp dụng"
@@ -6004,6 +6033,10 @@ msgstr "Dòng Họ Việt"
 #: src/components/AppDrawer.tsx
 msgid "Đóng menu"
 msgstr "Close menu"
+
+#: src/pages/clan/Branches.tsx
+msgid "Đông người nhất"
+msgstr "Most members"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Dòng nhãn (vd \"Tin vui dòng họ\")"
@@ -6277,6 +6310,7 @@ msgstr "Recorded stories"
 msgid "Ghi chú"
 msgstr "Note"
 
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -6463,6 +6497,10 @@ msgstr "The clan's death anniversaries, birthdays and shared events."
 #: src/pages/clan/Settings.tsx
 msgid "Giới hạn"
 msgstr "Limit"
+
+#: src/pages/clan/QrExport.tsx
+msgid "Giới hạn {MAX_PER_EXPORT} người mỗi lần — thu hẹp bằng bộ lọc trong Tuỳ chọn."
+msgstr "Limited to {MAX_PER_EXPORT} people per export — narrow it down with the filters in Options."
 
 #: src/pages/admin/Clans.tsx
 msgid "Giới hạn người"
@@ -7382,6 +7420,10 @@ msgstr "Print on gravestones, business cards"
 msgid "In ngày {0}"
 msgstr "Printed on {0}"
 
+#: src/pages/clan/BookInfo.tsx
+msgid "In ở bìa và trang đầu của sổ gia phả PDF."
+msgstr "Printed on the cover and first page of the genealogy book PDF."
+
 #: src/lib/nextSteps.ts
 msgid "In thành cuốn sổ có bìa"
 msgstr "Printed as a book with a cover"
@@ -7687,6 +7729,10 @@ msgstr "No trees match \"{search}\"."
 #: src/pages/clan/People.tsx
 msgid "không có chi"
 msgstr "no branch"
+
+#: src/pages/clan/Branches.tsx
+msgid "Không có chi nào khớp"
+msgstr "No matching branches"
 
 #: src/pages/clan/Cemeteries.tsx
 msgid "Không có cơ sở nào khớp"
@@ -7997,6 +8043,7 @@ msgstr "Could not get the location (permission needed)"
 #: src/pages/admin/PodcastPage.tsx
 #: src/pages/admin/Users.tsx
 #: src/pages/clan/BookInfo.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/EditPerson.tsx
@@ -8260,6 +8307,7 @@ msgstr "Could not confirm"
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/Health.tsx
 #: src/pages/admin/Users.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Events.tsx
@@ -8859,6 +8907,10 @@ msgstr "Filter clans"
 msgid "Lọc góp ý"
 msgstr "Filter feedback"
 
+#: src/pages/clan/QrExport.tsx
+msgid "Lọc người cần xuất QR"
+msgstr "Filter people for QR export"
+
 #: src/pages/admin/Users.tsx
 msgid "Lọc người dùng"
 msgstr "Filter users"
@@ -9052,6 +9104,7 @@ msgstr "Grid"
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/AddSpouse.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/EditPerson.tsx
@@ -10282,6 +10335,7 @@ msgstr "Five Elements {0}"
 #: src/components/MapOverviewCard.tsx
 #: src/pages/clan/MapStats.tsx
 #: src/pages/clan/People.tsx
+#: src/pages/clan/QrExport.tsx
 msgid "người"
 msgstr "people"
 
@@ -10499,6 +10553,10 @@ msgstr "Photo source"
 msgid "Nguồn gốc (chọn nhiều)"
 msgstr "Origin (choose several)"
 
+#: src/pages/clan/Branches.tsx
+msgid "Nguồn gốc, đời tách chi…"
+msgstr "Origin, generation the branch split off…"
+
 #. placeholder {0}: (entry.origins ?? []).map((o) => CUSTOM_ORIGIN_LABEL[o]).join(", ")
 #: src/pages/CustomsDetail.tsx
 msgid "Nguồn gốc: {0}"
@@ -10533,6 +10591,10 @@ msgstr "Ashes house / columbarium tower"
 #: src/pages/CustomsForm.tsx
 msgid "nhà mới, chuyển nhà, tân gia"
 msgstr "new house, moving house, housewarming"
+
+#: src/pages/clan/Branches.tsx
+msgid "Nhà thờ chi (tuỳ chọn)"
+msgstr "Branch hall (optional)"
 
 #: src/components/BookMetaFields.tsx
 msgid "Nhà thờ họ"
@@ -11262,6 +11324,10 @@ msgstr "The admins haven't seen it yet. You can still edit or delete this feedba
 msgid "Quản trị đã xem nên góp ý này không sửa hoặc xoá được nữa."
 msgstr "The admins have seen it, so this feedback can no longer be edited or deleted."
 
+#: src/pages/clan/Branches.tsx
+msgid "Quản trị dòng họ sẽ thêm các chi."
+msgstr "Clan admins will add branches."
+
 #: src/lib/navModel.tsx
 msgid "Quản trị hệ thống"
 msgstr "System administration"
@@ -11485,6 +11551,8 @@ msgstr "Copy as a new person"
 msgid "Sắp đầy. Hãy xoá bớt ảnh/ghi âm cũ trước khi thêm mới."
 msgstr "Almost full. Delete some old photos / recordings before adding new ones."
 
+#: src/pages/clan/Branches.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/TreeCanvases.tsx
@@ -11852,6 +11920,10 @@ msgstr "Edit mosaic"
 msgid "Sửa cây trực tiếp. Dùng cho người thân tin cậy."
 msgstr "Edit the tree directly. For trusted relatives."
 
+#: src/pages/clan/Branches.tsx
+msgid "Sửa chi"
+msgstr "Edit branch"
+
 #: src/pages/clan/EditPerson.tsx
 msgid "Sửa chi tiết khác"
 msgstr "Edit more details"
@@ -11926,8 +11998,8 @@ msgid "Sửa thông tin"
 msgstr "Edit details"
 
 #: src/pages/clan/BookInfo.tsx
-msgid "Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF."
-msgstr "Edit the clan's details and write the content for the PDF family book."
+msgid "Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF. Chi (nhánh) ở mục riêng trong Tính năng."
+msgstr "Edit clan info and write the genealogy book PDF text. Branches have their own entry under Features."
 
 #: src/pages/admin/Announcements.tsx
 msgid "Sửa tin"
@@ -12360,6 +12432,7 @@ msgid "Tên / tiêu đề"
 msgstr "Name / title"
 
 #: src/components/HistoricalClansSection.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Tên A → Z"
 msgstr "Name A → Z"
@@ -12382,6 +12455,10 @@ msgstr "Tree name"
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Tên cây không được để trống"
 msgstr "The tree name can't be empty"
+
+#: src/pages/clan/Branches.tsx
+msgid "Tên chi"
+msgstr "Branch name"
 
 #: src/components/BranchesSection.tsx
 msgid "Tên chi mới"
@@ -12519,6 +12596,10 @@ msgstr "Courtesy name, taboo name, posthumous name, date of death, birth order, 
 msgid "Tên ứng dụng do chính ứng dụng tự khai. Chỉ cho phép nếu bạn vừa tự bấm kết nối từ Claude, ChatGPT hoặc ứng dụng bạn tin."
 msgstr "The app name is self-declared by the app. Only allow if you just started this connection yourself from Claude, ChatGPT or an app you trust."
 
+#: src/pages/clan/Branches.tsx
+msgid "Tên và địa chỉ nhà thờ của chi"
+msgstr "Name and address of the branch hall"
+
 #: src/components/BookMetaFields.tsx
 msgid "Tên và địa chỉ nhà thờ họ (từ đường)"
 msgstr "Name and address of the clan ancestral hall (từ đường)"
@@ -12530,6 +12611,10 @@ msgstr "Spouse's name"
 #: src/components/HistoricalClansSection.tsx
 msgid "Tên Z → A"
 msgstr "Name Z → A"
+
+#: src/pages/clan/BookInfo.tsx
+msgid "Tên, mô tả — cùng bộ ô với lúc tạo dòng họ."
+msgstr "Name and description — same fields as when the clan was created."
 
 #: src/lib/festivals.ts
 msgid "Tết Đoan Ngọ"
@@ -12746,6 +12831,7 @@ msgstr "Cards: Horizontal"
 #: src/components/gallery/GalleryScene.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Events.tsx
@@ -12813,6 +12899,8 @@ msgid "Thêm cha/mẹ"
 msgstr "Add a parent"
 
 #: src/components/BranchesSection.tsx
+#: src/pages/clan/Branches.tsx
+#: src/pages/clan/Branches.tsx
 msgid "Thêm chi"
 msgstr "Add branch"
 
@@ -13320,6 +13408,7 @@ msgstr "Try removing some keywords or widening the time range."
 msgid "Thử bỏ bớt từ khoá, đổi chi hoặc đời để mở rộng kết quả."
 msgstr "Try removing some keywords, or change the branch or generation to widen the results."
 
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/MemoryRooms.tsx
@@ -13571,6 +13660,10 @@ msgstr "Search updates"
 msgid "Tìm cây"
 msgstr "Find trees"
 
+#: src/pages/clan/Branches.tsx
+msgid "Tìm chi"
+msgstr "Search branches"
+
 #: src/pages/clan/Cemeteries.tsx
 msgid "Tìm cơ sở"
 msgstr "Find sites"
@@ -13646,6 +13739,11 @@ msgstr "Find the option to add a custom MCP server / connector and enter two thi
 #: src/pages/clan/GoodDays.tsx
 msgid "Tìm ngày đẹp cho việc lớn"
 msgstr "Find a good day for a major event"
+
+#: src/pages/clan/Branches.tsx
+#: src/pages/clan/QrExport.tsx
+msgid "Tìm người"
+msgstr "Find a person"
 
 #: src/pages/clan/Relations.tsx
 msgid "Tìm người cần xem quan hệ"
@@ -13768,6 +13866,10 @@ msgstr "Search by name / content…"
 msgid "Tìm theo tên cây…"
 msgstr "Search by tree name…"
 
+#: src/pages/clan/Branches.tsx
+msgid "Tìm theo tên chi, trưởng chi, nhà thờ…"
+msgstr "Search by branch name, head, hall…"
+
 #: src/pages/clan/InlawsNew.tsx
 msgid "Tìm theo tên dòng họ"
 msgstr "Search by clan name"
@@ -13817,6 +13919,7 @@ msgid "Tìm theo tên, mô tả…"
 msgstr "Search by name, description…"
 
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/QrExport.tsx
 msgid "Tìm theo tên…"
 msgstr "Search by name…"
 
@@ -14420,6 +14523,10 @@ msgstr "before"
 msgid "Trường"
 msgstr "Field"
 
+#: src/pages/clan/Branches.tsx
+msgid "Trưởng chi (tuỳ chọn)"
+msgstr "Branch head (optional)"
+
 #: src/components/BookMetaFields.tsx
 msgid "Trưởng họ / người chủ trì"
 msgstr "Clan head / presiding elder (trưởng họ)"
@@ -14584,6 +14691,10 @@ msgstr "Canvas options"
 #: src/pages/Share.tsx
 msgid "Tuỳ chọn cây"
 msgstr "Tree options"
+
+#: src/pages/clan/Branches.tsx
+msgid "Tuỳ chọn chi"
+msgstr "Branch options"
 
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
@@ -14750,6 +14861,10 @@ msgstr "E.g. Need a photo of the death certificate to confirm the date of death"
 #: src/components/BranchesSection.tsx
 msgid "Vd: Chi cả"
 msgstr "E.g. Eldest branch"
+
+#: src/pages/clan/Branches.tsx
+msgid "Vd: Chi Giáp, Chi trưởng"
+msgstr "E.g. Giáp branch, Senior branch"
 
 #: src/pages/admin/GiaPha.tsx
 msgid "vd: Chi họ Cao Minh Triết"
@@ -15029,6 +15144,7 @@ msgid "Viền avatar"
 msgstr "Avatar frame"
 
 #: src/components/ClanFormFields.tsx
+#: src/pages/clan/Settings.tsx
 msgid "Viền avatar cả dòng họ"
 msgstr "Avatar frame for the whole clan"
 
@@ -15468,6 +15584,7 @@ msgstr "View tasks"
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
+#: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/ClanFund.tsx
@@ -15584,7 +15701,9 @@ msgid "Xoá câu hỏi"
 msgstr "Delete question"
 
 #. placeholder {0}: branch.name
+#. placeholder {0}: panel.branch.name
 #: src/components/BranchesSection.tsx
+#: src/pages/clan/Branches.tsx
 msgid "Xoá chi \"{0}\"?"
 msgstr "Delete the branch \"{0}\"?"
 
@@ -15797,8 +15916,8 @@ msgstr "Export PDF"
 
 #. placeholder {0}: selected.size
 #: src/pages/clan/QrExport.tsx
-msgid "Xuất PDF ({0})"
-msgstr "Export PDF ({0})"
+msgid "Xuất PDF ({0} người đã chọn)"
+msgstr "Export PDF ({0} selected)"
 
 #: src/pages/clan/ClanFund.tsx
 msgid "Xuất PDF sổ quỹ"
@@ -15826,6 +15945,10 @@ msgstr "Export the family book as PDF"
 #: src/pages/clan/Tree.tsx
 msgid "Xuất sổ PDF"
 msgstr "Export book as PDF"
+
+#: src/pages/clan/QrExport.tsx
+msgid "Xuất thẻ QR"
+msgstr "Export QR cards"
 
 #: src/pages/clan/Tree.tsx
 msgid "Xuất toàn bộ thông tin dòng họ thành sổ PDF"

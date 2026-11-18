@@ -29,6 +29,7 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -529,10 +530,7 @@ function FundForm({
       }}
       className="space-y-3"
     >
-      <fieldset
-        disabled={readOnly}
-        className={`m-0 min-w-0 space-y-3 border-0 p-0 ${readOnly ? "read-view [&_:disabled]:!cursor-default [&_:disabled]:!opacity-100" : ""}`}
-      >
+      <ReadOnlyFieldset readOnly={readOnly}>
         <SegmentedControl ariaLabel={t`Loại giao dịch`} className="w-full">
           <SegmentedButton
             active={direction === "in"}
@@ -555,16 +553,23 @@ function FundForm({
             <Label htmlFor="fund-amount" required>
               {t`Số tiền (đ)`}
             </Label>
-            <Input
-              id="fund-amount"
-              icon={<IconWallet />}
-              type="number"
-              inputMode="numeric"
-              min="1"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Vd: 500000"
-            />
+            {readOnly ? (
+              // Xem: số tiền có dấu phân cách (vd 5.000.000 đ) thay cho ô số "5000000".
+              <p className="text-base font-medium tabular-nums">
+                {amount ? formatVnd(Number(amount)) : "—"}
+              </p>
+            ) : (
+              <Input
+                id="fund-amount"
+                icon={<IconWallet />}
+                type="number"
+                inputMode="numeric"
+                min="1"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Vd: 500000"
+              />
+            )}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="fund-name">{t`Quỹ`}</Label>
@@ -612,7 +617,7 @@ function FundForm({
             placeholder={t`Người đóng góp / chi tiết khoản chi…`}
           />
         </div>
-      </fieldset>
+      </ReadOnlyFieldset>
       {readOnly ? (
         canEdit && (
           <FormActions>

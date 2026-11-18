@@ -559,6 +559,12 @@ export function buildSections(
     if (isMember) {
       workItems.push(
         {
+          to: `/clans/${clanId}/branches`,
+          label: t`Chi (nhánh)`,
+          hint: t`Các chi của dòng họ, trưởng chi, nhà thờ chi.`,
+          icon: <IconTree className={ic} />,
+        },
+        {
           to: `/clans/${clanId}/todo`,
           label: t`Việc cần làm`,
           hint: t`App dò chỗ còn thiếu trong gia phả.`,

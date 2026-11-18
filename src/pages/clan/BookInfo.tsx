@@ -5,14 +5,12 @@ import { Navigate } from "react-router-dom";
 import { BookMetaFields } from "@/components/BookMetaFields";
 import {
   ClanBasicFields,
-  ClanDisplayFields,
   clanFormFromClan,
   clanFormToColumns,
   type ClanFormValues,
 } from "@/components/ClanFormFields";
 import { BookTextsSection } from "@/components/BookTextsSection";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { BranchesSection } from "@/components/BranchesSection";
 import { friendlyError } from "@/components/ErrorState";
 import { IconBook, IconCheck } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
@@ -77,10 +75,12 @@ export default function BookInfo() {
   const mutation = useMutation({
     mutationFn: async () => {
       // Cột dòng họ chỉ quản trị ghi được (RLS); người biên tập chỉ lưu phần sổ.
+      // Chỉ ghi các ô CÓ trên trang này (tên, mô tả) — tuỳ chọn hiển thị và viền avatar nằm ở Cài đặt dòng họ, ghi lại
+      // giá trị lúc mở trang sẽ đè thay đổi vừa làm bên đó.
       if (admin) {
-        const { description, ...cols } = clanFormToColumns(values);
+        const { name, description } = clanFormToColumns(values);
         await updateClan(clan.id, {
-          ...cols,
+          name,
           description: description ?? null,
         });
       }
@@ -120,6 +120,23 @@ export default function BookInfo() {
   if (!canEditClan(clan)) {
     return <Navigate to={`/clans/${clan.id}/people`} replace />;
   }
+  const saveButton = (
+    <Button
+      type="submit"
+      variant="outline"
+      disabled={mutation.isPending || (admin && !values.name.trim())}
+    >
+      {mutation.isPending ? (
+        t`Đang lưu…`
+      ) : (
+        <>
+          <IconCheck className="h-4 w-4 mr-1.5" />
+          {t`Lưu thay đổi`}
+        </>
+      )}
+    </Button>
+  );
+
   return (
     <div className="space-y-3">
       <Breadcrumb
@@ -131,69 +148,52 @@ export default function BookInfo() {
       <PageHeader
         icon={<IconBook className="h-7 w-7" />}
         title={t`Thông tin & Sổ gia phả`}
-        description={t`Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF.`}
+        description={t`Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF. Chi (nhánh) ở mục riêng trong Tính năng.`}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t`Thông tin dòng họ`}</CardTitle>
-          <CardDescription>
-            {admin
-              ? t`Cùng bộ ô với lúc tạo dòng họ.`
-              : t`Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ.`}
-          </CardDescription>
-        </CardHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!admin || values.name.trim()) mutation.mutate();
-          }}
-        >
+      {/* Hai thẻ riêng (cơ bản / cho sổ) thay vì một thẻ dài — tuỳ chọn hiển thị ở Cài đặt dòng họ (trùng ô); mỗi thẻ thu gọn được — Card chỉ thu gọn
+          khi CardContent là con TRỰC TIẾP, nên <form> bọc NGOÀI các thẻ. Nút Lưu ở thẻ nào cũng lưu cả form. */}
+      <form
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!admin || values.name.trim()) mutation.mutate();
+        }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>{t`Thông tin dòng họ`}</CardTitle>
+            <CardDescription>
+              {admin
+                ? t`Tên, mô tả — cùng bộ ô với lúc tạo dòng họ.`
+                : t`Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ.`}
+            </CardDescription>
+          </CardHeader>
           <CardContent className="space-y-5">
             <ClanBasicFields
               value={values}
               onChange={setValues}
               disabled={!admin}
               idPrefix="edit"
-            />
-            <fieldset className="space-y-3">
-              <legend className="text-base font-medium mb-1">{t`Thông tin cho sổ gia phả`}</legend>
-              <BookMetaFields value={meta} onChange={setMeta} idPrefix="edit" />
-            </fieldset>
-            <ClanDisplayFields
-              value={values}
-              onChange={setValues}
-              disabled={!admin}
+              showFrame={false}
             />
           </CardContent>
-          <CardFooter className="justify-end border-t pt-4">
-            <Button
-              type="submit"
-              variant="outline"
-              disabled={mutation.isPending || (admin && !values.name.trim())}
-            >
-              {mutation.isPending ? (
-                t`Đang lưu…`
-              ) : (
-                <>
-                  <IconCheck className="h-4 w-4 mr-1.5" />
-                  {t`Lưu thay đổi`}
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+          <CardFooter className="justify-end">{saveButton}</CardFooter>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t`Chi (nhánh)`}</CardTitle>
-          <CardDescription>{t`Các chi/nhánh của dòng họ. Mỗi người có thể thuộc một chi.`}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BranchesSection clanId={clan.id} canEdit={admin} />
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t`Thông tin cho sổ gia phả`}</CardTitle>
+            <CardDescription>
+              {t`In ở bìa và trang đầu của sổ gia phả PDF.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <BookMetaFields value={meta} onChange={setMeta} idPrefix="edit" />
+          </CardContent>
+          <CardFooter className="justify-end">{saveButton}</CardFooter>
+        </Card>
+      </form>
 
       <Card>
         <CardHeader>

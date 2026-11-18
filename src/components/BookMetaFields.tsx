@@ -1,5 +1,15 @@
 import { msg } from "@lingui/core/macro";
 import { lazyAs } from "@/lib/i18n/lazy";
+import {
+  IconBuildings,
+  IconCalendar,
+  IconClock,
+  IconHome,
+  IconMapPin,
+  IconPhone,
+  IconUser,
+  IconUsers,
+} from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ClanBookTexts } from "@/lib/queries/clan-book";
@@ -69,6 +79,18 @@ const FIELDS: {
 ]);
 
 /** Các ô thông tin biên soạn của sổ gia phả — dùng ở form tạo và trang Sổ gia phả. */
+/** Icon từng ô (quy ước: mọi ô nhập có icon — docs/design-language.md). Tách khỏi FIELDS vì lazyAs xử lý chuỗi dịch. */
+const FIELD_ICON: Record<string, JSX.Element> = {
+  place_line: <IconMapPin />,
+  origin_place: <IconHome />,
+  ancestral_hall: <IconBuildings />,
+  ancestor_anniversary: <IconCalendar />,
+  chief_name: <IconUser />,
+  compilers: <IconUsers />,
+  compiled_year: <IconClock />,
+  contact: <IconPhone />,
+};
+
 export function BookMetaFields({
   value,
   onChange,
@@ -87,6 +109,7 @@ export function BookMetaFields({
           <Label htmlFor={`${idPrefix}-${f.key}`}>{f.label}</Label>
           <Input
             id={`${idPrefix}-${f.key}`}
+            icon={FIELD_ICON[f.key]}
             className="h-10"
             maxLength={f.max}
             disabled={disabled}

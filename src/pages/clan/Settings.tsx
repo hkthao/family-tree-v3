@@ -5,6 +5,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { CsvExportButton } from "@/components/CsvExportButton";
+import { AvatarFramePicker } from "@/components/AvatarFramePicker";
 import { GedcomButtons } from "@/components/GedcomButtons";
 import { friendlyError } from "@/components/ErrorState";
 import { useToast } from "@/components/Toast";
@@ -70,6 +71,7 @@ export default function Settings() {
     mutationFn: () =>
       updateClan(clan.id, {
         visibility: values.visibility,
+        avatar_frame: values.avatar_frame,
         hide_photos_in_share: values.hide_photos_in_share,
         generation_offset: values.root_is_gen_zero ? 1 : 0,
         display_death_details: values.display_death_details,
@@ -132,9 +134,9 @@ export default function Settings() {
               <Trans>
                 <Trans>
                   <Trans>
-                    Bật/tắt thông tin hiển thị và phần người ngoài được xem.
-                    Tên, mô tả, chi và nội dung sổ gia phả sửa ở trang “Thông
-                    tin &amp; Sổ gia phả”.
+                    Bật/tắt thông tin hiển thị, phần người ngoài được xem và
+                    viền avatar. Tên, mô tả và nội dung sổ gia phả sửa ở trang
+                    “Thông tin &amp; Sổ gia phả”; chi ở mục “Chi (nhánh)”.
                   </Trans>
                 </Trans>
               </Trans>
@@ -142,6 +144,13 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-5">
             <ClanDisplayFields value={values} onChange={setValues} />
+            <AvatarFramePicker
+              value={values.avatar_frame}
+              onChange={(f) => setValues({ ...values, avatar_frame: f })}
+              gender="M"
+              label={t`Viền avatar cả dòng họ`}
+              hint={t`Áp cho avatar của mọi thành viên trong họ.`}
+            />
 
             {mutation.error && (
               <Alert variant="destructive">
