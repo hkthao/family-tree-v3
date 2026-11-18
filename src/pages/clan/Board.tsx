@@ -8,7 +8,6 @@ import { formatRelative } from "@/components/ClanPostCard";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
-import { IconTile } from "@/components/IconTile";
 import {
   IconAward,
   IconBell,
@@ -270,9 +269,8 @@ function PostRow({
         to={`/clans/${clanId}/board/${post.id}`}
         panel="board-view"
         panelParams={{ pid: post.id }}
-        className="flex items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
+        className="block p-3 transition-colors hover:bg-muted/40"
       >
-        <IconTile icon={TypeIcon} tone={style.tone} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{post.title || post.body}</p>
           {post.title && (

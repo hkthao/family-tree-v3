@@ -8,7 +8,6 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { IconTile } from "@/components/IconTile";
 import {
   IconAward,
   IconCalendar,
@@ -338,9 +337,8 @@ function HonorRow({
       <button
         type="button"
         onClick={onOpen}
-        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+        className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
       >
-        <IconTile icon={style.icon} tone={style.tone} />
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{entry.honoree_name}</p>
           {entry.note && (
