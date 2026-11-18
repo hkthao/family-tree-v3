@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ScrollManager, isOverlayOnlyChange } from "@/components/ScrollManager";
 
-const STORE_KEY = "family-tree:scroll-positions-v1";
+const STORE_KEY = "family-tree:scroll-positions-v2";
 
 /**
  * Vuốt quay lại trên điện thoại có thể NẠP LẠI cả trang (iOS giải phóng trang nền). Khi đó bộ nhớ mất hết,
@@ -56,11 +56,17 @@ describe("ScrollManager — khôi phục vị trí cuộn", () => {
     expect(tops.every((y) => y === 0)).toBe(true);
   });
 
-  it("khoá 'default' (lần mở đầu tiên của tab) không khôi phục vị trí của mục khác", () => {
-    sessionStorage.setItem(STORE_KEY, JSON.stringify({ default: 700 }));
-    mount("default");
-    const tops = scrollTo.mock.calls.map((c) => (c[0] as { top: number }).top);
-    expect(tops).not.toContain(700);
+  it("mục lịch sử ĐẦU TIÊN (location.key 'default') vẫn khôi phục được — khoá theo history.state.idx", () => {
+    // Trên iPhone: mở app vào danh sách, bấm vào một mục, vuốt quay lại. Trước đây mục đầu tiên không bao giờ
+    // khôi phục vì khoá 'default' bị bỏ qua.
+    window.history.replaceState({ idx: 0 }, "");
+    sessionStorage.setItem(STORE_KEY, JSON.stringify({ i0: 700 }));
+    try {
+      mount("default");
+      expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 700 }));
+    } finally {
+      window.history.replaceState(null, "");
+    }
   });
 
   it("sessionStorage hỏng thì bỏ qua êm, không văng lỗi", () => {

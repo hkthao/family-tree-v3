@@ -1,7 +1,8 @@
 import { PodcastThumb } from "@/components/PodcastThumb";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { IconMicrophone, IconPlay } from "@/components/icons";
@@ -10,7 +11,12 @@ import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { PlatformShell } from "@/components/PlatformShell";
 import { PodcastViewer } from "@/components/PodcastViewer";
-import { useUrlState } from "@/hooks/useUrlState";
+import { SearchInput } from "@/components/SearchInput";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
+import { useUrlPatch, useUrlState } from "@/hooks/useUrlState";
 import { formatDateOnly } from "@/lib/formatDate";
 import {
   formatDuration,
@@ -29,6 +35,21 @@ import { t } from "@lingui/core/macro";
 export default function Podcast() {
   const [pageRaw, setPage] = useUrlState("trang", "");
   const page = Math.max(1, Number(pageRaw) || 1);
+  const [q] = useUrlState("q", "");
+  const [order] = useUrlState("sx", "");
+  // Ghi URL MỘT lần cho cả bộ lọc + về trang đầu (hai setter liền nhau ghi đè nhau).
+  const patch = useUrlPatch();
+  const oldestFirst = order === "cu";
+  // Ô tìm: gõ xong 300ms mới ghi URL và về trang đầu.
+  const [searchText, setSearchText] = useState(q);
+  useEffect(() => {
+    const h = setTimeout(() => {
+      if (searchText.trim() !== q)
+        patch({ q: searchText.trim() || null, trang: null });
+    }, 300);
+    return () => clearTimeout(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText]);
 
   // MỘT tập mở tại một thời điểm, trong trình xem riêng.
   //
@@ -38,8 +59,12 @@ export default function Podcast() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ["podcast-page", page],
-    queryFn: () => listPodcastPage(page),
+    queryKey: ["podcast-page", page, q, oldestFirst],
+    queryFn: () =>
+      listPodcastPage(page, PODCAST_PAGE_SIZE, undefined, {
+        search: q,
+        oldestFirst,
+      }),
     // Ngắn thôi: tập mới đăng xong mà người dùng phải chờ hết giờ mới thấy
     // thì họ tưởng đồng bộ hỏng.
     staleTime: 30_000,
@@ -57,14 +82,54 @@ export default function Podcast() {
         description={t`Những câu chuyện ngắn để nghe lúc rảnh — mỗi tập một câu hỏi đáng nghĩ.`}
       />
 
+      {/* Ô tìm + icon Tuỳ chọn (thứ tự) — kiểu chung các màn danh sách. */}
+      <CollapsibleFilters
+        activeCount={oldestFirst ? 1 : 0}
+        onReset={() => patch({ sx: null, trang: null })}
+        title={t`Tuỳ chọn podcast`}
+        search={(toggle) => (
+          <SearchInput
+            label={t`Tìm tập podcast`}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder={t`Tìm theo tên tập, nội dung…`}
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <section className="flex flex-col gap-2">
+          <p className="text-base font-medium">{t`Thứ tự`}</p>
+          <SegmentedControl ariaLabel={t`Thứ tự`} className="flex">
+            <SegmentedButton
+              active={!oldestFirst}
+              onClick={() => patch({ sx: null, trang: null })}
+              className="flex-1"
+            >
+              {t`Mới nhất`}
+            </SegmentedButton>
+            <SegmentedButton
+              active={oldestFirst}
+              onClick={() => patch({ sx: "cu", trang: null })}
+              className="flex-1"
+            >
+              {t`Cũ nhất`}
+            </SegmentedButton>
+          </SegmentedControl>
+        </section>
+      </CollapsibleFilters>
+
       {isLoading && <LoadingState label={t`Đang tải danh sách tập…`} />}
       {error && <ErrorState error={error} onRetry={() => refetch()} />}
 
       {data && total === 0 && (
         <EmptyState
           icon={<IconMicrophone className="h-8 w-8" />}
-          title={t`Chưa có tập nào`}
-          description={t`Tập mới sẽ xuất hiện ở đây ngay sau khi đăng.`}
+          title={q ? t`Không có tập nào khớp` : t`Chưa có tập nào`}
+          description={
+            q
+              ? t`Thử từ khoá khác.`
+              : t`Tập mới sẽ xuất hiện ở đây ngay sau khi đăng.`
+          }
         />
       )}
 

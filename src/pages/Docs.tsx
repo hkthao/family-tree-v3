@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { Link, NavLink, useParams } from "react-router-dom";
+import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconBook, IconScroll, IconSearch } from "@/components/icons";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { FeedRow } from "@/components/FeedRow";
+import { IconBook, IconScroll } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { SearchInput } from "@/components/SearchInput";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { unaccent } from "@/lib/unaccent";
 
 import {
@@ -45,6 +52,7 @@ export default function Docs() {
 
 function Index() {
   const [query, setQuery] = useState("");
+  const navigate = useNavigate();
   const needle = unaccent(query.trim());
 
   const filtered = needle
@@ -66,53 +74,56 @@ function Index() {
         description={t`Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được).`}
       />
 
-      <div className="flex gap-2">
-        <span className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm text-primary-foreground">
-          {t`Bài viết`}
-        </span>
-        <Link
-          to="/huong-dan-video"
-          className="rounded-full border bg-card px-4 py-1.5 text-sm hover:border-primary"
-        >
-          Video
-        </Link>
-      </div>
-
-      <div className="relative">
-        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t`Tìm theo từ khoá…`}
-          className="w-full h-12 pl-10 pr-3 rounded-md border border-input bg-background text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
+      {/* Ô tìm + icon Tuỳ chọn (Bài viết / Video) — kiểu chung các màn danh sách. */}
+      <CollapsibleFilters
+        title={t`Tuỳ chọn trợ giúp`}
+        search={(toggle) => (
+          <SearchInput
+            label={t`Tìm trợ giúp`}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t`Tìm theo từ khoá…`}
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <section className="flex flex-col gap-2">
+          <p className="text-base font-medium">{t`Loại hướng dẫn`}</p>
+          <SegmentedControl ariaLabel={t`Loại hướng dẫn`} className="flex">
+            <SegmentedButton active onClick={() => {}} className="flex-1">
+              {t`Bài viết`}
+            </SegmentedButton>
+            <SegmentedButton
+              active={false}
+              onClick={() => navigate("/huong-dan-video")}
+              className="flex-1"
+            >
+              Video
+            </SegmentedButton>
+          </SegmentedControl>
+        </section>
+      </CollapsibleFilters>
 
       {filtered.length === 0 && (
         <p className="text-muted-foreground italic">
-          <Trans>
-          Không có bài nào khớp "{query}". Thử từ khoá ngắn hơn.
-          </Trans>
+          <Trans>Không có bài nào khớp "{query}". Thử từ khoá ngắn hơn.</Trans>
         </p>
       )}
 
       {filtered.map((section) => (
         <section key={section.label} className="space-y-2">
           <h2 className="text-lg font-semibold pt-2">{section.label}</h2>
-          <ul className="space-y-1.5">
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {section.articles.map((a) => (
-              <li key={a.slug}>
-                <Link
-                  to={`/docs/${a.slug}`}
-                  className="block rounded-md border bg-card px-4 py-3 hover:border-primary transition-colors"
-                >
-                  <p className="font-medium">{a.title}</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {a.summary}
-                  </p>
-                </Link>
-              </li>
+              <FeedRow
+                key={a.slug}
+                icon={IconScroll}
+                iconClass="text-primary"
+                title={a.title}
+                body={a.summary}
+                previewMax={2}
+                to={`/docs/${a.slug}`}
+              />
             ))}
           </ul>
         </section>
@@ -165,7 +176,7 @@ function ArticleView({ article }: { article: DocArticle }) {
                 className="rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
               >
                 <p className="text-xs text-muted-foreground">{t`← Trước`}</p>
-                <p className="text-sm font-medium truncate">{prev.title}</p>
+                <p className="text-sm font-medium line-clamp-2">{prev.title}</p>
               </Link>
             ) : (
               <span />
@@ -176,7 +187,7 @@ function ArticleView({ article }: { article: DocArticle }) {
                 className="rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors text-right"
               >
                 <p className="text-xs text-muted-foreground">{t`Tiếp →`}</p>
-                <p className="text-sm font-medium truncate">{next.title}</p>
+                <p className="text-sm font-medium line-clamp-2">{next.title}</p>
               </Link>
             ) : (
               <span />

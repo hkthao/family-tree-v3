@@ -23,7 +23,7 @@ import { useLocation, useNavigationType } from "react-router-dom";
  * Mount once inside <BrowserRouter>. Renders nothing.
  */
 
-const STORE_KEY = "family-tree:scroll-positions-v1";
+const STORE_KEY = "family-tree:scroll-positions-v2";
 
 /** Tham số URL chỉ để MỞ/ĐÓNG ngăn kéo (xem components/panel/usePanel.ts) — không phải đổi trang. */
 const OVERLAY_PARAMS = ["panel", "pid", "prel", "pfrom"] as const;
@@ -47,6 +47,16 @@ export function isOverlayOnlyChange(
   return strip(a.search) === strip(b.search);
 }
 const MAX_ENTRIES = 60;
+
+/**
+ * Khoá của mục lịch sử đang hiện. Dùng `history.state.idx` (React Router gắn cho MỌI mục, kể cả mục đầu tiên lúc mở
+ * app — mục này có `location.key === "default"` nên trước đây không bao giờ khôi phục được). `idx` còn nguyên khi iOS
+ * nạp lại trang nền, và mục lịch sử mới đè lên nhánh "tiến" cũ thì vị trí cũ cũng hết giá trị — đúng như mong muốn.
+ */
+function entryKey(fallback: string): string {
+  const idx = (window.history.state as { idx?: unknown } | null)?.idx;
+  return typeof idx === "number" ? `i${idx}` : fallback;
+}
 
 function readStore(): Record<string, number> {
   try {
@@ -94,14 +104,16 @@ export function ScrollManager() {
     }
   }, []);
 
-  // Track the current entry's scroll position via scroll events. KHÔNG lưu thêm ở cleanup: cleanup
-  // (passive) chạy SAU khi trang mới đã cuộn về đầu, nên sẽ ghi đè vị trí của trang cũ bằng 0.
+  // MỘT bộ nghe scroll cho cả app, luôn ghi vào mục lịch sử ĐANG HIỆN (`currentKey`). Trước đây mỗi trang gắn bộ nghe
+  // riêng và gỡ ở cleanup (chạy sau khi vẽ) — sự kiện scroll do lệnh "cuộn về đầu" của trang MỚI tới lúc bộ nghe
+  // của trang CŨ còn gắn, ghi đè vị trí trang cũ thành 0 → quay lại luôn về đầu. Giờ khoá được đổi sang mục mới
+  // (trong useLayoutEffect bên dưới) TRƯỚC khi cuộn, nên mục cũ giữ nguyên vị trí.
+  const currentKey = useRef(entryKey(location.key));
   useEffect(() => {
-    const key = location.key;
     let raf = 0;
     const save = () => {
       if (restoring.current) return;
-      positions.current.set(key, window.scrollY);
+      positions.current.set(currentKey.current, window.scrollY);
       // Ghi bền xuống sessionStorage, gộp theo khung hình để cuộn mượt không bị chậm.
       if (!raf) {
         raf = requestAnimationFrame(() => {
@@ -112,7 +124,8 @@ export function ScrollManager() {
     };
     // Trang bị đẩy xuống nền / sắp bị giải phóng: chốt vị trí hiện tại ngay.
     const flush = () => {
-      if (!restoring.current) positions.current.set(key, window.scrollY);
+      if (!restoring.current)
+        positions.current.set(currentKey.current, window.scrollY);
       writeStore(positions.current);
     };
     const onVisibility = () => {
@@ -127,12 +140,14 @@ export function ScrollManager() {
       window.removeEventListener("pagehide", flush);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [location.key]);
+  }, []);
 
   // Apply scroll on each navigation. useLayoutEffect so the jump
   // happens before paint — no flash at the wrong offset.
   useLayoutEffect(() => {
     restoring.current = false;
+    const key = entryKey(location.key);
+    currentKey.current = key;
     const prev = prevLoc.current;
     prevLoc.current = { pathname: location.pathname, search: location.search };
     // Mở/đóng ngăn kéo (kể cả đóng bằng vuốt-quay-lại): trang phía sau đứng yên, không cuộn lên đầu cũng không "khôi phục".
@@ -148,11 +163,7 @@ export function ScrollManager() {
     }
     if (navType !== "POP") return; // REPLACE: keep the current scroll position.
 
-    // Lần nạp đầu của một mục chưa từng có khoá riêng ("default") thì không có gì để khôi phục.
-    const target =
-      location.key === "default"
-        ? 0
-        : (positions.current.get(location.key) ?? 0);
+    const target = positions.current.get(key) ?? 0;
     window.scrollTo({
       top: target,
       left: 0,
@@ -187,7 +198,7 @@ export function ScrollManager() {
         if (!reachedAt) reachedAt = now;
         // Giữ ~1,5 giây sau khi tới nơi: nội dung nở/co muộn làm lệch thì cuộn lại.
         if (now - reachedAt > 1500) {
-          positions.current.set(location.key, window.scrollY);
+          positions.current.set(key, window.scrollY);
           stop();
           return;
         }

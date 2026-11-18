@@ -57,13 +57,18 @@ export async function listPodcastPage(
   page: number,
   pageSize = PODCAST_PAGE_SIZE,
   client: Client = defaultClient,
+  opts: { search?: string; oldestFirst?: boolean } = {},
 ): Promise<{ rows: PodcastEpisode[]; total: number }> {
   const from = (Math.max(1, page) - 1) * pageSize;
-  const { data, error, count } = await client
+  let q = client
     .from("podcast_episodes")
     .select(COLS, { count: "exact" })
-    .eq("is_visible", true)
-    .order("published_at", { ascending: false })
+    .eq("is_visible", true);
+  // Tìm theo tiêu đề / mô tả; bỏ ký tự của cú pháp `or` PostgREST và ký tự đại diện của ilike.
+  const term = (opts.search ?? "").replace(/[,()*%\\]/g, " ").trim();
+  if (term) q = q.or(`title.ilike.%${term}%,description.ilike.%${term}%`);
+  const { data, error, count } = await q
+    .order("published_at", { ascending: !!opts.oldestFirst })
     .range(from, from + pageSize - 1);
   if (error) throw new Error(error.message);
   return { rows: (data ?? []) as PodcastEpisode[], total: count ?? 0 };
@@ -177,7 +182,6 @@ export function formatDuration(seconds: number | null): string | null {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-
 // ───────── Kết nối Facebook (chỉ quản trị) ──────────────────────────
 
 export interface FbCredentialStatus {
@@ -252,6 +256,7 @@ export async function checkFacebookConnection(
   });
   if (error) throw new Error(error.message);
   const res = data as { ok?: boolean; pageName?: string; error?: string };
-  if (res.error || !res.ok) throw new Error(res.error ?? "Token không dùng được");
+  if (res.error || !res.ok)
+    throw new Error(res.error ?? "Token không dùng được");
   return { pageName: res.pageName ?? "" };
 }

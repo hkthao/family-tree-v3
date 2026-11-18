@@ -3618,6 +3618,7 @@ msgstr "Công đức (tiền)"
 msgid "công khai"
 msgstr "công khai"
 
+#: src/components/AnnouncementPanel.tsx
 #: src/components/ClanFormFields.tsx
 #: src/pages/admin/Clans.tsx
 #: src/pages/admin/Clans.tsx
@@ -3637,6 +3638,10 @@ msgstr "Cong nét đứt"
 #: src/lib/relations.ts
 msgid "Cụ"
 msgstr "Cụ"
+
+#: src/pages/Podcast.tsx
+msgid "Cũ nhất"
+msgstr "Cũ nhất"
 
 #: src/components/ContributeDialog.tsx
 msgid "Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
@@ -3857,10 +3862,6 @@ msgstr "Đã đặt nhắc tảo mộ / chạp họ"
 #: src/pages/clan/People.tsx
 msgid "Đã đặt nơi ở cho {n} người"
 msgstr "Đã đặt nơi ở cho {n} người"
-
-#: src/pages/Announcements.tsx
-msgid "Đã đọc"
-msgstr "Đã đọc"
 
 #. placeholder {0}: res.updated
 #: src/pages/clan/People.tsx
@@ -7675,6 +7676,10 @@ msgstr "Không có bức nào khớp"
 msgid "Không có cả dương lẫn âm lịch năm sinh, hoặc đã mất mà chưa biết năm mất/giỗ."
 msgstr "Không có cả dương lẫn âm lịch năm sinh, hoặc đã mất mà chưa biết năm mất/giỗ."
 
+#: src/pages/Changelog.tsx
+msgid "Không có cập nhật nào khớp"
+msgstr "Không có cập nhật nào khớp"
+
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Không có cây nào khớp \"{search}\"."
 msgstr "Không có cây nào khớp \"{search}\"."
@@ -7808,6 +7813,7 @@ msgid "Không có tài khoản nào khớp"
 msgstr "Không có tài khoản nào khớp"
 
 #: src/pages/admin/PodcastPage.tsx
+#: src/pages/Podcast.tsx
 msgid "Không có tập nào khớp"
 msgstr "Không có tập nào khớp"
 
@@ -8789,6 +8795,11 @@ msgstr "Loại đơn vị"
 msgid "Loại giao dịch"
 msgstr "Loại giao dịch"
 
+#: src/pages/Docs.tsx
+#: src/pages/Docs.tsx
+msgid "Loại hướng dẫn"
+msgstr "Loại hướng dẫn"
+
 #: src/pages/clan/EditPerson.tsx
 msgid "Loại khỏi \"Việc cần làm\""
 msgstr "Loại khỏi \"Việc cần làm\""
@@ -8822,6 +8833,10 @@ msgstr "Loại trừ người đã khuất"
 #: src/pages/clan/Board.tsx
 msgid "Lọc bài viết"
 msgstr "Lọc bài viết"
+
+#: src/pages/Changelog.tsx
+msgid "Lọc cập nhật"
+msgstr "Lọc cập nhật"
 
 #: src/pages/clan/HonorBook.tsx
 msgid "Lọc công đức"
@@ -8913,6 +8928,7 @@ msgid "Lọc theo loại bài"
 msgstr "Lọc theo loại bài"
 
 #: src/pages/Announcements.tsx
+#: src/pages/Changelog.tsx
 msgid "Lọc theo mức độ"
 msgstr "Lọc theo mức độ"
 
@@ -9621,6 +9637,7 @@ msgid "Mọi loại"
 msgstr "Mọi loại"
 
 #: src/pages/Announcements.tsx
+#: src/pages/Changelog.tsx
 msgid "Mọi mức độ"
 msgstr "Mọi mức độ"
 
@@ -9667,6 +9684,10 @@ msgstr "Mời người, đổi vai trò, gỡ thành viên."
 #: src/lib/navModel.tsx
 msgid "Mời người, đổi vai trò."
 msgstr "Mời người, đổi vai trò."
+
+#: src/pages/Podcast.tsx
+msgid "Mới nhất"
+msgstr "Mới nhất"
 
 #: src/pages/MyFeedback.tsx
 msgid "Mọi phản hồi đều giúp app tốt hơn. Viết ngắn cũng được."
@@ -13264,6 +13285,7 @@ msgstr "thứ {0}"
 #: src/pages/admin/PodcastPage.tsx
 #: src/pages/admin/Users.tsx
 #: src/pages/Announcements.tsx
+#: src/pages/Changelog.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/HonorBook.tsx
@@ -13402,6 +13424,15 @@ msgstr "Thu nhỏ"
 msgid "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
 msgstr "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
 
+#: src/pages/Podcast.tsx
+#: src/pages/Podcast.tsx
+msgid "Thứ tự"
+msgstr "Thứ tự"
+
+#: src/pages/Podcast.tsx
+msgid "Thử từ khoá khác."
+msgstr "Thử từ khoá khác."
+
 #: src/components/QuickAddSheet.tsx
 msgid "Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi thứ tự."
 msgstr "Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi thứ tự."
@@ -13531,6 +13562,10 @@ msgstr "Tìm bài viết"
 #: src/pages/clan/Mosaics.tsx
 msgid "Tìm bức ảnh"
 msgstr "Tìm bức ảnh"
+
+#: src/pages/Changelog.tsx
+msgid "Tìm cập nhật"
+msgstr "Tìm cập nhật"
 
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Tìm cây"
@@ -13676,6 +13711,10 @@ msgstr "Tìm sự kiện"
 msgid "Tìm tập"
 msgstr "Tìm tập"
 
+#: src/pages/Podcast.tsx
+msgid "Tìm tập podcast"
+msgstr "Tìm tập podcast"
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Tìm tên…"
 msgstr "Tìm tên…"
@@ -13757,6 +13796,10 @@ msgstr "Tìm theo tên người, ngày giỗ, sự kiện…"
 msgid "Tìm theo tên phòng…"
 msgstr "Tìm theo tên phòng…"
 
+#: src/pages/Podcast.tsx
+msgid "Tìm theo tên tập, nội dung…"
+msgstr "Tìm theo tên tập, nội dung…"
+
 #: src/components/admin/ApiTokensAdminTab.tsx
 msgid "Tìm theo tên token, người tạo, dòng họ…"
 msgstr "Tìm theo tên token, người tạo, dòng họ…"
@@ -13779,6 +13822,7 @@ msgstr "Tìm theo tên…"
 
 #: src/pages/admin/Announcements.tsx
 #: src/pages/Announcements.tsx
+#: src/pages/Changelog.tsx
 #: src/pages/clan/Board.tsx
 msgid "Tìm theo tiêu đề / nội dung…"
 msgstr "Tìm theo tiêu đề / nội dung…"
@@ -13815,6 +13859,10 @@ msgstr "Tìm tỉnh/thành"
 #: src/components/ClanApiTokensTab.tsx
 msgid "Tìm token"
 msgstr "Tìm token"
+
+#: src/pages/Docs.tsx
+msgid "Tìm trợ giúp"
+msgstr "Tìm trợ giúp"
 
 #: src/components/TreeFolderView.tsx
 msgid "Tìm trong danh sách này…"
@@ -14543,9 +14591,17 @@ msgstr "Tuỳ chọn cây"
 msgid "Tuỳ chọn hiển thị"
 msgstr "Tuỳ chọn hiển thị"
 
+#: src/pages/Podcast.tsx
+msgid "Tuỳ chọn podcast"
+msgstr "Tuỳ chọn podcast"
+
 #: src/pages/clan/ClanFund.tsx
 msgid "Tuỳ chọn sổ quỹ"
 msgstr "Tuỳ chọn sổ quỹ"
+
+#: src/pages/Docs.tsx
+msgid "Tuỳ chọn trợ giúp"
+msgstr "Tuỳ chọn trợ giúp"
 
 #: src/pages/NewClan.tsx
 msgid "Tuỳ chọn, in ở bìa và trang giới thiệu của sổ; điền sau cũng được."
