@@ -8163,6 +8163,10 @@ msgstr "Không tạo được token"
 msgid "Không thấy bài. Có thể đã bị ẩn hoặc bạn không có quyền xem."
 msgstr "Không thấy bài. Có thể đã bị ẩn hoặc bạn không có quyền xem."
 
+#: src/pages/clan/GoodDays.tsx
+msgid "Không thấy ngày hay sự kiện nào khớp."
+msgstr "Không thấy ngày hay sự kiện nào khớp."
+
 #: src/components/BranchesSection.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/QuickAddSheet.tsx
@@ -10090,7 +10094,9 @@ msgstr "Ngày"
 msgid "Ngày (tuỳ chọn)"
 msgstr "Ngày (tuỳ chọn)"
 
+#. placeholder {0}: formatDmy(iso)
 #. placeholder {0}: info.canChi.day
+#: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Ngày {0}"
 msgstr "Ngày {0}"
@@ -13740,6 +13746,10 @@ msgstr "Tìm mục thêm máy chủ / connector MCP tuỳ chỉnh và nhập hai
 msgid "Tìm ngày đẹp cho việc lớn"
 msgstr "Tìm ngày đẹp cho việc lớn"
 
+#: src/pages/clan/GoodDays.tsx
+msgid "Tìm ngày, sự kiện, lễ tết"
+msgstr "Tìm ngày, sự kiện, lễ tết"
+
 #: src/pages/clan/Branches.tsx
 #: src/pages/clan/QrExport.tsx
 msgid "Tìm người"
@@ -13804,6 +13814,10 @@ msgstr "Tìm phong tục"
 #: src/pages/clan/Events.tsx
 msgid "Tìm sự kiện"
 msgstr "Tìm sự kiện"
+
+#: src/pages/clan/GoodDays.tsx
+msgid "Tìm sự kiện, lễ tết, hoặc gõ ngày 20/11…"
+msgstr "Tìm sự kiện, lễ tết, hoặc gõ ngày 20/11…"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Tìm tập"
@@ -14697,7 +14711,6 @@ msgid "Tuỳ chọn chi"
 msgstr "Tuỳ chọn chi"
 
 #: src/components/TodayHubCard.tsx
-#: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Tuỳ chọn hiển thị"
 msgstr "Tuỳ chọn hiển thị"
