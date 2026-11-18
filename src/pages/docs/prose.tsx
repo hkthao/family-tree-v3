@@ -27,12 +27,12 @@ export function H3({ children, id }: { children: ReactNode; id?: string }) {
 }
 
 export function P({ children }: { children: ReactNode }) {
-  return <p className="mb-4">{children}</p>;
+  return <p className="mb-4 text-justify">{children}</p>;
 }
 
 export function Lead({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-5 text-lg leading-relaxed text-card-foreground/85 sm:text-xl">
+    <p className="mb-5 text-justify text-lg leading-relaxed text-card-foreground/85 sm:text-xl">
       {children}
     </p>
   );
@@ -47,7 +47,7 @@ export function OL({ children }: { children: ReactNode }) {
 }
 
 export function LI({ children }: { children: ReactNode }) {
-  return <li className="leading-relaxed">{children}</li>;
+  return <li className="text-justify leading-relaxed">{children}</li>;
 }
 
 export function Strong({ children }: { children: ReactNode }) {

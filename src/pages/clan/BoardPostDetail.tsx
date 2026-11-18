@@ -274,7 +274,7 @@ function PostActionBar({
           disabled={busy}
           onClick={() => moderateM.mutate(pinned ? "unpin" : "pin")}
         >
-          <span aria-hidden="true" className="mr-1.5">
+          <span aria-hidden="true">
             📌
           </span>
           {pinned ? t`Bỏ ghim` : t`Ghim`}
