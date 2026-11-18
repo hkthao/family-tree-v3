@@ -534,6 +534,9 @@ không phải nút rời trên dòng.
   nút ở đầu ngăn kéo. Trang đầy đủ (không phải ngăn kéo) giữ hàng nút cũ.
 - **Vùng an toàn đáy iPhone chỉ chừa MỘT lần** — ở khung `SidePanel`/`FilterDrawer`. Thanh nút
   không cộng `env(safe-area-inset-bottom)` nữa (cộng hai lần = hở một khoảng dưới nút).
+- **Lớp phủ toàn màn cao `h-[100dvh]` (`fixed inset-x-0 top-0`), KHÔNG `fixed inset-0` / `top-0 bottom-0`**: trên Safari
+  iOS khung `inset-0` cao bằng khung nhìn lớn nhất, thanh công cụ dưới của Safari che mất đáy (thanh nút, nội dung
+  cuối). Trang ngoài dòng họ (không có thanh tab) chừa `pb-[env(safe-area-inset-bottom)]` ở khung trang.
 - Nội dung ngăn kéo tự dựng (không qua `<form>`) mà muốn thanh nút dính đáy: khung bọc phải là
   cột flex giãn hết (`flex flex-1 flex-col`), nếu không `mt-auto` không đẩy thanh xuống đáy.
 

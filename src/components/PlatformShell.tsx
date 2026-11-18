@@ -28,7 +28,7 @@ export function PlatformShell({
 
   if (user) {
     return (
-      <div className="min-h-dvh bg-background lg:pl-72">
+      <div className="min-h-dvh bg-background pb-[env(safe-area-inset-bottom)] lg:pl-72">
         <AppHeader />
         <main className="container max-w-4xl space-y-3 px-4 py-6">
           {children}
@@ -38,7 +38,7 @@ export function PlatformShell({
   }
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background pb-[env(safe-area-inset-bottom)]">
       <header className="sticky top-0 z-30 border-b bg-background">
         <div className="container flex h-[64px] max-w-4xl items-center justify-between gap-2 px-4">
           <Link

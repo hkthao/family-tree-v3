@@ -124,7 +124,9 @@ export function AppDrawer({ open, onClose }: Props) {
         aria-modal="true"
         aria-label={t`Điều hướng`}
         className={cn(
-          "fixed top-0 left-0 bottom-0 z-40 w-72 max-w-[85vw]",
+          // Điện thoại: cao theo khung nhìn thực (100dvh) + chừa vùng an toàn đáy, để mục cuối menu không bị thanh công
+          // cụ Safari / thanh home che. Desktop giữ top-0 bottom-0.
+          "fixed top-0 left-0 z-40 h-[100dvh] w-72 max-w-[85vw] pb-[env(safe-area-inset-bottom)] lg:bottom-0 lg:h-auto lg:pb-0",
           "bg-background border-r shadow-lg lg:shadow-none",
           "flex flex-col",
           "transition-transform duration-200",
