@@ -29,46 +29,6 @@ const dmy = (d: Date): string =>
 const dash = (v: string | null | undefined): string =>
   v && v.trim() ? v : "—";
 
-// Bề rộng nội dung trang A4 (595 − 2×56 lề) và cỡ chữ / dòng của DataTable (11pt × 1,45).
-const CONTENT_W = 483;
-const LINE_H = 16;
-// Một khối bảng không được cao hơn trang (DataTable không ngắt giữa chừng): trình duyệt báo
-// "VIEW can't wrap between pages and it's bigger than available page height" rồi dồn cả trang lại.
-const MAX_CHUNK_H = 560;
-
-/**
- * Chia hàng thành các khối theo CHIỀU CAO ƯỚC TÍNH (không theo số hàng): ô dài như "Bố / Mẹ" xuống
- * 2–3 dòng làm hàng cao gấp đôi, nên 24 hàng cố định của ChunkedTable có thể vượt cả trang.
- */
-function chunkByHeight(cols: Col[], rows: string[][]): string[][][] {
-  const fixed = cols.reduce((sum, c) => sum + (c.width ?? 0), 0);
-  const flexCols = cols.filter((c) => !c.width).length || 1;
-  const widthOf = (c: Col) =>
-    c.width ?? Math.max(60, (CONTENT_W - fixed) / flexCols);
-  const rowH = (r: string[]) => {
-    const lines = cols.reduce((max, c, i) => {
-      const capacity = Math.max(4, Math.floor((widthOf(c) - 12) / 6)); // ~6pt mỗi ký tự, trừ đệm ô
-      return Math.max(max, Math.ceil((r[i] ?? "").length / capacity) || 1);
-    }, 1);
-    return lines * LINE_H + 9;
-  };
-  const chunks: string[][][] = [];
-  let cur: string[][] = [];
-  let h = LINE_H + 9; // hàng tiêu đề
-  for (const r of rows) {
-    const rh = rowH(r);
-    if (cur.length > 0 && h + rh > MAX_CHUNK_H) {
-      chunks.push(cur);
-      cur = [];
-      h = LINE_H + 9;
-    }
-    cur.push(r);
-    h += rh;
-  }
-  if (cur.length) chunks.push(cur);
-  return chunks;
-}
-
 /** "1887 – 1942", "sinh 1950", hoặc rỗng nếu chưa rõ năm. */
 function lifeLine(p: RelPerson): string {
   const b = yearOf(p.birth_date);
@@ -339,20 +299,18 @@ export function RelationsPdf({
               {empty("Chưa ghi nhận con cháu.")}
             </>
           ) : (
-            chunkByHeight(descendantCols, descendantRows).map((part, i) =>
-              i === 0 ? (
-                // Tiêu đề + tóm tắt + khối bảng đầu không tách trang: tránh tiêu đề mồ côi cuối trang.
-                <View key={i} wrap={false}>
-                  {heading("Con cháu")}
-                  <Text style={[s.intro, { marginBottom: 6 }]}>
-                    Có {report.summary}.
-                  </Text>
-                  <DataTable cols={descendantCols} rows={part} />
-                </View>
-              ) : (
-                <DataTable key={i} cols={descendantCols} rows={part} />
-              ),
-            )
+            <>
+              {/* minPresenceAhead: tiêu đề + tóm tắt không mồ côi cuối trang — phải còn chỗ cho vài hàng đầu của bảng. */}
+              <View minPresenceAhead={90}>
+                {heading("Con cháu")}
+                <Text style={[s.intro, { marginBottom: 6 }]}>
+                  Có {report.summary}.
+                </Text>
+              </View>
+              {/* Một bảng chảy qua các trang (ngắt giữa các hàng, tiêu đề lặp đầu trang) — không chia khối theo chiều cao
+                  ước tính: khối ước sai thì kết thúc giữa trang rồi lặp tiêu đề ngay bên dưới. */}
+              <DataTable cols={descendantCols} rows={descendantRows} flow />
+            </>
           )}
           <Text style={{ fontSize: 9, color: COLORS.muted, marginTop: 6 }}>
             Tài liệu lập từ gia phả {clanLabel} trên Dòng Họ Việt.
