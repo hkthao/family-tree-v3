@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import { displayGen } from "@/lib/displayGeneration";
+import { ViewModeSelect } from "@/components/ViewModeSelect";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { FabGroup } from "@/components/FabGroup";
@@ -55,10 +56,6 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch } from "@/hooks/useUrlState";
 import {
@@ -467,8 +464,7 @@ export default function People() {
         </>
       ) : (
         <>
-          {/* Hàng tìm kiếm + toggle Danh sách/Thẻ — LUÔN hiện (không giấu sau
-          "Bộ lọc"), vì đổi kiểu xem là thao tác thường dùng. */}
+          {/* Hàng tìm kiếm (icon Tuỳ chọn + làm mới trong ô); kiểu xem nằm trong ngăn kéo Tuỳ chọn như mọi màn. */}
           <CollapsibleFilters
             onReset={() => {
               setBranchId("");
@@ -497,28 +493,8 @@ export default function People() {
                     }
                   />
                 </div>
-                {/* Kiểu xem + thao tác nằm cùng hàng với ô tìm kiếm cho gọn. */}
+                {/* Thao tác nằm cùng hàng với ô tìm kiếm; kiểu xem (Danh sách / Thẻ) ở ngăn kéo Tuỳ chọn. */}
                 <div className="flex shrink-0 items-center gap-2">
-                  <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
-                    <SegmentedButton
-                      active={viewMode === "list"}
-                      onClick={() => setViewMode("list")}
-                      title={t`Danh sách`}
-                      ariaLabel={t`Danh sách`}
-                      variant="icon-md"
-                    >
-                      <IconList className="h-4 w-4" />
-                    </SegmentedButton>
-                    <SegmentedButton
-                      active={viewMode === "grid"}
-                      onClick={() => setViewMode("grid")}
-                      title={t`Thẻ`}
-                      ariaLabel={t`Thẻ`}
-                      variant="icon-md"
-                    >
-                      <IconGrid className="h-4 w-4" />
-                    </SegmentedButton>
-                  </SegmentedControl>
                   {view === "people" && (isMember || canEdit) && (
                     <div className="flex shrink-0 items-center gap-1.5">
                       {actionButtons}
@@ -536,6 +512,14 @@ export default function People() {
             {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
           parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc. */}
             <div className="flex flex-col gap-3">
+              <ViewModeSelect
+                value={viewMode}
+                onChange={setViewMode}
+                options={[
+                  { value: "list", label: t`Danh sách` },
+                  { value: "grid", label: t`Thẻ` },
+                ]}
+              />
               {isMember && (
                 <Button
                   type="button"

@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import {
   useCallback,
   useEffect,
@@ -123,13 +124,13 @@ export function SidePanel({
       }
     };
     window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
       window.removeEventListener("keydown", onKey);
       const i = openStack.lastIndexOf(id);
       if (i >= 0) openStack.splice(i, 1);
-      // Còn panel khác bên dưới thì giữ khoá cuộn của nó.
-      if (openStack.length === 0) document.body.style.overflow = "";
+      // Khoá cuộn có đếm (lib/scrollLock): panel khác / lớp phủ khác còn mở thì trang vẫn khoá.
+      releaseScroll();
       prevFocus?.focus?.();
     };
   }, [open, requestClose, id]);

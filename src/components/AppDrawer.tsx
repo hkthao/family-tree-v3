@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { NewBadge } from "@/components/NewBadge";
 import { useSidebarHidden } from "@/lib/sidebarHidden";
 import { useEffect, useState } from "react";
@@ -63,10 +64,9 @@ export function AppDrawer({ open, onClose }: Props) {
     ) {
       return;
     }
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
-      document.body.style.overflow = prev;
+      releaseScroll();
     };
   }, [open]);
 

@@ -212,60 +212,64 @@ export default function Dashboard() {
         title={t`Tổng quan`}
         description={t`Trang chủ của ${clan.name}.`}
         actionsBelow="mobile"
+        // Tuỳ chỉnh / sửa / cài đặt / liên kết / làm mới nay là ô CÓ CHỮ trong thẻ Thao tác nhanh (dễ dùng với người lớn
+        // tuổi, người mới). Chỉ khi người dùng ẩn thẻ đó mới giữ hàng nút icon ở đây làm lối vào dự phòng.
         actions={
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setCustomizeOpen(true)}
-              aria-label={t`Tuỳ chỉnh trang chủ`}
-              title={t`Tuỳ chỉnh trang chủ`}
-              data-testid="dashboard-customize"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
-            >
-              <IconSliders className="h-4 w-4" />
-            </button>
-            {/* Lối tắt tới Cài đặt dòng họ — chỉ quản trị mới thấy (trang đó chỉ
+          show("quick") ? undefined : (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setCustomizeOpen(true)}
+                aria-label={t`Tuỳ chỉnh trang chủ`}
+                title={t`Tuỳ chỉnh trang chủ`}
+                data-testid="dashboard-customize"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                <IconSliders className="h-4 w-4" />
+              </button>
+              {/* Lối tắt tới Cài đặt dòng họ — chỉ quản trị mới thấy (trang đó chỉ
                 quản trị vào được), khỏi phải mở menu trái. */}
-            {isClanAdmin(clan) &&
-              isFeatureEnabled(clan.disabled_features, "inlaws") && (
+              {isClanAdmin(clan) &&
+                isFeatureEnabled(clan.disabled_features, "inlaws") && (
+                  <Link
+                    to={`/clans/${clan.id}/inlaws`}
+                    aria-label={t`Liên kết dòng họ`}
+                    title={t`Liên kết dòng họ`}
+                    data-testid="dashboard-inlaws-link"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+                  >
+                    <IconLink className="h-4 w-4" />
+                  </Link>
+                )}
+              {canEditClan(clan) && (
                 <Link
-                  to={`/clans/${clan.id}/inlaws`}
-                  aria-label={t`Liên kết dòng họ`}
-                  title={t`Liên kết dòng họ`}
-                  data-testid="dashboard-inlaws-link"
+                  to={`/clans/${clan.id}/so-gia-pha`}
+                  aria-label={t`Chỉnh sửa thông tin dòng họ`}
+                  title={t`Chỉnh sửa thông tin dòng họ`}
+                  data-testid="dashboard-edit-clan-link"
                   className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
                 >
-                  <IconLink className="h-4 w-4" />
+                  <IconPencil className="h-4 w-4" />
                 </Link>
               )}
-            {canEditClan(clan) && (
-              <Link
-                to={`/clans/${clan.id}/so-gia-pha`}
-                aria-label={t`Chỉnh sửa thông tin dòng họ`}
-                title={t`Chỉnh sửa thông tin dòng họ`}
-                data-testid="dashboard-edit-clan-link"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
-              >
-                <IconPencil className="h-4 w-4" />
-              </Link>
-            )}
-            {isClanAdmin(clan) && (
-              <Link
-                to={`/clans/${clan.id}/settings`}
-                aria-label={t`Cài đặt dòng họ`}
-                title={t`Cài đặt dòng họ`}
-                data-testid="dashboard-settings-link"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
-              >
-                <IconSettings className="h-4 w-4" />
-              </Link>
-            )}
-            <RefreshButton
-              clanId={clan.id}
-              cachedVersion={clan.data_version}
-              compact
-            />
-          </div>
+              {isClanAdmin(clan) && (
+                <Link
+                  to={`/clans/${clan.id}/settings`}
+                  aria-label={t`Cài đặt dòng họ`}
+                  title={t`Cài đặt dòng họ`}
+                  data-testid="dashboard-settings-link"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+                >
+                  <IconSettings className="h-4 w-4" />
+                </Link>
+              )}
+              <RefreshButton
+                clanId={clan.id}
+                cachedVersion={clan.data_version}
+                compact
+              />
+            </div>
+          )
         }
       />
 
@@ -273,9 +277,7 @@ export default function Dashboard() {
       {tree &&
         tree.persons.length > 0 &&
         (isMember || clan.public_show_tree) && (
-          <OverviewSearch
-            clanId={clan.id}
-          />
+          <OverviewSearch clanId={clan.id} />
         )}
 
       {showWelcome && (

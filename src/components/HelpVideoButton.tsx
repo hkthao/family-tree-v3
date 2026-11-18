@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { useEffect, useState } from "react";
 
 import { IconHelp, IconX } from "@/components/icons";
@@ -79,11 +80,10 @@ export function VideoModal({
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      releaseScroll();
     };
   }, [onClose]);
 

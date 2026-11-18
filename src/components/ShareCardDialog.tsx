@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -191,11 +192,10 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && props.onClose();
     window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      releaseScroll();
     };
   }, [open, props]);
 

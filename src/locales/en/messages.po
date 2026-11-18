@@ -2035,8 +2035,7 @@ msgstr "How the tree diagram is laid out"
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
-#: src/pages/clan/Events.tsx
-#: src/pages/clan/Mosaics.tsx
+#: src/components/ViewModeSelect.tsx
 msgid "Cách xem"
 msgstr "How to view"
 
@@ -2062,6 +2061,7 @@ msgstr "Settings"
 msgid "Cài đặt & nội dung"
 msgstr "Settings & content"
 
+#: src/components/QuickActionsCard.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Dashboard.tsx
@@ -2387,9 +2387,6 @@ msgstr "grandchild, cousin, visitor…"
 
 #: src/components/ClanFormFields.tsx
 #: src/components/InlawFamilyCard.tsx
-#: src/pages/clan/Events.tsx
-#: src/pages/clan/Mosaics.tsx
-#: src/pages/clan/People.tsx
 msgid "Chế độ hiển thị"
 msgstr "Visibility"
 
@@ -3841,6 +3838,7 @@ msgstr "<0>{0}</0> people selected"
 msgid "Đã có bài cùng tên"
 msgstr "An article with this title already exists"
 
+#: src/components/QuickActionsCard.tsx
 #: src/components/RefreshButton.tsx
 msgid "Đã có dữ liệu mới"
 msgstr "New data available"
@@ -4057,6 +4055,7 @@ msgstr "Locked"
 msgid "Đã khôi phục"
 msgstr "Restored"
 
+#: src/components/QuickActionsCard.tsx
 #: src/components/RefreshButton.tsx
 msgid "Đã là mới nhất"
 msgstr "Already up to date"
@@ -4826,6 +4825,8 @@ msgstr "Checking the request…"
 
 #: src/components/CheckUpdateButton.tsx
 #: src/components/CheckUpdateButton.tsx
+#: src/components/QuickActionsCard.tsx
+#: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/pages/admin/PodcastPage.tsx
@@ -4841,8 +4842,8 @@ msgid "Đăng ký {registered}"
 msgstr "Registered {registered}"
 
 #: src/pages/clan/Events.tsx
-msgid "Đăng ký lịch — Google / Apple Calendar tự cập nhật"
-msgstr "Subscribe to calendar — Google / Apple Calendar updates automatically"
+msgid "Đăng ký lịch Google / Apple (tự cập nhật)"
+msgstr "Subscribe in Google / Apple Calendar (auto-updates)"
 
 #: src/components/CalendarFeedPanel.tsx
 msgid "Đăng ký lịch tự cập nhật"
@@ -5300,7 +5301,6 @@ msgstr "A catalogue of graves and cemeteries."
 #: src/components/InlawFamilyCard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Mosaics.tsx
-#: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/Clans.tsx
 msgid "Danh sách"
@@ -8439,8 +8439,6 @@ msgid "Kiểu đường nối tự động"
 msgstr "Automatic connector style"
 
 #: src/pages/clan/MosaicDetail.tsx
-#: src/pages/clan/MosaicDetail.tsx
-#: src/pages/Clans.tsx
 msgid "Kiểu hiển thị"
 msgstr "Display style"
 
@@ -8485,6 +8483,8 @@ msgstr "Is the spouse"
 msgid "Làm lại (Ctrl+Shift+Z)"
 msgstr "Redo (Ctrl+Shift+Z)"
 
+#: src/components/QuickActionsCard.tsx
+#: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/pages/admin/Health.tsx
@@ -8696,6 +8696,7 @@ msgstr "Clan links"
 msgid "Liên kết dòng họ chờ"
 msgstr "Pending clan links"
 
+#: src/components/QuickActionsCard.tsx
 #: src/lib/quickCatalog.tsx
 msgid "Liên kết họ"
 msgstr "Clan links"
@@ -11296,6 +11297,10 @@ msgstr "Relationship:"
 msgid "Quan lại – khoa bảng"
 msgstr "Mandarins – examination graduates"
 
+#: src/components/QuickActionsCard.tsx
+msgid "Quản lý"
+msgstr "Manage"
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Quản lý bức ảnh"
 msgstr "Manage mosaic"
@@ -12007,6 +12012,10 @@ msgstr "Edit details"
 msgid "Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF. Chi (nhánh) ở mục riêng trong Tính năng."
 msgstr "Edit clan info and write the genealogy book PDF text. Branches have their own entry under Features."
 
+#: src/components/QuickActionsCard.tsx
+msgid "Sửa thông tin họ"
+msgstr "Edit clan info"
+
 #: src/pages/admin/Announcements.tsx
 msgid "Sửa tin"
 msgstr "Edit announcement"
@@ -12053,8 +12062,8 @@ msgid "Tải ảnh thất bại"
 msgstr "Photo upload failed"
 
 #: src/pages/clan/Events.tsx
-msgid "Tải file .ics — import vào Google / Apple Calendar"
-msgstr "Download a .ics file — import it into Google / Apple Calendar"
+msgid "Tải file .ics để nhập vào lịch"
+msgstr "Download .ics file to import"
 
 #. placeholder {0}: plan.issues.length
 #: src/pages/clan/Import.tsx
@@ -12800,7 +12809,6 @@ msgid "Thay nội dung đang có bằng mẫu?"
 msgstr "Replace the existing text with the template?"
 
 #: src/pages/clan/Mosaics.tsx
-#: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 msgid "Thẻ"
 msgstr "Cards"
@@ -14664,8 +14672,11 @@ msgstr "Custom"
 msgid "Tuỳ chỉnh (cm)"
 msgstr "Custom (cm)"
 
-#: src/components/HomeCustomizeDrawer.tsx
 #: src/components/QuickActionsCard.tsx
+msgid "Tuỳ chỉnh trang"
+msgstr "Customize page"
+
+#: src/components/HomeCustomizeDrawer.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Tuỳ chỉnh trang chủ"

@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -260,15 +261,14 @@ export default function Tree() {
       chartRef.current?.updateTree({ initial: false }),
     );
     if (!isFullscreen) return () => cancelAnimationFrame(refit);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsFullscreen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => {
       cancelAnimationFrame(refit);
-      document.body.style.overflow = prevOverflow;
+      releaseScroll();
       window.removeEventListener("keydown", onKey);
     };
   }, [isFullscreen]);
@@ -1943,11 +1943,10 @@ function InlawBadgeDialog({
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      releaseScroll();
     };
   }, [open, onClose]);
 

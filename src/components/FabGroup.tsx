@@ -1,10 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-import { Fab, FAB_POSITION } from "@/components/Fab";
+import { Fab, FAB_HIDDEN, FAB_POSITION } from "@/components/Fab";
 import { IconPlus, IconX } from "@/components/icons";
 import { PanelLink } from "@/components/panel/PanelLink";
 import type { PanelId, PanelParams } from "@/components/panel/usePanel";
+import { useHideOnScroll } from "@/hooks/useHideOnScroll";
 
 import { t } from "@lingui/core/macro";
 export interface FabAction {
@@ -31,6 +32,8 @@ export function FabGroup({
 }) {
   const [open, setOpen] = useState(false);
   const single = actions.length === 1 ? actions[0] : null;
+  // Cuộn xuống thì ẩn, cuộn lên thì hiện; đang mở nhóm nút thì luôn hiện.
+  const hidden = useHideOnScroll({ disabled: open || !!single });
 
   useEffect(() => {
     if (!open) return;
@@ -66,7 +69,9 @@ export function FabGroup({
           className="print-hide fixed inset-0 z-30 cursor-default bg-black/30 animate-in fade-in"
         />
       )}
-      <div className={`${FAB_POSITION} flex flex-col items-end gap-2`}>
+      <div
+        className={`${FAB_POSITION} flex flex-col items-end gap-2 transition duration-200 ${hidden ? FAB_HIDDEN : ""}`}
+      >
         {open && (
           <ul
             className="flex flex-col-reverse items-end gap-2 animate-in fade-in slide-in-from-bottom-2"

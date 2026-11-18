@@ -19,6 +19,8 @@ interface Props {
   compact?: boolean;
   /** Override style của nút compact (vd nhét gọn bên trong ô tìm kiếm). */
   className?: string;
+  /** Trong ngăn kéo Tuỳ chọn: nút full chiều ngang, giờ cập nhật nằm cuối nút (kiểu chung của thao tác trong ngăn kéo). */
+  block?: boolean;
 }
 
 function formatTime(d: Date): string {
@@ -32,6 +34,7 @@ export function RefreshButton({
   cachedVersion,
   compact,
   className,
+  block,
 }: Props) {
   const { lastSyncedAt, isChecking, refresh } = useClanFreshness(
     clanId,
@@ -55,6 +58,28 @@ export function RefreshButton({
       : flash === "fresh"
         ? t`Đã là mới nhất`
         : status;
+
+  if (block) {
+    return (
+      <Button
+        variant="outline"
+        className={cn("h-auto min-h-11 w-full justify-start py-2", className)}
+        onClick={async () => setFlash(await refresh())}
+        disabled={isChecking}
+      >
+        <IconRefresh
+          className={`mr-2 h-4 w-4 shrink-0 ${isChecking ? "animate-spin" : ""}`}
+        />
+        {isChecking ? t`Đang kiểm tra…` : t`Làm mới`}
+        <span
+          className="ml-auto pl-2 text-sm font-normal text-muted-foreground"
+          aria-live="polite"
+        >
+          {flashedStatus}
+        </span>
+      </Button>
+    );
+  }
 
   if (compact) {
     return (

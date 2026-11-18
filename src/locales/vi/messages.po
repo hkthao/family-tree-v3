@@ -2035,8 +2035,7 @@ msgstr "Cách trình bày sơ đồ cây"
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
-#: src/pages/clan/Events.tsx
-#: src/pages/clan/Mosaics.tsx
+#: src/components/ViewModeSelect.tsx
 msgid "Cách xem"
 msgstr "Cách xem"
 
@@ -2062,6 +2061,7 @@ msgstr "Cài đặt"
 msgid "Cài đặt & nội dung"
 msgstr "Cài đặt & nội dung"
 
+#: src/components/QuickActionsCard.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Dashboard.tsx
@@ -2387,9 +2387,6 @@ msgstr "cháu nội, em họ, khách…"
 
 #: src/components/ClanFormFields.tsx
 #: src/components/InlawFamilyCard.tsx
-#: src/pages/clan/Events.tsx
-#: src/pages/clan/Mosaics.tsx
-#: src/pages/clan/People.tsx
 msgid "Chế độ hiển thị"
 msgstr "Chế độ hiển thị"
 
@@ -3841,6 +3838,7 @@ msgstr "Đã chọn <0>{0}</0> người"
 msgid "Đã có bài cùng tên"
 msgstr "Đã có bài cùng tên"
 
+#: src/components/QuickActionsCard.tsx
 #: src/components/RefreshButton.tsx
 msgid "Đã có dữ liệu mới"
 msgstr "Đã có dữ liệu mới"
@@ -4057,6 +4055,7 @@ msgstr "Đã khoá"
 msgid "Đã khôi phục"
 msgstr "Đã khôi phục"
 
+#: src/components/QuickActionsCard.tsx
 #: src/components/RefreshButton.tsx
 msgid "Đã là mới nhất"
 msgstr "Đã là mới nhất"
@@ -4826,6 +4825,8 @@ msgstr "Đang kiểm tra yêu cầu…"
 
 #: src/components/CheckUpdateButton.tsx
 #: src/components/CheckUpdateButton.tsx
+#: src/components/QuickActionsCard.tsx
+#: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/pages/admin/PodcastPage.tsx
@@ -4841,8 +4842,8 @@ msgid "Đăng ký {registered}"
 msgstr "Đăng ký {registered}"
 
 #: src/pages/clan/Events.tsx
-msgid "Đăng ký lịch — Google / Apple Calendar tự cập nhật"
-msgstr "Đăng ký lịch — Google / Apple Calendar tự cập nhật"
+msgid "Đăng ký lịch Google / Apple (tự cập nhật)"
+msgstr "Đăng ký lịch Google / Apple (tự cập nhật)"
 
 #: src/components/CalendarFeedPanel.tsx
 msgid "Đăng ký lịch tự cập nhật"
@@ -5300,7 +5301,6 @@ msgstr "Danh mục mộ phần, nghĩa trang."
 #: src/components/InlawFamilyCard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Mosaics.tsx
-#: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/Clans.tsx
 msgid "Danh sách"
@@ -8439,8 +8439,6 @@ msgid "Kiểu đường nối tự động"
 msgstr "Kiểu đường nối tự động"
 
 #: src/pages/clan/MosaicDetail.tsx
-#: src/pages/clan/MosaicDetail.tsx
-#: src/pages/Clans.tsx
 msgid "Kiểu hiển thị"
 msgstr "Kiểu hiển thị"
 
@@ -8485,6 +8483,8 @@ msgstr "Là vợ / chồng"
 msgid "Làm lại (Ctrl+Shift+Z)"
 msgstr "Làm lại (Ctrl+Shift+Z)"
 
+#: src/components/QuickActionsCard.tsx
+#: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/components/RefreshButton.tsx
 #: src/pages/admin/Health.tsx
@@ -8696,6 +8696,7 @@ msgstr "Liên kết dòng họ"
 msgid "Liên kết dòng họ chờ"
 msgstr "Liên kết dòng họ chờ"
 
+#: src/components/QuickActionsCard.tsx
 #: src/lib/quickCatalog.tsx
 msgid "Liên kết họ"
 msgstr "Liên kết họ"
@@ -11296,6 +11297,10 @@ msgstr "Quan hệ:"
 msgid "Quan lại – khoa bảng"
 msgstr "Quan lại – khoa bảng"
 
+#: src/components/QuickActionsCard.tsx
+msgid "Quản lý"
+msgstr "Quản lý"
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Quản lý bức ảnh"
 msgstr "Quản lý bức ảnh"
@@ -12007,6 +12012,10 @@ msgstr "Sửa thông tin"
 msgid "Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF. Chi (nhánh) ở mục riêng trong Tính năng."
 msgstr "Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF. Chi (nhánh) ở mục riêng trong Tính năng."
 
+#: src/components/QuickActionsCard.tsx
+msgid "Sửa thông tin họ"
+msgstr "Sửa thông tin họ"
+
 #: src/pages/admin/Announcements.tsx
 msgid "Sửa tin"
 msgstr "Sửa tin"
@@ -12053,8 +12062,8 @@ msgid "Tải ảnh thất bại"
 msgstr "Tải ảnh thất bại"
 
 #: src/pages/clan/Events.tsx
-msgid "Tải file .ics — import vào Google / Apple Calendar"
-msgstr "Tải file .ics — import vào Google / Apple Calendar"
+msgid "Tải file .ics để nhập vào lịch"
+msgstr "Tải file .ics để nhập vào lịch"
 
 #. placeholder {0}: plan.issues.length
 #: src/pages/clan/Import.tsx
@@ -12800,7 +12809,6 @@ msgid "Thay nội dung đang có bằng mẫu?"
 msgstr "Thay nội dung đang có bằng mẫu?"
 
 #: src/pages/clan/Mosaics.tsx
-#: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 msgid "Thẻ"
 msgstr "Thẻ"
@@ -14664,8 +14672,11 @@ msgstr "Tuỳ chỉnh"
 msgid "Tuỳ chỉnh (cm)"
 msgstr "Tuỳ chỉnh (cm)"
 
-#: src/components/HomeCustomizeDrawer.tsx
 #: src/components/QuickActionsCard.tsx
+msgid "Tuỳ chỉnh trang"
+msgstr "Tuỳ chỉnh trang"
+
+#: src/components/HomeCustomizeDrawer.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Tuỳ chỉnh trang chủ"
