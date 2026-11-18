@@ -8163,6 +8163,10 @@ msgstr "Could not create token"
 msgid "Không thấy bài. Có thể đã bị ẩn hoặc bạn không có quyền xem."
 msgstr "Post not found. It may have been hidden, or you don't have permission to view it."
 
+#: src/pages/clan/GoodDays.tsx
+msgid "Không thấy ngày hay sự kiện nào khớp."
+msgstr "No matching date or event."
+
 #: src/components/BranchesSection.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/QuickAddSheet.tsx
@@ -10090,7 +10094,9 @@ msgstr "Day"
 msgid "Ngày (tuỳ chọn)"
 msgstr "Date (optional)"
 
+#. placeholder {0}: formatDmy(iso)
 #. placeholder {0}: info.canChi.day
+#: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Ngày {0}"
 msgstr "Day {0}"
@@ -13740,6 +13746,10 @@ msgstr "Find the option to add a custom MCP server / connector and enter two thi
 msgid "Tìm ngày đẹp cho việc lớn"
 msgstr "Find a good day for a major event"
 
+#: src/pages/clan/GoodDays.tsx
+msgid "Tìm ngày, sự kiện, lễ tết"
+msgstr "Search dates, events, festivals"
+
 #: src/pages/clan/Branches.tsx
 #: src/pages/clan/QrExport.tsx
 msgid "Tìm người"
@@ -13804,6 +13814,10 @@ msgstr "Find customs"
 #: src/pages/clan/Events.tsx
 msgid "Tìm sự kiện"
 msgstr "Search events"
+
+#: src/pages/clan/GoodDays.tsx
+msgid "Tìm sự kiện, lễ tết, hoặc gõ ngày 20/11…"
+msgstr "Search events, festivals, or type a date like 20/11…"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Tìm tập"
@@ -14697,7 +14711,6 @@ msgid "Tuỳ chọn chi"
 msgstr "Branch options"
 
 #: src/components/TodayHubCard.tsx
-#: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Tuỳ chọn hiển thị"
 msgstr "Display options"

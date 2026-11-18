@@ -31,12 +31,11 @@ import {
   IconHome,
   IconMapPin,
   IconScroll,
-  IconSliders,
   IconUsers,
   IconWallet,
 } from "@/components/icons";
-import { FilterDrawer } from "@/components/FilterDrawer";
-import { Button } from "@/components/ui/button";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ACTIVITIES,
@@ -45,7 +44,8 @@ import {
   describeDay,
   findGoodDays,
 } from "@/lib/almanac";
-import { festivalsOn, hasFestival } from "@/lib/festivals";
+import { festivalsOn, hasFestival, upcomingFestivals } from "@/lib/festivals";
+import { unaccent } from "@/lib/unaccent";
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
@@ -66,6 +66,12 @@ const ACTIVITY_ICON: Record<
   "cung-le": IconFlame,
   "ky-ket": IconScroll,
 };
+
+/** "2026-11-20" → "20/11/2026". */
+function formatDmy(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -155,7 +161,7 @@ export default function GoodDays() {
   const [customFrom, setCustomFrom] = useState(today);
   const [customTo, setCustomTo] = useState(addDays(today, 60));
   const { prefs, toggle } = useAlmanacPrefs();
-  const [showOpts, setShowOpts] = useState(false);
+  const [q, setQ] = useState("");
 
   // Lịch tháng + ngày đang xem chi tiết. Nhận ?date=YYYY-MM-DD (từ trang Sự
   // kiện / thẻ Hôm nay) để mở đúng ngày.
@@ -168,6 +174,58 @@ export default function GoodDays() {
     const [y, m] = initialIso.split("-").map(Number);
     return { y, m: m - 1 };
   });
+
+  // Nhảy tới một ngày: chọn ngày đó + lật lịch sang tháng của nó, xoá ô tìm.
+  const jumpTo = (iso: string) => {
+    setSelectedIso(iso);
+    const [y, m] = iso.split("-").map(Number);
+    setCursor({ y, m: m - 1 });
+    setQ("");
+  };
+  // Nguồn tìm: sự kiện dòng họ (400 ngày tới) + lễ tết; gõ "20/11" hoặc "20/11/2026" thì ra đúng ngày đó.
+  const searchHits = useMemo(() => {
+    const raw = q.trim();
+    if (!raw) return [];
+    const out: {
+      key: string;
+      title: string;
+      subtitle?: string | null;
+      date: string;
+    }[] = [];
+    const dm = /^(\d{1,2})[/.-](\d{1,2})(?:[/.-](\d{4}))?$/.exec(raw);
+    if (dm) {
+      const [d, m] = [Number(dm[1]), Number(dm[2])];
+      let y = dm[3] ? Number(dm[3]) : Number(today.slice(0, 4));
+      let iso = `${y}-${pad(m)}-${pad(d)}`;
+      if (!dm[3] && iso < today) iso = `${++y}-${pad(m)}-${pad(d)}`;
+      const dt = new Date(`${iso}T00:00:00`);
+      if (!Number.isNaN(dt.getTime()) && dt.getDate() === d)
+        out.push({
+          key: `date:${iso}`,
+          title: t`Ngày ${formatDmy(iso)}`,
+          date: iso,
+        });
+    }
+    const needle = unaccent(raw);
+    const seen = new Set<string>();
+    const pool = [
+      ...[...eventsByDay.values()].flat(),
+      ...upcomingFestivals(today, 400),
+    ].sort((a, b) => a.date.localeCompare(b.date));
+    for (const e of pool) {
+      if (seen.has(e.key)) continue;
+      seen.add(e.key);
+      if (unaccent(`${e.title} ${e.subtitle ?? ""}`).includes(needle))
+        out.push({
+          key: e.key,
+          title: e.title,
+          subtitle: e.subtitle,
+          date: e.date,
+        });
+      if (out.length >= 8) break;
+    }
+    return out;
+  }, [q, eventsByDay, today]);
 
   const { startIso, endIso } = useMemo(() => {
     if (range === "custom") {
@@ -195,31 +253,55 @@ export default function GoodDays() {
         description={t`Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn.`}
       />
 
-      {/* Tuỳ chọn hiển thị: nút "Tuỳ chọn" mở ngăn kéo bên phải, cùng kiểu các màn khác. */}
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-10 gap-1.5"
-          onClick={() => setShowOpts(true)}
-          aria-haspopup="dialog"
-          aria-expanded={showOpts}
-        >
-          <IconSliders className="h-4 w-4" />
-          {t`Tuỳ chọn hiển thị`}
-        </Button>
-      </div>
-      <FilterDrawer
-        open={showOpts}
-        onClose={() => setShowOpts(false)}
+      {/* Ô tìm (sự kiện dòng họ, lễ tết, hoặc gõ ngày) + icon Tuỳ chọn trong ô — kiểu chung; tuỳ chọn hiển thị ở ngăn kéo. */}
+      <CollapsibleFilters
         title={t`Tuỳ chọn hiển thị`}
+        search={(toggle) => (
+          <SearchInput
+            label={t`Tìm ngày, sự kiện, lễ tết`}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t`Tìm sự kiện, lễ tết, hoặc gõ ngày 20/11…`}
+            rightSlot={toggle}
+          />
+        )}
       >
         <p className="text-sm text-muted-foreground">
           {t`Chọn loại thông tin hiện ở chi tiết ngày.`}
         </p>
         <AlmanacDisplayToggles prefs={prefs} toggle={toggle} list />
-      </FilterDrawer>
+      </CollapsibleFilters>
+
+      {q.trim() && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {searchHits.length === 0 ? (
+            <li className="p-3 text-sm text-muted-foreground">
+              {t`Không thấy ngày hay sự kiện nào khớp.`}
+            </li>
+          ) : (
+            searchHits.map((h) => (
+              <li key={h.key}>
+                <button
+                  type="button"
+                  onClick={() => jumpTo(h.date)}
+                  className="flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+                >
+                  <IconCalendar className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium leading-snug">
+                      {h.title}
+                    </span>
+                    <span className="block text-sm text-muted-foreground">
+                      {formatDmy(h.date)}
+                      {h.subtitle ? ` · ${h.subtitle}` : ""}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
 
       {/* Lịch tháng âm–dương — bấm một ngày để xem chi tiết bên dưới. */}
       <MonthCalendar
