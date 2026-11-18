@@ -353,16 +353,19 @@ export interface Col {
 /**
  * Kiểu bảng chuẩn của sổ (lấy bảng "Theo đời" làm mẫu): khung bo nhẹ, hàng
  * tiêu đề tô nền, kẻ ngang giữa các hàng và kẻ dọc giữa các cột, hàng
- * "Tổng" ở cuối nếu có. Đặt `wrap={false}` để một bảng không bị cắt giữa trang.
+ * "Tổng" ở cuối nếu có. Mặc định cả bảng không bị cắt giữa trang (`wrap={false}`).
+ * `flow`: bảng dài chảy qua nhiều trang — chỉ ngắt GIỮA các hàng, hàng tiêu đề `fixed` lặp lại đầu mỗi trang (không hỗ trợ `total`).
  */
 export function DataTable({
   cols,
   rows,
   total,
+  flow = false,
 }: {
   cols: Col[];
   rows: (string | number)[][];
   total?: (string | number)[];
+  flow?: boolean;
 }) {
   const s = S();
   const edge = COLORS.primary;
@@ -376,6 +379,45 @@ export function DataTable({
       },
       ci > 0 ? { borderLeftWidth: 0.6, borderLeftColor: edge } : {},
     ] as const;
+  if (flow) {
+    // Khung bảng bị cắt qua trang thì viền khung kéo dài tới đáy trang (dải trống có kẻ dọc) — nên khung KHÔNG vẽ viền;
+    // mỗi hàng tự vẽ viền trái/phải/dưới, hàng tiêu đề (lặp đầu mỗi trang) vẽ đủ bốn cạnh.
+    const side = { borderLeftWidth: 0.6, borderRightWidth: 0.6, borderColor: edge };
+    return (
+      <View style={{ marginBottom: 8 }}>
+        <View
+          fixed
+          style={[
+            { flexDirection: "row", borderWidth: 0.6, borderColor: edge, borderTopLeftRadius: 5, borderTopRightRadius: 5 },
+            { backgroundColor: COLORS.divider },
+          ]}
+        >
+          {cols.map((c, ci) => (
+            <Text key={ci} style={[s.th, ...cellStyle(c, ci)]}>
+              {c.label}
+            </Text>
+          ))}
+        </View>
+        {rows.map((r, ri) => (
+          <View
+            key={ri}
+            wrap={false}
+            style={[
+              { flexDirection: "row", borderBottomWidth: 0.6, borderBottomColor: edge },
+              side,
+              ri === rows.length - 1 ? { borderBottomLeftRadius: 5, borderBottomRightRadius: 5 } : {},
+            ]}
+          >
+            {cols.map((c, ci) => (
+              <Text key={ci} style={[s.td, ...cellStyle(c, ci), c.bold ? { fontWeight: 700 } : {}]}>
+                {r[ci] ?? ""}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    );
+  }
   return (
     <View
       wrap={false}
@@ -391,6 +433,7 @@ export function DataTable({
       {rows.map((r, ri) => (
         <View
           key={ri}
+          wrap={false}
           style={[
             { flexDirection: "row" },
             ri < rows.length - 1 || total ? { borderBottomWidth: 0.6, borderBottomColor: edge } : {},
