@@ -1,4 +1,5 @@
 import { currentIntlTag } from "@/lib/i18n";
+import { IconPin } from "@/components/icons";
 import { PanelLink } from "@/components/panel/PanelLink";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -75,11 +76,11 @@ export function ClanPostCard({
           <h3 className="text-base leading-snug font-semibold line-clamp-1">
             {post.pinned && (
               <span
-                className="text-primary mr-1.5"
+                className="mr-1.5 inline-flex align-[-2px] text-primary"
                 title={t`Đã ghim`}
                 aria-label={t`Đã ghim`}
               >
-                📌
+                <IconPin className="h-4 w-4" />
               </span>
             )}
             {post.title}

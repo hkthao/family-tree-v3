@@ -637,6 +637,25 @@ export function IconSparkles(p: IconProps) {
   );
 }
 
+/** Ghim (bài được ghim lên đầu) — lucide pin. */
+export function IconPin(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 17v5" />
+      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+    </Svg>
+  );
+}
+
+/** Sao (lưu bài) — lucide star. Đã lưu: thêm `fill-current` để tô đặc. */
+export function IconStar(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+    </Svg>
+  );
+}
+
 export function IconSend(p: IconProps) {
   return (
     <Svg {...p}>
