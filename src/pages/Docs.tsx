@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Article, ArticleHeader } from "@/components/Article";
@@ -9,6 +16,7 @@ import { FeedRow } from "@/components/FeedRow";
 import { IconBook, IconScroll } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { SearchInput } from "@/components/SearchInput";
+import { SidePanel } from "@/components/SidePanel";
 import {
   SegmentedButton,
   SegmentedControl,
@@ -54,6 +62,25 @@ export default function Docs() {
 function Index() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  // Bấm một bài: mở ngăn kéo đọc (?bai=<slug>, có history để vuốt/Back đóng). /docs/:slug giữ cho link chia sẻ.
+  const [sp, setSp] = useSearchParams();
+  const viewing = sp.get("bai");
+  const viewingArticle = viewing ? DOCS_BY_SLUG[viewing] : null;
+  const openDoc = (slug: string) => {
+    const next = new URLSearchParams(sp);
+    next.set("bai", slug);
+    navigate({ search: `?${next}` }, { state: { docOpened: true } });
+  };
+  const closeDoc = () => {
+    if ((location.state as { docOpened?: boolean } | null)?.docOpened) {
+      navigate(-1);
+      return;
+    }
+    const next = new URLSearchParams(sp);
+    next.delete("bai");
+    setSp(next, { replace: true });
+  };
   const needle = unaccent(query.trim());
 
   const filtered = needle
@@ -123,13 +150,42 @@ function Index() {
                 title={a.title}
                 body={a.summary}
                 previewMax={2}
-                to={`/docs/${a.slug}`}
+                onClick={() => openDoc(a.slug)}
               />
             ))}
           </ul>
         </section>
       ))}
+
+      {viewingArticle && (
+        <SidePanel
+          open
+          title={t`Hướng dẫn`}
+          onClose={closeDoc}
+          size="lg"
+          guard={false}
+        >
+          <div className="pb-6">
+            <DocArticleContent article={viewingArticle} />
+          </div>
+        </SidePanel>
+      )}
     </div>
+  );
+}
+
+/** Thân một bài hướng dẫn dạng bài báo — dùng chung cho trang /docs/:slug và ngăn kéo đọc ở danh sách. */
+function DocArticleContent({ article }: { article: DocArticle }) {
+  return (
+    <Article>
+      <ArticleHeader
+        kicker={sectionLabelOf(article.slug)}
+        title={article.title}
+      />
+      <div className="mt-5 text-[17px] leading-8 sm:text-lg">
+        <article.Body />
+      </div>
+    </Article>
   );
 }
 
@@ -161,15 +217,7 @@ function ArticleView({ article }: { article: DocArticle }) {
 
         {/* Dạng bài báo (components/Article): chuyên mục → tít → thân bài, chữ serif to, không bọc thẻ. */}
         <div className="max-w-2xl">
-          <Article>
-            <ArticleHeader
-              kicker={sectionLabelOf(article.slug)}
-              title={article.title}
-            />
-            <div className="mt-5 text-[17px] leading-8 sm:text-lg">
-              <article.Body />
-            </div>
-          </Article>
+          <DocArticleContent article={article} />
         </div>
 
         {(prev || next) && (

@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
   Article,
+  ArticleActionBar,
   ArticleFactBox,
   ArticleFigure,
   ArticleHeader,
@@ -340,7 +341,7 @@ export default function RestingPlaceDetail({
     </>
   );
 
-  // Trang đầy đủ: nút ở đầu trang; ngăn kéo xem: thanh dính đáy chung (Xoá → QR → Sửa).
+  // Thanh dính đáy (Xoá → QR → Sửa): ngăn kéo — DrawerViewActions; trang đầy đủ — ArticleActionBar.
   const actionButtons = (
     <>
       {canAdmin && (
@@ -355,12 +356,7 @@ export default function RestingPlaceDetail({
           <IconQrCode className="h-4 w-4 mr-1" /> QR
         </Button>
       )}
-      <Button
-        size="sm"
-        variant={embedded ? "default" : "outline"}
-        className={embedded ? "order-last" : undefined}
-        asChild
-      >
+      <Button size="sm" className="order-last" asChild>
         <PanelLink
           to={`/clans/${clan.id}/graves/${place.id}/edit`}
           panel="grave-edit"
@@ -372,7 +368,7 @@ export default function RestingPlaceDetail({
       <Button
         size="sm"
         variant="destructive-outline"
-        className={embedded ? "order-first" : undefined}
+        className="order-first"
         onClick={() =>
           askConfirm({
             title: t`Xoá nơi an nghỉ này?`,
@@ -400,9 +396,6 @@ export default function RestingPlaceDetail({
             { label: title },
           ]}
         />
-      )}
-      {canEdit && !embedded && (
-        <div className="flex justify-end gap-2">{actionButtons}</div>
       )}
 
       {/* Dạng bài báo: không bọc thẻ — chuyên mục, tít, sapo (người an nghỉ), ảnh lớn, hộp thông tin, các mục. */}
@@ -746,9 +739,12 @@ export default function RestingPlaceDetail({
           onClose={() => setLightboxIdx(null)}
         />
       )}
-      {embedded && canEdit && (
-        <DrawerViewActions>{actionButtons}</DrawerViewActions>
-      )}
+      {canEdit &&
+        (embedded ? (
+          <DrawerViewActions>{actionButtons}</DrawerViewActions>
+        ) : (
+          <ArticleActionBar>{actionButtons}</ArticleActionBar>
+        ))}
     </div>
   );
 }

@@ -3,6 +3,12 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import {
+  Article,
+  ArticleFooter,
+  ArticleHeader,
+  ArticleProse,
+} from "@/components/Article";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,15 +33,6 @@ const LEVEL_LABEL: Record<AnnouncementLevel, string> = lazyMessages({
   warning: msg`Cảnh báo`,
   critical: msg`Quan trọng`,
 }) as Record<AnnouncementLevel, string>;
-
-const LEVEL_BADGE: Record<AnnouncementLevel, string> = {
-  info: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30",
-  update: "bg-primary/10 text-primary border-primary/30",
-  warning:
-    "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  critical:
-    "bg-destructive/10 text-destructive border-destructive/30 font-semibold",
-};
 
 export default function AnnouncementDetail() {
   const { id } = useParams<{ id: string }>();
@@ -111,54 +108,43 @@ export default function AnnouncementDetail() {
         )}
 
         {row && (
-          <article className="max-w-2xl">
-            {/* Eyebrow — level + public flag, nhỏ và mảnh */}
-            <div className="flex items-center gap-2 flex-wrap text-xs uppercase tracking-wider text-muted-foreground">
-              <span
-                className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium normal-case ${LEVEL_BADGE[row.level]}`}
-              >
-                {LEVEL_LABEL[row.level]}
-              </span>
-              {row.is_public && <span>Public</span>}
-            </div>
-
-            {/* Title — font serif Noto Serif (clan-name class) cho cảm
-                giác "đang đọc bài" như báo / blog. */}
-            <h1 className="clan-name text-3xl sm:text-4xl font-semibold leading-tight mt-3 mb-2">
-              {row.title}
-            </h1>
-
-            {row.published_at && (
-              <time
-                className="block text-sm text-muted-foreground tabular-nums"
-                dateTime={row.published_at}
-              >
-                {new Date(row.published_at).toLocaleString("vi-VN", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </time>
-            )}
-
-            <hr className="my-5 border-border" />
-
-            <div className="text-[17px] leading-[1.75] whitespace-pre-line text-foreground/90">
-              {row.body}
-            </div>
-
-            {row.expires_at && (
-              <p className="text-xs text-muted-foreground mt-8 pt-4 border-t italic">
-                {t`Thông báo này sẽ hết hạn vào`}{" "}
-                <strong className="not-italic">
-                  {new Date(row.expires_at).toLocaleString("vi-VN")}
-                </strong>
-                .
-              </p>
-            )}
-          </article>
+          <div className="max-w-2xl">
+            {/* Dạng bài báo — cùng khuôn với ngăn kéo xem thông báo (AnnouncementPanel, components/Article). */}
+            <Article>
+              <ArticleHeader
+                kicker={LEVEL_LABEL[row.level]}
+                title={row.title}
+                meta={[
+                  row.published_at && (
+                    <time className="tabular-nums" dateTime={row.published_at}>
+                      {new Date(row.published_at).toLocaleString("vi-VN", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </time>
+                  ),
+                  row.is_public && t`Công khai`,
+                ]}
+              />
+              <div className="mt-5">
+                <ArticleProse>{row.body}</ArticleProse>
+              </div>
+              {row.expires_at && (
+                <ArticleFooter>
+                  <p className="italic">
+                    {t`Thông báo này sẽ hết hạn vào`}{" "}
+                    <strong className="not-italic">
+                      {new Date(row.expires_at).toLocaleString("vi-VN")}
+                    </strong>
+                    .
+                  </p>
+                </ArticleFooter>
+              )}
+            </Article>
+          </div>
         )}
       </main>
     </div>

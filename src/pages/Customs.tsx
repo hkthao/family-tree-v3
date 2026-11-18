@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+
+import { PanelLink } from "@/components/panel/PanelLink";
 
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { FabGroup } from "@/components/FabGroup";
@@ -217,8 +218,10 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
   const created = new Date(entry.created_at).toLocaleDateString("vi-VN");
   return (
     <li>
-      <Link
+      <PanelLink
         to={`/so-tay/${entry.id}`}
+        panel="custom-view"
+        panelParams={{ pid: entry.id }}
         className="group flex h-full min-w-0 flex-col rounded-xl border bg-card p-4 transition-all hover:border-primary hover:shadow-md"
       >
         <div className="flex min-w-0 gap-3.5">
@@ -296,7 +299,7 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
             {created}
           </span>
         </div>
-      </Link>
+      </PanelLink>
     </li>
   );
 }

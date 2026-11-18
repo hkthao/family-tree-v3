@@ -10,6 +10,7 @@ import { getClanPost } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson } from "@/lib/queries/persons";
 
+import { CustomViewPanel } from "./CustomsPanelHost";
 import { usePanel } from "./usePanel";
 
 import { t } from "@lingui/core/macro";
@@ -27,8 +28,11 @@ const InlawsNew = lazy(() => import("@/pages/clan/InlawsNew"));
 const RestingPlaceForm = lazy(() => import("@/pages/clan/RestingPlaceForm"));
 // Ngăn kéo XEM dùng trang đọc (không phải form khoá ô): dễ đọc trên điện thoại hơn.
 const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
-const RestingPlaceDetail = lazy(() => import("@/pages/clan/RestingPlaceDetail"));
+const RestingPlaceDetail = lazy(
+  () => import("@/pages/clan/RestingPlaceDetail"),
+);
 const HeritageDetail = lazy(() => import("@/pages/clan/HeritageDetail"));
+const BoardPostDetail = lazy(() => import("@/pages/clan/BoardPostDetail"));
 const HeritageForm = lazy(() => import("@/pages/clan/HeritageForm"));
 const BoardPostForm = lazy(() =>
   import("@/components/BoardPostForm").then((m) => ({
@@ -57,7 +61,7 @@ export function PanelHost({ clan }: { clan: ClanDetail }) {
 
 function PanelHostInner({ clan }: { clan: ClanDetail }) {
   const clanId = clan.id;
-  const { current, params, close, open } = usePanel();
+  const { current, params, close } = usePanel();
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const pid = params.pid;
@@ -224,6 +228,10 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
     );
   }
 
+  if (current === "custom-view" && pid) {
+    return <CustomViewPanel id={pid} onClose={close} />;
+  }
+
   if (current === "board-view" && pid) {
     return (
       <SidePanel
@@ -234,12 +242,7 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
         guard={false}
       >
         <Suspense fallback={<Loading />}>
-          <BoardPostViewBody
-            clan={clan}
-            postId={pid}
-            onClose={close}
-            onEdit={() => open("board-edit", { pid })}
-          />
+          <BoardPostDetail embedded={{ id: pid, onClose: close }} />
         </Suspense>
       </SidePanel>
     );
@@ -316,37 +319,3 @@ function BoardPostEditBody({
 }
 
 /** Xem một bài (chỉ đọc): cùng form đăng/sửa nhưng khoá mọi ô; "Sửa" chỉ cho tác giả hoặc quản trị. */
-function BoardPostViewBody({
-  clan,
-  postId,
-  onClose,
-  onEdit,
-}: {
-  clan: ClanDetail;
-  postId: string;
-  onClose: () => void;
-  onEdit: () => void;
-}) {
-  const { user } = useAuth();
-  const { data: post, isLoading } = useQuery({
-    queryKey: queryKeys.clanPost(postId),
-    queryFn: () => getClanPost(postId),
-  });
-  if (isLoading) return <Loading />;
-  if (!post)
-    return (
-      <p className="py-6 text-sm text-muted-foreground">{t`Không tìm thấy bài viết.`}</p>
-    );
-  const canEdit = post.author_id === user?.id || isClanAdmin(clan);
-  return (
-    <BoardPostForm
-      clan={clan}
-      post={post}
-      readOnly
-      canEdit={canEdit}
-      onEdit={onEdit}
-      onDone={onClose}
-      onCancel={onClose}
-    />
-  );
-}

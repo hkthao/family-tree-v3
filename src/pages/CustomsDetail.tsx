@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Fragment } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import {
   Article,
+  ArticleActionBar,
   ArticleFactBox,
   ArticleFigure,
   ArticleFooter,
@@ -12,6 +14,7 @@ import {
   ArticleSection,
 } from "@/components/Article";
 import { CustomsShell } from "@/components/CustomsShell";
+import { DrawerViewActions } from "@/components/ui/form-actions";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -44,8 +47,20 @@ import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
-export default function CustomsDetail() {
-  const { entryId } = useParams<{ entryId: string }>();
+/** Hiện trong ngăn kéo XEM (bấm bài ở danh sách Sổ tay / Hôm nay): lấy id từ đây, bỏ khung trang và nút quay lại,
+ *  thanh nút là DrawerViewActions. Route /so-tay/:id và /xem/so-tay/:id vẫn giữ cho link chia sẻ. */
+export interface EmbeddedCustom {
+  id: string;
+  onClose: () => void;
+}
+
+export default function CustomsDetail({
+  embedded,
+}: { embedded?: EmbeddedCustom } = {}) {
+  const params = useParams<{ entryId: string }>();
+  const entryId = embedded?.id ?? params.entryId;
+  // Trong ngăn kéo: không bọc khung trang (đã nằm trong trang đang mở).
+  const Shell = embedded ? Fragment : CustomsShell;
   const isNew = entryId === "new"; // phòng khớp nhầm route
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -69,7 +84,10 @@ export default function CustomsDetail() {
 
   // Bài Sổ tay là tài sản SEO thật của app (khách vào từ tìm kiếm) —
   // đặt tiêu đề + mô tả theo đúng nội dung bài.
-  usePageTitle(entry?.title ?? null, entry?.short_description ?? null);
+  usePageTitle(
+    embedded ? null : (entry?.title ?? null),
+    embedded ? null : (entry?.short_description ?? null),
+  );
 
   const { data: bookmarks } = useQuery({
     queryKey: ["custom-bookmarks", userId],
@@ -95,7 +113,8 @@ export default function CustomsDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["customs"] });
       toast.success(t`Đã xoá bài`);
-      navigate("/so-tay");
+      if (embedded) embedded.onClose();
+      else navigate("/so-tay");
     },
     onError: (e) =>
       toast.error(t`Không xoá được`, { description: (e as Error).message }),
@@ -141,14 +160,14 @@ export default function CustomsDetail() {
 
   if (isLoading) {
     return (
-      <CustomsShell>
+      <Shell>
         <p className="text-muted-foreground">{t`Đang tải…`}</p>
-      </CustomsShell>
+      </Shell>
     );
   }
   if (!entry) {
     return (
-      <CustomsShell>
+      <Shell>
         <p className="text-muted-foreground">{t`Không tìm thấy bài.`}</p>
         <Button asChild variant="outline" className="mt-3">
           {user ? (
@@ -163,9 +182,71 @@ export default function CustomsDetail() {
             </Link>
           )}
         </Button>
-      </CustomsShell>
+      </Shell>
     );
   }
+
+  const actionButtons = (
+    <>
+      {isAdmin && (
+        <Button
+          variant="destructive-outline"
+          onClick={async () => {
+            const ok = await confirm({
+              title: t`Xoá bài này?`,
+              confirmLabel: t`Xoá`,
+              destructive: true,
+            });
+            if (ok) deleteM.mutate();
+          }}
+        >
+          <IconTrash className="mr-1.5 h-4 w-4 shrink-0" />
+          {t`Xoá`}
+        </Button>
+      )}
+      <Button variant="outline" onClick={shareEntry}>
+        <IconShare2 className="mr-1.5 h-4 w-4 shrink-0" />
+        {t`Chia sẻ`}
+      </Button>
+      {/* icon-audit: ok — ★/☆ chính là icon, và trạng thái đọc được ngay từ hình */}
+      {user && (
+        <Button
+          variant="outline"
+          onClick={() => bookmarkM.mutate()}
+          disabled={bookmarkM.isPending}
+          title={bookmarked ? t`Bỏ lưu` : t`Lưu bài`}
+        >
+          <span aria-hidden className="mr-1.5">
+            {bookmarked ? "★" : "☆"}
+          </span>
+          {bookmarked ? t`Đã lưu` : t`Lưu`}
+        </Button>
+      )}
+      {isAdmin && entry.status !== "published" && (
+        <Button
+          variant="outline"
+          onClick={() => approveM.mutate()}
+          disabled={approveM.isPending}
+          title={t`Duyệt & công khai`}
+        >
+          <IconCheck className="mr-1.5 h-4 w-4 shrink-0" />
+          {t`Duyệt`}
+        </Button>
+      )}
+      {isAdmin && (
+        <Button asChild>
+          <PanelLink
+            to={`/so-tay/${entry.id}/edit`}
+            panel="custom-edit"
+            panelParams={{ pid: entry.id }}
+          >
+            <IconPencil className="mr-1.5 h-4 w-4 shrink-0" />
+            {t`Sửa`}
+          </PanelLink>
+        </Button>
+      )}
+    </>
+  );
 
   const metaLine = [
     entry.regions.length > 0 ? entry.regions.join(", ") : null,
@@ -178,86 +259,21 @@ export default function CustomsDetail() {
     .join("  ·  ");
 
   return (
-    <CustomsShell>
-      {/* Thanh trên: quay lại + hành động (ngoài "trang giấy") */}
-      <div className="flex items-center justify-between gap-3">
-        {user ? (
-          <Link to="/so-tay" className="text-sm text-primary hover:underline">
-            {t`← Sổ tay Văn hoá`}
-          </Link>
-        ) : (
-          <Link to="/login" className="text-sm text-primary hover:underline">
-            {t`Đăng nhập để xem thêm →`}
-          </Link>
-        )}
-        <div className="flex shrink-0 gap-1.5">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={shareEntry}
-            title={t`Chia sẻ`}
-          >
-            <IconShare2 className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">{t`Chia sẻ`}</span>
-          </Button>
-          {/* icon-audit: ok — ★/☆ chính là icon, và trạng thái đọc được ngay từ hình */}
-          {user && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => bookmarkM.mutate()}
-              disabled={bookmarkM.isPending}
-              title={bookmarked ? t`Bỏ lưu` : t`Lưu bài`}
-            >
-              <span aria-hidden>{bookmarked ? "★" : "☆"}</span>
-              <span className="hidden sm:inline sm:ml-1">
-                {bookmarked ? t`Đã lưu` : t`Lưu`}
-              </span>
-            </Button>
-          )}
-          {isAdmin && entry.status !== "published" && (
-            <Button
-              size="sm"
-              onClick={() => approveM.mutate()}
-              disabled={approveM.isPending}
-              title={t`Duyệt & công khai`}
-            >
-              <IconCheck className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">{t`Duyệt`}</span>
-            </Button>
-          )}
-          {isAdmin && (
-            <>
-              <Button size="sm" variant="outline" asChild title={t`Sửa`}>
-                <PanelLink
-                  to={`/so-tay/${entry.id}/edit`}
-                  panel="custom-edit"
-                  panelParams={{ pid: entry.id }}
-                >
-                  <IconPencil className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">{t`Sửa`}</span>
-                </PanelLink>
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive-outline"
-                title={t`Xoá`}
-                onClick={async () => {
-                  const ok = await confirm({
-                    title: t`Xoá bài này?`,
-                    confirmLabel: t`Xoá`,
-                    destructive: true,
-                  });
-                  if (ok) deleteM.mutate();
-                }}
-              >
-                <IconTrash className="h-4 w-4 sm:mr-1" />
-                <span className="hidden sm:inline">{t`Xoá`}</span>
-              </Button>
-            </>
+    <Shell>
+      {/* Thanh trên: chỉ còn liên kết quay lại — nút thao tác ở thanh dính đáy (ArticleActionBar). */}
+      {!embedded && (
+        <div className="flex items-center gap-3">
+          {user ? (
+            <Link to="/so-tay" className="text-sm text-primary hover:underline">
+              {t`← Sổ tay Văn hoá`}
+            </Link>
+          ) : (
+            <Link to="/login" className="text-sm text-primary hover:underline">
+              {t`Đăng nhập để xem thêm →`}
+            </Link>
           )}
         </div>
-      </div>
+      )}
 
       {/* Dạng bài báo (khuôn chung components/Article): không bọc thẻ, chuyên mục → tít → sapo → dòng thông tin →
           ảnh lớn → các mục. Hiển thị đầy đủ nội dung (không gập/mở) — không bắt bấm để xem. */}
@@ -346,12 +362,23 @@ export default function CustomsDetail() {
             <ArticleList>
               {related.map((r) => (
                 <li key={r.id}>
-                  <Link
-                    to={user ? `/so-tay/${r.id}` : `/xem/so-tay/${r.id}`}
-                    className="block py-2.5 font-serif text-[17px] text-primary hover:underline"
-                  >
-                    {r.title}
-                  </Link>
+                  {user ? (
+                    <PanelLink
+                      to={`/so-tay/${r.id}`}
+                      panel="custom-view"
+                      panelParams={{ pid: r.id }}
+                      className="block py-2.5 font-serif text-[17px] text-primary hover:underline"
+                    >
+                      {r.title}
+                    </PanelLink>
+                  ) : (
+                    <Link
+                      to={`/xem/so-tay/${r.id}`}
+                      className="block py-2.5 font-serif text-[17px] text-primary hover:underline"
+                    >
+                      {r.title}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ArticleList>
@@ -373,6 +400,13 @@ export default function CustomsDetail() {
           </p>
         </ArticleFooter>
       </Article>
-    </CustomsShell>
+
+      {/* Nút thao tác của bài: thanh dính đáy, phá huỷ → phụ → chính (Sửa ngoài cùng phải). */}
+      {embedded ? (
+        <DrawerViewActions>{actionButtons}</DrawerViewActions>
+      ) : (
+        <ArticleActionBar safeArea>{actionButtons}</ArticleActionBar>
+      )}
+    </Shell>
   );
 }

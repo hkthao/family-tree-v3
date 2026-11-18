@@ -1549,25 +1549,28 @@ export default function Tree() {
 
       {/* Báo mặc định chỉ hiện một số đời để người dùng biết còn nữa — xem thêm ở Tuỳ chọn. */}
       {mode !== "folder" && !(mode === "2d" && view === "lineage") && (
-        <p className="print-hide flex flex-wrap items-center gap-x-1 text-sm text-muted-foreground">
-          <IconLayers className="h-4 w-4 shrink-0" aria-hidden="true" />
-          {depth === 0
-            ? t`Đang hiển thị tất cả các đời.`
-            : t`Đang hiển thị ${depth} đời quanh người làm tâm.`}
-          {depth !== 0 && (
-            <>
-              {" "}
-              {t`Muốn xem thêm, mở`}{" "}
-              <button
-                type="button"
-                onClick={() => setShowOpts(true)}
-                className="font-medium text-primary underline-offset-2 hover:underline"
-              >
-                {t`Tuỳ chọn`}
-              </button>
-              .
-            </>
-          )}
+        // Icon + MỘT đoạn chữ chảy liền (không flex-wrap từng mảnh — mảnh "Tuỳ chọn" bị đẩy xuống dòng riêng).
+        <p className="print-hide flex items-start gap-1.5 text-sm text-muted-foreground">
+          <IconLayers className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0">
+            {depth === 0
+              ? t`Đang hiển thị tất cả các đời.`
+              : t`Đang hiển thị ${depth} đời quanh người làm tâm.`}
+            {depth !== 0 && (
+              <>
+                {" "}
+                {t`Muốn xem thêm, mở`}{" "}
+                <button
+                  type="button"
+                  onClick={() => setShowOpts(true)}
+                  className="inline font-medium text-primary underline-offset-2 hover:underline"
+                >
+                  {t`Tuỳ chọn`}
+                </button>
+                .
+              </>
+            )}
+          </span>
         </p>
       )}
 

@@ -790,11 +790,6 @@ msgstr "<0>Bạn là ai trong dòng họ?</0> Chọn vị trí của mình trên
 msgid "<0>Dòng họ chưa có Thuỷ tổ.</0> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ đúng."
 msgstr "<0>Dòng họ chưa có Thuỷ tổ.</0> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ đúng."
 
-#. placeholder {0}: new Date(post.event_date).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", })
-#: src/pages/clan/BoardPostDetail.tsx
-msgid "<0>Ngày diễn ra: </0><1>{0}</1>"
-msgstr "<0>Ngày diễn ra: </0><1>{0}</1>"
-
 #: src/components/CalendarDateInput.tsx
 msgid "= {solarStr} dương lịch"
 msgstr "= {solarStr} dương lịch"
@@ -1757,13 +1752,9 @@ msgid "Biên tập"
 msgstr "Biên tập"
 
 #: src/components/PodcastViewer.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 msgid "Bình luận"
 msgstr "Bình luận"
-
-#. placeholder {0}: commentsQ.data?.length ?? 0
-#: src/pages/clan/BoardPostDetail.tsx
-msgid "Bình luận ({0})"
-msgstr "Bình luận ({0})"
 
 #: src/components/TimelineFields.tsx
 msgid "Bính Tuất"
@@ -2636,7 +2627,6 @@ msgstr "Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng 
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
-#: src/pages/CustomsDetail.tsx
 #: src/pages/CustomsDetail.tsx
 msgid "Chia sẻ"
 msgstr "Chia sẻ"
@@ -3636,6 +3626,7 @@ msgstr "công khai"
 #: src/pages/admin/Clans.tsx
 #: src/pages/admin/Clans.tsx
 #: src/pages/admin/Config.tsx
+#: src/pages/AnnouncementDetail.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/Clans.tsx
 #: src/pages/Clans.tsx
@@ -5567,6 +5558,7 @@ msgstr "Di sản, văn hoá, hiện vật."
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/Share.tsx
 msgid "Địa chỉ"
 msgstr "Địa chỉ"
 
@@ -6384,8 +6376,8 @@ msgid "Ghi từ thôn/xã/huyện đến tỉnh theo địa danh hành chính đ
 msgstr "Ghi từ thôn/xã/huyện đến tỉnh theo địa danh hành chính đương thời để người tìm không nhầm lẫn."
 
 #: src/pages/clan/BoardPostDetail.tsx
-msgid "Ghim lên đầu"
-msgstr "Ghim lên đầu"
+msgid "Ghim"
+msgstr "Ghim"
 
 #: src/components/RecentActivityPanel.tsx
 #: src/lib/queries/customs.ts
@@ -6845,11 +6837,6 @@ msgstr "Hạn dùng"
 msgid "Hạng {rank} theo số thành viên"
 msgstr "Hạng {rank} theo số thành viên"
 
-#: src/pages/clan/BoardPostDetail.tsx
-#: src/pages/clan/BoardPostDetail.tsx
-msgid "Hành động"
-msgstr "Hành động"
-
 #: src/pages/admin/GiaPha.tsx
 msgid "Hành động không thể hoàn tác."
 msgstr "Hành động không thể hoàn tác."
@@ -7021,8 +7008,10 @@ msgid "Hiệu lực (ngày)"
 msgstr "Hiệu lực (ngày)"
 
 #: src/components/HeritagePhotosSection.tsx
+#: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/Share.tsx
 msgid "Hình ảnh"
 msgstr "Hình ảnh"
 
@@ -7281,6 +7270,7 @@ msgstr "Hướng cây"
 #: src/components/HelpButton.tsx
 #: src/components/HelpButton.tsx
 #: src/components/HelpVideoButton.tsx
+#: src/pages/Docs.tsx
 #: src/pages/Docs.tsx
 #: src/pages/Videos.tsx
 msgid "Hướng dẫn"
@@ -8235,7 +8225,6 @@ msgid "Không tìm thấy ai tên “{q}”."
 msgstr "Không tìm thấy ai tên “{q}”."
 
 #: src/components/panel/PanelHost.tsx
-#: src/components/panel/PanelHost.tsx
 msgid "Không tìm thấy bài viết."
 msgstr "Không tìm thấy bài viết."
 
@@ -8515,16 +8504,13 @@ msgid "Làng xã"
 msgstr "Làng xã"
 
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/Share.tsx
 msgid "Lập / xây năm"
 msgstr "Lập / xây năm"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Lập / xây năm (tuỳ chọn)"
 msgstr "Lập / xây năm (tuỳ chọn)"
-
-#: src/pages/Share.tsx
-msgid "Lập / xây năm:"
-msgstr "Lập / xây năm:"
 
 #: src/pages/clan/Events.tsx
 msgid "Lặp lại hằng năm"
@@ -10144,6 +10130,10 @@ msgstr "Ngày đăng"
 msgid "Ngày đăng ký"
 msgstr "Ngày đăng ký"
 
+#: src/pages/clan/BoardPostDetail.tsx
+msgid "Ngày diễn ra"
+msgstr "Ngày diễn ra"
+
 #: src/components/BoardPostForm.tsx
 msgid "Ngày diễn ra (tuỳ chọn)"
 msgstr "Ngày diễn ra (tuỳ chọn)"
@@ -10368,14 +10358,10 @@ msgstr "Người"
 msgid "Người A"
 msgstr "Người A"
 
+#: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Người an nghỉ"
 msgstr "Người an nghỉ"
-
-#. placeholder {0}: rp.occupants.length
-#: src/components/SharedRestingPlaceCard.tsx
-msgid "Người an nghỉ ({0})"
-msgstr "Người an nghỉ ({0})"
 
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Người an nghỉ tại đây"
@@ -10472,6 +10458,7 @@ msgid "Người gửi"
 msgstr "Người gửi"
 
 #: src/components/EventDetailDialog.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Share.tsx
 msgid "Người liên quan"
@@ -10867,6 +10854,7 @@ msgid "Nơi an nghỉ"
 msgstr "Nơi an nghỉ"
 
 #. placeholder {0}: names.join(", ")
+#: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Nơi an nghỉ của {0}."
 msgstr "Nơi an nghỉ của {0}."
@@ -11079,6 +11067,7 @@ msgstr "Ở cuối"
 
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/HeritageForm.tsx
+#: src/pages/Share.tsx
 msgid "Ở đâu"
 msgstr "Ở đâu"
 
@@ -11804,6 +11793,7 @@ msgstr "Sổ tay đang được biên soạn."
 msgid "Sổ tay văn hoá"
 msgstr "Sổ tay văn hoá"
 
+#: src/components/panel/CustomsPanelHost.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
@@ -11908,7 +11898,6 @@ msgstr "Sự kiện tuỳ chỉnh"
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
-#: src/pages/CustomsDetail.tsx
 #: src/pages/CustomsDetail.tsx
 msgid "Sửa"
 msgstr "Sửa"
@@ -13330,8 +13319,11 @@ msgstr "Thông gia"
 msgid "Thông gia: {names}"
 msgstr "Thông gia: {names}"
 
+#: src/components/SharedRestingPlaceCard.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/Share.tsx
 msgid "Thông tin"
 msgstr "Thông tin"
 
@@ -15650,7 +15642,6 @@ msgstr "Xem việc"
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/clan/TreeCanvases.tsx
-#: src/pages/CustomsDetail.tsx
 #: src/pages/CustomsDetail.tsx
 #: src/pages/CustomsDetail.tsx
 #: src/pages/MyFeedback.tsx

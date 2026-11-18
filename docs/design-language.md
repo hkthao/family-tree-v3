@@ -733,6 +733,15 @@ bày như một bài báo, **không** chia thành các thẻ:
 - Công cụ sửa (thêm ảnh, ghi âm, cải táng, đặt nhắc) nằm ở cuối bài dưới tít mục riêng, form mở ra trong khung viền
   mảnh — chỉ người có quyền thấy. Thanh nút Xoá → … → Sửa vẫn dính đáy ngăn kéo như mọi ngăn kéo XEM.
 - Ngăn kéo xem một tin: tên ngăn kéo là loại ("Thông báo", "Cập nhật mới"), tít tin nằm trong bài — không lặp hai lần.
+- Tít mục có số đếm: `ArticleSection aside={n}` → "Người liên quan (1)", cùng màu/cỡ với tít (không chữ nhỏ xám).
+- **Mở bài = ngăn kéo.** Bấm một bài ở danh sách (Bảng tin, Sổ tay, Di sản, Mộ phần, Hướng dẫn, Thông báo, Cập nhật
+  mới) mở ngăn kéo đọc (`board-view`, `custom-view`, `heritage-view`, `grave-view`, `?bai=` ở Hướng dẫn) qua
+  `PanelLink`. Route chi tiết (`/board/:id`, `/so-tay/:id`, `/docs/:slug`, `/share/:token`…) **giữ nguyên** cho link
+  chia sẻ / mở tab mới — cùng một component, nhận `embedded={{ id, onClose }}` khi nằm trong ngăn kéo.
+- **Nút thao tác của bài ở đáy, không ở đầu trang.** Ngăn kéo: `DrawerViewActions`; trang đầy đủ: `ArticleActionBar`
+  (dính ngay trên thanh tab, `safeArea` cho trang không có thanh tab). Không dùng menu ba chấm hay hàng icon trên tít.
+- Trang chia sẻ công khai (QR di sản / mộ phần) và `/announcements/:id` dùng cùng khuôn, để người nhận link thấy giống
+  hệt trong app.
 
 ## Trang và mục lục
 
