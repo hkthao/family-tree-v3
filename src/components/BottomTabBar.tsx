@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -34,8 +34,34 @@ const GRID_COLS: Record<number, string> = {
  * active state.
  */
 export function BottomTabBar({ tabs }: Props) {
+  // Khai báo chiều cao thanh (không gồm vùng an toàn) cho nút nổi đặt ngay phía trên: `--tabbar-h` trên <html>.
+  // Ẩn ở lg+ (display:none → cao 0) nên đo bằng ResizeObserver; gỡ thanh thì trả về 0.
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const apply = () => {
+      const pad = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+      root.style.setProperty(
+        "--tabbar-h",
+        `${Math.max(0, el.offsetHeight - pad)}px`,
+      );
+    };
+    apply();
+    const ro =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(apply) : null;
+    ro?.observe(el);
+    window.addEventListener("resize", apply);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", apply);
+      root.style.removeProperty("--tabbar-h");
+    };
+  }, []);
   return (
     <nav
+      ref={ref}
       // Hidden on lg+: at that width the left drawer is already pinned
       // and serves the navigation role.
       // iOS Safari: khi cuộn, thanh công cụ của trình duyệt thu/giãn làm phần `fixed` trễ một nhịp và lộ một dải nội dung

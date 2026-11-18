@@ -577,7 +577,8 @@ Chốt qua đợt rà giao diện điện thoại (2026-11). Màn mới làm the
 xếp ở Ảnh ghép). Mọi thứ khác vào ngăn kéo Tuỳ chọn, chia mục có tiêu đề (`text-base
 font-medium`), mục quản trị cách bằng `border-t pt-4`:
 
-- Cách xem (Danh sách / Thẻ / Lưới / Puzzle…) — `SegmentedControl` full chiều ngang, nút `flex-1`.
+- Cách xem (Danh sách / Thẻ / Lưới / Lịch / Puzzle…) — **`ViewModeSelect`** (ô chọn có nhãn "Cách xem", đứng đầu
+  ngăn kéo). Không để nhóm nút cách xem cạnh ô tìm hay nhóm nút trong ngăn kéo.
 - Bộ lọc, thứ tự, khoảng thời gian.
 - **Thao tác phụ**: Xuất PDF, Xuất sổ, Chia sẻ, Sửa/Hoàn tất/Xoá của một bức ảnh ghép… — nút
   `outline` full chiều ngang, `justify-start`, có icon; Xoá dùng `destructive-outline`.
@@ -591,6 +592,9 @@ trên.
 ## Thêm mới: nút "+" nổi, form vào ngăn kéo
 
 - Thêm = `Fab` (nút "+" nổi). Không nút "Thêm" ở header, không form mở sẵn trên trang.
+- Vị trí: cách mép trên thanh tab dưới 1rem — `BottomTabBar` khai báo chiều cao qua `--tabbar-h`; màn không có
+  thanh tab thì nút chỉ cách đáy 1rem. **Cuộn xuống thì ẩn, cuộn lên thì hiện** (`useHideOnScroll`, chỉ điện thoại;
+  nhóm nút đang mở thì luôn hiện) — `Fab`/`FabGroup` đã có sẵn, màn mới không tự làm lại.
 - Một việc có nhiều cách làm (Mời thành viên: bằng link / bằng email) → **một** ngăn kéo,
   trên cùng là `SegmentedControl` chia tab, mỗi tab một form có thanh nút dính đáy riêng.
   Component vốn là thẻ (`InviteLinkCard`) thêm chế độ `bare` (bỏ khung thẻ, nút qua

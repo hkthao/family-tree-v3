@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
@@ -51,11 +52,10 @@ export function PodcastViewer({
     window.addEventListener("keydown", onKey);
     // Khoá cuộn nền: mở trình xem mà nền vẫn trôi sau lưng là cảm giác
     // rẻ tiền nhất của một hộp thoại.
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      releaseScroll();
     };
   }, [onClose, onPrev, onNext]);
 

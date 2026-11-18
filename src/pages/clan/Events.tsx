@@ -5,8 +5,6 @@ import {
   IconBell,
   IconCalendar,
   IconGrave,
-  IconGrid,
-  IconList,
   IconMoon,
   IconPlus,
   IconSparkles,
@@ -14,6 +12,7 @@ import {
   IconTrash,
   IconX,
 } from "@/components/icons";
+import { ViewModeSelect } from "@/components/ViewModeSelect";
 import { FormActions } from "@/components/ui/form-actions";
 import { SidePanel } from "@/components/SidePanel";
 import { Fab } from "@/components/Fab";
@@ -26,7 +25,7 @@ import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { RecordDates } from "@/components/RecordDates";
-import { IconBellOff, IconDownload } from "@/components/icons";
+import { IconBellOff, IconClock, IconDownload } from "@/components/icons";
 import { CalendarFeedPanel } from "@/components/CalendarFeedPanel";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -36,10 +35,6 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SubscriptionSettings } from "@/components/SubscriptionSettings";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import {
   Card,
   CardContent,
@@ -272,35 +267,15 @@ export default function Events() {
       >
         {(close) => (
           <div className="flex flex-col gap-5">
-            <section className="flex flex-col gap-2">
-              <p className="text-base font-medium">{t`Cách xem`}</p>
-              <SegmentedControl ariaLabel={t`Chế độ hiển thị`} className="flex">
-                <SegmentedButton
-                  active={view === "list"}
-                  onClick={() => setView("list")}
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
-                >
-                  <IconList className="h-4 w-4" />
-                  {t`Danh sách`}
-                </SegmentedButton>
-                <SegmentedButton
-                  active={view === "grid"}
-                  onClick={() => setView("grid")}
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
-                >
-                  <IconGrid className="h-4 w-4" />
-                  {t`Lưới`}
-                </SegmentedButton>
-                <SegmentedButton
-                  active={view === "calendar"}
-                  onClick={() => setView("calendar")}
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
-                >
-                  <IconCalendar className="h-4 w-4" />
-                  {t`Lịch`}
-                </SegmentedButton>
-              </SegmentedControl>
-            </section>
+            <ViewModeSelect
+              value={view}
+              onChange={setView}
+              options={[
+                { value: "list", label: t`Danh sách` },
+                { value: "grid", label: t`Lưới` },
+                { value: "calendar", label: t`Lịch` },
+              ]}
+            />
 
             <section className="flex flex-col gap-2">
               <p className="text-base font-medium">{t`Khoảng thời gian`}</p>
@@ -309,21 +284,21 @@ export default function Events() {
                   {t`Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc Lưới để chọn khoảng thời gian.`}
                 </p>
               ) : (
-                <SegmentedControl
-                  ariaLabel={t`Khoảng thời gian`}
-                  className="flex"
+                <Select
+                  aria-label={t`Khoảng thời gian`}
+                  icon={<IconClock />}
+                  value={String(daysAhead)}
+                  onChange={(e) =>
+                    setDaysAhead(Number(e.target.value) as typeof daysAhead)
+                  }
+                  className="h-11 w-full text-base"
                 >
                   {LOOKAHEAD_OPTIONS.map((opt) => (
-                    <SegmentedButton
-                      key={opt.value}
-                      active={daysAhead === opt.value}
-                      onClick={() => setDaysAhead(opt.value)}
-                      className="flex-1 px-3"
-                    >
+                    <option key={opt.value} value={opt.value}>
                       {opt.label}
-                    </SegmentedButton>
+                    </option>
                   ))}
-                </SegmentedControl>
+                </Select>
               )}
             </section>
 
@@ -332,26 +307,26 @@ export default function Events() {
                 <p className="text-base font-medium">{t`Lịch trên điện thoại`}</p>
                 <Button
                   variant="outline"
-                  className="justify-start"
+                  className="h-auto min-h-11 w-full justify-start whitespace-normal py-2 text-left"
                   onClick={() => {
                     close();
                     setFeedOpen(true);
                   }}
                 >
-                  <IconCalendar className="mr-2 h-4 w-4" />
-                  {t`Đăng ký lịch — Google / Apple Calendar tự cập nhật`}
+                  <IconCalendar className="mr-2 h-4 w-4 shrink-0" />
+                  {t`Đăng ký lịch Google / Apple (tự cập nhật)`}
                 </Button>
                 <Button
                   variant="outline"
-                  className="justify-start"
+                  className="h-auto min-h-11 w-full justify-start whitespace-normal py-2 text-left"
                   onClick={() => {
                     close();
                     handleExportIcs();
                   }}
                   disabled={!tree || !events || !anniversaries}
                 >
-                  <IconDownload className="mr-2 h-4 w-4" />
-                  {t`Tải file .ics — import vào Google / Apple Calendar`}
+                  <IconDownload className="mr-2 h-4 w-4 shrink-0" />
+                  {t`Tải file .ics để nhập vào lịch`}
                 </Button>
               </section>
             )}
@@ -361,6 +336,7 @@ export default function Events() {
               <RefreshButton
                 clanId={clan.id}
                 cachedVersion={clan.data_version}
+                block
               />
             </section>
           </div>

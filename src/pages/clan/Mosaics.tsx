@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { ViewModeSelect } from "@/components/ViewModeSelect";
 import { MAX_SLOTS, normalizeSlots } from "@/components/mosaic/jigsaw";
 import { IconTextarea } from "@/components/mosaic/IconTextarea";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -12,7 +13,6 @@ import { Fab } from "@/components/Fab";
 import {
   IconPuzzle,
   IconGrid,
-  IconList,
   IconScroll,
   IconSearch,
   IconUsers,
@@ -25,10 +25,6 @@ import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
@@ -137,27 +133,14 @@ export default function Mosaics() {
           />
         )}
       >
-        <section className="flex flex-col gap-2">
-          <p className="text-base font-medium">{t`Cách xem`}</p>
-          <SegmentedControl ariaLabel={t`Chế độ hiển thị`} className="flex">
-            <SegmentedButton
-              active={viewMode === "list"}
-              onClick={() => setViewMode("list")}
-              className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
-            >
-              <IconList className="h-4 w-4" />
-              {t`Danh sách`}
-            </SegmentedButton>
-            <SegmentedButton
-              active={viewMode === "grid"}
-              onClick={() => setViewMode("grid")}
-              className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
-            >
-              <IconGrid className="h-4 w-4" />
-              {t`Thẻ`}
-            </SegmentedButton>
-          </SegmentedControl>
-        </section>
+        <ViewModeSelect
+          value={viewMode}
+          onChange={setViewMode}
+          options={[
+            { value: "list", label: t`Danh sách` },
+            { value: "grid", label: t`Thẻ` },
+          ]}
+        />
       </CollapsibleFilters>
 
       {isLoading ? (

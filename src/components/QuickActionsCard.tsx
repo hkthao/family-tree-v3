@@ -4,7 +4,18 @@ import { exportStageLabel } from "@/lib/pdf/exportStageLabel";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { IconDownload, IconGrid, IconSliders } from "@/components/icons";
+import {
+  IconDownload,
+  IconGrid,
+  IconLink,
+  IconPencil,
+  IconRefresh,
+  IconSettings,
+  IconSliders,
+} from "@/components/icons";
+import { canEditClan, isClanAdmin } from "@/hooks/useClanContext";
+import { useClanFreshness } from "@/hooks/useClanFreshness";
+import { isFeatureEnabled } from "@/lib/clanFeatures";
 import { SectionCard } from "@/components/SectionCard";
 import { useNavSections } from "@/hooks/useNavSections";
 import { useHomePrefs } from "@/hooks/useHomePrefs";
@@ -71,7 +82,7 @@ export function ActionTile({
       >
         {icon}
       </span>
-      <span className="truncate text-sm font-medium leading-tight">
+      <span className="line-clamp-2 text-sm font-medium leading-tight">
         {title}
       </span>
       {n !== undefined && n > 0 && (
@@ -91,7 +102,8 @@ function ExportPdfTile({
   onClick?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const [stage, setStage] = useState<Parameters<typeof exportStageLabel>[0]>(null);
+  const [stage, setStage] =
+    useState<Parameters<typeof exportStageLabel>[0]>(null);
   const [err, setErr] = useState<string | null>(null);
 
   async function run() {
@@ -100,7 +112,11 @@ function ExportPdfTile({
     setErr(null);
     try {
       const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
-      await downloadClanBookPdf(clan, { tree: true, detail: true, onProgress: setStage });
+      await downloadClanBookPdf(clan, {
+        tree: true,
+        detail: true,
+        onProgress: setStage,
+      });
       track("export", { kind: "clan_book_pdf", from: "dashboard" });
     } catch (e) {
       setErr((e as Error).message);
@@ -124,7 +140,7 @@ function ExportPdfTile({
       >
         <IconDownload />
       </span>
-      <span className="truncate text-sm font-medium leading-tight">
+      <span className="line-clamp-2 text-sm font-medium leading-tight">
         {busy ? exportStageLabel(stage) : t`Xuất PDF`}
       </span>
     </button>
@@ -178,21 +194,7 @@ export function QuickActionsCard({
     track("quick_tile_click", { key, pinned });
   };
   return (
-    <SectionCard
-      id="quick"
-      icon={<IconGrid />}
-      title={t`Thao tác nhanh`}
-      footer={
-        <button
-          type="button"
-          onClick={onCustomize}
-          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-        >
-          <IconSliders className="h-4 w-4" />
-          {t`Tuỳ chỉnh trang chủ`}
-        </button>
-      }
-    >
+    <SectionCard id="quick" icon={<IconGrid />} title={t`Thao tác nhanh`}>
       {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop. */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {shown.map((e) => (
@@ -206,6 +208,101 @@ export function QuickActionsCard({
           onClick={() => track("quick_tile_click", { key: "menu", pinned })}
         />
       </div>
+      <ManageTiles
+        clan={clan}
+        onCustomize={onCustomize}
+        skip={new Set(shown.map((e) => e.to ?? ""))}
+      />
     </SectionCard>
+  );
+}
+
+/**
+ * Hàng ô "Quản lý" cuối thẻ — trước là 5 nút chỉ có icon trên đầu trang Tổng quan (khó đoán với người lớn tuổi /
+ * người mới). Giờ là ô CÓ CHỮ cùng kiểu các ô thao tác: Tuỳ chỉnh trang chủ, Làm mới dữ liệu, và (theo quyền) Sửa
+ * thông tin dòng họ, Cài đặt, Liên kết dòng họ. Ô đã có trong lưới phía trên (`skip`) thì không lặp lại.
+ */
+function ManageTiles({
+  clan,
+  onCustomize,
+  skip,
+}: {
+  clan: ClanDetail;
+  onCustomize: () => void;
+  skip: Set<string>;
+}) {
+  const { isChecking, refresh } = useClanFreshness(clan.id, clan.data_version);
+  const [flash, setFlash] = useState<"fresh" | "updated" | null>(null);
+  const links = [
+    canEditClan(clan) && {
+      to: `/clans/${clan.id}/so-gia-pha`,
+      icon: <IconPencil />,
+      title: t`Sửa thông tin họ`,
+    },
+    isClanAdmin(clan) && {
+      to: `/clans/${clan.id}/settings`,
+      icon: <IconSettings />,
+      title: t`Cài đặt dòng họ`,
+    },
+    isClanAdmin(clan) &&
+      isFeatureEnabled(clan.disabled_features, "inlaws") && {
+        to: `/clans/${clan.id}/inlaws`,
+        icon: <IconLink />,
+        title: t`Liên kết họ`,
+      },
+  ].filter(
+    (x): x is { to: string; icon: JSX.Element; title: string } =>
+      !!x && !skip.has(x.to),
+  );
+  return (
+    <div className="mt-3 border-t pt-3">
+      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {t`Quản lý`}
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <button type="button" onClick={onCustomize} className={TILE}>
+          <span
+            className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5"
+            aria-hidden="true"
+          >
+            <IconSliders />
+          </span>
+          <span className="line-clamp-2 text-sm font-medium leading-tight">
+            {t`Tuỳ chỉnh trang`}
+          </span>
+        </button>
+        <button
+          type="button"
+          disabled={isChecking}
+          onClick={async () => {
+            setFlash(await refresh());
+            window.setTimeout(() => setFlash(null), 3000);
+          }}
+          className={TILE}
+        >
+          <span
+            className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5"
+            aria-hidden="true"
+          >
+            <IconRefresh className={isChecking ? "animate-spin" : ""} />
+          </span>
+          <span
+            className="line-clamp-2 text-sm font-medium leading-tight"
+            aria-live="polite"
+          >
+            {isChecking
+              ? t`Đang kiểm tra…`
+              : flash === "updated"
+                ? t`Đã có dữ liệu mới`
+                : flash === "fresh"
+                  ? t`Đã là mới nhất`
+                  : t`Làm mới`}
+          </span>
+        </button>
+        {links.map((l) => (
+          <ActionTile key={l.to} to={l.to} icon={l.icon} title={l.title} />
+        ))}
+      </div>
+    </div>
   );
 }

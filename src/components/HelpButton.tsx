@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -43,10 +44,9 @@ export function HelpButton() {
   // Lock body scroll while the panel is open (mobile)
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
-      document.body.style.overflow = prev;
+      releaseScroll();
     };
   }, [open]);
 

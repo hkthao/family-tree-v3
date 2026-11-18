@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { ViewModeSelect } from "@/components/ViewModeSelect";
 import { IconTextarea } from "@/components/mosaic/IconTextarea";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -251,25 +252,15 @@ export default function MosaicDetail() {
         onClose={() => setShowOpts(false)}
         title={t`Tuỳ chọn bức ảnh`}
       >
-        <section className="flex flex-col gap-2">
-          <p className="text-base font-medium">{t`Kiểu hiển thị`}</p>
-          <SegmentedControl ariaLabel={t`Kiểu hiển thị`} className="flex">
-            <SegmentedButton
-              active={variant === "grid"}
-              onClick={() => pickVariant("grid")}
-              className="flex-1"
-            >
-              {t`Lưới`}
-            </SegmentedButton>
-            <SegmentedButton
-              active={variant === "puzzle"}
-              onClick={() => pickVariant("puzzle")}
-              className="flex-1"
-            >
-              Puzzle
-            </SegmentedButton>
-          </SegmentedControl>
-        </section>
+        <ViewModeSelect
+          label={t`Kiểu hiển thị`}
+          value={variant}
+          onChange={pickVariant}
+          options={[
+            { value: "grid", label: t`Lưới` },
+            { value: "puzzle", label: "Puzzle" },
+          ]}
+        />
         {canEdit && (
           <section className="flex flex-col gap-2 border-t pt-4 [&>button]:w-full [&>button]:justify-start">
             <p className="text-base font-medium">{t`Quản lý bức ảnh`}</p>

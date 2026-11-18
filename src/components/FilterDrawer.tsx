@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
@@ -30,11 +31,10 @@ export function FilterDrawer({
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     // Khoá cuộn trang phía sau (iOS: trang cuộn dưới ngăn kéo làm thanh công cụ co giãn, lệch khung).
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
+      releaseScroll();
     };
   }, [open, onClose]);
 

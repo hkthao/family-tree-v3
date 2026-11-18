@@ -2,13 +2,13 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
+import { ViewModeSelect } from "@/components/ViewModeSelect";
 import { GlobalPanelHost } from "@/components/panel/GlobalPanelHost";
 import { Fab } from "@/components/Fab";
 import { AppHeader } from "@/components/AppHeader";
 import {
   IconBuildings,
   IconChevronDown,
-  IconGrid,
   IconLink,
   IconList,
   IconPlus,
@@ -16,10 +16,6 @@ import {
   IconTree,
   IconUsers,
 } from "@/components/icons";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { ClanBadges } from "@/components/ClanBadges";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
@@ -256,12 +252,22 @@ export default function Clans() {
             <TabButton
               active={tab === "mine"}
               onClick={() => setTab("mine")}
-              label={<>{t`Của tôi`}{tabCount(mineCount.data?.total)}</>}
+              label={
+                <>
+                  {t`Của tôi`}
+                  {tabCount(mineCount.data?.total)}
+                </>
+              }
             />
             <TabButton
               active={tab === "community"}
               onClick={() => setTab("community")}
-              label={<>{t`Cộng đồng`}{tabCount(communityCount.data?.total)}</>}
+              label={
+                <>
+                  {t`Cộng đồng`}
+                  {tabCount(communityCount.data?.total)}
+                </>
+              }
             />
             {historicalQ.data && historicalQ.data.length > 0 && (
               <TabButton
@@ -374,27 +380,14 @@ export default function Clans() {
                   )}
                 </Select>
               )}
-              <SegmentedControl
-                ariaLabel={t`Kiểu hiển thị`}
-                className="self-start"
-              >
-                <SegmentedButton
-                  active={view === "list"}
-                  onClick={() => setView("list")}
-                  ariaLabel={t`Danh sách`}
-                  variant="icon-md"
-                >
-                  <IconList className="h-4 w-4" />
-                </SegmentedButton>
-                <SegmentedButton
-                  active={view === "grid"}
-                  onClick={() => setView("grid")}
-                  ariaLabel={t`Lưới`}
-                  variant="icon-md"
-                >
-                  <IconGrid className="h-4 w-4" />
-                </SegmentedButton>
-              </SegmentedControl>
+              <ViewModeSelect
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: "list", label: t`Danh sách` },
+                  { value: "grid", label: t`Lưới` },
+                ]}
+              />
             </div>
           </CollapsibleFilters>
         </div>
@@ -614,7 +607,7 @@ function ClanRow({
           </h2>
           <span className="hidden sm:inline text-xs text-muted-foreground shrink-0">
             <Trans>
-            {clan.person_count.toLocaleString("vi-VN")} thành viên
+              {clan.person_count.toLocaleString("vi-VN")} thành viên
             </Trans>
           </span>
         </div>
@@ -626,7 +619,7 @@ function ClanRow({
         <p className="text-xs text-muted-foreground mt-1">
           <span className="sm:hidden">
             <Trans>
-            {clan.person_count.toLocaleString("vi-VN")} thành viên{" • "}
+              {clan.person_count.toLocaleString("vi-VN")} thành viên{" • "}
             </Trans>
           </span>
           {clan.role ? (

@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type Konva from "konva";
 import {
@@ -843,11 +844,10 @@ export default function TreeCanvas() {
   fitRef.current = fit;
   useEffect(() => {
     if (fs) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
+      const releaseScroll = lockBodyScroll();
       const t = setTimeout(() => fitRef.current(), 150);
       return () => {
-        document.body.style.overflow = prev;
+        releaseScroll();
         clearTimeout(t);
         setTimeout(() => fitRef.current(), 150);
       };

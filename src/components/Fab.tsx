@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { IconPlus, IconX } from "@/components/icons";
 import { PanelLink } from "@/components/panel/PanelLink";
+import { useHideOnScroll } from "@/hooks/useHideOnScroll";
 import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 
 import { t } from "@lingui/core/macro";
@@ -11,11 +12,20 @@ import { t } from "@lingui/core/macro";
 export const FAB_RIGHT_LG =
   "lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
 
-export const FAB_POSITION = `print-hide fixed bottom-[calc(4.5rem_+_env(safe-area-inset-bottom))] right-4 z-30 lg:bottom-6 ${FAB_RIGHT_LG}`;
+/**
+ * Điện thoại: cách mép trên thanh tab dưới 1rem — thanh tab tự khai báo chiều cao qua `--tabbar-h` khi đang hiện
+ * (BottomTabBar); màn không có thanh tab (Tất cả dòng họ, trang hệ thống) thì biến bằng 0, nút chỉ cách đáy 1rem
+ * (trước đây cố định 4.5rem → hở lớn ở màn không có thanh tab).
+ */
+export const FAB_POSITION = `print-hide fixed bottom-[calc(var(--tabbar-h,0px)_+_1rem_+_env(safe-area-inset-bottom))] right-4 z-30 lg:bottom-6 ${FAB_RIGHT_LG}`;
+
+/** Ẩn khi cuộn xuống (chỉ điện thoại): trượt xuống dưới mép + mờ, không bấm được. */
+export const FAB_HIDDEN =
+  "max-lg:pointer-events-none max-lg:translate-y-[calc(100%_+_6rem)] max-lg:opacity-0";
 
 /**
  * Nút nổi "Thêm…" của màn danh sách — thay nút ở header để tiết kiệm chỗ.
- * Mobile: ngay trên thanh tab dưới; linh vật (draggable) mặc định đặt cao hơn
+ * Mobile: ngay trên thanh tab dưới (hoặc sát đáy nếu màn không có thanh tab); cuộn xuống thì ẩn, cuộn lên thì hiện; linh vật (draggable) mặc định đặt cao hơn
  * nút này. Desktop: sát đáy (bottom-6); nút "Trợ lý" và linh vật nằm cao hơn nó. Dưới dialog (z-50) nên
  * không che hộp thoại.
  *
@@ -44,7 +54,9 @@ export function Fab({
   /** Có thì bấm thường mở ngăn kéo (route `to` vẫn là link dự phòng). */
   panel?: { id: PanelId; params?: PanelParams };
 }) {
-  const cls = `${FAB_POSITION} inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`;
+  // Cuộn xuống thì ẩn, cuộn lên thì hiện (như app điện thoại); đang mở form (active) thì luôn hiện.
+  const hidden = useHideOnScroll({ disabled: active });
+  const cls = `${FAB_POSITION} inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${hidden ? FAB_HIDDEN : ""}`;
   const content = active ? (
     <IconX className="h-6 w-6" />
   ) : (

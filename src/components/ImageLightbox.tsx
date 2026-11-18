@@ -1,3 +1,4 @@
+import { lockBodyScroll } from "@/lib/scrollLock";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -60,11 +61,10 @@ export function ImageLightbox({
       else if (e.key === "ArrowRight") go(index + 1);
     };
     window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const releaseScroll = lockBodyScroll();
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
+      releaseScroll();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, images.length]);
