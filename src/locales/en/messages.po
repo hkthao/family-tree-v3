@@ -845,10 +845,6 @@ msgstr "🏮 Festivals"
 msgid "👀 Xem thử gia phả mẫu — không cần đăng nhập"
 msgstr "👀 Try a sample family tree — no sign-in needed"
 
-#: src/pages/clan/BoardPostDetail.tsx
-msgid "📌 Đã ghim"
-msgstr "📌 Pinned"
-
 #: src/pages/clan/GoodDays.tsx
 msgid "📌 Sự kiện"
 msgstr "📌 Event"
@@ -3953,6 +3949,7 @@ msgstr "Noted"
 #: src/components/ClanPostCard.tsx
 #: src/components/ClanPostCard.tsx
 #: src/pages/clan/Board.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 msgid "Đã ghim"
 msgstr "Pinned"
 

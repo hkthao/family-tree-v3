@@ -25,6 +25,7 @@ import {
   IconLogIn,
   IconPencil,
   IconShare2,
+  IconStar,
   IconTrash,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
@@ -209,7 +210,6 @@ export default function CustomsDetail({
         <IconShare2 className="mr-1.5 h-4 w-4 shrink-0" />
         {t`Chia sẻ`}
       </Button>
-      {/* icon-audit: ok — ★/☆ chính là icon, và trạng thái đọc được ngay từ hình */}
       {user && (
         <Button
           variant="outline"
@@ -217,9 +217,9 @@ export default function CustomsDetail({
           disabled={bookmarkM.isPending}
           title={bookmarked ? t`Bỏ lưu` : t`Lưu bài`}
         >
-          <span aria-hidden>
-            {bookmarked ? "★" : "☆"}
-          </span>
+          <IconStar
+              className={`h-4 w-4 shrink-0 ${bookmarked ? "fill-current text-accent" : ""}`}
+            />
           {bookmarked ? t`Đã lưu` : t`Lưu`}
         </Button>
       )}

@@ -734,6 +734,8 @@ bày như một bài báo, **không** chia thành các thẻ:
   mảnh — chỉ người có quyền thấy. Thanh nút Xoá → … → Sửa vẫn dính đáy ngăn kéo như mọi ngăn kéo XEM.
 - Ngăn kéo xem một tin: tên ngăn kéo là loại ("Thông báo", "Cập nhật mới"), tít tin nằm trong bài — không lặp hai lần.
 - Tít mục có số đếm: `ArticleSection aside={n}` → "Người liên quan (1)", cùng màu/cỡ với tít (không chữ nhỏ xám).
+- Số đếm trên tab / nút chọn ("Hôm nay (1)", "7 ngày (1)") cũng viết `(n)` cùng màu chữ của tab — không viên tròn màu
+  riêng. Viên tròn đặc chỉ dành cho số CHƯA ĐỌC / cần xử lý (chuông, menu, số bộ lọc đang áp dụng).
 - **Mở bài = ngăn kéo.** Bấm một bài ở danh sách (Bảng tin, Sổ tay, Di sản, Mộ phần, Hướng dẫn, Thông báo, Cập nhật
   mới) mở ngăn kéo đọc (`board-view`, `custom-view`, `heritage-view`, `grave-view`, `?bai=` ở Hướng dẫn) qua
   `PanelLink`. Route chi tiết (`/board/:id`, `/so-tay/:id`, `/docs/:slug`, `/share/:token`…) **giữ nguyên** cho link

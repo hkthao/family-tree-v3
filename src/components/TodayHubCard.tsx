@@ -448,16 +448,8 @@ export function TodayHubCard({
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {label}
-                      <span
-                        className={`rounded-full px-1.5 text-xs tabular-nums ${
-                          n > 0
-                            ? "bg-primary/15 text-primary"
-                            : "text-muted-foreground/70"
-                        }`}
-                      >
-                        {n}
-                      </span>
+                      {/* Số đếm dạng "(1)" cùng màu chữ của tab — không viên tròn màu riêng. */}
+                      {label} <span className="tabular-nums">({n})</span>
                     </button>
                   ))}
                 </div>

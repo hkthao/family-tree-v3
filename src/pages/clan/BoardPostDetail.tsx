@@ -19,6 +19,7 @@ import {
   IconCheck,
   IconLock,
   IconPencil,
+  IconPin,
   IconSend,
   IconUnlock,
   IconX,
@@ -118,7 +119,12 @@ export default function BoardPostDetail({
               kicker={TYPE_LABEL[post.type]}
               title={post.title || TYPE_LABEL[post.type]}
               meta={[
-                post.pinned ? t`📌 Đã ghim` : null,
+                post.pinned ? (
+                  <span className="inline-flex items-center gap-1 text-primary">
+                    <IconPin className="h-3.5 w-3.5" />
+                    {t`Đã ghim`}
+                  </span>
+                ) : null,
                 isPending ? (
                   <span className="text-amber-700 dark:text-amber-300">
                     {t`Chờ duyệt`}
@@ -274,9 +280,7 @@ function PostActionBar({
           disabled={busy}
           onClick={() => moderateM.mutate(pinned ? "unpin" : "pin")}
         >
-          <span aria-hidden="true">
-            📌
-          </span>
+          <IconPin className={ic} />
           {pinned ? t`Bỏ ghim` : t`Ghim`}
         </Button>
       )}

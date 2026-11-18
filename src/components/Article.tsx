@@ -238,7 +238,7 @@ export function ArticleActionBar({
 }) {
   return (
     <div
-      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 -mx-4 mt-6 flex gap-2 border-t bg-background/95 px-4 pt-3 backdrop-blur overflow-x-auto [&>*>svg]:!mr-0 [&>*]:h-11 [&>*]:flex-[1_0_auto] [&>*]:gap-1.5 [&>*]:px-2.5 sm:mx-0 sm:justify-end sm:rounded-t-lg sm:[&>*]:flex-none sm:[&>*]:px-4 ${
+      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 -mx-4 mt-6 flex gap-2 border-t bg-background/95 px-4 pt-3 backdrop-blur overflow-x-auto [&>*>svg]:!mr-0 [&>*]:h-10 [&>*]:flex-[1_0_auto] [&>*]:gap-1.5 [&>*]:px-2.5 sm:mx-0 sm:justify-end sm:[&>*]:flex-none sm:[&>*]:px-4 ${
         safeArea ? "pb-[calc(0.75rem_+_env(safe-area-inset-bottom))]" : "pb-3"
       }`}
     >
