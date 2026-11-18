@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { FabGroup } from "@/components/FabGroup";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { CHIP_TONE_CLASS, Chip } from "@/components/Chip";
+import { Chip } from "@/components/Chip";
 import { EmptyState } from "@/components/EmptyState";
 import {
   IconBuildings,
@@ -247,15 +247,9 @@ export default function RestingPlaces() {
                   panelParams={{ pid: p.id }}
                   className="flex min-w-0 items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
                 >
-                  <div
-                    // Điện thoại: bỏ hẳn cột ảnh/icon cho gọn, chữ được cả bề ngang.
-                    className={`min-h-14 w-14 shrink-0 self-stretch overflow-hidden rounded-lg border grid place-items-center max-sm:hidden ${
-                      thumb
-                        ? "bg-muted"
-                        : CHIP_TONE_CLASS[KIND_STYLE[p.kind].tone]
-                    }`}
-                  >
-                    {thumb ? (
+                  {/* Chỉ hiện ảnh khi có — không có ảnh thì không đặt ô icon thay. Điện thoại bỏ cột ảnh cho chữ được cả bề ngang. */}
+                  {thumb && (
+                    <div className="min-h-14 w-14 shrink-0 self-stretch overflow-hidden rounded-lg border bg-muted max-sm:hidden">
                       <img
                         src={thumb}
                         alt=""
@@ -263,13 +257,8 @@ export default function RestingPlaces() {
                         decoding="async"
                         className="h-full w-full object-cover"
                       />
-                    ) : (
-                      (() => {
-                        const KindIcon = KIND_STYLE[p.kind].icon;
-                        return <KindIcon className="h-5 w-5" />;
-                      })()
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">
                       {p.name ||
