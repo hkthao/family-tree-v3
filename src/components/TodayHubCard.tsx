@@ -16,6 +16,7 @@ import {
   IconArrowRight,
   IconChevronDown,
   IconChevronUp,
+  IconLantern,
   IconSparkles,
 } from "@/components/icons";
 import { describeDay } from "@/lib/almanac";
@@ -317,8 +318,9 @@ export function TodayHubCard({
                 <div className="mt-2 space-y-1">
                   {festivals.map((f) => (
                     <p key={f.key} className="text-sm">
-                      <span className="font-medium text-primary">
-                        🏮 {f.name}
+                      <span className="inline-flex items-center gap-1.5 font-medium text-primary">
+                        <IconLantern className="h-4 w-4" />
+                        {f.name}
                       </span>
                       {f.publicHoliday && (
                         <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">

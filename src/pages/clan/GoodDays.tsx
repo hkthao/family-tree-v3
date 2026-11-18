@@ -24,12 +24,15 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconBuildings,
+  IconCake,
   IconCalendar,
   IconFlame,
   IconGrave,
   IconHelp,
   IconHome,
+  IconLantern,
   IconMapPin,
+  IconPin,
   IconScroll,
   IconUsers,
   IconWallet,
@@ -590,12 +593,12 @@ function MonthCalendar({
                 // và với sự kiện dòng họ (dưới) — ba thứ khác nhau thì
                 // không được trông giống nhau.
                 <span
-                  className="absolute left-1 top-1 text-[9px] leading-none"
+                  className="absolute left-1 top-1 leading-none text-primary"
                   title={festivalsOn(c.iso)
                     .map((f) => f.name)
                     .join(" · ")}
                 >
-                  🏮
+                  <IconLantern className="h-3 w-3" />
                 </span>
               )}
               {eventsByDay.has(c.iso) && (
@@ -623,7 +626,7 @@ function MonthCalendar({
             <span className="text-rose-500">•</span> Ngày kiêng
           </span>
           <span className="flex items-center gap-1">
-            <span aria-hidden>🏮</span> Lễ, tết
+            <IconLantern className="h-4 w-4 text-primary" /> Lễ, tết
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -638,12 +641,24 @@ function MonthCalendar({
 // ─── Chi tiết một ngày (tốt/xấu, giờ, ngũ hành, sao, sự kiện…) ──────
 
 const EVENT_KIND_LABEL: Record<UpcomingEvent["kind"], string> = lazyMessages({
-  birthday: msg`🎂 Sinh nhật`,
-  anniversary: msg`🕯️ Ngày giỗ`,
-  tomb_visit: msg`⚱️ Tảo mộ / Chạp họ`,
-  custom: msg`📌 Sự kiện`,
-  festival: msg`🏮 Lễ, tết`,
+  birthday: msg`Sinh nhật`,
+  anniversary: msg`Ngày giỗ`,
+  tomb_visit: msg`Tảo mộ / Chạp họ`,
+  custom: msg`Sự kiện`,
+  festival: msg`Lễ, tết`,
 }) as Record<UpcomingEvent["kind"], string>;
+
+/** Icon SVG (không emoji) cho từng loại sự kiện — cùng bộ nét với icon cả app. */
+const EVENT_KIND_ICON: Record<
+  UpcomingEvent["kind"],
+  (p: { className?: string }) => JSX.Element
+> = {
+  birthday: IconCake,
+  anniversary: IconFlame,
+  tomb_visit: IconGrave,
+  custom: IconPin,
+  festival: IconLantern,
+};
 
 function DayDetail({
   iso,
@@ -784,7 +799,10 @@ function DayDetail({
             {dayEvents.map((e) => {
               const row = (
                 <span className="flex items-center gap-2 text-sm">
-                  <span className="shrink-0">{EVENT_KIND_LABEL[e.kind]}:</span>
+                  <span className="inline-flex shrink-0 items-center gap-1.5">
+                    <KindIcon kind={e.kind} />
+                    {EVENT_KIND_LABEL[e.kind]}:
+                  </span>
                   <span className="truncate font-medium">{e.title}</span>
                   {e.subtitle ? (
                     <span className="shrink-0 text-xs text-muted-foreground">
@@ -1040,4 +1058,9 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
       </div>
     </li>
   );
+}
+
+function KindIcon({ kind }: { kind: UpcomingEvent["kind"] }) {
+  const Icon = EVENT_KIND_ICON[kind];
+  return <Icon className="h-4 w-4 text-amber-700 dark:text-amber-400" />;
 }

@@ -6,13 +6,14 @@ import { Link, useParams } from "react-router-dom";
 
 import {
   IconDownload,
-  IconSliders,
-  IconShield,
-  IconUser,
+  IconFlame,
   IconLogIn,
   IconMaximize,
   IconMinimize,
   IconPlus,
+  IconShield,
+  IconSliders,
+  IconUser,
   IconX,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
@@ -1385,7 +1386,12 @@ function EventsGioPanel({ data }: { data: ShareViewPayload }) {
             key={`gio-${i}`}
             className="rounded-xl border bg-card shadow-sm p-3 text-sm"
           >
-            🕯️ Ngày giỗ <b>{g.name}</b> · {g.d}/{g.m} ÂL
+            <span className="inline-flex items-center gap-1.5">
+              <IconFlame className="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-400" />
+              <span>
+                Ngày giỗ <b>{g.name}</b> · {g.d}/{g.m} ÂL
+              </span>
+            </span>
           </div>
         ))}
       </div>
