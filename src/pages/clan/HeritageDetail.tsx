@@ -1,17 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import {
+  Article,
+  ArticleFactBox,
+  ArticleFigure,
+  ArticleHeader,
+  ArticleList,
+  ArticleProse,
+  ArticleSection,
+  ArticleToc,
+} from "@/components/Article";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { InfoRow } from "@/components/InfoRow";
 import { PersonViewLink } from "@/components/panel/PersonViewLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconCamera,
   IconCheck,
-  IconChevronDown,
-  IconChevronUp,
   IconLink,
   IconMapPin,
   IconMicrophone,
@@ -22,11 +29,9 @@ import {
   IconScroll,
   IconSparkles,
   IconTrash,
-  IconUser,
   IconX,
 } from "@/components/icons";
 import { ImageLightbox, type LightboxImage } from "@/components/ImageLightbox";
-import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
@@ -36,14 +41,8 @@ import { Button } from "@/components/ui/button";
 import { DrawerViewActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { formatDate } from "@/lib/formatDate";
 import {
   canEditClan,
   isClanAdmin,
@@ -228,11 +227,8 @@ export default function HeritageDetail({
       }),
   });
 
-  // Xem ảnh phóng to (lightbox) + thu gọn/mở rộng nội dung.
+  // Xem ảnh phóng to (lightbox).
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
-  const [bodyExpanded, setBodyExpanded] = useState(false);
-  // Đoạn nội dung đang mở (accordion). Mặc định mở đoạn đầu.
-  const [openSecs, setOpenSecs] = useState<Set<number>>(() => new Set([0]));
 
   // Thêm liên kết ngoài (ảnh/audio/video host nơi khác) — KHÔNG tốn storage VPS.
   const [extKind, setExtKind] = useState<HeritageMediaKind>("video");
@@ -336,68 +332,71 @@ export default function HeritageDetail({
         ? "story"
         : "memorial";
 
-  // Ảnh / ghi âm / video / thêm liên kết. Trong ngăn kéo XEM: đặt SAU nội dung để mở ra là đọc được ngay, ẩn khối trống
-  // và công cụ thêm/xoá (sửa ở trang đầy đủ hoặc nút "Sửa").
+  // Ảnh lớn đầu bài: ảnh đại diện (hoặc ảnh đầu tiên). Bộ ảnh bên dưới chỉ hiện khi còn ảnh khác / người sửa cần quản lý.
+  const cover =
+    photos.find((p) => p.id === item.cover_media_id && srcOf(p)) ??
+    photos.find((p) => srcOf(p));
+  const coverSrc = cover ? srcOf(cover) : undefined;
+
+  // Ảnh / ghi âm / video / thêm liên kết — các mục cuối bài. Trong ngăn kéo XEM: ẩn mục trống và công cụ thêm/xoá
+  // (sửa ở trang đầy đủ hoặc nút "Sửa").
   const canEditMedia = canEdit && !embedded;
   const mediaBlock = (
     <>
       {/* Ảnh */}
-      {(photos.length > 0 || canEditMedia) && (
-        <Card>
-          <CardHeader>
-            <SectionTitle icon={<IconCamera className="h-4 w-4" />}>
-              Hình ảnh
-              {photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}
-            </SectionTitle>
-          </CardHeader>
-          <CardContent>
-            {photos.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
-            ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {photos.map((ph) => (
-                  <div
-                    key={ph.id}
-                    className="relative aspect-square overflow-hidden rounded-md bg-muted"
-                  >
-                    {srcOf(ph) ? (
-                      <button
-                        type="button"
-                        onClick={() => setLightboxIdx(lightboxIndexOf(ph))}
-                        className="h-full w-full cursor-zoom-in"
-                        aria-label={t`Xem ảnh lớn`}
-                      >
-                        <img
-                          src={srcOf(ph)}
-                          alt={ph.caption ?? ""}
-                          referrerPolicy="no-referrer"
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ) : (
-                      <div className="h-full w-full grid place-items-center">
-                        <IconScroll className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    )}
-                    {canEditMedia && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeMediaM.mutate({ id: ph.id, path: ph.path })
-                        }
-                        className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background"
-                        aria-label={t`Xoá ảnh`}
-                      >
-                        <IconX className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
+      {(photos.length > 1 || canEditMedia) && (
+        <ArticleSection
+          title={t`Hình ảnh`}
+          aside={
+            photos.length > 0 ? `${photos.length}/${MAX_PHOTOS}` : undefined
+          }
+        >
+          {photos.length === 0 ? (
+            <p className="font-sans text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {photos.map((ph) => (
+                <div
+                  key={ph.id}
+                  className="relative aspect-square overflow-hidden rounded-md bg-muted"
+                >
+                  {srcOf(ph) ? (
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIdx(lightboxIndexOf(ph))}
+                      className="h-full w-full cursor-zoom-in"
+                      aria-label={t`Xem ảnh lớn`}
+                    >
+                      <img
+                        src={srcOf(ph)}
+                        alt={ph.caption ?? ""}
+                        referrerPolicy="no-referrer"
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  ) : (
+                    <div className="grid h-full w-full place-items-center">
+                      <IconScroll className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  {canEditMedia && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeMediaM.mutate({ id: ph.id, path: ph.path })
+                      }
+                      className="absolute right-1 top-1 rounded-full bg-background/80 p-1 hover:bg-background"
+                      aria-label={t`Xoá ảnh`}
+                    >
+                      <IconX className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           {canEditMedia && (
-            <CardFooter className="justify-end gap-2 border-t pt-4">
+            <div className="mt-3 flex flex-wrap justify-end gap-2 font-sans">
               <input
                 ref={fileRef}
                 type="file"
@@ -421,75 +420,72 @@ export default function HeritageDetail({
                   e.target.value = "";
                 }}
               />
-              <div className="flex flex-wrap justify-end gap-2 w-full">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={
-                    uploadPhotoM.isPending ||
-                    photos.length >= MAX_PHOTOS ||
-                    overQuota
-                  }
-                  onClick={() => fileRef.current?.click()}
-                >
-                  <IconPlus className="h-4 w-4 mr-1" />{" "}
-                  {uploadPhotoM.isPending ? t`Đang tải…` : t`Tải ảnh`}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={
-                    addPhotoLinkM.isPending || photos.length >= MAX_PHOTOS
-                  }
-                  title={t`Dán link ảnh có sẵn trên mạng — không tốn dung lượng`}
-                  onClick={() => {
-                    const u = window.prompt(t`Dán link ảnh (https://…):`);
-                    if (u?.trim()) addPhotoLinkM.mutate(u.trim());
-                  }}
-                >
-                  <IconLink className="h-4 w-4 mr-1" /> {t`Liên kết ngoài`}
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={
-                    uploadPhotoM.isPending ||
-                    photos.length >= MAX_PHOTOS ||
-                    overQuota
-                  }
-                  onClick={() => cameraRef.current?.click()}
-                >
-                  <IconCamera className="h-4 w-4 mr-1" /> {t`Chụp ảnh`}
-                </Button>
-              </div>
-            </CardFooter>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={
+                  uploadPhotoM.isPending ||
+                  photos.length >= MAX_PHOTOS ||
+                  overQuota
+                }
+                onClick={() => fileRef.current?.click()}
+              >
+                <IconPlus className="h-4 w-4 mr-1" />{" "}
+                {uploadPhotoM.isPending ? t`Đang tải…` : t`Tải ảnh`}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={
+                  addPhotoLinkM.isPending || photos.length >= MAX_PHOTOS
+                }
+                title={t`Dán link ảnh có sẵn trên mạng — không tốn dung lượng`}
+                onClick={() => {
+                  const u = window.prompt(t`Dán link ảnh (https://…):`);
+                  if (u?.trim()) addPhotoLinkM.mutate(u.trim());
+                }}
+              >
+                <IconLink className="h-4 w-4 mr-1" /> {t`Liên kết ngoài`}
+              </Button>
+              <Button
+                size="sm"
+                disabled={
+                  uploadPhotoM.isPending ||
+                  photos.length >= MAX_PHOTOS ||
+                  overQuota
+                }
+                onClick={() => cameraRef.current?.click()}
+              >
+                <IconCamera className="h-4 w-4 mr-1" /> {t`Chụp ảnh`}
+              </Button>
+            </div>
           )}
-        </Card>
+        </ArticleSection>
       )}
 
       {/* Ghi âm kể chuyện */}
       {(audios.length > 0 || canEditMedia) && (
-        <Card>
-          <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
-            <SectionTitle icon={<IconMicrophone className="h-4 w-4" />}>
-              Ghi âm kể chuyện
-              {audios.length > 0 ? ` (${audios.length}/${MAX_AUDIO})` : ""}
-            </SectionTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <ArticleSection
+          title={t`Ghi âm kể chuyện`}
+          aside={
+            audios.length > 0 ? `${audios.length}/${MAX_AUDIO}` : undefined
+          }
+        >
+          <div className="space-y-3 font-sans">
             {audios.length > 0 && (
               <ul className="space-y-2">
                 {audios.map((a) => (
                   <li
                     key={a.id}
-                    className="flex items-center gap-2 rounded-md border bg-card px-3 py-2"
+                    className="flex items-center gap-2 border-b pb-2 last:border-b-0"
                   >
                     <audio
                       controls
                       preload="none"
                       src={srcOf(a)}
-                      className="h-9 flex-1 min-w-0"
+                      className="h-9 min-w-0 flex-1"
                     />
-                    <span className="text-xs text-muted-foreground shrink-0">
+                    <span className="shrink-0 text-xs text-muted-foreground">
                       {fmtDuration(a.duration_sec)}
                     </span>
                     {canEditMedia && (
@@ -524,75 +520,60 @@ export default function HeritageDetail({
                 </Trans>
               </p>
             )}
-            {audios.length === 0 && !canEditMedia && (
-              <p className="text-sm text-muted-foreground">{t`Chưa có ghi âm.`}</p>
-            )}
-          </CardContent>
-        </Card>
+          </div>
+        </ArticleSection>
       )}
 
       {/* Video (chỉ qua link ngoài) */}
       {videos.length > 0 && (
-        <Card>
-          <CardHeader>
-            <SectionTitle icon={<IconPlay className="h-4 w-4" />}>
-              Video
-            </SectionTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <ArticleSection title="Video">
+          <div className="space-y-3">
             {videos.map((v) => {
               const embed = videoEmbedUrl(v.external_url ?? "");
               return (
-                <div key={v.id} className="space-y-1">
-                  <div className="flex items-start gap-2">
-                    <div className="min-w-0 flex-1">
-                      {embed ? (
-                        <iframe
-                          src={embed}
-                          title={t`Video di sản`}
-                          className="aspect-video w-full rounded-md border"
-                          allow="encrypted-media; picture-in-picture; fullscreen"
-                          allowFullScreen
-                          referrerPolicy="strict-origin-when-cross-origin"
-                        />
-                      ) : (
-                        <video
-                          controls
-                          preload="none"
-                          src={srcOf(v)}
-                          className="w-full rounded-md border"
-                        />
-                      )}
-                    </div>
-                    {canEditMedia && (
-                      <button
-                        type="button"
-                        aria-label={t`Xoá video`}
-                        onClick={() =>
-                          removeMediaM.mutate({ id: v.id, path: v.path })
-                        }
-                        className="shrink-0 text-muted-foreground hover:text-foreground"
-                      >
-                        <IconX className="h-4 w-4" />
-                      </button>
+                <div key={v.id} className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    {embed ? (
+                      <iframe
+                        src={embed}
+                        title={t`Video di sản`}
+                        className="aspect-video w-full rounded-lg border"
+                        allow="encrypted-media; picture-in-picture; fullscreen"
+                        allowFullScreen
+                        referrerPolicy="strict-origin-when-cross-origin"
+                      />
+                    ) : (
+                      <video
+                        controls
+                        preload="none"
+                        src={srcOf(v)}
+                        className="w-full rounded-lg border"
+                      />
                     )}
                   </div>
+                  {canEditMedia && (
+                    <button
+                      type="button"
+                      aria-label={t`Xoá video`}
+                      onClick={() =>
+                        removeMediaM.mutate({ id: v.id, path: v.path })
+                      }
+                      className="shrink-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <IconX className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               );
             })}
-          </CardContent>
-        </Card>
+          </div>
+        </ArticleSection>
       )}
 
       {/* Thêm liên kết ngoài — không tốn dung lượng VPS */}
       {canEditMedia && (
-        <Card>
-          <CardHeader>
-            <SectionTitle
-              icon={<IconLink className="h-4 w-4" />}
-            >{t`Thêm liên kết ngoài`}</SectionTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <ArticleSection title={t`Thêm liên kết ngoài`}>
+          <div className="space-y-3 font-sans">
             <p className="text-sm text-muted-foreground">
               <Trans>
                 Dán link ảnh / video / âm thanh đã đăng ở nơi khác.
@@ -685,8 +666,8 @@ export default function HeritageDetail({
                 </p>
               </div>
             </details>
-          </CardContent>
-        </Card>
+          </div>
+        </ArticleSection>
       )}
     </>
   );
@@ -761,6 +742,9 @@ export default function HeritageDetail({
     </>
   );
 
+  const secId = (i: number) => `hsec-${i}`;
+  const updated = formatDate(item.updated_at);
+
   return (
     <div className="space-y-3">
       {!embedded && (
@@ -772,187 +756,108 @@ export default function HeritageDetail({
           ]}
         />
       )}
-      <PageHeader
-        icon={<IconScroll className="h-7 w-7" />}
-        title={item.title}
-        description={HERITAGE_CATEGORY_LABEL[item.category]}
-        actionsBelow
-        actions={
-          embedded ? undefined : (
-            <div className="flex flex-wrap gap-2">{actionButtons}</div>
-          )
-        }
-      />
-
-      {!embedded && mediaBlock}
-
-      {/* Nội dung */}
-      {(item.summary || item.body || sections.length > 0) && (
-        <Card>
-          <CardHeader>
-            <SectionTitle
-              icon={<IconScroll className="h-4 w-4" />}
-            >{t`Nội dung`}</SectionTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {item.summary && (
-              <p className="text-base font-medium">{item.summary}</p>
-            )}
-
-            {/* Kiểu cũ: 1 ô body (khi chưa chia đoạn) */}
-            {sections.length === 0 && item.body && (
-              <div>
-                <p
-                  className={`whitespace-pre-wrap text-base leading-relaxed ${
-                    bodyExpanded ? "" : "line-clamp-6"
-                  }`}
-                >
-                  {item.body}
-                </p>
-                {(item.body.length > 300 ||
-                  (item.body.match(/\n/g)?.length ?? 0) > 5) && (
-                  <button
-                    type="button"
-                    onClick={() => setBodyExpanded((v) => !v)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                  >
-                    {bodyExpanded ? (
-                      <>
-                        <IconChevronUp className="h-4 w-4" /> {t`Thu gọn`}
-                      </>
-                    ) : (
-                      <>
-                        <IconChevronDown className="h-4 w-4" /> {t`Xem thêm`}
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Kiểu mới: nhiều đoạn — mục lục + accordion */}
-            {sections.length > 0 && (
-              <>
-                {sections.length > 1 && (
-                  <nav className="rounded-md border bg-muted/30 p-3">
-                    <p className="mb-1.5 text-sm font-medium">{t`Mục lục`}</p>
-                    <ol className="list-decimal space-y-0.5 pl-5 text-sm">
-                      {sections.map((s, i) => (
-                        <li key={i}>
-                          <button
-                            type="button"
-                            className="text-left text-primary hover:underline"
-                            onClick={() => {
-                              setOpenSecs((prev) => new Set(prev).add(i));
-                              document
-                                .getElementById(`hsec-${i}`)
-                                ?.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "start",
-                                });
-                            }}
-                          >
-                            {s.heading || t`Đoạn ${i + 1}`}
-                          </button>
-                        </li>
-                      ))}
-                    </ol>
-                  </nav>
-                )}
-                <div className="space-y-2">
-                  {sections.map((s, i) => {
-                    const open = openSecs.has(i);
-                    return (
-                      <div
-                        key={i}
-                        id={`hsec-${i}`}
-                        className="scroll-mt-4 rounded-md border"
-                      >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpenSecs((prev) => {
-                              const n = new Set(prev);
-                              if (n.has(i)) n.delete(i);
-                              else n.add(i);
-                              return n;
-                            })
-                          }
-                          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left font-medium"
-                        >
-                          <span>{s.heading || t`Đoạn ${i + 1}`}</span>
-                          {open ? (
-                            <IconChevronUp className="h-4 w-4 shrink-0" />
-                          ) : (
-                            <IconChevronDown className="h-4 w-4 shrink-0" />
-                          )}
-                        </button>
-                        {open && (
-                          <p className="whitespace-pre-wrap px-3 pb-3 text-base leading-relaxed">
-                            {s.body}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
+      {!embedded && (canAdmin || canEdit) && (
+        <div className="flex flex-wrap justify-end gap-2">{actionButtons}</div>
       )}
 
-      {/* Thông tin nơi (place) */}
-      {item.category === "place" &&
-        (item.location_name || item.address || item.built_year || dir) && (
-          <Card>
-            <CardHeader>
-              <SectionTitle
-                icon={<IconMapPin className="h-4 w-4" />}
-              >{t`Thông tin`}</SectionTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-base">
-              <Row label={t`Ở đâu`} value={item.location_name} />
-              <Row label={t`Địa chỉ`} value={item.address} />
-              {item.built_year && (
-                <Row label={t`Lập / xây năm`} value={String(item.built_year)} />
-              )}
-            </CardContent>
-            {dir && (
-              <CardFooter className="border-t pt-4">
+      {/* Dạng bài báo: không bọc thẻ — chuyên mục, tít, sapo, ảnh lớn, thân bài, hộp thông tin, tư liệu. */}
+      <Article>
+        <ArticleHeader
+          kicker={HERITAGE_CATEGORY_LABEL[item.category]}
+          title={item.title}
+          deck={item.summary}
+          meta={[
+            // Mục "nơi" đã có hộp Thông tin (nơi, năm lập) — dòng thông tin không lặp lại.
+            item.category === "place" ? null : item.location_name,
+            item.category !== "place" && item.built_year
+              ? t`Lập năm ${item.built_year}`
+              : null,
+            updated ? t`Cập nhật ${updated}` : null,
+          ]}
+        />
+
+        {cover && coverSrc && (
+          <ArticleFigure
+            src={coverSrc}
+            alt={cover.caption ?? item.title}
+            caption={cover.caption}
+            onOpen={() => setLightboxIdx(lightboxIndexOf(cover))}
+            openLabel={t`Xem ảnh lớn`}
+          />
+        )}
+
+        {sections.length >= 3 && (
+          <ArticleToc
+            label={t`Trong bài này`}
+            items={sections.map((s, i) => ({
+              id: secId(i),
+              title: s.heading || t`Đoạn ${i + 1}`,
+            }))}
+          />
+        )}
+
+        {/* Kiểu cũ: 1 ô body (khi chưa chia đoạn). Kiểu mới: nhiều đoạn, hiện đầy đủ — không bắt bấm mở. */}
+        {sections.length === 0 && item.body && (
+          <ArticleSection>
+            <ArticleProse>{item.body}</ArticleProse>
+          </ArticleSection>
+        )}
+        {sections.map((s, i) => (
+          <ArticleSection
+            key={i}
+            id={secId(i)}
+            title={
+              s.heading || (sections.length > 1 ? t`Đoạn ${i + 1}` : undefined)
+            }
+          >
+            <ArticleProse>{s.body}</ArticleProse>
+          </ArticleSection>
+        ))}
+
+        {/* Thông tin nơi (place) */}
+        {item.category === "place" && (
+          <ArticleFactBox
+            title={t`Thông tin`}
+            rows={[
+              { label: t`Ở đâu`, value: item.location_name },
+              { label: t`Địa chỉ`, value: item.address },
+              {
+                label: t`Lập / xây năm`,
+                value: item.built_year ? String(item.built_year) : null,
+              },
+            ]}
+            footer={
+              dir && (
                 <Button size="sm" variant="outline" asChild>
                   <a href={dir} target="_blank" rel="noopener noreferrer">
                     <IconMapPin className="h-4 w-4 mr-1" /> {t`Chỉ đường`}
                   </a>
                 </Button>
-              </CardFooter>
-            )}
-          </Card>
+              )
+            }
+          />
         )}
 
-      {/* Người liên quan */}
-      {item.people.length > 0 && (
-        <Card>
-          <CardHeader>
-            <SectionTitle icon={<IconUser className="h-4 w-4" />}>
-              {t`Người liên quan (${item.people.length})`}
-            </SectionTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1.5">
+        {/* Người liên quan */}
+        {item.people.length > 0 && (
+          <ArticleSection
+            title={t`Người liên quan`}
+            aside={String(item.people.length)}
+          >
+            <ArticleList>
               {item.people.map((p) => (
                 <li key={p.link_id}>
                   <PersonViewLink
                     inPanel={!!embedded}
                     personId={p.person_id}
                     to={`/clans/${clan.id}/people/${p.person_id}`}
-                    className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
+                    className="flex items-center gap-3 py-2.5 transition-colors hover:text-primary"
                   >
                     <PersonAvatar gender={p.gender} photoUrl={null} size={36} />
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate">{p.full_name}</p>
+                      <p className="truncate font-medium">{p.full_name}</p>
                       {p.role_note && (
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="truncate text-sm text-muted-foreground">
                           {p.role_note}
                         </p>
                       )}
@@ -960,10 +865,12 @@ export default function HeritageDetail({
                   </PersonViewLink>
                 </li>
               ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+            </ArticleList>
+          </ArticleSection>
+        )}
+
+        {mediaBlock}
+      </Article>
 
       <QrCodeModal
         open={qrOpen}
@@ -988,38 +895,17 @@ export default function HeritageDetail({
       {lightboxIdx !== null && photoImages.length > 0 && (
         <ImageLightbox
           images={photoImages}
-          index={lightboxIdx}
+          index={Math.max(0, lightboxIdx)}
           onIndexChange={setLightboxIdx}
           onClose={() => setLightboxIdx(null)}
         />
       )}
-      {embedded && mediaBlock}
       {embedded && (canAdmin || canEdit) && (
         <DrawerViewActions>{actionButtons}</DrawerViewActions>
       )}
     </div>
   );
 }
-
-/** Tiêu đề mục: huy hiệu icon (màu đồng) + chữ serif — đồng nhất, trang nhã. */
-function SectionTitle({
-  icon,
-  children,
-}: {
-  icon: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <CardTitle className="inline-flex items-center gap-2.5">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
-        {icon}
-      </span>
-      <span className="clan-name text-xl font-semibold">{children}</span>
-    </CardTitle>
-  );
-}
-
-const Row = InfoRow;
 
 /** Bộ ghi âm cho người lớn tuổi: nút to, hiện đồng hồ, nghe thử trước khi lưu. */
 function AudioRecorder({

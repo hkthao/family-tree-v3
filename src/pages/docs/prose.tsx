@@ -9,7 +9,10 @@ import type { ReactNode } from "react";
 
 export function H2({ children, id }: { children: ReactNode; id?: string }) {
   return (
-    <h2 id={id} className="text-xl font-semibold mt-8 mb-3 scroll-mt-20">
+    <h2
+      id={id}
+      className="clan-name mt-8 mb-2 scroll-mt-20 text-2xl font-semibold leading-snug text-primary"
+    >
       {children}
     </h2>
   );
@@ -17,19 +20,19 @@ export function H2({ children, id }: { children: ReactNode; id?: string }) {
 
 export function H3({ children, id }: { children: ReactNode; id?: string }) {
   return (
-    <h3 id={id} className="text-base font-semibold mt-6 mb-2 scroll-mt-20">
+    <h3 id={id} className="mt-6 mb-1.5 scroll-mt-20 text-lg font-semibold">
       {children}
     </h3>
   );
 }
 
 export function P({ children }: { children: ReactNode }) {
-  return <p className="mb-3 leading-relaxed">{children}</p>;
+  return <p className="mb-4">{children}</p>;
 }
 
 export function Lead({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-4 text-base text-muted-foreground leading-relaxed">
+    <p className="mb-5 text-lg leading-relaxed text-card-foreground/85 sm:text-xl">
       {children}
     </p>
   );

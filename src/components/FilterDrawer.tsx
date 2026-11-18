@@ -17,12 +17,15 @@ export function FilterDrawer({
   onClose,
   title,
   onReset,
+  footer,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
   onReset?: () => void;
+  /** Nút thao tác ở thanh đáy (chia đều, như Đặt lại / Xong) — có thì thay hẳn Đặt lại / Xong. */
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   const heading = title ?? t`Bộ lọc & tuỳ chọn`;
@@ -81,21 +84,27 @@ export function FilterDrawer({
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {open ? children : null}
           </div>
-          <footer className="flex gap-2 border-t p-3 shrink-0">
-            {onReset && (
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={onReset}
-              >
-                {t`Đặt lại`}
+          {footer ? (
+            <footer className="flex gap-2 border-t p-3 shrink-0 [&>*]:min-w-0 [&>*]:flex-1 [&>*]:px-2">
+              {footer}
+            </footer>
+          ) : (
+            <footer className="flex gap-2 border-t p-3 shrink-0">
+              {onReset && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={onReset}
+                >
+                  {t`Đặt lại`}
+                </Button>
+              )}
+              <Button type="button" className="flex-1" onClick={onClose}>
+                {t`Xong`}
               </Button>
-            )}
-            <Button type="button" className="flex-1" onClick={onClose}>
-              {t`Xong`}
-            </Button>
-          </footer>
+            </footer>
+          )}
         </ActionArea>
       </aside>
     </div>,

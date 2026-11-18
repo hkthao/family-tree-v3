@@ -1217,14 +1217,14 @@ msgstr "Anon đọc được. Bật khi đây là cập nhật muốn quảng b�
 msgid "Áp cho avatar của mọi thành viên trong họ."
 msgstr "Áp cho avatar của mọi thành viên trong họ."
 
+#: src/pages/CustomsDetail.tsx
+msgid "Áp dụng"
+msgstr "Áp dụng"
+
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
 msgid "Áp dụng URL này"
 msgstr "Áp dụng URL này"
-
-#: src/pages/CustomsDetail.tsx
-msgid "Áp dụng:"
-msgstr "Áp dụng:"
 
 #: src/pages/clan/AddParent.tsx
 msgid "App chặn nếu người đã chọn là con cháu của"
@@ -2184,6 +2184,8 @@ msgid "Cập nhật {0}"
 msgstr "Cập nhật {0}"
 
 #: src/components/RecordDates.tsx
+#: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Cập nhật {updated}"
 msgstr "Cập nhật {updated}"
 
@@ -2206,6 +2208,7 @@ msgstr "Cập nhật hồ sơ"
 msgid "Cập nhật lúc {0}"
 msgstr "Cập nhật lúc {0}"
 
+#: src/pages/Changelog.tsx
 #: src/pages/Changelog.tsx
 msgid "Cập nhật mới"
 msgstr "Cập nhật mới"
@@ -3106,10 +3109,6 @@ msgstr "Chưa có dữ liệu trong dòng họ."
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Chưa có dữ liệu."
 msgstr "Chưa có dữ liệu."
-
-#: src/pages/clan/HeritageDetail.tsx
-msgid "Chưa có ghi âm."
-msgstr "Chưa có ghi âm."
 
 #: src/pages/admin/Feedback.tsx
 msgid "Chưa có ghi chú nội bộ."
@@ -5281,8 +5280,8 @@ msgid "Đánh dấu người cần in ở danh sách rồi bấm Xuất PDF."
 msgstr "Đánh dấu người cần in ở danh sách rồi bấm Xuất PDF."
 
 #: src/pages/Announcements.tsx
-msgid "Đánh dấu tất cả ({unreadCount})"
-msgstr "Đánh dấu tất cả ({unreadCount})"
+msgid "Đánh dấu tất cả đã đọc ({unreadCount})"
+msgstr "Đánh dấu tất cả đã đọc ({unreadCount})"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Danh mục"
@@ -6295,6 +6294,7 @@ msgstr "GEDCOM 5.5.1 là chuẩn trao đổi dữ liệu phả hệ. Nhập sẽ
 msgid "GEDCOM, CSV — đem dữ liệu đi hoặc nạp từ phần mềm khác."
 msgstr "GEDCOM, CSV — đem dữ liệu đi hoặc nạp từ phần mềm khác."
 
+#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Share.tsx
 msgid "Ghi âm kể chuyện"
 msgstr "Ghi âm kể chuyện"
@@ -6304,7 +6304,6 @@ msgstr "Ghi âm kể chuyện"
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/InlawsNew.tsx
-#: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Ghi chú"
@@ -7022,6 +7021,8 @@ msgid "Hiệu lực (ngày)"
 msgstr "Hiệu lực (ngày)"
 
 #: src/components/HeritagePhotosSection.tsx
+#: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Hình ảnh"
 msgstr "Hình ảnh"
 
@@ -8529,6 +8530,11 @@ msgstr "Lập / xây năm:"
 msgid "Lặp lại hằng năm"
 msgstr "Lặp lại hằng năm"
 
+#. placeholder {0}: item.built_year
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Lập năm {0}"
+msgstr "Lập năm {0}"
+
 #: src/lib/bookTemplates.ts
 msgid "Lập phả lần đầu (từ ký ức, điền dã)"
 msgstr "Lập phả lần đầu (từ ký ức, điền dã)"
@@ -9870,7 +9876,6 @@ msgstr "Mục đích, lý do làm phả; ai làm, làm thế nào; ưu khuyết 
 msgid "Mức độ"
 msgstr "Mức độ"
 
-#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Docs.tsx
 msgid "Mục lục"
 msgstr "Mục lục"
@@ -10363,6 +10368,10 @@ msgstr "Người"
 msgid "Người A"
 msgstr "Người A"
 
+#: src/pages/clan/RestingPlaceDetail.tsx
+msgid "Người an nghỉ"
+msgstr "Người an nghỉ"
+
 #. placeholder {0}: rp.occupants.length
 #: src/components/SharedRestingPlaceCard.tsx
 msgid "Người an nghỉ ({0})"
@@ -10463,14 +10472,10 @@ msgid "Người gửi"
 msgstr "Người gửi"
 
 #: src/components/EventDetailDialog.tsx
+#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Share.tsx
 msgid "Người liên quan"
 msgstr "Người liên quan"
-
-#. placeholder {0}: item.people.length
-#: src/pages/clan/HeritageDetail.tsx
-msgid "Người liên quan ({0})"
-msgstr "Người liên quan ({0})"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Người liên quan trong họ (tuỳ chọn)"
@@ -10861,6 +10866,11 @@ msgstr "nơi an nghỉ"
 msgid "Nơi an nghỉ"
 msgstr "Nơi an nghỉ"
 
+#. placeholder {0}: names.join(", ")
+#: src/pages/clan/RestingPlaceDetail.tsx
+msgid "Nơi an nghỉ của {0}."
+msgstr "Nơi an nghỉ của {0}."
+
 #: src/lib/navModel.tsx
 msgid "Nơi an nghỉ của các cụ, chỉ đường."
 msgstr "Nơi an nghỉ của các cụ, chỉ đường."
@@ -10901,7 +10911,6 @@ msgstr "Nối dòng họ này với dòng họ khác qua một thành viên: th�
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/Feedback.tsx
-#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Nội dung"
@@ -11300,10 +11309,6 @@ msgstr "Quan lại – khoa bảng"
 #: src/components/QuickActionsCard.tsx
 msgid "Quản lý"
 msgstr "Quản lý"
-
-#: src/pages/clan/MosaicDetail.tsx
-msgid "Quản lý bức ảnh"
-msgstr "Quản lý bức ảnh"
 
 #: src/pages/clan/People.tsx
 msgid "Quản lý chi"
@@ -13253,13 +13258,13 @@ msgstr "Thoát toàn màn hình"
 msgid "Thoát toàn màn hình (Esc)"
 msgstr "Thoát toàn màn hình (Esc)"
 
+#: src/pages/CustomsDetail.tsx
+msgid "Thời điểm"
+msgstr "Thời điểm"
+
 #: src/pages/CustomsForm.tsx
 msgid "Thời điểm (mô tả)"
 msgstr "Thời điểm (mô tả)"
-
-#: src/pages/CustomsDetail.tsx
-msgid "Thời điểm:"
-msgstr "Thời điểm:"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Thời gian"
@@ -13285,6 +13290,7 @@ msgstr "Thôn La Cầu, xã Mỹ Thọ, huyện Bình Lục, tỉnh Hà Nam"
 msgid "thông báo"
 msgstr "thông báo"
 
+#: src/components/AnnouncementPanel.tsx
 #: src/components/BoardPostForm.tsx
 #: src/components/ClanPostCard.tsx
 #: src/components/NotificationBell.tsx
@@ -13447,7 +13453,6 @@ msgstr "Thử đổi trạng thái hoặc bỏ bớt từ khoá."
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Thu gọn"
@@ -14296,6 +14301,10 @@ msgstr "Token người dùng"
 msgid "Token như mật khẩu: không gửi vào nhóm chat hay dán lên mạng. Nghi lộ thì thu hồi ngay."
 msgstr "Token như mật khẩu: không gửi vào nhóm chat hay dán lên mạng. Nghi lộ thì thu hồi ngay."
 
+#: src/pages/CustomsDetail.tsx
+msgid "Tóm lược"
+msgstr "Tóm lược"
+
 #: src/lib/tipCatalogue.ts
 msgid "Tombstone ghi ngày âm — bấm 'Nhập theo lịch Âm' khi sửa người."
 msgstr "Tombstone ghi ngày âm — bấm 'Nhập theo lịch Âm' khi sửa người."
@@ -14495,6 +14504,10 @@ msgstr "trở xuống"
 #: src/pages/clan/Events.tsx
 msgid "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
 msgstr "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
+
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Trong bài này"
+msgstr "Trong bài này"
 
 #: src/components/PersonAvatar.tsx
 msgid "Trống đồng"
@@ -15390,6 +15403,8 @@ msgstr "Xem ảnh"
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/RestingPlacePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Xem ảnh lớn"
 msgstr "Xem ảnh lớn"
@@ -15527,7 +15542,6 @@ msgstr "Xem tất cả thông báo"
 #: src/pages/admin/shared.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/GoodDays.tsx
-#: src/pages/clan/HeritageDetail.tsx
 msgid "Xem thêm"
 msgstr "Xem thêm"
 

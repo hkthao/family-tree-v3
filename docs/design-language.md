@@ -718,6 +718,22 @@ liệu) → Phả hệ → Phả đồ → Danh bạ → Dâu/rể → Ngoại p
 Bảng vàng → Mộ phần → Di sản → Phụ khảo.** Văn bản tự soạn lưu ở
 `clan_book_texts` (xem `docs/` và migration `clan_book_texts`, `clan_book_meta`).
 
+## Xem chi tiết nội dung để đọc: dạng bài báo (`components/Article`)
+
+Trang/ngăn kéo XEM của thứ có nội dung để đọc — Di sản, Mộ phần, Sổ tay, Hướng dẫn, Thông báo, Cập nhật mới — trình
+bày như một bài báo, **không** chia thành các thẻ:
+
+- Thứ tự: chuyên mục (`ArticleHeader` `kicker`, chữ hoa nhỏ) → tít serif → sapo (`deck`) → dòng thông tin (`meta`,
+  cách nhau bởi `·`, có "Cập nhật dd/mm/yyyy") → ảnh lớn (`ArticleFigure`, bấm để phóng to) → thân bài.
+- Thân bài: `ArticleSection` (tít mục serif màu chính) + `ArticleProse` (17px, giãn dòng 2rem). Hiện đầy đủ —
+  không gập/mở từng đoạn, không "Xem thêm". Từ 3 mục trở lên thì có `ArticleToc` ("Trong bài này").
+- Dữ kiện dạng nhãn–giá trị (địa chỉ, năm xây, hướng…) gom vào **một** `ArticleFactBox` (vạch màu bên trái), không
+  rải thành từng dòng trong thẻ. Đừng lặp cùng dữ kiện ở dòng thông tin.
+- Danh sách người: `ArticleList` (dòng có gạch phân cách, không viền từng ô). Nguồn/ghi chú cuối bài: `ArticleFooter`.
+- Công cụ sửa (thêm ảnh, ghi âm, cải táng, đặt nhắc) nằm ở cuối bài dưới tít mục riêng, form mở ra trong khung viền
+  mảnh — chỉ người có quyền thấy. Thanh nút Xoá → … → Sửa vẫn dính đáy ngăn kéo như mọi ngăn kéo XEM.
+- Ngăn kéo xem một tin: tên ngăn kéo là loại ("Thông báo", "Cập nhật mới"), tít tin nằm trong bài — không lặp hai lần.
+
 ## Trang và mục lục
 
 - Mọi trang (trừ bìa) có **số trang giữa chân trang** (`PageNumber`).

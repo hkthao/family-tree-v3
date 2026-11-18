@@ -122,25 +122,9 @@ export default function Announcements() {
           icon={<IconBell className="h-7 w-7" />}
           title={t`Thông báo hệ thống`}
           description={t`Tính năng mới, bảo trì, sửa lỗi quan trọng.`}
-          actions={
-            user && unreadCount > 0 ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10"
-                onClick={() => markAllM.mutate()}
-                disabled={markAllM.isPending}
-              >
-                <IconCheck className="h-4 w-4 mr-1.5" />
-                {markAllM.isPending
-                  ? t`Đang lưu…`
-                  : t`Đánh dấu tất cả (${unreadCount})`}
-              </Button>
-            ) : undefined
-          }
         />
 
-        {/* Mức độ và "chỉ chưa đọc" nằm trong ngăn kéo của phễu — như Danh bạ. */}
+        {/* Mức độ, "chỉ chưa đọc" và Đánh dấu tất cả nằm trong ngăn kéo Tuỳ chọn — đầu trang chỉ còn tiêu đề (hết rớt dòng). */}
         <CollapsibleFilters
           activeCount={(levelFilter ? 1 : 0) + (unreadOnly ? 1 : 0)}
           onReset={() => {
@@ -198,6 +182,21 @@ export default function Announcements() {
               </label>
             )}
           </div>
+          {user && unreadCount > 0 && (
+            <div className="border-t pt-4">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => markAllM.mutate()}
+                disabled={markAllM.isPending}
+              >
+                <IconCheck className="mr-1.5 h-4 w-4" />
+                {markAllM.isPending
+                  ? t`Đang lưu…`
+                  : t`Đánh dấu tất cả đã đọc (${unreadCount})`}
+              </Button>
+            </div>
+          )}
         </CollapsibleFilters>
 
         {listQ.isLoading && (
