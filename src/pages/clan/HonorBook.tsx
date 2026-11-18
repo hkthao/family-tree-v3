@@ -29,6 +29,7 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
@@ -431,10 +432,7 @@ function HonorForm({
       }}
       className="space-y-3"
     >
-      <fieldset
-        disabled={readOnly}
-        className={`m-0 min-w-0 space-y-3 border-0 p-0 ${readOnly ? "read-view [&_:disabled]:!cursor-default [&_:disabled]:!opacity-100" : ""}`}
-      >
+      <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-1.5">
           <Label htmlFor="honor-name" required>
             {t`Người được vinh danh`}
@@ -466,16 +464,23 @@ function HonorForm({
           {category === "donation_money" && (
             <div className="space-y-1.5">
               <Label htmlFor="honor-amount">{t`Số tiền (đ)`}</Label>
-              <Input
-                id="honor-amount"
-                icon={<IconWallet />}
-                type="number"
-                inputMode="numeric"
-                min="0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="Vd: 2000000"
-              />
+              {readOnly ? (
+                // Xem: số tiền có dấu phân cách (vd 5.000.000 đ) thay cho ô số "5000000".
+                <p className="text-base font-medium tabular-nums">
+                  {amount ? formatVnd(Number(amount)) : "—"}
+                </p>
+              ) : (
+                <Input
+                  id="honor-amount"
+                  icon={<IconWallet />}
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="Vd: 2000000"
+                />
+              )}
             </div>
           )}
           <div className="space-y-1.5">
@@ -498,7 +503,7 @@ function HonorForm({
             placeholder={t`Vd: Ủng hộ xây từ đường / Đỗ Đại học Bách Khoa`}
           />
         </div>
-      </fieldset>
+      </ReadOnlyFieldset>
       {readOnly ? (
         canEdit && (
           <FormActions>

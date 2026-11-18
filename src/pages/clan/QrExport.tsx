@@ -2,37 +2,42 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { FilterableSelect } from "@/components/FilterableSelect";
+import { SearchInput } from "@/components/SearchInput";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
 import {
-  IconCheck,
   IconDownload,
   IconQrCode,
   IconTree,
-  IconUsers,
+  IconLayers,
 } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+} from "@/hooks/useClientPaging";
 import { useClanContext } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
 import { queryKeys } from "@/lib/queries/keys";
+import { unaccent } from "@/lib/unaccent";
 import {
   listPersonsForQrExport,
   type QrExportRow,
 } from "@/lib/queries/persons";
 
 import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
 const MAX_PER_EXPORT = 200;
 // Shared input/select classes so all filter controls have the same
 // height + border treatment. Copied from the People page pattern so
 // users moving between admin tools see a consistent toolbar.
-const CTRL = "h-10 rounded-md border border-input bg-background px-3 text-sm";
 
 /**
  * Admin-only bulk QR export. Filter the clan by branch / generation /
@@ -54,6 +59,7 @@ export default function QrExport() {
   const [genMax, setGenMax] = useState<string>("");
   const [deceasedOnly, setDeceasedOnly] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [nameQ, setNameQ] = useState("");
 
   // genMin/genMax là display values (user gõ theo cách clan hiển thị).
   // Convert sang raw generation = display + offset trước khi query.
@@ -82,10 +88,20 @@ export default function QrExport() {
     queryFn: () => listPersonsForQrExport(clan.id, filters),
   });
 
+  // Danh sách đang hiện: lọc thêm theo tên ở máy (danh sách đã giới hạn MAX_PER_EXPORT người).
+  const shown = useMemo(() => {
+    const q = unaccent(nameQ.trim());
+    return q
+      ? (rows ?? []).filter((r) => unaccent(r.full_name).includes(q))
+      : rows;
+  }, [rows, nameQ]);
+
+  // Phân trang ở máy (như Danh bạ): ô đầu danh sách chọn cả TRANG, link "Chọn cả N" chọn mọi kết quả.
+  const paging = useClientPaging(shown ?? [], 20);
   const allSelectedOnPage = useMemo(() => {
-    if (!rows || rows.length === 0) return false;
-    return rows.every((r) => selected.has(r.id));
-  }, [rows, selected]);
+    if (paging.paged.length === 0) return false;
+    return paging.paged.every((r) => selected.has(r.id));
+  }, [paging.paged, selected]);
 
   const exportM = useMutation({
     mutationFn: async () => {
@@ -123,16 +139,12 @@ export default function QrExport() {
   });
 
   function toggleAll() {
-    if (!rows) return;
-    if (allSelectedOnPage) {
-      const next = new Set(selected);
-      for (const r of rows) next.delete(r.id);
-      setSelected(next);
-    } else {
-      const next = new Set(selected);
-      for (const r of rows) next.add(r.id);
-      setSelected(next);
+    const next = new Set(selected);
+    for (const r of paging.paged) {
+      if (allSelectedOnPage) next.delete(r.id);
+      else next.add(r.id);
     }
+    setSelected(next);
   }
 
   function toggleOne(id: string) {
@@ -159,10 +171,31 @@ export default function QrExport() {
         description={t`Mỗi người 1 thẻ A6 — 4 thẻ / trang A4. In ra cắt theo đường viền.`}
       />
 
-      {/* Filter row — single flex-wrap line, matching the People page
-          toolbar so admin tools feel like one family. */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="min-w-[160px] flex-1">
+      {/* Tìm theo tên + icon Tuỳ chọn trong ô; chi, khoảng đời, "chỉ người đã mất" nằm trong ngăn kéo (kiểu chung). */}
+      <CollapsibleFilters
+        activeCount={
+          (branchId ? 1 : 0) +
+          (genMin || genMax ? 1 : 0) +
+          (deceasedOnly ? 0 : 1)
+        }
+        onReset={() => {
+          setBranchId("");
+          setGenMin("");
+          setGenMax("");
+          setDeceasedOnly(true);
+        }}
+        title={t`Lọc người cần xuất QR`}
+        search={(toggle) => (
+          <SearchInput
+            label={t`Tìm người`}
+            value={nameQ}
+            onChange={(e) => setNameQ(e.target.value)}
+            placeholder={t`Tìm theo tên…`}
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
           <FilterableSelect
             value={branchId}
             onChange={setBranchId}
@@ -174,43 +207,62 @@ export default function QrExport() {
             }))}
             emptyLabel={t`Tất cả chi`}
             filterLabel={t`Lọc theo chi`}
-            className={CTRL}
+            className="h-11 text-base"
           />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="number"
+              inputMode="numeric"
+              icon={<IconLayers />}
+              min={1}
+              value={genMin}
+              onChange={(e) => setGenMin(e.target.value)}
+              placeholder={t`Đời từ`}
+              aria-label={t`Đời từ`}
+              className="h-11 text-base"
+            />
+            <Input
+              type="number"
+              inputMode="numeric"
+              icon={<IconLayers />}
+              min={1}
+              value={genMax}
+              onChange={(e) => setGenMax(e.target.value)}
+              placeholder={t`Đời đến`}
+              aria-label={t`Đời đến`}
+              className="h-11 text-base"
+            />
+          </div>
+          <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-base">
+            <input
+              type="checkbox"
+              checked={deceasedOnly}
+              onChange={(e) => setDeceasedOnly(e.target.checked)}
+              className="h-5 w-5 shrink-0 accent-primary"
+            />
+            {t`Chỉ người đã mất`}
+          </label>
+          {/* Xuất PDF: thao tác của trang, nằm trong Tuỳ chọn cho đầu trang gọn (chọn người ở danh sách trước). */}
+          <div className="space-y-2 border-t pt-4">
+            <p className="text-base font-medium">{t`Xuất thẻ QR`}</p>
+            <Button
+              className="w-full justify-start"
+              onClick={() => exportM.mutate()}
+              disabled={selected.size === 0 || exportM.isPending}
+            >
+              <IconDownload className="mr-1.5 h-4 w-4" />
+              {exportM.isPending
+                ? t`Đang tạo PDF…`
+                : t`Xuất PDF (${selected.size} người đã chọn)`}
+            </Button>
+            {selected.size === 0 && (
+              <p className="text-sm text-muted-foreground">
+                {t`Đánh dấu người cần in ở danh sách rồi bấm Xuất PDF.`}
+              </p>
+            )}
+          </div>
         </div>
-        <Input
-          type="number"
-          icon={<IconUsers />}
-          min={1}
-          value={genMin}
-          onChange={(e) => setGenMin(e.target.value)}
-          placeholder={t`Đời từ`}
-          aria-label={t`Đời từ`}
-          className="h-10 w-[110px]"
-        />
-        <Input
-          type="number"
-          icon={<IconUsers />}
-          min={1}
-          value={genMax}
-          onChange={(e) => setGenMax(e.target.value)}
-          placeholder={t`Đời đến`}
-          aria-label={t`Đời đến`}
-          className="h-10 w-[110px]"
-        />
-        <button
-          type="button"
-          onClick={() => setDeceasedOnly((v) => !v)}
-          aria-pressed={deceasedOnly}
-          className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm rounded-md border ${
-            deceasedOnly
-              ? "bg-primary text-primary-foreground border-primary"
-              : "border-input bg-background hover:bg-muted/50"
-          }`}
-        >
-          {deceasedOnly && <IconCheck className="h-4 w-4" />}
-          Chỉ người đã mất
-        </button>
-      </div>
+      </CollapsibleFilters>
 
       {error && (
         <Alert variant="destructive">
@@ -218,60 +270,58 @@ export default function QrExport() {
         </Alert>
       )}
 
-      {/* Action bar — counter on the left, bulk actions on the right.
-          Pinned to one row on desktop, wraps cleanly on mobile. */}
-      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-primary/5 px-3 py-2">
-        <p className="text-sm">
-          <span className="font-medium">
-            {isFetching ? t`Đang tải…` : t`${rows?.length ?? 0} người`}
-          </span>
-          {!isFetching && (
-            <span className="text-muted-foreground">
-              <Trans>
-                {" · "}
-                {selected.size} đã chọn
-              </Trans>
-            </span>
-          )}
-          {(rows?.length ?? 0) >= MAX_PER_EXPORT && (
-            <span className="ml-2 text-amber-600 dark:text-amber-400">
-              <Trans>· Giới hạn {MAX_PER_EXPORT} người mỗi lần</Trans>
-            </span>
-          )}
+      {(rows?.length ?? 0) >= MAX_PER_EXPORT && (
+        <p className="text-sm text-amber-600 dark:text-amber-400">
+          {t`Giới hạn ${MAX_PER_EXPORT} người mỗi lần — thu hẹp bằng bộ lọc trong Tuỳ chọn.`}
         </p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleAll}
-            disabled={!rows?.length}
-          >
-            <IconCheck className="h-4 w-4 mr-1.5" />
-            {allSelectedOnPage ? t`Bỏ chọn tất cả` : t`Chọn tất cả`}
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => exportM.mutate()}
-            disabled={selected.size === 0 || exportM.isPending}
-          >
-            <IconDownload className="h-4 w-4 mr-1.5" />
-            {exportM.isPending
-              ? t`Đang tạo PDF…`
-              : t`Xuất PDF (${selected.size})`}
-          </Button>
-        </div>
-      </div>
+      )}
 
-      {rows && rows.length === 0 && !isFetching && (
+      {shown && shown.length === 0 && !isFetching && (
         <EmptyState
           title={t`Không có ai khớp bộ lọc`}
-          description={t`Đổi điều kiện ở trên.`}
+          description={t`Đổi từ khoá hoặc bộ lọc trong Tuỳ chọn.`}
         />
       )}
 
-      {rows && rows.length > 0 && (
-        <ul className="rounded-md border divide-y bg-card overflow-hidden">
-          {rows.map((p) => (
+      {isFetching && !shown && (
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
+        </div>
+      )}
+
+      {shown && shown.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {/* Hàng chọn gọn như Danh bạ: ô "Chọn tất cả (N)" + nút Xuất PDF ở cùng dòng đầu danh sách. */}
+          <li className="flex items-center gap-3 bg-muted/30 px-3 py-1.5">
+            <label className="inline-flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={allSelectedOnPage}
+                onChange={toggleAll}
+                className="h-4 w-4 accent-primary"
+              />
+              <span className="truncate">
+                {selected.size > 0
+                  ? t`Đã chọn ${selected.size}/${shown.length}`
+                  : t`Chọn cả trang (${paging.paged.length})`}
+              </span>
+            </label>
+            {shown.length > paging.paged.length &&
+              selected.size < shown.length && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelected(
+                      new Set([...selected, ...shown.map((r) => r.id)]),
+                    )
+                  }
+                  className="shrink-0 text-sm text-primary underline-offset-2 hover:underline"
+                >
+                  {t`Chọn cả ${shown.length}`}
+                </button>
+              )}
+          </li>
+          {paging.paged.map((p) => (
             <PersonRow
               key={p.id}
               p={p}
@@ -281,6 +331,19 @@ export default function QrExport() {
             />
           ))}
         </ul>
+      )}
+
+      {shown && shown.length > 0 && (
+        <Pagination
+          page={paging.page}
+          totalPages={paging.totalPages}
+          total={paging.total}
+          pageSize={paging.pageSize}
+          unit={t`người`}
+          onPageChange={paging.setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={paging.setPageSize}
+        />
       )}
     </div>
   );

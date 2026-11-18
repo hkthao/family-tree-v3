@@ -1,6 +1,10 @@
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+
+/** Đang ở chế độ XEM (trong ReadOnlyFieldset readOnly) — Label dùng để bỏ đuôi "(tuỳ chọn)", ô số tiền hiện dạng đọc. */
+const ReadOnlyContext = createContext(false);
+export const useReadOnlyView = () => useContext(ReadOnlyContext);
 
 /**
  * Khung bọc các ô của một form: `readOnly` thì khoá toàn bộ ô (`fieldset disabled`) nhưng
@@ -27,7 +31,9 @@ export function ReadOnlyFieldset({
         className,
       )}
     >
-      {children}
+      <ReadOnlyContext.Provider value={readOnly}>
+        {children}
+      </ReadOnlyContext.Provider>
     </fieldset>
   );
 }

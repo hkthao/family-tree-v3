@@ -33,7 +33,7 @@ describe("hitPath", () => {
 
   it("mọi loại đều có nhãn nhóm", () => {
     const kinds = SEARCH_KIND_ORDER.map((k) => k.kind);
-    expect(new Set(kinds).size).toBe(9);
+    expect(new Set(kinds).size).toBe(10);
   });
 });
 

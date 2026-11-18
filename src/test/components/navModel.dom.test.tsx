@@ -151,6 +151,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Xuất / nhập dữ liệu",
       "Cài đặt dòng họ",
       "Kết nối AI",
+      "Chi (nhánh)",
       "Việc cần làm",
       "Lịch âm dương",
       "Nhật ký",
@@ -175,6 +176,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Xuất / nhập dữ liệu",
       "Cài đặt dòng họ",
       "Kết nối AI",
+      "Chi (nhánh)",
       "Việc cần làm",
       "Lịch âm dương",
       "Nhật ký",
@@ -187,7 +189,7 @@ describe("buildSections — nhóm của dòng họ", () => {
   it("người chỉ xem thấy Việc cần làm / Lịch / Nhật ký nhưng KHÔNG thấy nhập & dọn dữ liệu", () => {
     const viewer = { ...clan, myRole: "viewer" } as unknown as ClanDetail;
     const labels = build({ clan: viewer }).find((x) => x.id === "clan-work")!.items.map((i) => i.label);
-    expect(labels).toEqual(["Việc cần làm", "Lịch âm dương", "Nhật ký"]);
+    expect(labels).toEqual(["Chi (nhánh)", "Việc cần làm", "Lịch âm dương", "Nhật ký"]);
     // Người ngoài (không phải thành viên) không có công cụ nào.
     const outsider = { ...clan, myRole: null } as unknown as ClanDetail;
     expect(ids(build({ clan: outsider }))).not.toContain("clan-work");

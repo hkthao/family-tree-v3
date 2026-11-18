@@ -14,6 +14,7 @@ export type SearchKind =
   | "post"
   | "contribution"
   | "inlaw"
+  | "branch"
   | "custom";
 
 export interface SearchHit {
@@ -35,6 +36,7 @@ export const SEARCH_KIND_ORDER: { kind: SearchKind; label: string }[] = lazyMess
   { kind: "post", label: msg`Bảng tin` },
   { kind: "contribution", label: msg`Đóng góp` },
   { kind: "inlaw", label: msg`Thông gia` },
+  { kind: "branch", label: msg`Chi (nhánh)` },
   { kind: "custom", label: msg`Sổ tay văn hoá` },
 ]) as unknown as { kind: SearchKind; label: string }[];
 
@@ -58,6 +60,8 @@ export function hitPath(h: SearchHit): string {
       return `${c}/contributions/${h.id}`;
     case "inlaw":
       return `${c}/inlaws`;
+    case "branch":
+      return `${c}/branches?chi=${h.id}`;
     case "custom":
       return `/so-tay/${h.id}`;
   }

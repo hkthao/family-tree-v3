@@ -2,6 +2,7 @@ import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { cva, type VariantProps } from "class-variance-authority";
 
+import { useReadOnlyView } from "@/components/ui/readonly-fieldset";
 import { cn } from "@/lib/utils";
 
 import { t } from "@lingui/core/macro";
@@ -20,27 +21,35 @@ type LabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
     required?: boolean;
   };
 
+/** Đuôi "(tuỳ chọn)" chỉ có ích khi NHẬP; lúc xem (ngăn kéo xem) bỏ đi cho nhãn gọn. */
+const OPTIONAL_SUFFIX = /\s*\((?:tuỳ|tùy) chọn\)|\s*\(optional\)/gi;
+
 const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   LabelProps
->(({ className, required, children, ...props }, ref) => (
-  <LabelPrimitive.Root
-    ref={ref}
-    className={cn(labelVariants(), className)}
-    {...props}
-  >
-    {children}
-    {required && (
-      <span
-        aria-hidden="true"
-        className="ml-1 text-destructive"
-        title={t`Bắt buộc`}
-      >
-        (*)
-      </span>
-    )}
-  </LabelPrimitive.Root>
-));
+>(({ className, required, children, ...props }, ref) => {
+  const reading = useReadOnlyView();
+  return (
+    <LabelPrimitive.Root
+      ref={ref}
+      className={cn(labelVariants(), className)}
+      {...props}
+    >
+      {reading && typeof children === "string"
+        ? children.replace(OPTIONAL_SUFFIX, "")
+        : children}
+      {required && (
+        <span
+          aria-hidden="true"
+          className="ml-1 text-destructive"
+          title={t`Bắt buộc`}
+        >
+          (*)
+        </span>
+      )}
+    </LabelPrimitive.Root>
+  );
+});
 Label.displayName = LabelPrimitive.Root.displayName;
 
 export { Label };

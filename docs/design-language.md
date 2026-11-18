@@ -43,7 +43,7 @@ có icon. Văn bản này chốt lại, và đợt rà tháng 8/2026 đã phủ 
 | `<Button size="icon">` | ✅ | Là toàn bộ nội dung, **bắt buộc có `aria-label`** |
 | `<Input>` | ✅ | Trong ô, sát mép trái |
 | `<Select>` | ✅ | Trong ô, sát mép trái (mũi tên bên phải là của trình duyệt) |
-| `<Textarea>` | ⬜ tuỳ | Trên nhãn, nếu ô đứng một mình thì thường không cần |
+| `<Textarea>` | ✅ | **Trong ô**, sát mép trái, canh theo dòng đầu (`icon` prop) — như `Input` |
 
 ### Kích thước
 
@@ -406,6 +406,11 @@ chuẩn chỉ khi dữ liệu không phải "danh sách để duyệt" (xem Ngo�
   (Thu = tải xuống / xanh, Chi = tải lên / đỏ; công đức theo loại).
 - Thứ tự trong dòng: **tên → thông tin (nơi chốn, mô tả) → ngày tạo/cập nhật →
   hàng chip căn phải ở dòng cuối cùng.**
+- **Danh sách dạng tin** (Thông báo hệ thống, Cập nhật mới, Trợ giúp — và ngăn kéo Thông báo
+  là mẫu): `FeedRow` (`src/components/FeedRow.tsx`) — **icon thuần, không khung viền, không
+  nền** (màu theo mức độ: `TONE_TEXT`), tiêu đề tối đa 2 dòng, vài ý đầu mỗi ý một dòng cắt
+  "…", chip dồn phải ở cuối. Bấm dòng **mở ngăn kéo xem trọn tin** (`AnnouncementPanel`),
+  không chuyển trang.
 - **Thông tin dài không làm chip.** Tên nghĩa trang, địa chỉ, nơi chôn cất → dòng
   chữ có icon dưới tên (cho xuống dòng, `line-clamp-2`). Chip chỉ cho giá trị
   *ngắn, rời rạc*: loại, trạng thái, số lượng.
@@ -465,6 +470,17 @@ Bấm một dòng **không chuyển trang**: mở ngăn kéo bên phải.
      `[&_[data-edit-only]]:hidden`.
    - Thanh nút dính đáy chỉ còn **một nút "Sửa"** (chính), và chỉ hiện với người
      có quyền sửa.
+   - **Ô khoá phải ĐỌC như chữ, không như form**: `ReadOnlyFieldset` gắn lớp `read-view`
+     (`src/index.css`) — ô nhập/ô chọn/ô nhiều dòng thành chữ thường (bỏ khung, nền, icon,
+     mũi tên), nhãn nhỏ màu nhạt ở trên, **dòng trống tự ẩn**, nhóm lựa chọn chỉ hiện giá
+     trị đang chọn (radio chưa chọn và nút `aria-pressed="false"` trong `role="group"` bị ẩn —
+     nút chọn tự viết phải có `role="group"` + `aria-pressed`). `Label` tự bỏ đuôi
+     "(tuỳ chọn)" khi xem (đọc `useReadOnlyView()`). Số tiền: khi xem render `formatVnd`
+     (5.000.000 đ) thay cho ô số. Ô chỉ có ích khi nhập (URL ảnh trống…) thì ẩn hẳn khi xem.
+   - Bản ghi có **trang chi tiết riêng** (Người, Nơi an nghỉ, Mục di sản) thì ngăn kéo xem
+     dùng *chính trang chi tiết* với `embedded={{ id, onClose }}`: bỏ breadcrumb, thông tin lên
+     đầu, ảnh/ghi âm xuống cuối, ẩn khối trống và công cụ tải/chụp; link người → mở ngăn kéo
+     người đó (`PersonViewLink`). Bấm ảnh mở `ImageLightbox` (z-60, nằm trên ngăn kéo).
 2. **Sửa** = bấm "Sửa" thì ngăn kéo **chuyển sang form sửa** (không chuyển route).
    "Hủy" ở form sửa quay về ngăn kéo xem; "Lưu" xong thì đóng.
 
@@ -512,6 +528,14 @@ không phải nút rời trên dòng.
   `outline` thì không còn nút nào nổi bật.
 - Xoá dùng `variant="destructive-outline"` (xem "Nút xoá dùng đúng một kiểu").
 - "Hủy" luôn có ở form tạo / sửa — kể cả form chỉ có Xoá và Lưu.
+- **Ngăn kéo xem có nhiều nút** (Người: Xoá · Khoe · QR · Sửa): `DrawerViewActions`
+  (`ui/form-actions.tsx`) — cùng thanh dính đáy, thứ tự phá huỷ → phụ → **Sửa (chính, nền đặc)
+  ngoài cùng phải**; điện thoại thì các nút **chia đều một hàng** (không rớt dòng). Không đặt
+  nút ở đầu ngăn kéo. Trang đầy đủ (không phải ngăn kéo) giữ hàng nút cũ.
+- **Vùng an toàn đáy iPhone chỉ chừa MỘT lần** — ở khung `SidePanel`/`FilterDrawer`. Thanh nút
+  không cộng `env(safe-area-inset-bottom)` nữa (cộng hai lần = hở một khoảng dưới nút).
+- Nội dung ngăn kéo tự dựng (không qua `<form>`) mà muốn thanh nút dính đáy: khung bọc phải là
+  cột flex giãn hết (`flex flex-1 flex-col`), nếu không `mt-auto` không đẩy thanh xuống đáy.
 
 ## Độ rộng ngăn kéo
 
@@ -527,6 +551,105 @@ không phải nút rời trên dòng.
 - Ghi chú dùng `Textarea` (tự giãn theo nội dung, tối thiểu 3 dòng, tối đa 10
   dòng rồi cuộn trong ô) — không dùng ô một dòng `Input`. Nhớ có `placeholder`.
 - Ô ngày, toạ độ… đều phải có icon (quy ước icon ở đầu tài liệu).
+
+---
+
+# Điện thoại trước: khuôn dùng lại
+
+Chốt qua đợt rà giao diện điện thoại (2026-11). Màn mới làm theo đây trước khi nghĩ cách khác.
+
+## Nút "Tuỳ chọn" luôn là icon trong ô
+
+- Màn có ô tìm kiếm: icon thanh trượt (`IconSliders`) nằm **trong** ô (`CollapsibleFilters` +
+  `SearchInput rightSlot={toggle}`). Không còn biến thể nút chữ "Tuỳ chọn" đứng cạnh ô.
+- Màn mà ô đầu trang là **ô chọn** (Cây: chọn người trung tâm, trang Chia sẻ cây):
+  `FilterableSelect rightSlot={…}` — icon Tuỳ chọn (và Làm mới nếu có) nằm trong ô, chừa
+  `pr-*` đủ chỗ.
+- Màn không có ô tìm (Lịch âm dương, Ảnh ghép chi tiết): nút viền `IconSliders` + chữ
+  "Tuỳ chọn", đặt cuối hàng (`ml-auto`), mở `FilterDrawer`.
+- Danh sách phân trang **phía máy chủ** (Nhật ký, Podcast) vẫn có ô tìm: lọc trong truy vấn
+  (`or(... .ilike ...)`, bỏ ký tự `, ( ) * % \` của cú pháp PostgREST trước khi ghép), từ khoá
+  nằm trên URL (`?q=`), đổi từ khoá thì về trang 1 trong **một** lần ghi URL (`useUrlPatch`).
+
+## Cái gì vào ngăn kéo Tuỳ chọn
+
+Đầu trang trên điện thoại chỉ giữ: ô tìm/ô chọn chính + **một** thao tác hay dùng nhất (vd Sắp
+xếp ở Ảnh ghép). Mọi thứ khác vào ngăn kéo Tuỳ chọn, chia mục có tiêu đề (`text-base
+font-medium`), mục quản trị cách bằng `border-t pt-4`:
+
+- Cách xem (Danh sách / Thẻ / Lưới / Puzzle…) — `SegmentedControl` full chiều ngang, nút `flex-1`.
+- Bộ lọc, thứ tự, khoảng thời gian.
+- **Thao tác phụ**: Xuất PDF, Xuất sổ, Chia sẻ, Sửa/Hoàn tất/Xoá của một bức ảnh ghép… — nút
+  `outline` full chiều ngang, `justify-start`, có icon; Xoá dùng `destructive-outline`.
+- Nút từng rớt dòng trên điện thoại thì đưa vào ngăn kéo **chỉ trên điện thoại**
+  (`useMediaQuery("(min-width: 640px)")`), máy tính giữ ngoài hàng.
+
+`FilterDrawer` vẽ qua portal ra `<body>` (giống `SidePanel`), chừa vùng an toàn trên/dưới và
+khoá cuộn trang sau. Vẽ tại chỗ trong trang có `transform` thì `position: fixed` lệch → hở phía
+trên.
+
+## Thêm mới: nút "+" nổi, form vào ngăn kéo
+
+- Thêm = `Fab` (nút "+" nổi). Không nút "Thêm" ở header, không form mở sẵn trên trang.
+- Một việc có nhiều cách làm (Mời thành viên: bằng link / bằng email) → **một** ngăn kéo,
+  trên cùng là `SegmentedControl` chia tab, mỗi tab một form có thanh nút dính đáy riêng.
+  Component vốn là thẻ (`InviteLinkCard`) thêm chế độ `bare` (bỏ khung thẻ, nút qua
+  `FormActions`) để dùng trong ngăn kéo.
+
+## Ô chọn: hơn 5 lựa chọn thì có ô gõ để lọc
+
+- Hơn 5 lựa chọn (tính cả dòng "Tất cả"), hoặc danh sách động có thể dài (chi, quỹ, dòng họ,
+  tỉnh) → `FilterableSelect`, không `<select>`.
+- Ô bắt buộc: `required` — danh sách không có dòng rỗng "bỏ chọn" (`emptyLabel` chỉ là chữ khi
+  chưa chọn). Có `id` cho `<Label htmlFor>`; không có nhãn hiện thì truyền `aria-label`.
+- Nhóm nút tròn chọn một (Loại bài 5 loại) cũng đổi sang ô chọn — 5 nút rời luôn rớt dòng.
+- Khi xem (`read-view`) ô chọn có lọc hiện như chữ thường (quy tắc
+  `.read-view button[role="combobox"]`).
+
+## Tab: một hàng, cuộn ngang
+
+Nhóm tab/nút lọc nhanh (Việc cần làm…) **không xuống dòng**: `flex overflow-x-auto`, nút
+`shrink-0 whitespace-nowrap`, ẩn thanh cuộn, tràn sát mép màn (`-mx-4 px-4`) để thấy còn tab phía
+sau; bấm tab thì `scrollIntoView` tab đó. Từ `sm` cho xuống dòng như cũ.
+
+## Thẻ dài: chia nhóm, mỗi nhóm một thẻ thu gọn được
+
+- Một thẻ gom nhiều nhóm ô (Thông tin dòng họ: cơ bản + cho sổ + hiển thị) → tách mỗi nhóm một thẻ
+  có tiêu đề và mô tả riêng.
+- `Card` tự có nút thu gọn/mở rộng **chỉ khi `CardContent`/`CardFooter` là con TRỰC TIẾP** của nó.
+  Bọc `<form>` bên trong thẻ là mất nút thu gọn → đặt `<form>` **ngoài** các thẻ; mỗi thẻ có nút
+  Lưu riêng (`type="submit"`, cùng lưu cả form).
+
+## Khối gom trong thẻ
+
+Một công cụ nhiều bước nằm dưới nội dung chính (Tìm ngày đẹp cho việc lớn) → gom trong **một**
+thẻ `rounded-xl border bg-card p-4 shadow-sm`, tiêu đề `clan-name text-xl` ở đầu thẻ — không để
+trôi tự do sau một đường kẻ.
+
+## Lối tắt quản trị: ở hub, không ở Cài đặt
+
+Lối tắt tới trang khác (Sổ gia phả, Thành viên, Nhật ký, Xuất QR, Xuất/nhập dữ liệu) là mục của
+nhóm "Công cụ & Quản trị" trong `buildSections` (`src/lib/navModel.tsx`). Hub "Tính năng" **và**
+tìm kiếm toàn cục cùng đọc nguồn này nên thêm một chỗ là có cả hai. Mục trỏ tới một thẻ trong
+trang dùng neo (`/settings#xuat-du-lieu`) — trang đích tự cuộn tới `id` khi có `hash`.
+
+## Tìm kiếm toàn cục
+
+Ô tìm phải có con trỏ và bàn phím **ngay khi bấm** nút Tìm kiếm: `autoFocus` trên ô (React gọi
+focus lúc gắn ô, vẫn trong cú chạm). iOS Safari chỉ mở bàn phím khi `focus()` chạy trong thao tác
+của người dùng — `setTimeout(focus)` không ăn.
+
+## Vị trí cuộn khi quay lại: chỉ `ScrollManager`
+
+- Không trang nào tự lưu/khôi phục vị trí cuộn. `ScrollManager` (một lần trong router) lo hết:
+  PUSH → lên đầu, POP (Back, vuốt quay lại) → về đúng chỗ, REPLACE (lọc/tìm) → đứng yên,
+  mở/đóng ngăn kéo → đứng yên.
+- Khoá theo `history.state.idx` (mục đầu tiên của tab cũng có), lưu cả sessionStorage để iOS
+  nạp lại trang nền vẫn khôi phục được. **Một** bộ nghe `scroll` cho cả app, ghi vào mục đang hiện
+  — đừng gắn bộ nghe theo từng trang (sự kiện cuộn của trang mới tới lúc bộ nghe trang cũ còn
+  gắn → vị trí cũ bị ghi thành 0).
+- Đổi bộ lọc/trang phải dùng `replace: true` (`useUrlState`/`useUrlPatch` đã làm), nếu không mỗi
+  lần gõ là một mục lịch sử và vuốt quay lại không về trang trước.
 
 ---
 

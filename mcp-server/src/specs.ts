@@ -255,7 +255,8 @@ export const MCP_TOOLS: McpToolSpec[] = [
   {
     name: "get_book_texts",
     needs: "read",
-    description: "The clan book's hand-written parts: preface, chronicle (phả ký), appendices and compilation info.",
+    description:
+      "The clan book's (Sổ gia phả) hand-written parts and its info block (Thông tin cho sổ gia phả: place line, origin, ancestral hall, ancestor anniversary, clan chief, compilers, year, contact). Edit with update_book_texts; clan name/description are in get_clan_info / update_clan_info.",
     inputSchema: obj({}),
   },
   {
@@ -439,12 +440,27 @@ export const MCP_TOOLS: McpToolSpec[] = [
     name: "update_book_texts",
     needs: "write",
     description:
-      "Write the clan book's parts: preface, phaky, ngoai_pha, phu_khao and info fields (place_line, origin_place, ancestral_hall, ancestor_anniversary, chief_name, compilers, compiled_year, contact). Only passed fields change; null clears.",
+      "Update the clan book (Sổ gia phả): the info block printed on the cover/first page (Thông tin cho sổ gia phả) and the four written parts. Only passed fields change; null clears. Editors and admins can write. Clan name/description: update_clan_info. Branches: create/update_branch.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
       properties: Object.fromEntries(
-        ["place_line", "origin_place", "ancestral_hall", "ancestor_anniversary", "chief_name", "compilers", "compiled_year", "contact", "preface", "phaky", "ngoai_pha", "phu_khao"].map((k) => [k, { type: ["string", "null"] }]),
+        (
+          [
+            ["place_line", "Địa danh dưới tựa sách — place line under the book title (village/commune/district/province)", 300],
+            ["origin_place", "Nguyên quán / tổ quán — the clan's place of origin", 300],
+            ["ancestral_hall", "Nhà thờ họ — name and address of the ancestral hall", 300],
+            ["ancestor_anniversary", "Ngày giỗ tổ — ancestor memorial day, free text, e.g. '10 tháng 3 âm lịch'", 300],
+            ["chief_name", "Trưởng họ / người chủ trì — clan chief", 200],
+            ["compilers", "Ban biên soạn — compilers' names", 500],
+            ["compiled_year", "Năm biên soạn — year compiled, e.g. '2026'", 50],
+            ["contact", "Liên hệ — phone/email of the book keeper", 300],
+            ["preface", "Lời nói đầu — preface", 50000],
+            ["phaky", "Phả ký — the clan chronicle", 50000],
+            ["ngoai_pha", "Ngoại phả — maternal / in-law records", 50000],
+            ["phu_khao", "Phụ khảo — appendices / notes", 50000],
+          ] as const
+        ).map(([k, d, max]) => [k, { type: ["string", "null"], maxLength: max, description: d }]),
       ),
       required: [],
     },

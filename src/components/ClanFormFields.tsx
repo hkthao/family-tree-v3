@@ -84,13 +84,14 @@ interface FieldsProps {
   idPrefix?: string;
 }
 
-/** Tên, mô tả, viền avatar. */
+/** Tên, mô tả, viền avatar (`showFrame=false`: bỏ viền — trang Sổ gia phả; viền sửa ở Cài đặt dòng họ). */
 export function ClanBasicFields({
   value,
   onChange,
   disabled,
   idPrefix = "clan",
-}: FieldsProps) {
+  showFrame = true,
+}: FieldsProps & { showFrame?: boolean }) {
   const set = (patch: Partial<ClanFormValues>) =>
     onChange({ ...value, ...patch });
   return (
@@ -130,7 +131,7 @@ export function ClanBasicFields({
           {value.description.length}/500
         </p>
       </div>
-      {disabled ? null : (
+      {disabled || !showFrame ? null : (
         <AvatarFramePicker
           value={value.avatar_frame}
           onChange={(f) => set({ avatar_frame: f })}
