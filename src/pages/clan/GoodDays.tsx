@@ -567,13 +567,13 @@ function MonthCalendar({
               } ${selected ? "ring-2 ring-inset ring-primary" : ""}`}
             >
               <span
-                className={`text-sm font-bold leading-none tabular-nums sm:text-base ${
+                className={`relative z-10 text-sm font-bold leading-none tabular-nums sm:text-base ${
                   isToday ? "text-primary underline" : ""
                 }`}
               >
                 {c.day}
               </span>
-              <span className="mt-0.5 text-[10px] leading-none text-muted-foreground">
+              <span className="relative z-10 mt-0.5 text-[10px] leading-none text-muted-foreground">
                 {c.info
                   ? c.info.lunar.day === 1
                     ? `1/${c.info.lunar.month}`
@@ -589,16 +589,15 @@ function MonthCalendar({
                 </span>
               )}
               {c.info && hasFestival(c.iso) && (
-                // Dấu ở góc trái trên, khác góc với "ngày kiêng" (phải)
-                // và với sự kiện dòng họ (dưới) — ba thứ khác nhau thì
-                // không được trông giống nhau.
+                // Lễ, tết: đèn lồng to, mờ, chìm SAU số ngày (ô 40–50px không đủ chỗ cho icon to ở góc mà không đè số).
+                // Khác hẳn "ngày kiêng" (chấm góc phải) và sự kiện dòng họ (chấm dưới).
                 <span
-                  className="absolute left-1 top-1 leading-none text-primary"
+                  className="pointer-events-none absolute inset-0 grid place-items-center text-primary opacity-40"
                   title={festivalsOn(c.iso)
                     .map((f) => f.name)
                     .join(" · ")}
                 >
-                  <IconLantern className="h-3 w-3" />
+                  <IconLantern className="h-[78%] w-[78%]" />
                 </span>
               )}
               {eventsByDay.has(c.iso) && (
