@@ -637,6 +637,39 @@ export function IconSparkles(p: IconProps) {
   );
 }
 
+/** Bánh sinh nhật — lucide cake. */
+export function IconCake(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8" />
+      <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1" />
+      <path d="M2 21h20" />
+      <path d="M7 8v3" />
+      <path d="M12 8v3" />
+      <path d="M17 8v3" />
+      <path d="M7 4h.01" />
+      <path d="M12 4h.01" />
+      <path d="M17 4h.01" />
+    </Svg>
+  );
+}
+
+/** Đèn lồng (lễ, tết) — thân tròn có gân, nắp trên/dưới, móc treo và tua. */
+export function IconLantern(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 1.5v2" />
+      <rect x="8.5" y="3.5" width="7" height="2.5" rx="0.5" />
+      <ellipse cx="12" cy="12" rx="7" ry="6" />
+      <path d="M12 6v12" />
+      <path d="M9 6.7c-1.6 3-1.6 7.6 0 10.6" />
+      <path d="M15 6.7c1.6 3 1.6 7.6 0 10.6" />
+      <rect x="8.5" y="18" width="7" height="2.5" rx="0.5" />
+      <path d="M12 20.5v2" />
+    </Svg>
+  );
+}
+
 /** Ghim (bài được ghim lên đầu) — lucide pin. */
 export function IconPin(p: IconProps) {
   return (
