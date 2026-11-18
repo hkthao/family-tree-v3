@@ -82,6 +82,10 @@ export default function RestingPlaces() {
         cemeteryId: cemeteryId || null,
       }),
     enabled: !!userId,
+    // Mộ phần do người khác trong họ thêm (máy khác, nhập hàng loạt) không làm mất hiệu lực cache của máy này; staleTime 4h
+    // mặc định + cache lưu trình duyệt khiến "Mọi hình thức" dính danh sách RỖNG cũ trong khi lọc theo loại (khoá mới) lại ra.
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const { data: photoUrls } = useQuery({
