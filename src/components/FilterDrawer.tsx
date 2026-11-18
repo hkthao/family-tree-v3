@@ -85,7 +85,7 @@ export function FilterDrawer({
             {open ? children : null}
           </div>
           {footer ? (
-            <footer className="flex gap-2 border-t p-3 shrink-0 [&>*]:min-w-0 [&>*]:flex-1 [&>*]:px-2">
+            <footer className="flex gap-2 border-t p-3 shrink-0 overflow-x-auto [&>*>svg]:!mr-0 [&>*]:flex-[1_0_auto] [&>*]:gap-1.5 [&>*]:px-2.5">
               {footer}
             </footer>
           ) : (

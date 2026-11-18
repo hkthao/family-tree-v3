@@ -63,12 +63,12 @@ export const PANEL_ACTIONS_CLASS =
 
 /**
  * Thanh nút của ngăn kéo XEM (người, nơi an nghỉ, di sản…): cùng thanh dính đáy với form, thứ tự
- * phá huỷ → phụ → chính (Sửa ngoài cùng phải). Điện thoại: các nút chia đều một hàng thay vì
- * rớt dòng (bốn nút co theo nội dung tràn khung 320–375px).
+ * phá huỷ → phụ → chính (Sửa ngoài cùng phải). Điện thoại: một hàng, các nút giãn chia đều khi đủ chỗ; nhiều nút
+ * không đủ chỗ thì giữ bề rộng tự nhiên và CUỘN NGANG — không rớt dòng, không bóp chữ/icon.
  */
 export function DrawerViewActions({ children }: { children: React.ReactNode }) {
   return (
-    <PanelActionBar className="max-sm:flex-nowrap max-sm:[&>*]:min-w-0 max-sm:[&>*]:flex-1 max-sm:[&>*]:px-2">
+    <PanelActionBar className="max-sm:flex-nowrap max-sm:justify-start max-sm:overflow-x-auto max-sm:[&>*]:flex-[1_0_auto] max-sm:[&>*]:gap-1.5 max-sm:[&>*]:px-2.5 [&>*>svg]:!mr-0">
       {children}
     </PanelActionBar>
   );

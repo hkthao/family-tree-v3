@@ -37,7 +37,7 @@ export function ArticleHeader({
         {title}
       </h1>
       {deck && (
-        <p className="mt-3 text-lg leading-relaxed text-card-foreground/85 sm:text-xl">
+        <p className="mt-3 text-justify text-lg leading-relaxed text-card-foreground/85 sm:text-xl">
           {deck}
         </p>
       )}
@@ -133,10 +133,10 @@ export function ArticleSection({
   );
 }
 
-/** Đoạn văn thân bài: chữ 17px, giãn dòng 2rem, giữ xuống dòng của người nhập. */
+/** Đoạn văn thân bài: chữ 17px, giãn dòng 2rem, căn đều hai bên, giữ xuống dòng của người nhập. */
 export function ArticleProse({ children }: { children: ReactNode }) {
   return (
-    <p className="whitespace-pre-wrap break-words text-[17px] leading-8 [overflow-wrap:anywhere] sm:text-lg">
+    <p className="whitespace-pre-wrap break-words text-justify text-[17px] leading-8 [overflow-wrap:anywhere] sm:text-lg">
       {children}
     </p>
   );
@@ -226,7 +226,7 @@ export function ArticleFooter({ children }: { children: ReactNode }) {
 
 /**
  * Thanh nút thao tác của bài trên TRANG đầy đủ (không phải ngăn kéo — ngăn kéo dùng DrawerViewActions): dính đáy
- * màn hình, ngay trên thanh tab (`--tabbar-h`), các nút chia đều một hàng. Thứ tự: phá huỷ → phụ → chính (ngoài cùng
+ * màn hình, ngay trên thanh tab (`--tabbar-h`), các nút chia đều một hàng; không đủ chỗ thì cuộn ngang. Thứ tự: phá huỷ → phụ → chính (ngoài cùng
  * phải). `safeArea` cho trang không có thanh tab (Sổ tay) để chừa thanh home của iPhone.
  */
 export function ArticleActionBar({
@@ -238,7 +238,7 @@ export function ArticleActionBar({
 }) {
   return (
     <div
-      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 -mx-4 mt-6 flex gap-2 border-t bg-background/95 px-4 pt-3 backdrop-blur [&>*]:h-11 [&>*]:min-w-0 [&>*]:flex-1 [&>*]:px-2 sm:mx-0 sm:justify-end sm:rounded-t-lg sm:[&>*]:flex-none sm:[&>*]:px-4 ${
+      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 -mx-4 mt-6 flex gap-2 border-t bg-background/95 px-4 pt-3 backdrop-blur overflow-x-auto [&>*>svg]:!mr-0 [&>*]:h-11 [&>*]:flex-[1_0_auto] [&>*]:gap-1.5 [&>*]:px-2.5 sm:mx-0 sm:justify-end sm:rounded-t-lg sm:[&>*]:flex-none sm:[&>*]:px-4 ${
         safeArea ? "pb-[calc(0.75rem_+_env(safe-area-inset-bottom))]" : "pb-3"
       }`}
     >

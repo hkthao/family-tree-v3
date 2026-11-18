@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Fragment } from "react";
+import type { ReactNode } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -59,8 +59,9 @@ export default function CustomsDetail({
 }: { embedded?: EmbeddedCustom } = {}) {
   const params = useParams<{ entryId: string }>();
   const entryId = embedded?.id ?? params.entryId;
-  // Trong ngăn kéo: không bọc khung trang (đã nằm trong trang đang mở).
-  const Shell = embedded ? Fragment : CustomsShell;
+  // Trong ngăn kéo: không bọc khung trang (đã nằm trong trang đang mở) nhưng vẫn là MỘT khối gốc — ngăn kéo biến mỗi
+  // con trực tiếp thành cột flex, nhiều con rời thì thanh nút đáy bị xếp dọc.
+  const Shell = embedded ? EmbeddedRoot : CustomsShell;
   const isNew = entryId === "new"; // phòng khớp nhầm route
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -216,7 +217,7 @@ export default function CustomsDetail({
           disabled={bookmarkM.isPending}
           title={bookmarked ? t`Bỏ lưu` : t`Lưu bài`}
         >
-          <span aria-hidden className="mr-1.5">
+          <span aria-hidden>
             {bookmarked ? "★" : "☆"}
           </span>
           {bookmarked ? t`Đã lưu` : t`Lưu`}
@@ -347,7 +348,7 @@ export default function CustomsDetail({
               {entry.faq.map((f, i) => (
                 <div key={i}>
                   <dt className="text-lg font-semibold">{f.q}</dt>
-                  <dd className="mt-0.5 whitespace-pre-wrap break-words text-[17px] leading-8 [overflow-wrap:anywhere]">
+                  <dd className="mt-0.5 whitespace-pre-wrap break-words text-justify text-[17px] leading-8 [overflow-wrap:anywhere]">
                     {f.a}
                   </dd>
                 </div>
@@ -409,4 +410,8 @@ export default function CustomsDetail({
       )}
     </Shell>
   );
+}
+
+function EmbeddedRoot({ children }: { children: ReactNode }) {
+  return <div className="space-y-3">{children}</div>;
 }

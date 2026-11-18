@@ -725,7 +725,7 @@ bày như một bài báo, **không** chia thành các thẻ:
 
 - Thứ tự: chuyên mục (`ArticleHeader` `kicker`, chữ hoa nhỏ) → tít serif → sapo (`deck`) → dòng thông tin (`meta`,
   cách nhau bởi `·`, có "Cập nhật dd/mm/yyyy") → ảnh lớn (`ArticleFigure`, bấm để phóng to) → thân bài.
-- Thân bài: `ArticleSection` (tít mục serif màu chính) + `ArticleProse` (17px, giãn dòng 2rem). Hiện đầy đủ —
+- Thân bài: `ArticleSection` (tít mục serif màu chính) + `ArticleProse` (17px, giãn dòng 2rem, căn đều hai bên). Hiện đầy đủ —
   không gập/mở từng đoạn, không "Xem thêm". Từ 3 mục trở lên thì có `ArticleToc` ("Trong bài này").
 - Dữ kiện dạng nhãn–giá trị (địa chỉ, năm xây, hướng…) gom vào **một** `ArticleFactBox` (vạch màu bên trái), không
   rải thành từng dòng trong thẻ. Đừng lặp cùng dữ kiện ở dòng thông tin.
