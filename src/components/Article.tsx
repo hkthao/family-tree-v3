@@ -111,20 +111,21 @@ export function ArticleSection({
 }: {
   id?: string;
   title?: ReactNode;
-  /** Chữ nhỏ cạnh tít mục (vd. số lượng). */
+  /** Số đếm cạnh tít mục — hiện trong ngoặc, cùng kiểu chữ với tít. */
   aside?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section id={id} className="mt-7 scroll-mt-4">
       {title && (
-        <h2 className="clan-name flex items-baseline gap-2 text-2xl font-semibold leading-snug text-primary">
-          {title}
-          {aside && (
-            <span className="font-sans text-sm font-normal text-muted-foreground">
-              {aside}
-            </span>
-          )}
+        <h2 className="clan-name text-2xl font-semibold leading-snug text-primary">
+          {/* Số đếm cùng màu/cỡ với tít, trong ngoặc: "Người liên quan (1)". */}
+          <span>
+            {title}
+            {aside !== undefined && aside !== null && aside !== "" && (
+              <> ({aside})</>
+            )}
+          </span>
         </h2>
       )}
       <div className={title ? "mt-2" : undefined}>{children}</div>
@@ -220,5 +221,28 @@ export function ArticleFooter({ children }: { children: ReactNode }) {
     <footer className="mt-8 space-y-1.5 border-t pt-4 font-sans text-sm text-muted-foreground">
       {children}
     </footer>
+  );
+}
+
+/**
+ * Thanh nút thao tác của bài trên TRANG đầy đủ (không phải ngăn kéo — ngăn kéo dùng DrawerViewActions): dính đáy
+ * màn hình, ngay trên thanh tab (`--tabbar-h`), các nút chia đều một hàng. Thứ tự: phá huỷ → phụ → chính (ngoài cùng
+ * phải). `safeArea` cho trang không có thanh tab (Sổ tay) để chừa thanh home của iPhone.
+ */
+export function ArticleActionBar({
+  children,
+  safeArea = false,
+}: {
+  children: ReactNode;
+  safeArea?: boolean;
+}) {
+  return (
+    <div
+      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 -mx-4 mt-6 flex gap-2 border-t bg-background/95 px-4 pt-3 backdrop-blur [&>*]:h-11 [&>*]:min-w-0 [&>*]:flex-1 [&>*]:px-2 sm:mx-0 sm:justify-end sm:rounded-t-lg sm:[&>*]:flex-none sm:[&>*]:px-4 ${
+        safeArea ? "pb-[calc(0.75rem_+_env(safe-area-inset-bottom))]" : "pb-3"
+      }`}
+    >
+      {children}
+    </div>
   );
 }

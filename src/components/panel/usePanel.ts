@@ -7,7 +7,12 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
  * tải lại trang khôi phục panel, link gửi người khác mở đúng panel). Tham số
  * mang tiền tố riêng để không đụng bộ lọc của trang (q, chi, đời…).
  */
-export type PanelId = "person-view" | "person-new" | "person-edit" | "person-add" | "notifications"
+export type PanelId =
+  | "person-view"
+  | "person-new"
+  | "person-edit"
+  | "person-add"
+  | "notifications"
   | "grave-view"
   | "grave-new"
   | "grave-edit"
@@ -19,6 +24,7 @@ export type PanelId = "person-view" | "person-new" | "person-edit" | "person-add
   | "board-edit"
   | "clan-new"
   | "inlaw-new"
+  | "custom-view"
   | "custom-new"
   | "custom-edit"
   | "custom-import";
@@ -47,7 +53,10 @@ export function usePanel() {
       for (const k of KEYS) next.delete(k);
       next.set("panel", id);
       for (const [k, v] of Object.entries(p)) if (v) next.set(k, v);
-      navigate({ pathname: location.pathname, search: `?${next}` }, { state: { [STATE_FLAG]: true } });
+      navigate(
+        { pathname: location.pathname, search: `?${next}` },
+        { state: { [STATE_FLAG]: true } },
+      );
     },
     [params, location.pathname, navigate],
   );

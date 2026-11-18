@@ -51,6 +51,15 @@ import {
   type ShareViewPayload,
 } from "@/lib/queries/share-view";
 import { HERITAGE_CATEGORY_LABEL, videoEmbedUrl } from "@/lib/queries/heritage";
+import {
+  Article,
+  ArticleFactBox,
+  ArticleFigure,
+  ArticleHeader,
+  ArticleList,
+  ArticleProse,
+  ArticleSection,
+} from "@/components/Article";
 
 import "family-chart/styles/family-chart.css";
 import {
@@ -736,129 +745,130 @@ export default function Share() {
           </p>
         </header>
         <main className="flex-1 min-h-0 overflow-y-auto">
-          <div className="mx-auto max-w-2xl p-4 space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {HERITAGE_CATEGORY_LABEL[h.category]}
-              </p>
-              <h2 className="text-2xl font-semibold">{h.title}</h2>
-              {h.summary && <p className="text-base mt-1">{h.summary}</p>}
-            </div>
+          {/* Dạng bài báo — cùng khuôn với ngăn kéo xem di sản trong app (components/Article). */}
+          <div className="mx-auto max-w-2xl p-4 pb-[calc(1.5rem_+_env(safe-area-inset-bottom))]">
+            <Article>
+              <ArticleHeader
+                kicker={HERITAGE_CATEGORY_LABEL[h.category]}
+                title={h.title}
+                deck={h.summary}
+              />
 
-            {h.photo_urls.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {h.photo_urls.map((u, i) => (
-                  <img
-                    key={i}
-                    src={u}
-                    alt=""
-                    className="aspect-square w-full rounded-md object-cover bg-muted"
-                  />
-                ))}
-              </div>
-            )}
+              {h.photo_urls[0] && (
+                <ArticleFigure src={h.photo_urls[0]} alt={h.title} />
+              )}
 
-            {h.videos.length > 0 && (
-              <div className="space-y-2">
-                {h.videos.map((v, i) => {
-                  const embed = videoEmbedUrl(v.url);
-                  return embed ? (
-                    <iframe
-                      key={i}
-                      src={embed}
-                      title={t`Video di sản`}
-                      className="aspect-video w-full rounded-md border"
-                      allow="encrypted-media; picture-in-picture; fullscreen"
-                      allowFullScreen
-                      referrerPolicy="strict-origin-when-cross-origin"
-                    />
-                  ) : (
-                    <video
-                      key={i}
-                      controls
-                      preload="none"
-                      src={v.url}
-                      className="w-full rounded-md border"
-                    />
-                  );
-                })}
-              </div>
-            )}
+              {h.body && (
+                <ArticleSection>
+                  <ArticleProse>{h.body}</ArticleProse>
+                </ArticleSection>
+              )}
 
-            {h.audios.length > 0 && (
-              <div className="space-y-2">
-                <p className="font-medium">{t`Ghi âm kể chuyện`}</p>
-                {h.audios.map((a, i) => (
-                  <audio
-                    key={i}
-                    controls
-                    preload="none"
-                    src={a.url}
-                    className="w-full"
-                  />
-                ))}
-              </div>
-            )}
+              <ArticleFactBox
+                title={t`Thông tin`}
+                rows={[
+                  { label: t`Ở đâu`, value: h.location_name },
+                  { label: t`Địa chỉ`, value: h.address },
+                  {
+                    label: t`Lập / xây năm`,
+                    value: h.built_year ? String(h.built_year) : null,
+                  },
+                ]}
+                footer={
+                  dir && (
+                    <a
+                      href={dir}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {t`Chỉ đường →`}
+                    </a>
+                  )
+                }
+              />
 
-            {h.body && (
-              <p className="whitespace-pre-wrap text-base leading-relaxed">
-                {h.body}
-              </p>
-            )}
+              {h.people.length > 0 && (
+                <ArticleSection
+                  title={t`Người liên quan`}
+                  aside={h.people.length}
+                >
+                  <ArticleList>
+                    {h.people.map((p, i) => (
+                      <li key={i} className="py-2.5">
+                        <p className="font-medium">{p.full_name}</p>
+                        {p.role_note && (
+                          <p className="text-sm text-muted-foreground">
+                            {p.role_note}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ArticleList>
+                </ArticleSection>
+              )}
 
-            {(h.location_name || h.address || h.built_year || dir) && (
-              <div className="rounded-md border p-3 text-base space-y-1">
-                {h.location_name && (
-                  <p>
-                    <span className="text-muted-foreground">Ở đâu: </span>
-                    {h.location_name}
-                  </p>
-                )}
-                {h.address && (
-                  <p>
-                    <span className="text-muted-foreground">Địa chỉ: </span>
-                    {h.address}
-                  </p>
-                )}
-                {h.built_year && (
-                  <p>
-                    <span className="text-muted-foreground">
-                      {t`Lập / xây năm:`}{" "}
-                    </span>
-                    {h.built_year}
-                  </p>
-                )}
-                {dir && (
-                  <a
-                    href={dir}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-block mt-1"
-                  >
-                    {t`Chỉ đường →`}
-                  </a>
-                )}
-              </div>
-            )}
+              {h.photo_urls.length > 1 && (
+                <ArticleSection title={t`Hình ảnh`} aside={h.photo_urls.length}>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {h.photo_urls.map((u, i) => (
+                      <img
+                        key={i}
+                        src={u}
+                        alt=""
+                        loading="lazy"
+                        className="aspect-square w-full rounded-md bg-muted object-cover"
+                      />
+                    ))}
+                  </div>
+                </ArticleSection>
+              )}
 
-            {h.people.length > 0 && (
-              <div>
-                <p className="font-medium mb-1">{t`Người liên quan`}</p>
-                <ul className="text-base space-y-0.5">
-                  {h.people.map((p, i) => (
-                    <li key={i}>
-                      {p.full_name}
-                      {p.role_note ? (
-                        <span className="text-muted-foreground">
-                          {" "}
-                          — {p.role_note}
-                        </span>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+              {h.audios.length > 0 && (
+                <ArticleSection title={t`Ghi âm kể chuyện`}>
+                  <div className="space-y-2">
+                    {h.audios.map((a, i) => (
+                      <audio
+                        key={i}
+                        controls
+                        preload="none"
+                        src={a.url}
+                        className="w-full"
+                      />
+                    ))}
+                  </div>
+                </ArticleSection>
+              )}
+
+              {h.videos.length > 0 && (
+                <ArticleSection title="Video">
+                  <div className="space-y-3">
+                    {h.videos.map((v, i) => {
+                      const embed = videoEmbedUrl(v.url);
+                      return embed ? (
+                        <iframe
+                          key={i}
+                          src={embed}
+                          title={t`Video di sản`}
+                          className="aspect-video w-full rounded-lg border"
+                          allow="encrypted-media; picture-in-picture; fullscreen"
+                          allowFullScreen
+                          referrerPolicy="strict-origin-when-cross-origin"
+                        />
+                      ) : (
+                        <video
+                          key={i}
+                          controls
+                          preload="none"
+                          src={v.url}
+                          className="w-full rounded-lg border"
+                        />
+                      );
+                    })}
+                  </div>
+                </ArticleSection>
+              )}
+            </Article>
           </div>
         </main>
       </div>

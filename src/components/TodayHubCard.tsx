@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { PanelLink } from "@/components/panel/PanelLink";
+
 import {
   AlmanacDisplayToggles,
   useAlmanacPrefs,
@@ -489,8 +491,10 @@ export function TodayHubCard({
               </div>
 
               {tip && (
-                <Link
+                <PanelLink
                   to={`/so-tay/${tip.id}`}
+                  panel="custom-view"
+                  panelParams={{ pid: tip.id }}
                   className="group block border-t px-4 py-3"
                 >
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -504,7 +508,7 @@ export function TodayHubCard({
                       {tip.short_description}
                     </p>
                   )}
-                </Link>
+                </PanelLink>
               )}
             </>
           )}

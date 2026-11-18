@@ -1,5 +1,5 @@
 import { currentIntlTag } from "@/lib/i18n";
-import { Link } from "react-router-dom";
+import { PanelLink } from "@/components/panel/PanelLink";
 
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin } from "@/hooks/useClanContext";
@@ -64,8 +64,11 @@ export function ClanPostCard({
       {/* Flex column với meta-row pinned ở đáy (mt-auto). Title +
           body chiếm phần trên với height cố định qua line-clamp →
           mọi card cùng height. */}
-      <Link
+      {/* Bấm thường mở ngăn kéo đọc bài; route /board/:id giữ cho link chia sẻ / mở tab mới. */}
+      <PanelLink
         to={`/clans/${post.clan_id}/board/${post.id}`}
+        panel="board-view"
+        panelParams={{ pid: post.id }}
         className="flex flex-col h-full px-5 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
       >
         {post.title ? (
@@ -119,7 +122,7 @@ export function ClanPostCard({
             {TYPE_LABEL[post.type]}
           </span>
         </div>
-      </Link>
+      </PanelLink>
     </article>
   );
 }

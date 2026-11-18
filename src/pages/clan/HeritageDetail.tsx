@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import {
   Article,
+  ArticleActionBar,
   ArticleFactBox,
   ArticleFigure,
   ArticleHeader,
@@ -672,17 +673,17 @@ export default function HeritageDetail({
     </>
   );
 
-  // Trang đầy đủ: nút chỉ icon ở đầu trang (điện thoại); ngăn kéo xem: thanh dính đáy chung có nhãn
+  // Nút có nhãn, nằm ở thanh dính đáy — ngăn kéo: DrawerViewActions; trang đầy đủ: ArticleActionBar
   // (Xoá → Thiệp → QR → Sửa).
-  const iconCls = embedded ? "h-4 w-4 mr-1.5" : "h-4 w-4 sm:mr-1";
-  const labelCls = embedded ? undefined : "hidden sm:inline";
+  const iconCls = "h-4 w-4 mr-1.5 shrink-0";
+  const labelCls = undefined;
   const actionButtons = (
     <>
       {canAdmin && (
         <>
           <Button
             size="sm"
-            variant={embedded ? "outline" : "default"}
+            variant="outline"
             onClick={() => {
               setCardOpen(true);
               if (!qrM.data) qrM.mutate();
@@ -706,12 +707,7 @@ export default function HeritageDetail({
       )}
       {canEdit && (
         <>
-          <Button
-            size="sm"
-            variant={embedded ? "default" : "outline"}
-            className={embedded ? "order-last" : undefined}
-            asChild
-          >
+          <Button size="sm" className="order-last" asChild>
             <PanelLink
               to={`/clans/${clan.id}/heritage/${item.id}/edit`}
               panel="heritage-edit"
@@ -724,7 +720,7 @@ export default function HeritageDetail({
           <Button
             size="sm"
             variant="destructive-outline"
-            className={embedded ? "order-first" : undefined}
+            className="order-first"
             onClick={() =>
               askConfirm({
                 title: t`Xoá mục di sản này?`,
@@ -755,9 +751,6 @@ export default function HeritageDetail({
             { label: item.title },
           ]}
         />
-      )}
-      {!embedded && (canAdmin || canEdit) && (
-        <div className="flex flex-wrap justify-end gap-2">{actionButtons}</div>
       )}
 
       {/* Dạng bài báo: không bọc thẻ — chuyên mục, tít, sapo, ảnh lớn, thân bài, hộp thông tin, tư liệu. */}
@@ -900,9 +893,12 @@ export default function HeritageDetail({
           onClose={() => setLightboxIdx(null)}
         />
       )}
-      {embedded && (canAdmin || canEdit) && (
-        <DrawerViewActions>{actionButtons}</DrawerViewActions>
-      )}
+      {(canAdmin || canEdit) &&
+        (embedded ? (
+          <DrawerViewActions>{actionButtons}</DrawerViewActions>
+        ) : (
+          <ArticleActionBar>{actionButtons}</ArticleActionBar>
+        ))}
     </div>
   );
 }
