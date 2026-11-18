@@ -1,16 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 
+import { AnnouncementPanel } from "@/components/AnnouncementPanel";
 import { AppHeader } from "@/components/AppHeader";
+import { FeedRow, TONE_TEXT } from "@/components/FeedRow";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { IconTile } from "@/components/IconTile";
 import {
   IconBell,
   IconCheck,
+  IconClock,
   IconGlobe,
   IconSearch,
   IconTag,
@@ -93,6 +94,7 @@ export default function Announcements() {
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState<AnnouncementLevel | "">("");
   const [unreadOnly, setUnreadOnly] = useState(false);
+  const [viewing, setViewing] = useState<Announcement | null>(null);
   const filtered = useMemo(() => {
     const q = unaccent(search.trim()).toLowerCase();
     return rows.filter(
@@ -237,10 +239,13 @@ export default function Announcements() {
                 key={row.id}
                 row={row}
                 isRead={reads.has(row.id)}
+                onOpen={() => setViewing(row)}
               />
             ))}
           </ul>
         )}
+
+        <AnnouncementPanel row={viewing} onClose={() => setViewing(null)} />
 
         {filtered.length > 0 && (
           <Pagination
@@ -259,13 +264,15 @@ export default function Announcements() {
   );
 }
 
-/** Bấm một dòng: đánh dấu đã đọc (nếu chưa) rồi mở trang chi tiết đầy đủ. */
+/** Bấm một dòng: đánh dấu đã đọc (nếu chưa) rồi mở ngăn kéo xem trọn tin (kiểu ngăn kéo Thông báo). */
 function AnnouncementRow({
   row,
   isRead,
+  onOpen,
 }: {
   row: Announcement;
   isRead: boolean;
+  onOpen: () => void;
 }) {
   const qc = useQueryClient();
   const markM = useMutation({
@@ -277,48 +284,40 @@ function AnnouncementRow({
   });
   const tone = LEVEL_TONE[row.level];
   return (
-    <li className={isRead ? "opacity-80" : ""}>
-      <Link
-        to={`/announcements/${row.id}`}
-        onClick={() => {
-          if (!isRead && !markM.isPending) markM.mutate();
-        }}
-        className="flex items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
-      >
-        <IconTile icon={IconBell} tone={tone} />
-        <div className="min-w-0 flex-1">
-          <p
-            className={`truncate ${isRead ? "font-medium text-foreground/80" : "font-semibold"}`}
-          >
-            {row.title}
-          </p>
-          <p className="mt-0.5 line-clamp-2 whitespace-pre-line text-sm text-muted-foreground">
-            {row.body}
-          </p>
-          {row.published_at && (
-            <time
-              className="mt-0.5 block text-xs tabular-nums text-muted-foreground/80"
-              dateTime={row.published_at}
-              title={new Date(row.published_at).toLocaleString("vi-VN")}
-            >
-              {formatRelative(row.published_at)}
-            </time>
+    <FeedRow
+      icon={IconBell}
+      iconClass={TONE_TEXT[tone]}
+      title={row.title}
+      body={row.body}
+      muted={isRead}
+      onClick={() => {
+        if (!isRead && !markM.isPending) markM.mutate();
+        onOpen();
+      }}
+      chips={
+        <>
+          {row.is_public && (
+            <Chip tone="primary" icon={<IconGlobe />}>
+              Public
+            </Chip>
           )}
-          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
-            {row.is_public && (
-              <Chip tone="primary" icon={<IconGlobe />}>
-                Public
-              </Chip>
-            )}
-            <Chip tone={isRead ? "neutral" : "warning"} icon={<IconCheck />}>
-              {isRead ? t`Đã đọc` : t`Chưa đọc`}
+          {!isRead && (
+            <Chip tone="warning" icon={<IconCheck />}>
+              {t`Chưa đọc`}
             </Chip>
-            <Chip tone={tone} icon={<IconBell />}>
-              {LEVEL_LABEL[row.level]}
+          )}
+          <Chip tone={tone} icon={<IconBell />}>
+            {LEVEL_LABEL[row.level]}
+          </Chip>
+          {row.published_at && (
+            <Chip tone="neutral" icon={<IconClock />}>
+              <time dateTime={row.published_at}>
+                {formatRelative(row.published_at)}
+              </time>
             </Chip>
-          </div>
-        </div>
-      </Link>
-    </li>
+          )}
+        </>
+      }
+    />
   );
 }

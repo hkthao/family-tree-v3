@@ -1,18 +1,33 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { Chip, type ChipTone } from "@/components/Chip";
-import { IconChevronDown, IconClock, IconSparkles } from "@/components/icons";
+import {
+  ANNOUNCEMENT_TONE,
+  AnnouncementPanel,
+} from "@/components/AnnouncementPanel";
+import { Chip } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { FeedRow, TONE_TEXT } from "@/components/FeedRow";
+import { FilterableSelect } from "@/components/FilterableSelect";
+import {
+  IconClock,
+  IconSearch,
+  IconSparkles,
+  IconTag,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PlatformShell } from "@/components/PlatformShell";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LEVEL_LABEL } from "@/lib/announcementFormat";
 import {
   listPublicAnnouncements,
   type Announcement,
   type AnnouncementLevel,
 } from "@/lib/queries/announcements";
-import { LEVEL_LABEL, previewLines } from "@/lib/announcementFormat";
 import { queryKeys } from "@/lib/queries/keys";
+import { unaccent } from "@/lib/unaccent";
 import { markChangelogSeen } from "@/lib/whatsNew";
 
 import { t } from "@lingui/core/macro";
@@ -21,15 +36,10 @@ import { t } from "@lingui/core/macro";
  * `is_public=true`. Plan §32.9 O4: đây là single source of truth cho
  * changelog public, không maintain MD song song.
  *
- * SEO note (plan §32.9 O10): server-side render về sau để search
- * engine index "cập nhật gia phả tháng X".
+ * Trình bày giống ngăn kéo Thông báo: ô tìm + icon Tuỳ chọn (lọc mức độ), mỗi tin một dòng (icon thuần, vài ý đầu),
+ * bấm mở ngăn kéo xem trọn tin.
  */
-const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
-  info: "info",
-  update: "primary",
-  warning: "warning",
-  critical: "danger",
-};
+const LEVELS = Object.keys(LEVEL_LABEL) as AnnouncementLevel[];
 
 export default function Changelog() {
   const { data, isLoading, error } = useQuery({
@@ -38,11 +48,24 @@ export default function Changelog() {
     staleTime: 60_000,
   });
 
-  const rows = data ?? [];
+  const rows = useMemo(() => data ?? [], [data]);
   const latest = rows[0]?.published_at;
   useEffect(() => {
     markChangelogSeen(latest);
   }, [latest]);
+
+  const [search, setSearch] = useState("");
+  const [level, setLevel] = useState("");
+  const [viewing, setViewing] = useState<Announcement | null>(null);
+  const filtered = useMemo(() => {
+    const q = unaccent(search.trim());
+    return rows.filter(
+      (r) =>
+        (!level || r.level === level) &&
+        (!q || unaccent(`${r.title} ${r.body}`).includes(q)),
+    );
+  }, [rows, search, level]);
+  const filtering = !!search.trim() || !!level;
 
   return (
     <PlatformShell>
@@ -52,88 +75,94 @@ export default function Changelog() {
         description={t`Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app.`}
       />
 
+      <CollapsibleFilters
+        activeCount={level ? 1 : 0}
+        onReset={() => setLevel("")}
+        title={t`Lọc cập nhật`}
+        search={(toggle) => (
+          <SearchInput
+            label={t`Tìm cập nhật`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t`Tìm theo tiêu đề / nội dung…`}
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <FilterableSelect
+          value={level}
+          onChange={setLevel}
+          icon={<IconTag />}
+          options={LEVELS.map((l) => ({ value: l, label: LEVEL_LABEL[l] }))}
+          emptyLabel={t`Mọi mức độ`}
+          filterLabel={t`Lọc theo mức độ`}
+          className="h-11 text-base"
+        />
+      </CollapsibleFilters>
+
       {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{(error as Error).message}</AlertDescription>
         </Alert>
       )}
-      {!isLoading && rows.length === 0 && (
-        <p className="text-muted-foreground italic">
-          {t`Chưa có cập nhật nào được công bố. Quay lại sau.`}
-        </p>
+      {!isLoading && filtered.length === 0 && (
+        <EmptyState
+          icon={
+            filtering ? (
+              <IconSearch className="h-10 w-10" />
+            ) : (
+              <IconSparkles className="h-10 w-10" />
+            )
+          }
+          title={
+            filtering
+              ? t`Không có cập nhật nào khớp`
+              : t`Chưa có cập nhật nào được công bố. Quay lại sau.`
+          }
+          description={
+            filtering ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.` : undefined
+          }
+        />
       )}
 
-      <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
-        {rows.map((row, i) => (
-          <ChangelogEntry key={row.id} row={row} defaultOpen={i === 0} />
-        ))}
-      </ul>
-    </PlatformShell>
-  );
-}
-
-/**
- * Một mục changelog: thu gọn thì chỉ thấy tiêu đề + vài ý đầu (mỗi ý một dòng), bấm để mở toàn bộ. Mục mới nhất
- * mở sẵn; các mục cũ gập để trang không dài hàng chục màn hình.
- */
-function ChangelogEntry({
-  row,
-  defaultOpen,
-}: {
-  row: Announcement;
-  defaultOpen: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  const tone = LEVEL_TONE[row.level];
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-stretch gap-3 p-4 sm:p-5 text-left transition-colors hover:bg-muted/40"
-      >
-        <span className="min-w-0 flex-1">
-          <span className="flex items-start gap-2">
-            <span className="min-w-0 flex-1 font-semibold leading-snug">
-              {row.title}
-            </span>
-            <IconChevronDown
-              className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                open ? "rotate-180" : ""
-              }`}
+      {filtered.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {filtered.map((row) => (
+            <FeedRow
+              key={row.id}
+              icon={IconSparkles}
+              iconClass={TONE_TEXT[ANNOUNCEMENT_TONE[row.level]]}
+              title={row.title}
+              body={row.body}
+              onClick={() => setViewing(row)}
+              chips={
+                <>
+                  <Chip tone={ANNOUNCEMENT_TONE[row.level]}>
+                    {LEVEL_LABEL[row.level]}
+                  </Chip>
+                  {row.published_at && (
+                    <Chip tone="neutral" icon={<IconClock />}>
+                      <time dateTime={row.published_at}>
+                        {new Date(row.published_at).toLocaleDateString(
+                          "vi-VN",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          },
+                        )}
+                      </time>
+                    </Chip>
+                  )}
+                </>
+              }
             />
-          </span>
-          {open ? (
-            <span className="mt-2 block whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-              {row.body}
-            </span>
-          ) : (
-            <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">
-              {previewLines(row.body, 3).map((line, i) => (
-                <span key={i} className="block truncate">
-                  {line}
-                </span>
-              ))}
-            </span>
-          )}
-          <span className="mt-4 flex flex-wrap justify-end gap-1.5">
-            <Chip tone={tone}>{LEVEL_LABEL[row.level]}</Chip>
-            {row.published_at && (
-              <Chip tone="neutral" icon={<IconClock />}>
-                <time dateTime={row.published_at}>
-                  {new Date(row.published_at).toLocaleDateString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  })}
-                </time>
-              </Chip>
-            )}
-          </span>
-        </span>
-      </button>
-    </li>
+          ))}
+        </ul>
+      )}
+
+      <AnnouncementPanel row={viewing} onClose={() => setViewing(null)} />
+    </PlatformShell>
   );
 }
