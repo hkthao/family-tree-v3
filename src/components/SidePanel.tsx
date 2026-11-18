@@ -65,6 +65,9 @@ export function SidePanel({
   // lần gõ ký tự và `panelRef.focus()` cướp focus khỏi ô đang nhập.
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  // `guard` cũng hay đổi theo nội dung đang gõ (vd. `guard={!!name.trim()}` bật ở ký tự đầu tiên) — giữ qua ref vì cùng lý do.
+  const guardRef = useRef(guard);
+  guardRef.current = guard;
 
   const animateClose = useCallback(() => {
     if (closeTimer.current !== undefined) return;
@@ -92,7 +95,7 @@ export function SidePanel({
 
   const requestClose = useCallback(async () => {
     if (closeTimer.current !== undefined) return; // đang đóng
-    if (guard && dirty.current) {
+    if (guardRef.current && dirty.current) {
       const ok = await confirm({
         title: t`Bỏ thay đổi chưa lưu?`,
         description: t`Những gì bạn vừa nhập sẽ mất.`,
@@ -103,7 +106,7 @@ export function SidePanel({
       if (!ok) return;
     }
     animateClose();
-  }, [confirm, animateClose, guard]);
+  }, [confirm, animateClose]);
 
   useEffect(() => {
     if (!open) return;
