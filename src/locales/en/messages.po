@@ -2955,6 +2955,7 @@ msgstr "Only provinces with no communes / wards and not used as an address can b
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
+#: src/lib/quickCatalog.tsx
 #: src/pages/CustomsDetail.tsx
 msgid "Chia sẻ"
 msgstr "Share"
@@ -2978,6 +2979,10 @@ msgstr "Share the family tree"
 #: src/lib/tipCatalogue.ts
 msgid "Chia sẻ cây với họ hàng"
 msgstr "Share the tree with relatives"
+
+#: src/lib/quickCatalog.tsx
+msgid "Chia sẻ gia phả"
+msgstr "Share family tree"
 
 #: src/components/InviteLinkCard.tsx
 #: src/components/InviteLinkCard.tsx
@@ -6519,6 +6524,7 @@ msgstr "contributions"
 #: src/components/community/PersonMemoriesSection.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/queries/global-search.ts
+#: src/lib/quickCatalog.tsx
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
 msgid "Đóng góp"
