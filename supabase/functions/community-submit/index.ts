@@ -28,6 +28,8 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+import { guardGuestSubmission, memorySubmissions24h, tooLarge } from "../_shared/spamGuard.ts";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -91,6 +93,7 @@ const str = (f: FormData, k: string, max: number): string | null => {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (req.method !== "POST") return err("Method not allowed", 405);
+  if (tooLarge(req)) return err("Dữ liệu gửi lên quá lớn", 413);
 
   let form: FormData;
   try {
@@ -171,7 +174,7 @@ Deno.serve(async (req) => {
   // ─── Link ───────────────────────────────────────────────────────
   const { data: link, error: linkErr } = await sb
     .from("share_links")
-    .select("id, clan_id, scope, expires_at, is_revoked, allow, use_count")
+    .select("id, clan_id, scope, expires_at, is_revoked, allow, use_count, contrib_paused_at")
     .eq("token", token)
     .maybeSingle();
   if (linkErr) return err(linkErr.message, 500);
@@ -207,6 +210,26 @@ Deno.serve(async (req) => {
   if ((linkHits ?? 0) > LINK_PER_HOUR) return err("Link này đang nhận quá nhiều đóng góp, vui lòng thử lại sau", 429);
 
   const guestKey = guestKeyRaw ? await sha256(`${link.clan_id}:${guestKeyRaw}`) : null;
+
+  // ─── Trần theo ngày khi link bị lộ (_shared/spamGuard.ts) ─────
+  const guard = await guardGuestSubmission(sb, link, {
+    linkSubmissions24h: await memorySubmissions24h(sb, link.id),
+    pendingTable: "person_memories",
+    media: !externalUrl && file instanceof File && kind === "photo",
+  });
+  if (!guard.ok) return err(guard.message, guard.status);
+
+  // Cùng trình duyệt gửi lại y hệt nội dung trong 24 giờ → coi là trùng.
+  if (guestKey && body && kind !== "face") {
+    const { count: dup } = await sb
+      .from("person_memories")
+      .select("id", { count: "exact", head: true })
+      .eq("clan_id", link.clan_id)
+      .eq("guest_key", guestKey)
+      .eq("body", body)
+      .gt("created_at", new Date(Date.now() - 24 * 3600_000).toISOString());
+    if ((dup ?? 0) > 0) return err("Bạn đã gửi nội dung này rồi, cảm ơn bạn!", 409);
+  }
 
   // ─── kind=face: khoanh một khuôn mặt trên ảnh "nhờ nhận diện" ──
   if (kind === "face") {

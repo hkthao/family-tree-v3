@@ -150,12 +150,13 @@ Deno.serve(async (req) => {
     is_revoked: boolean;
     scope: string;
     recipient_label?: string | null;
+    contrib_paused_at?: string | null;
   }
   let link: ShareCtx;
   if (token) {
     const { data, error: linkErr } = await sb
       .from("share_links")
-      .select("clan_id, root_person_id, root_resting_place_id, root_heritage_item_id, expires_at, is_revoked, scope, recipient_label")
+      .select("clan_id, root_person_id, root_resting_place_id, root_heritage_item_id, expires_at, is_revoked, scope, recipient_label, contrib_paused_at")
       .eq("token", token)
       .maybeSingle();
     if (linkErr) return err(linkErr.message, 500);
@@ -710,8 +711,9 @@ Deno.serve(async (req) => {
     author_relation: m.author_relation,
     created_at: m.created_at,
   }));
+  // Link tự tạm dừng vì nhận quá nhiều (có thể bị lộ) → trang vẫn xem được, chỉ ẩn phần góp.
   const canContribute =
-    !!token && link.scope !== "resting_place" && link.scope !== "heritage_item";
+    !!token && link.scope !== "resting_place" && link.scope !== "heritage_item" && !link.contrib_paused_at;
 
   return json({
     clan_id: link.clan_id,

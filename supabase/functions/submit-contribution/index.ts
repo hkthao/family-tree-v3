@@ -20,6 +20,8 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+import { guardGuestSubmission, tooLarge } from "../_shared/spamGuard.ts";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -64,6 +66,7 @@ interface Body {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (req.method !== "POST") return err("Method not allowed", 405);
+  if (tooLarge(req)) return err("Dữ liệu gửi lên quá lớn", 413);
 
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
@@ -106,7 +109,7 @@ Deno.serve(async (req) => {
   // ─── Validate share link ────────────────────────────────────────
   const { data: link, error: linkErr } = await sb
     .from("share_links")
-    .select("clan_id, root_person_id, expires_at, is_revoked, scope")
+    .select("id, clan_id, root_person_id, expires_at, is_revoked, scope, contrib_paused_at")
     .eq("token", body.token)
     .maybeSingle();
   if (linkErr) return err(linkErr.message, 500);
@@ -148,6 +151,20 @@ Deno.serve(async (req) => {
     );
   }
 
+  // ─── Trần theo ngày khi link bị lộ (_shared/spamGuard.ts) ─────
+  // contributions không ghi link nguồn → đếm đề xuất của khách trong cả họ 24 giờ làm trần của link.
+  const { count: clanGuest24h } = await sb
+    .from("contributions")
+    .select("id", { count: "exact", head: true })
+    .eq("clan_id", link.clan_id)
+    .is("submitter_user_id", null)
+    .gt("created_at", new Date(Date.now() - 24 * 3600_000).toISOString());
+  const guard = await guardGuestSubmission(sb, link, {
+    linkSubmissions24h: clanGuest24h ?? 0,
+    pendingTable: "contributions",
+  });
+  if (!guard.ok) return err(guard.message, guard.status);
+
   // ─── Insert ─────────────────────────────────────────────────────
   const { data: row, error: insErr } = await sb
     .from("contributions")
@@ -172,7 +189,7 @@ Deno.serve(async (req) => {
   // key (already in env) and don't await, so a Resend outage
   // can't bubble up to the guest.
   if (row?.id) {
-    fetch(`${SUPABASE_URL}/functions/v1/notify-contribution`, {
+    const notify = fetch(`${SUPABASE_URL}/functions/v1/notify-contribution`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -180,6 +197,11 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({ contribution_id: row.id }),
     }).catch(() => {/* ignore — see notify-contribution */});
+    // Giữ isolate sống tới khi gọi xong — fetch bắn-rồi-quên sau khi trả lời có thể bị runtime cắt.
+    // deno-lint-ignore no-explicit-any
+    const er = (globalThis as any).EdgeRuntime;
+    if (er?.waitUntil) er.waitUntil(notify);
+    else await notify;
   }
 
   return json({ ok: true, id: row?.id });
