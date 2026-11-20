@@ -3,7 +3,9 @@ import { useState } from "react";
 
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
-import { IconCopy, IconLink, IconShare2, IconUser } from "@/components/icons";
+import { InviteCardDialog, type InviteContext } from "@/components/community/InviteCardDialog";
+import type { InviteVariant } from "@/components/community/InviteCard";
+import { IconCamera, IconCopy, IconLink, IconShare2, IconUser } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
@@ -42,6 +44,7 @@ export function ContributeLinkPanel({
   clanName,
   personId,
   personName,
+  invite,
 }: {
   open: boolean;
   onClose: () => void;
@@ -49,12 +52,15 @@ export function ContributeLinkPanel({
   clanName: string;
   personId?: string | null;
   personName?: string | null;
+  /** Mẫu ảnh "Tạo ảnh để đăng" dùng được + dữ liệu (vd hồ sơ người đã mất). */
+  invite?: { variants: InviteVariant[]; context?: InviteContext };
 }) {
   const toast = useToast();
   const qc = useQueryClient();
   const [recipient, setRecipient] = useState("");
   const [link, setLink] = useState<ContributeLink | null>(null);
   const [message, setMessage] = useState("");
+  const [cardOpen, setCardOpen] = useState(false);
 
   const create = useMutation({
     mutationFn: () =>
@@ -150,6 +156,10 @@ export function ContributeLinkPanel({
             <Label htmlFor="contrib-msg">{t`Tin nhắn soạn sẵn (sửa thoải mái)`}</Label>
             <Textarea id="contrib-msg" rows={6} value={message} onChange={(e) => setMessage(e.target.value)} />
           </div>
+          <Button type="button" variant="outline" className="w-full" onClick={() => setCardOpen(true)}>
+            <IconCamera className="mr-1.5 h-4 w-4" />
+            {t`Tạo ảnh để đăng Facebook / Zalo`}
+          </Button>
           <FormActions>
             <Button type="button" variant="outline" onClick={() => void copy(url)}>
               <IconCopy className="mr-1.5 h-4 w-4" />
@@ -161,6 +171,17 @@ export function ContributeLinkPanel({
             </Button>
           </FormActions>
         </div>
+      )}
+      {link && cardOpen && (
+        <InviteCardDialog
+          open
+          onClose={() => setCardOpen(false)}
+          clanId={clanId}
+          clanName={clanName}
+          url={url}
+          variants={invite?.variants ?? (personId ? ["chung"] : ["chung", "camon"])}
+          context={{ personName, ...invite?.context }}
+        />
       )}
     </SidePanel>
   );

@@ -432,6 +432,7 @@ export default function Memories() {
         open={panel.mode === "question"}
         onClose={close}
         clanId={clan.id}
+        clanName={clan.name}
         existing={panel.mode === "question" ? panel.existing : null}
       />
 

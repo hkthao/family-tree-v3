@@ -162,6 +162,25 @@ export function PersonMemoriesSection({
         clanName={clanName}
         personId={personId}
         personName={personName}
+        invite={
+          // "Hồ sơ còn thiếu" chỉ cho người đã mất (không đưa thông tin người còn sống lên ảnh).
+          facts && !facts.is_living
+            ? {
+                variants: ["hoso", "chung"],
+                context: {
+                  personYears: [facts.birth_date?.slice(0, 4) ?? "?", facts.death_date?.slice(0, 4) ?? "?"].join(" – "),
+                  facts: [
+                    { label: "Năm sinh", done: !!facts.birth_date },
+                    { label: "Năm mất", done: !!facts.death_date },
+                    { label: "Ngày giỗ (âm lịch)", done: !!facts.death_anniv_lunar_day },
+                    { label: "Quê quán", done: !!facts.birth_place },
+                    { label: "Nơi an táng", done: !!facts.burial_place },
+                    { label: "Một kỷ niệm về cụ", done: visibleCount > 0 },
+                  ],
+                },
+              }
+            : undefined
+        }
       />
     </>
   );
