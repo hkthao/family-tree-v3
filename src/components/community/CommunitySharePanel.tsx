@@ -125,7 +125,7 @@ export function CommunitySharePanel({
         <p className="text-sm text-muted-foreground">
           {isHoi
             ? t`Chọn câu hỏi · bấm Trả lời · viết (hoặc bấm 🎤 trên bàn phím để nói) · bấm Gửi. Không cần đăng ký.`
-            : t`Chọn người · viết, góp ảnh cũ hoặc ghi âm · bấm Gửi. Không cần đăng ký.`}
+            : t`Chọn người · viết hoặc góp ảnh cũ · bấm Gửi. Không cần đăng ký.`}
         </p>
         <p className="text-xs text-muted-foreground">
           <CommunityStatsLine community={community} />
@@ -133,7 +133,18 @@ export function CommunitySharePanel({
       </section>
 
       {/* P1 "Hỏi ông bà": câu hỏi đang chờ — bấm "Trả lời" để ghi âm / viết câu trả lời. */}
-      {isHoi && questions.filter((q) => q.status !== "closed").length > 0 && (
+      {/* Đã chọn câu hỏi → ẩn danh sách (câu hỏi đã hiện ở đầu form), chỉ còn link chọn câu khác. */}
+      {isHoi && questionId && !sent && (
+        <button
+          type="button"
+          onClick={() => setQuestionId("")}
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          {t`← Chọn câu hỏi khác`}
+        </button>
+      )}
+
+      {isHoi && !questionId && questions.filter((q) => q.status !== "closed").length > 0 && (
         <section className="space-y-2">
           <h3 className="text-sm font-semibold">{t`Câu hỏi cả nhà đang hỏi`}</h3>
           <ul className="divide-y overflow-hidden rounded-xl border bg-card">
