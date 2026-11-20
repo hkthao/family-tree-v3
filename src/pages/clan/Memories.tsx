@@ -63,6 +63,7 @@ import {
   listContributeLinks,
   revokeContributeLink,
   listQuestions,
+  PHOTO_IDENTIFY_ENABLED,
   setQuestionStatus,
   type ContributeLink,
   type FamilyQuestion,
@@ -303,7 +304,7 @@ export default function Memories() {
             <option value="photo">{t`Ảnh`}</option>
             <option value="audio">{t`Ghi âm`}</option>
             <option value="answer">{t`Trả lời câu hỏi`}</option>
-            <option value="identify">{t`Ảnh nhờ nhận diện`}</option>
+            {PHOTO_IDENTIFY_ENABLED && <option value="identify">{t`Ảnh nhờ nhận diện`}</option>}
           </Select>
           <Select
             value={source}
@@ -424,7 +425,7 @@ export default function Memories() {
           <div>
             <div className="space-y-4">
               <MemoryCard memory={viewing} />
-              {viewing.identify && viewing.media_url && !viewing.is_external && (
+              {PHOTO_IDENTIFY_ENABLED && viewing.identify && viewing.media_url && !viewing.is_external && (
                 <MemoryFaces memory={viewing} canModerate={canModerate} />
               )}
               <dl className="grid grid-cols-1 gap-2 text-sm">

@@ -7,7 +7,12 @@ import { FaceTagger } from "@/components/community/FaceTagger";
 import { useToast } from "@/components/Toast";
 import { IconBook, IconUser } from "@/components/icons";
 import { Input } from "@/components/ui/input";
-import { readGuestProfile, saveGuestProfile, submitGuestFace } from "@/lib/queries/community";
+import {
+  PHOTO_IDENTIFY_ENABLED,
+  readGuestProfile,
+  saveGuestProfile,
+  submitGuestFace,
+} from "@/lib/queries/community";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { ShareViewCommunity, ShareViewFace, ShareViewPerson } from "@/lib/queries/share-view";
@@ -279,7 +284,7 @@ export function CommunitySharePanel({
                     : null,
                 }}
                 onIdentify={
-                  m.identify && m.media_url && !m.is_external
+                  PHOTO_IDENTIFY_ENABLED && m.identify && m.media_url && !m.is_external
                     ? () => setTagging(tagging === m.id ? null : m.id)
                     : undefined
                 }

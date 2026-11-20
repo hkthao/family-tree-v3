@@ -635,6 +635,13 @@ export function questionLinkUrl(token: string, questionId: string): string {
 
 // ─── P2: Ảnh "đây là ai?" ───────────────────────────────────────
 
+/**
+ * TẠM TẮT (2026-11-20): ổ cứng server self-host không đủ để lưu ảnh tải lên, mà khoanh mặt chỉ làm
+ * được trên ảnh tải lên (không vẽ khung lên ảnh Google Photos / Drive). Bật lại = đổi thành true;
+ * bảng photo_faces, edge function (kind=face) và UI vẫn còn nguyên.
+ */
+export const PHOTO_IDENTIFY_ENABLED = false;
+
 export type FaceStatus = "suggested" | "confirmed" | "rejected";
 
 export interface PhotoFace {

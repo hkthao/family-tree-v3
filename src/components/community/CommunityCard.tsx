@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { SectionCard } from "@/components/SectionCard";
 import { IconBook, IconClock } from "@/components/icons";
-import { getCommunitySummary } from "@/lib/queries/community";
+import { getCommunitySummary, PHOTO_IDENTIFY_ENABLED } from "@/lib/queries/community";
 import { supabase } from "@/lib/supabase";
 
 import { t } from "@lingui/core/macro";
@@ -36,7 +36,7 @@ export function CommunityCard({ clanId, canModerate }: { clanId: string; canMode
       if (error) return 0;
       return (data as number | null) ?? 0;
     },
-    enabled: canModerate,
+    enabled: canModerate && PHOTO_IDENTIFY_ENABLED,
     staleTime: 60_000,
   });
 
