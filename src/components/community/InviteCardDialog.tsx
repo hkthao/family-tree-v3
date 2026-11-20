@@ -38,8 +38,8 @@ export interface InviteContext {
   askName?: string | null;
 }
 
-const PREVIEW_W = 360;
-const THUMB_W = 104;
+const PREVIEW_MAX = 360;
+const THUMB_W = 76;
 
 /**
  * "Tạo ảnh để đăng" (plan §4.3): ảnh infographic mời góp + tin nhắn soạn sẵn, cùng lựa chọn người đọc,
@@ -146,7 +146,18 @@ export function InviteCardDialog({
   }, [autoMessage, edited]);
 
   const dim = CARD_DIMENSIONS[format];
-  const scale = PREVIEW_W / dim.w;
+  // Ảnh lớn co theo bề rộng khung (điện thoại hẹp) chừa chỗ cho cột mẫu.
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [stageW, setStageW] = useState(0);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setStageW(e.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [open]);
+  const previewW = Math.max(160, Math.min(PREVIEW_MAX, (stageW || PREVIEW_MAX + THUMB_W + 40) - THUMB_W - 40));
+  const scale = previewW / dim.w;
 
   async function render(): Promise<Blob> {
     await ensureCardFontsLoaded();
@@ -195,39 +206,43 @@ export function InviteCardDialog({
     <SidePanel open={open} onClose={onClose} size="lg" title={t`Tạo ảnh để đăng`} subtitle={t`Ảnh + tin nhắn mời người thân góp`} guard={false}>
       <div>
         <div className="space-y-4">
-          <div className="flex justify-center rounded-lg border bg-muted/40 p-3">
-            <div style={{ width: PREVIEW_W, height: dim.h * scale, overflow: "hidden" }}>
-              <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: dim.w, height: dim.h }}>
-                <InviteCard data={data} format={format} />
+          {/* Ảnh lớn bên trái + cột mẫu DỌC bên phải (cuộn trong khung cao bằng ảnh) — bấm mẫu thấy ngay ảnh đổi. */}
+          <div ref={stageRef} className="flex gap-2 rounded-lg border bg-muted/40 p-2 sm:gap-3 sm:p-3">
+            <div className="flex min-w-0 flex-1 justify-center">
+              <div style={{ width: previewW, height: dim.h * scale, overflow: "hidden" }}>
+                <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: dim.w, height: dim.h }}>
+                  <InviteCard data={data} format={format} />
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>{t`Chọn mẫu (${templates.length} mẫu)`}</Label>
-            <div className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-2">
+            <div
+              role="listbox"
+              aria-label={t`Chọn mẫu (${templates.length} mẫu)`}
+              className="flex shrink-0 snap-y flex-col gap-1.5 overflow-y-auto border-l pl-2 sm:pl-3"
+              style={{ height: dim.h * scale, width: THUMB_W + 16 }}
+            >
               {templates.map((tp) => {
                 const active = tp.variant === variant && tp.theme === theme;
                 return (
                   <button
                     key={`${tp.variant}-${tp.theme}`}
                     type="button"
+                    role="option"
+                    aria-selected={active}
                     onClick={() => {
                       setVariant(tp.variant);
                       setTheme(tp.theme);
                     }}
-                    aria-pressed={active}
                     title={`${VARIANT_LABEL[tp.variant]} · ${THEME_LABEL[tp.theme]}`}
-                    className={`shrink-0 snap-start rounded-lg border-2 p-1 text-left transition-colors ${active ? "border-primary" : "border-transparent hover:border-muted-foreground/40"}`}
-                    style={{ width: THUMB_W + 12 }}
+                    className={`shrink-0 snap-start rounded-lg border-2 p-1 text-left transition-colors ${active ? "border-primary bg-background" : "border-transparent hover:border-muted-foreground/40"}`}
                   >
                     <div className="overflow-hidden rounded" style={{ width: THUMB_W, height: dim.h * (THUMB_W / dim.w) }}>
                       <div style={{ transform: `scale(${THUMB_W / dim.w})`, transformOrigin: "top left", width: dim.w, height: dim.h, pointerEvents: "none" }}>
                         <InviteCard data={{ ...data, variant: tp.variant, theme: tp.theme }} format={format} />
                       </div>
                     </div>
-                    <div className="mt-1 truncate text-xs font-medium">{VARIANT_LABEL[tp.variant]}</div>
-                    <div className="truncate text-[11px] text-muted-foreground">{THEME_LABEL[tp.theme]}</div>
+                    <div className="mt-1 truncate text-[11px] font-medium leading-tight">{VARIANT_LABEL[tp.variant]}</div>
+                    <div className="truncate text-[10px] leading-tight text-muted-foreground">{THEME_LABEL[tp.theme]}</div>
                   </button>
                 );
               })}
