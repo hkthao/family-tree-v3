@@ -7,6 +7,7 @@ import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { Fab } from "@/components/Fab";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -603,21 +604,19 @@ function NewMemoryPanel({
       <div className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="memory-person">{t`Đóng góp về ai?`}</Label>
-          <Select
+          <FilterableSelect
             id="memory-person"
             icon={<IconUser />}
             value={personId}
-            onChange={(e) => setPersonId(e.target.value)}
-            className="h-11 w-full text-base"
-          >
-            <option value="">{t`Chuyện chung của họ`}</option>
-            {persons.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name}
-                {p.is_living ? "" : " †"}
-              </option>
-            ))}
-          </Select>
+            onChange={setPersonId}
+            options={persons.map((p) => ({
+              value: p.id,
+              label: `${p.full_name}${p.is_living ? "" : " †"}`,
+            }))}
+            emptyLabel={t`Chuyện chung của họ`}
+            filterLabel={t`Tìm người`}
+            filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
+          />
         </div>
         <MemoryForm
           key={personId || "clan"}

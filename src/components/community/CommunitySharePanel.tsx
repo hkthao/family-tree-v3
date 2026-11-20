@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 
 import { MemoryCard } from "@/components/community/MemoryCard";
 import { MemoryForm } from "@/components/community/MemoryForm";
-import { IconBook, IconSearch, IconUserPlus } from "@/components/icons";
+import { FilterableSelect } from "@/components/FilterableSelect";
+import { IconBook, IconUser } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ShareViewCommunity, ShareViewPerson } from "@/lib/queries/share-view";
 
@@ -24,9 +24,9 @@ export function CommunityStatsLine({ community }: { community: ShareViewCommunit
 }
 
 /**
- * Tab "Cùng góp" của trang chia sẻ: chọn người (ưu tiên người đã mất), đọc những gì cả nhà đã kể,
- * rồi kể thêm — không cần tài khoản (gửi qua community-submit, chờ duyệt). `fixedPersonId`: trang
- * QR cá nhân chỉ kể về đúng một người.
+ * Tab "Cùng góp" của trang chia sẻ: chọn người bằng ô chọn có tìm kiếm (họ đông vẫn chọn được hết,
+ * gõ không dấu), form đóng góp hiện ngay bên dưới, rồi tới những gì cả nhà đã góp. Không cần tài khoản
+ * (gửi qua community-submit, chờ duyệt). `fixedPersonId`: trang QR cá nhân chỉ góp về đúng một người.
  */
 export function CommunitySharePanel({
   community,
@@ -45,10 +45,8 @@ export function CommunitySharePanel({
   initialPersonId?: string | null;
   fixedPersonId?: string | null;
 }) {
-  const [personId, setPersonId] = useState<string | null>(fixedPersonId ?? initialPersonId ?? null);
-  const [query, setQuery] = useState("");
+  const [personId, setPersonId] = useState<string>(fixedPersonId ?? initialPersonId ?? "");
   const [sent, setSent] = useState<null | "pending" | "visible">(null);
-  const [writing, setWriting] = useState(!!(fixedPersonId ?? initialPersonId));
 
   const byId = useMemo(() => new Map(persons.map((p) => [p.id, p])), [persons]);
   const memoryCount = useMemo(() => {
@@ -57,95 +55,66 @@ export function CommunitySharePanel({
     return m;
   }, [community.memories]);
 
-  // Người đã mất trước (đó là những người cần ký ức nhất); người ít ký ức lên trước.
-  const candidates = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return persons
-      .filter((p) => !q || p.full_name.toLowerCase().includes(q))
-      .sort(
-        (a, b) =>
-          Number(a.is_living) - Number(b.is_living) ||
-          (memoryCount.get(a.id) ?? 0) - (memoryCount.get(b.id) ?? 0) ||
-          (a.generation ?? 99) - (b.generation ?? 99),
-      )
-      .slice(0, 12);
-  }, [persons, query, memoryCount]);
+  // Toàn bộ người trong phạm vi link: người đã mất trước (cần ký ức nhất), rồi theo đời, rồi tên.
+  // Nhãn kèm năm sinh–mất (người sống đã bị che ngày) + số đóng góp để phân biệt người trùng tên.
+  const options = useMemo(
+    () =>
+      [...persons]
+        .sort(
+          (a, b) =>
+            Number(a.is_living) - Number(b.is_living) ||
+            (a.generation ?? 99) - (b.generation ?? 99) ||
+            a.full_name.localeCompare(b.full_name, "vi"),
+        )
+        .map((p) => {
+          const by = p.birth_date?.slice(0, 4);
+          const dy = p.death_date?.slice(0, 4);
+          const years = by || dy ? ` (${by ?? "?"}–${dy ?? (p.is_living ? "" : "?")})` : "";
+          const n = memoryCount.get(p.id) ?? 0;
+          return {
+            value: p.id,
+            label: `${p.full_name}${years}${p.is_living ? "" : " †"}${n > 0 ? ` · ${t`${n} đóng góp`}` : ""}`,
+          };
+        }),
+    [persons, memoryCount],
+  );
 
   const person = personId ? byId.get(personId) : null;
   const shown = community.memories.filter((m) => (personId ? m.person_id === personId : true));
 
   return (
-    <div className="container max-w-3xl space-y-5 py-4">
-      <section className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
-        <h2 className="text-lg font-semibold">
+    <div className="container max-w-3xl space-y-4 py-4">
+      <section className="space-y-1 rounded-xl border border-primary/30 bg-primary/5 p-3">
+        <h2 className="font-semibold">
           {community.recipient_label
             ? t`Chào ${community.recipient_label}! Cả nhà nhờ bạn đóng góp giúp`
-            : t`Cả nhà ơi, cùng đóng góp câu chuyện của gia đình mình`}
+            : t`Cùng đóng góp câu chuyện của gia đình`}
         </h2>
-        <ol className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
-          {[
-            t`Chọn người bạn muốn đóng góp (ông bà, cha mẹ…)`,
-            t`Viết một câu chuyện, góp ảnh cũ, hoặc ghi âm`,
-            t`Bấm Gửi — không cần đăng ký`,
-          ].map((s, i) => (
-            <li key={s} className="flex items-center gap-2 rounded-lg bg-background/70 px-3 py-2">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                {i + 1}
-              </span>
-              {s}
-            </li>
-          ))}
-        </ol>
+        <p className="text-sm text-muted-foreground">
+          {t`Chọn người · viết, góp ảnh cũ hoặc ghi âm · bấm Gửi. Không cần đăng ký.`}
+        </p>
         <p className="text-xs text-muted-foreground">
           <CommunityStatsLine community={community} />
         </p>
       </section>
 
       {!fixedPersonId && (
-        <section className="space-y-2">
-          <Label htmlFor="community-person-search">{t`Bạn muốn đóng góp về ai?`}</Label>
-          <Input
-            id="community-person-search"
-            icon={<IconSearch />}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t`Gõ tên để tìm…`}
+        <div className="space-y-1.5">
+          <Label htmlFor="community-person">{t`Bạn muốn đóng góp về ai?`}</Label>
+          <FilterableSelect
+            id="community-person"
+            icon={<IconUser />}
+            value={personId}
+            onChange={(v) => {
+              setPersonId(v);
+              setSent(null);
+            }}
+            options={options}
+            emptyLabel={clanName ? t`Chuyện chung của ${clanName}` : t`Chuyện chung của dòng họ`}
+            filterLabel={t`Tìm người`}
+            filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
           />
-          <div className="flex flex-wrap gap-2">
-            {candidates.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => {
-                  setPersonId(p.id);
-                  setWriting(true);
-                  setSent(null);
-                }}
-                aria-pressed={personId === p.id}
-                className={`min-h-11 rounded-full border px-3 text-sm transition-colors ${
-                  personId === p.id ? "border-primary bg-primary/10 font-semibold text-primary" : "bg-card hover:border-primary/60"
-                }`}
-              >
-                {p.full_name}
-                {(memoryCount.get(p.id) ?? 0) > 0 && (
-                  <span className="ml-1 text-xs text-muted-foreground">({memoryCount.get(p.id)})</span>
-                )}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => {
-                setPersonId(null);
-                setWriting(true);
-                setSent(null);
-              }}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-dashed px-3 text-sm hover:border-primary/60"
-            >
-              <IconUserPlus className="h-4 w-4" />
-              {t`Chuyện chung của họ`}
-            </button>
-          </div>
-        </section>
+        </div>
       )}
 
       {sent ? (
@@ -156,43 +125,29 @@ export function CommunitySharePanel({
               ? t`Đóng góp đã được lưu vào gia phả.`
               : t`Người quản lý dòng họ sẽ xem rồi đưa vào gia phả. Tên bạn được ghi là người đóng góp.`}
           </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSent(null);
-                setWriting(true);
-              }}
-            >
-              <IconBook className="mr-1.5 h-4 w-4" />
-              {t`Đóng góp thêm`}
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => setSent(null)}>
+            <IconBook className="mr-1.5 h-4 w-4" />
+            {t`Đóng góp thêm`}
+          </Button>
         </section>
-      ) : writing ? (
-        <section className="space-y-3 rounded-xl border bg-card p-4">
-          <h3 className="font-semibold">
-            {person ? t`Đóng góp về ${person.full_name}` : (clanName ? t`Đóng góp chuyện chung của ${clanName}` : t`Đóng góp chuyện chung của dòng họ`)}
-          </h3>
+      ) : (
+        <section className="space-y-3 rounded-xl border bg-card p-3 sm:p-4">
           {person?.is_living && (
             <p className="text-xs text-muted-foreground">
               {t`Người này còn sống: đóng góp chỉ người trong họ xem được, không hiện ở trang chia sẻ.`}
             </p>
           )}
           <MemoryForm
-            key={personId ?? "clan"}
+            key={personId || "clan"}
             mode="guest"
             token={token}
             clanId={clanId}
-            personId={personId}
+            personId={personId || null}
             personName={person?.full_name ?? null}
-            onDone={(s) => {
-              setSent(s === "visible" ? "visible" : "pending");
-              setWriting(false);
-            }}
+            onDone={(s) => setSent(s === "visible" ? "visible" : "pending")}
           />
         </section>
-      ) : null}
+      )}
 
       {shown.length > 0 && (
         <section className="space-y-3">
