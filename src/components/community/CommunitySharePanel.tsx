@@ -172,7 +172,7 @@ export function CommunitySharePanel({
       ) : writing ? (
         <section className="space-y-3 rounded-xl border bg-card p-4">
           <h3 className="font-semibold">
-            {person ? t`Đóng góp về ${person.full_name}` : t`Đóng góp chuyện chung của họ ${clanName ?? ""}`}
+            {person ? t`Đóng góp về ${person.full_name}` : (clanName ? t`Đóng góp chuyện chung của ${clanName}` : t`Đóng góp chuyện chung của dòng họ`)}
           </h3>
           {person?.is_living && (
             <p className="text-xs text-muted-foreground">
