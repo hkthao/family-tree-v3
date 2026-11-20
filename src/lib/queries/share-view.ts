@@ -118,6 +118,31 @@ export interface ShareViewHeritageListItem {
   built_year: number | null;
 }
 
+/** Ký ức được phép hiện ở trang chia sẻ (đã duyệt, cho hiện, kể về người đã mất). */
+export interface ShareViewMemory {
+  id: string;
+  person_id: string | null;
+  kind: string;
+  body: string | null;
+  media_url: string | null;
+  media_mime: string | null;
+  duration_sec: number | null;
+  year_approx: number | null;
+  place: string | null;
+  author_name: string | null;
+  author_relation: string | null;
+  created_at: string;
+}
+
+export interface ShareViewCommunity {
+  /** Link này nhận đóng góp (mọi link token trừ QR mộ / di sản). */
+  can_contribute: boolean;
+  /** Tên người nhận của link mời góp ("Bác Ba") — để chào. */
+  recipient_label: string | null;
+  stats: { visits_total: number; visits_week: number; contributors: number; memories: number } | null;
+  memories: ShareViewMemory[];
+}
+
 export interface ShareViewPayload {
   clan_id: string;
   /** Tên dòng họ — hiển thị tiêu đề + CTA "tạo gia phả họ bạn". */
@@ -140,6 +165,8 @@ export interface ShareViewPayload {
   /** Trang xem thử công khai: sự kiện + di sản (chỉ khi ?clan=<id>). */
   events?: ShareViewEvent[];
   heritage?: ShareViewHeritageListItem[];
+  /** Đóng góp cộng đồng (docs/plan-dong-gop-cong-dong.md). Thiếu khi function chưa cập nhật. */
+  community?: ShareViewCommunity;
 }
 
 /**
@@ -148,7 +175,25 @@ export interface ShareViewPayload {
  * has verify_jwt = false.
  */
 export async function fetchShareView(token: string): Promise<ShareViewPayload> {
-  return fetchShareViewQuery(`token=${encodeURIComponent(token)}`);
+  return fetchShareViewQuery(`token=${encodeURIComponent(token)}${await visitParam(`t:${token}`)}`);
+}
+
+/**
+ * `&visit=1` lần đầu mở trong phiên trình duyệt → share-view đếm một lượt ghé của KHÁCH.
+ * Người đang đăng nhập không đếm ở đây: admin dòng họ / admin hệ thống mở link để kiểm tra
+ * (không được tính), thành viên thường đã được đếm khi vào trang họ (record_member_visit).
+ */
+async function visitParam(key: string): Promise<string> {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) return "";
+  try {
+    const k = `share-visit:${key}`;
+    if (sessionStorage.getItem(k)) return "";
+    sessionStorage.setItem(k, "1");
+  } catch {
+    return "";
+  }
+  return "&visit=1";
 }
 
 /**
@@ -158,7 +203,7 @@ export async function fetchShareView(token: string): Promise<ShareViewPayload> {
 export async function fetchPublicClanView(
   clanId: string,
 ): Promise<ShareViewPayload> {
-  return fetchShareViewQuery(`clan=${encodeURIComponent(clanId)}`);
+  return fetchShareViewQuery(`clan=${encodeURIComponent(clanId)}${await visitParam(`c:${clanId}`)}`);
 }
 
 async function fetchShareViewQuery(qs: string): Promise<ShareViewPayload> {
@@ -208,6 +253,15 @@ async function fetchShareViewQuery(qs: string): Promise<ShareViewPayload> {
           audios: payload.heritage_item.audios.map((a) => ({ ...a, url: fixUrl(a.url) })),
           // Video là link ngoài (YouTube/file) — giữ nguyên, không prefix base.
           videos: payload.heritage_item.videos ?? [],
+        }
+      : undefined,
+    community: payload.community
+      ? {
+          ...payload.community,
+          memories: payload.community.memories.map((m) => ({
+            ...m,
+            media_url: m.media_url ? fixUrl(m.media_url) : null,
+          })),
         }
       : undefined,
   };

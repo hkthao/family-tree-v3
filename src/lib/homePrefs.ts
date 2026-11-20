@@ -22,6 +22,7 @@ export const EMPTY_PREFS: HomePrefs = { pins: null, hidden: [], counts: {} };
 /** Các thẻ của trang chủ mà người dùng được phép ẩn/hiện (khoá bền, KHÔNG đổi). */
 export const HOME_CARD_KEYS = [
   "today",
+  "community",
   "nextstep",
   "stats",
   "map",

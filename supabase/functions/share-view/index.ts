@@ -22,6 +22,9 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const isExternalPhoto = (p: string | null | undefined): p is string =>
   !!p && p.startsWith("https://");
 
+/** Bỏ origin khỏi signed URL (xem giải thích ở bước 5) — client tự ghép VITE_SUPABASE_URL. */
+const stripOrigin = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
+
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -146,12 +149,13 @@ Deno.serve(async (req) => {
     expires_at: string;
     is_revoked: boolean;
     scope: string;
+    recipient_label?: string | null;
   }
   let link: ShareCtx;
   if (token) {
     const { data, error: linkErr } = await sb
       .from("share_links")
-      .select("clan_id, root_person_id, root_resting_place_id, root_heritage_item_id, expires_at, is_revoked, scope")
+      .select("clan_id, root_person_id, root_resting_place_id, root_heritage_item_id, expires_at, is_revoked, scope, recipient_label")
       .eq("token", token)
       .maybeSingle();
     if (linkErr) return err(linkErr.message, 500);
@@ -461,7 +465,6 @@ Deno.serve(async (req) => {
     const { data: signed } = await sb.storage
       .from("person-photos")
       .createSignedUrls([...new Set(bucketPhotoPaths)], 3600);
-    const stripOrigin = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
     for (const row of signed ?? []) {
       if (row.signedUrl && row.path) {
         photoUrlByPath.set(row.path, stripOrigin(row.signedUrl));
@@ -609,10 +612,69 @@ Deno.serve(async (req) => {
     heritage = he ?? [];
   }
 
+  // ---- 8. Cộng đồng (docs/plan-dong-gop-cong-dong.md): lượt ghé + ký ức được phép hiện.
+  // Ký ức chỉ lên trang chia sẻ khi: đã hiện (status visible), người kể cho hiện ở trang chia sẻ
+  // (visibility share), và kể về người ĐÃ MẤT trong phạm vi link (hoặc ký ức chung của họ).
+  // Client gửi ?visit=1 một lần / phiên trình duyệt để đếm lượt ghé.
+  if (url.searchParams.get("visit") === "1") {
+    await sb.rpc("bump_clan_visit", { p_clan_id: link.clan_id, p_source: "share" });
+  }
+  const { data: communityStats } = await sb.rpc("clan_public_community_stats", {
+    p_clan_id: link.clan_id,
+  });
+  const deceasedInScope = new Set(scopedPersons.filter((p) => !p.is_living).map((p) => p.id));
+  const { data: memRows } = await sb
+    .from("person_memories")
+    .select(
+      "id, person_id, kind, body, media_path, media_mime, duration_sec, year_approx, place, author_name, author_relation, created_at, author:profiles!person_memories_author_user_id_fkey(display_name)",
+    )
+    .eq("clan_id", link.clan_id)
+    .eq("status", "visible")
+    .eq("visibility", "share")
+    .order("created_at", { ascending: false })
+    .limit(80);
+  // deno-lint-ignore no-explicit-any
+  const memAllowed = ((memRows ?? []) as any[])
+    .filter((m) => m.person_id === null || deceasedInScope.has(m.person_id))
+    .filter((m) => !(hidePhotos && m.kind === "photo"))
+    .slice(0, 40);
+  const memPaths = memAllowed
+    .map((m) => m.media_path as string | null)
+    .filter((p): p is string => !!p);
+  const memSigned = new Map<string, string>();
+  if (memPaths.length > 0) {
+    const { data: signed } = await sb.storage.from("person-photos").createSignedUrls(memPaths, 3600);
+    for (const row of signed ?? []) {
+      if (row.signedUrl && row.path) memSigned.set(row.path, stripOrigin(row.signedUrl));
+    }
+  }
+  const memories = memAllowed.map((m) => ({
+    id: m.id,
+    person_id: m.person_id,
+    kind: m.kind,
+    body: m.body,
+    media_url: m.media_path ? (memSigned.get(m.media_path) ?? null) : null,
+    media_mime: m.media_mime,
+    duration_sec: m.duration_sec,
+    year_approx: m.year_approx,
+    place: m.place,
+    author_name: m.author?.display_name ?? m.author_name ?? null,
+    author_relation: m.author_relation,
+    created_at: m.created_at,
+  }));
+  const canContribute =
+    !!token && link.scope !== "resting_place" && link.scope !== "heritage_item";
+
   return json({
     clan_id: link.clan_id,
     clan_name: clanName,
     root_person_id: link.root_person_id,
+    community: {
+      can_contribute: canContribute,
+      recipient_label: link.recipient_label ?? null,
+      stats: communityStats ?? null,
+      memories,
+    },
     scope: link.scope,
     generation_offset: generationOffset,
     persons: masked,

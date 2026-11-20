@@ -134,6 +134,7 @@ describe("buildSections — nhóm của dòng họ", () => {
     const community = s.find((x) => x.id === "clan-community")!;
     expect(community.items.map((i) => i.label)).toEqual([
       "Bảng tin",
+      "Đóng góp nội dung",
       "Bản đồ",
       "Phòng ký ức",
       "Ảnh ghép",

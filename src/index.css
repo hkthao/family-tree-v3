@@ -115,7 +115,7 @@
      * (rgb(56, 50, 46) = hsl(24, 10%, 20%)) — every contained
      * surface uses the same computed border-color. */
     --border: 24 10% 20%;
-    --input: 24 10% 20%;
+    --input: 24 10% 30%;                /* viền ô nhập / nút viền: đủ sáng để mép nút viền hiện rõ cạnh nút nền đỏ (cùng cao 40px mà trước trông nhỏ hơn) */
     --ring: 0 60% 58%;
 
     /* Darker family-chart card fills so cream text (--foreground
