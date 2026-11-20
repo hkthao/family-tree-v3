@@ -452,6 +452,7 @@ export function MemoryForm(props: Props) {
             <Label htmlFor="fact-name">{t`Họ và tên`}</Label>
             <Input
               id="fact-name"
+              placeholder={t`Họ tên đầy đủ, có dấu — vd: Nguyễn Văn Tư`}
               icon={<IconUser />}
               value={fName}
               maxLength={120}
@@ -506,7 +507,7 @@ export function MemoryForm(props: Props) {
                   icon={<IconCalendar />}
                   inputMode="numeric"
                   value={fAnnivDay}
-                  placeholder={t`Ngày`}
+                  placeholder={t`vd: 15`}
                   onChange={(e) =>
                     setFAnnivDay(e.target.value.replace(/\D/g, "").slice(0, 2))
                   }
@@ -519,7 +520,7 @@ export function MemoryForm(props: Props) {
                   icon={<IconCalendar />}
                   inputMode="numeric"
                   value={fAnnivMonth}
-                  placeholder={t`Tháng`}
+                  placeholder={t`vd: 7`}
                   onChange={(e) =>
                     setFAnnivMonth(
                       e.target.value.replace(/\D/g, "").slice(0, 2),
@@ -533,6 +534,7 @@ export function MemoryForm(props: Props) {
             <Label htmlFor="fact-birthplace">{t`Quê quán / nơi sinh`}</Label>
             <Input
               id="fact-birthplace"
+              placeholder={t`Làng / xã, huyện, tỉnh — vd: Hoằng Hoá, Thanh Hoá`}
               icon={<IconMapPin />}
               value={fBirthPlace}
               maxLength={200}
@@ -544,6 +546,7 @@ export function MemoryForm(props: Props) {
               <Label htmlFor="fact-burial">{t`Nơi an táng`}</Label>
               <Input
                 id="fact-burial"
+                placeholder={t`Nghĩa trang, xã, tỉnh — vd: nghĩa trang làng Đông Sơn`}
                 icon={<IconMapPin />}
                 value={fBurialPlace}
                 maxLength={200}
@@ -622,7 +625,11 @@ export function MemoryForm(props: Props) {
           value={source}
           maxLength={200}
           onChange={(e) => setSource(e.target.value)}
-          placeholder={t`Chính tôi nhớ · nghe bố mẹ kể · giấy tờ…`}
+          placeholder={
+            isInfo
+              ? t`Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…`
+              : t`Chính tôi nhớ · nghe bố mẹ kể · giấy tờ…`
+          }
         />
       </div>
 
