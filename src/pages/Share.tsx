@@ -5,7 +5,12 @@ import { createPortal } from "react-dom";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import {
+  IconCalendar,
   IconDownload,
+  IconGrid,
+  IconHelp,
+  IconHome,
+  IconTree,
   IconFlame,
   IconBook,
   IconLogIn,
@@ -945,6 +950,20 @@ export default function Share() {
     );
   }
 
+  // Danh sách tab (dùng cho cả thanh tab trên — máy tính — và thanh tab đáy — điện thoại).
+  const tabItems: { key: string; label: string; short?: string; icon: React.ReactNode; active: boolean; onClick: () => void }[] = [];
+  if ((publicClan || !!token) && data && data.persons.length > 0) {
+    if (token) tabItems.push({ key: "overview", label: t`Tổng quan`, icon: <IconHome />, active: tab === "overview" || tab === "tree", onClick: () => setTab("overview") });
+    else tabItems.push({ key: "tree", label: t`Cây gia phả`, short: t`Cây`, icon: <IconTree />, active: tab === "tree", onClick: () => setTab("tree") });
+    if (data.events?.length || hasAnniversaries(data))
+      tabItems.push({ key: "events", label: t`Sự kiện & giỗ`, short: t`Giỗ`, icon: <IconCalendar />, active: tab === "events", onClick: () => setTab("events") });
+    if (data.heritage?.length) tabItems.push({ key: "heritage", label: t`Di sản`, icon: <IconBook />, active: tab === "heritage", onClick: () => setTab("heritage") });
+    if (hasSources) tabItems.push({ key: "details", label: t`Chi tiết & nguồn`, short: t`Chi tiết`, icon: <IconGrid />, active: tab === "details", onClick: () => setTab("details") });
+    if (canGop) tabItems.push({ key: "gop", label: t`Cùng góp`, icon: <IconSend />, active: tab === "gop", onClick: () => setTab("gop") });
+    if (canGop && (data.community?.questions?.length ?? 0) > 0)
+      tabItems.push({ key: "hoi", label: t`Hỏi & trả lời`, short: t`Hỏi đáp`, icon: <IconHelp />, active: tab === "hoi", onClick: () => setTab("hoi") });
+  }
+
   return (
     // Tab Cây: khung cố định cao bằng màn hình (cây tự kéo/phóng). Các tab khác (Tổng quan, Cùng góp…):
     // CẢ TRANG cuộn — thông báo, thanh mời góp, CTA cuối trang trôi theo nội dung, không chiếm chỗ cố
@@ -1039,59 +1058,16 @@ export default function Share() {
       )}
 
       {/* Thanh TAB: trang xem thử công khai (Cây | Sự kiện & giỗ | Di sản | Chi tiết) và link chia sẻ
-          nhận đóng góp (Cây | Cùng góp). */}
-      {(publicClan || !!token) && data && data.persons.length > 0 && (
-        <div className="shrink-0 print-hide">
-          <div
-            role="tablist"
-            aria-label={t`Nội dung dòng họ`}
-            className="container flex max-w-6xl gap-2 overflow-x-auto pt-3"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {/* Link chia sẻ: "Tổng quan" thay cho tab Cây (cây là một card trong đó). Trang xem công khai giữ tab Cây. */}
-            {token ? (
-              <ShareTab active={tab === "overview" || tab === "tree"} onClick={() => setTab("overview")}>
-                {t`Tổng quan`}
+          (Tổng quan | Cùng góp | Hỏi & trả lời). Máy tính: nút viên trên đầu; điện thoại: thanh tab ở ĐÁY
+          như thanh tab của app (icon + nhãn). */}
+      {tabItems.length > 1 && (
+        <div className="hidden shrink-0 print-hide md:block">
+          <div role="tablist" aria-label={t`Nội dung dòng họ`} className="container flex max-w-6xl gap-2 overflow-x-auto pt-3">
+            {tabItems.map((it) => (
+              <ShareTab key={it.key} active={it.active} onClick={it.onClick}>
+                {it.label}
               </ShareTab>
-            ) : (
-              <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
-                {t`Cây gia phả`}
-              </ShareTab>
-            )}
-            {(data.events?.length || hasAnniversaries(data)) && (
-              <ShareTab
-                active={tab === "events"}
-                onClick={() => setTab("events")}
-              >
-                {t`Sự kiện & giỗ`}
-              </ShareTab>
-            )}
-            {data.heritage?.length ? (
-              <ShareTab
-                active={tab === "heritage"}
-                onClick={() => setTab("heritage")}
-              >
-                {t`Di sản`}
-              </ShareTab>
-            ) : null}
-            {hasSources ? (
-              <ShareTab
-                active={tab === "details"}
-                onClick={() => setTab("details")}
-              >
-                {t`Chi tiết & nguồn`}
-              </ShareTab>
-            ) : null}
-            {canGop && (
-              <ShareTab active={tab === "gop"} onClick={() => setTab("gop")}>
-                {t`Cùng góp`}
-              </ShareTab>
-            )}
-            {canGop && (data.community?.questions?.length ?? 0) > 0 && (
-              <ShareTab active={tab === "hoi"} onClick={() => setTab("hoi")}>
-                {t`Hỏi & trả lời`}
-              </ShareTab>
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -1356,6 +1332,37 @@ export default function Share() {
             </Button>
           </div>
         </div>
+      )}
+      {tabItems.length > 1 && !isFullscreen && (
+        <>
+          {/* Chừa chỗ cho thanh tab đáy (điện thoại). */}
+          <div aria-hidden="true" className="h-[calc(57px+env(safe-area-inset-bottom))] shrink-0 md:hidden" />
+          <nav
+            role="tablist"
+            aria-label={t`Nội dung dòng họ`}
+            className="fixed bottom-0 left-0 right-0 z-30 border-t border-gold/30 bg-background pb-[env(safe-area-inset-bottom)] [transform:translateZ(0)] [backface-visibility:hidden] after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-28 after:bg-background md:hidden print-hide"
+          >
+            <ul className="mx-auto flex max-w-xl">
+              {tabItems.map((it) => (
+                <li key={it.key} className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={it.active}
+                    onClick={it.onClick}
+                    className={`relative flex min-h-[56px] w-full flex-col items-center justify-center gap-1 py-2 text-xs ${
+                      it.active ? "font-medium text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {it.active && <span aria-hidden="true" className="absolute top-0 h-[3px] w-8 rounded-full bg-primary" />}
+                    <span className="inline-flex h-6 w-6 items-center justify-center [&>svg]:h-5 [&>svg]:w-5">{it.icon}</span>
+                    <span className="max-w-full truncate px-1">{it.short ?? it.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </>
       )}
     </div>
   );

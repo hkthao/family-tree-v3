@@ -2542,6 +2542,7 @@ msgid "cây"
 msgstr "cây"
 
 #: src/components/ClanLayout.tsx
+#: src/pages/Share.tsx
 msgid "Cây"
 msgstr "Cây"
 
@@ -2927,6 +2928,7 @@ msgstr "Chỉ thành viên được mời xem được."
 
 #: src/pages/AnnouncementDetail.tsx
 #: src/pages/clan/ContributionDetail.tsx
+#: src/pages/Share.tsx
 msgid "Chi tiết"
 msgstr "Chi tiết"
 
@@ -7197,6 +7199,10 @@ msgstr "Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…"
 msgid "Giấy ngà"
 msgstr "Giấy ngà"
 
+#: src/pages/Share.tsx
+msgid "Giỗ"
+msgstr "Giỗ"
+
 #: src/pages/clan/Tree.tsx
 msgid "Giỗ {anniv}"
 msgstr "Giỗ {anniv}"
@@ -8044,6 +8050,10 @@ msgstr "Hỏi ai? (không bắt buộc)"
 #: src/pages/Contact.tsx
 msgid "Hỏi cách dùng, hỏi về dữ liệu…"
 msgstr "Hỏi cách dùng, hỏi về dữ liệu…"
+
+#: src/pages/Share.tsx
+msgid "Hỏi đáp"
+msgstr "Hỏi đáp"
 
 #: src/components/community/InviteCardDialog.tsx
 #: src/components/community/QuestionPanel.tsx
@@ -12139,6 +12149,7 @@ msgstr "Nội dung chung về phong tục – nghi lễ Việt Nam từ Sổ tay
 msgid "Nội dung đoạn này…"
 msgstr "Nội dung đoạn này…"
 
+#: src/pages/Share.tsx
 #: src/pages/Share.tsx
 msgid "Nội dung dòng họ"
 msgstr "Nội dung dòng họ"
