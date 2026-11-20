@@ -235,17 +235,8 @@ export default function Memories() {
         // từ sm: có icon như quy ước nút.
         actions={
           <div
-            className={`grid w-full gap-2 sm:flex sm:w-auto sm:items-center ${admin ? "grid-cols-3" : "grid-cols-2"}`}
+            className={`grid w-full gap-2 sm:flex sm:w-auto sm:items-center ${admin ? "grid-cols-2" : "grid-cols-1"}`}
           >
-            <Button
-              variant="outline"
-              size="sm"
-              className="px-1 text-sm sm:px-3 sm:text-base"
-              onClick={() => setPanel({ mode: "invite" })}
-            >
-              <IconSend className="mr-1.5 hidden h-4 w-4 shrink-0 sm:inline-block" />
-              {t`Mời góp`}
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -357,7 +348,7 @@ export default function Memories() {
           description={
             search.trim() || activeFilters
               ? t`Thử bỏ bớt từ khoá hoặc đặt lại bộ lọc.`
-              : t`Bấm nút + để đóng góp về một người, hoặc "Mời góp" để gửi link cho người thân chưa có tài khoản.`
+              : t`Bấm nút + để đóng góp về một người, hoặc "Mời người khác góp" để gửi link cho người thân chưa có tài khoản.`
           }
         />
       )}
@@ -401,6 +392,11 @@ export default function Memories() {
             label: t`Hỏi ông bà`,
             icon: <IconHelp />,
             onClick: () => setPanel({ mode: "question", existing: null }),
+          },
+          {
+            label: t`Mời người khác góp`,
+            icon: <IconSend />,
+            onClick: () => setPanel({ mode: "invite" }),
           },
         ]}
       />
