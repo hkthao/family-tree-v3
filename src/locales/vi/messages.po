@@ -6611,6 +6611,10 @@ msgstr "dòng họ"
 msgid "Dòng họ"
 msgstr "Dòng họ"
 
+#: src/components/share/ShareOverview.tsx
+msgid "Dòng họ & cây gia phả"
+msgstr "Dòng họ & cây gia phả"
+
 #: src/pages/Clans.tsx
 msgid "Dòng họ bạn tham gia hoặc theo dõi."
 msgstr "Dòng họ bạn tham gia hoặc theo dõi."
@@ -14613,7 +14617,6 @@ msgstr "Thông tin cơ bản"
 msgid "Thông tin đóng góp"
 msgstr "Thông tin đóng góp"
 
-#: src/components/share/ShareOverview.tsx
 #: src/components/ShareSectionsCard.tsx
 #: src/pages/clan/BookInfo.tsx
 msgid "Thông tin dòng họ"
