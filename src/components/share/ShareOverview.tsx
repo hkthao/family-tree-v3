@@ -6,7 +6,6 @@ import { SectionCard } from "@/components/SectionCard";
 import {
   IconArrowRight,
   IconAward,
-  IconBook,
   IconGrave,
   IconMapPin,
   IconPin,
@@ -79,14 +78,16 @@ export function ShareOverview({
   const honor = useMore(sections.honor ?? [], 5);
 
   return (
-    // Cùng bề rộng với thanh mời góp / thanh tab (max-w-6xl); màn rộng xếp 2 cột, card Cây chiếm cả hàng.
-    <div className="container grid max-w-6xl grid-cols-1 items-start gap-4 py-4 lg:grid-cols-2">
+    // Cùng bề rộng với thanh mời góp / thanh tab (max-w-6xl). Màn rộng: 2 cột, hai card cùng hàng cao bằng
+    // nhau (grid stretch + section flex-col + thân flex-1); card Cây (+ thông tin) chiếm cả hàng; số card lẻ
+    // thì card cuối chiếm cả hàng.
+    <div className="container grid max-w-6xl grid-cols-1 gap-4 py-4 lg:grid-cols-2 [&>section]:flex [&>section]:flex-col lg:[&>*:last-child:nth-child(even)]:col-span-2">
       {/* Cây gia phả — luôn có; mở cây toàn khung (kéo, phóng to). */}
       <div className="lg:col-span-2">
         <SectionCard
           id="share-tree"
           icon={<IconTree />}
-          title={t`Cây gia phả`}
+          title={info ? t`Dòng họ & cây gia phả` : t`Cây gia phả`}
           footer={
             <Button size="sm" className="h-9 px-3 text-sm" onClick={onOpenTree}>
               <IconTree className="mr-1.5 h-4 w-4" />
@@ -114,43 +115,40 @@ export function ShareOverview({
               <div className="text-xs text-muted-foreground">{t`thuỷ tổ`}</div>
             </div>
           </div>
+          {/* Thông tin dòng họ (nếu admin bật) gộp vào card đầu — card riêng thì quá ngắn, lệch hàng. */}
+          {info && (
+            <div className="mt-4 border-t pt-4">
+              <div className="space-y-2 text-sm">
+                {info.description && (
+                  <p className="whitespace-pre-line leading-relaxed">
+                    {info.description}
+                  </p>
+                )}
+                <dl className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
+                  {[
+                    [t`Quê gốc`, info.origin_place],
+                    [t`Từ đường`, info.ancestral_hall],
+                    [t`Giỗ tổ`, info.ancestor_anniversary],
+                    [t`Trưởng họ`, info.chief_name],
+                  ]
+                    .filter(([, v]) => v)
+                    .map(([k, v]) => (
+                      <div key={k as string} className="flex gap-2">
+                        <dt className="shrink-0 text-muted-foreground">{k}:</dt>
+                        <dd className="min-w-0">{v}</dd>
+                      </div>
+                    ))}
+                </dl>
+              </div>
+            </div>
+          )}
         </SectionCard>
       </div>
-
-      {info && (
-        <SectionCard
-          id="share-info"
-          icon={<IconBook />}
-          title={t`Thông tin dòng họ`}
-        >
-          <div className="space-y-2 text-sm">
-            {info.description && (
-              <p className="whitespace-pre-line leading-relaxed">
-                {info.description}
-              </p>
-            )}
-            <dl className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
-              {[
-                [t`Quê gốc`, info.origin_place],
-                [t`Từ đường`, info.ancestral_hall],
-                [t`Giỗ tổ`, info.ancestor_anniversary],
-                [t`Trưởng họ`, info.chief_name],
-              ]
-                .filter(([, v]) => v)
-                .map(([k, v]) => (
-                  <div key={k as string} className="flex gap-2">
-                    <dt className="shrink-0 text-muted-foreground">{k}:</dt>
-                    <dd className="min-w-0">{v}</dd>
-                  </div>
-                ))}
-            </dl>
-          </div>
-        </SectionCard>
-      )}
 
       {sections.board && sections.board.length > 0 && (
         <SectionCard
           id="share-board"
+          bodyClassName="flex-1 p-3 sm:p-4"
           icon={<IconSparkles />}
           title={t`Bảng tin`}
         >
@@ -190,6 +188,7 @@ export function ShareOverview({
           0 && (
           <SectionCard
             id="share-map"
+            bodyClassName="flex-1 p-3 sm:p-4"
             icon={<IconMapPin />}
             title={t`Bản đồ dòng họ`}
           >
@@ -229,6 +228,7 @@ export function ShareOverview({
       {sections.heritage && sections.heritage.length > 0 && (
         <SectionCard
           id="share-heritage"
+          bodyClassName="flex-1 p-3 sm:p-4"
           icon={<IconScroll />}
           title={t`Di sản dòng họ`}
         >
@@ -278,6 +278,7 @@ export function ShareOverview({
       {sections.graves && sections.graves.length > 0 && (
         <SectionCard
           id="share-graves"
+          bodyClassName="flex-1 p-3 sm:p-4"
           icon={<IconGrave />}
           title={t`Mộ phần & tro cốt`}
         >
@@ -323,6 +324,7 @@ export function ShareOverview({
       {sections.honor && sections.honor.length > 0 && (
         <SectionCard
           id="share-honor"
+          bodyClassName="flex-1 p-3 sm:p-4"
           icon={<IconAward />}
           title={t`Bảng vàng công đức`}
         >
@@ -370,6 +372,7 @@ export function ShareOverview({
       {sections.mosaic && sections.mosaic.tiles.length > 0 && (
         <SectionCard
           id="share-mosaic"
+          bodyClassName="flex-1 p-3 sm:p-4"
           icon={<IconPuzzle />}
           title={sections.mosaic.title || t`Ảnh ghép đại gia đình`}
         >
