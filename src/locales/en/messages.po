@@ -15728,6 +15728,7 @@ msgid "Trang này được tạo từ<0>Dòng Họ Việt</0> — nơi lưu gi�
 msgstr "This page was created with <0>Dòng Họ Việt</0> — a place to keep the family tree, memories and traditional beauty of the clan."
 
 #: src/components/Pagination.tsx
+#: src/components/share/ShareOverview.tsx
 msgid "Trang sau"
 msgstr "Next page"
 
@@ -15758,6 +15759,7 @@ msgid "Trang trống hoàn toàn"
 msgstr "A completely blank page"
 
 #: src/components/Pagination.tsx
+#: src/components/share/ShareOverview.tsx
 msgid "Trang trước"
 msgstr "Previous page"
 
@@ -16979,8 +16981,8 @@ msgid "Xem thêm {0} sự kiện →"
 msgstr "View {0} more events →"
 
 #: src/components/share/ShareOverview.tsx
-msgid "Xem thêm {n}"
-msgstr "Show {n} more"
+#~ msgid "Xem thêm {n}"
+#~ msgstr "Show {n} more"
 
 #: src/lib/pageTitle.ts
 msgid "Xem thử gia phả mẫu"
