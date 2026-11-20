@@ -58,6 +58,7 @@ import {
   listClanMemories,
   listContributeLinks,
   revokeContributeLink,
+  type ContributeLink,
   setMemoryModeration,
   setMemoryStatus,
   type MemoryModeration,
@@ -488,7 +489,11 @@ export default function Memories() {
         clanName={clan.name}
       />
 
-      <LinksPanel open={panel.mode === "links"} onClose={close} />
+      <LinksPanel
+        open={panel.mode === "links"}
+        onClose={close}
+        onCreate={() => setPanel({ mode: "invite" })}
+      />
 
       {admin && (
         <ModerationPanel open={panel.mode === "settings"} onClose={close} />
@@ -632,10 +637,20 @@ function NewMemoryPanel({
   );
 }
 
-function LinksPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+function LinksPanel({
+  open,
+  onClose,
+  onCreate,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onCreate: () => void;
+}) {
   const { clan } = useClanContext();
   const qc = useQueryClient();
   const toast = useToast();
+  const confirm = useConfirm();
+  const [showOld, setShowOld] = useState(false);
   const { data: links = [], isLoading } = useQuery({
     queryKey: ["contribute-links", clan.id],
     queryFn: () => listContributeLinks(clan.id),
@@ -646,83 +661,135 @@ function LinksPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["contribute-links", clan.id] });
       void qc.invalidateQueries({ queryKey: ["clan-memories", clan.id] });
-      toast.success(
-        t`Đã thu hồi link — đóng góp chưa duyệt gửi qua link này đã được ẩn`,
-      );
+      toast.success(t`Đã thu hồi link — đóng góp chưa duyệt gửi qua link này đã được ẩn`);
     },
-    onError: (e) =>
-      toast.error(t`Không thu hồi được`, { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không thu hồi được`, { description: (e as Error).message }),
   });
+
+  const now = new Date();
+  const isOff = (l: ContributeLink) => l.is_revoked || new Date(l.expires_at) < now;
+  const active = links.filter((l) => !isOff(l));
+  const old = links.filter(isOff);
+  const day = (iso: string) => new Date(iso).toLocaleDateString("vi-VN");
+
+  const row = (l: ContributeLink) => {
+    const off = isOff(l);
+    return (
+      <li key={l.id} className="flex items-start gap-2 p-3">
+        <div className="min-w-0 flex-1">
+          <p className={`truncate font-medium ${off ? "text-muted-foreground" : ""}`}>
+            {l.recipient_label || t`Link chung`}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            {[
+              l.person_name ? t`Về ${l.person_name}` : null,
+              t`tạo ${day(l.created_at)}`,
+              l.is_revoked ? null : t`hết hạn ${day(l.expires_at)}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <Chip
+              tone={l.is_revoked ? "danger" : off ? "neutral" : "success"}
+              icon={l.is_revoked ? <IconX /> : off ? <IconClock /> : <IconCheck />}
+            >
+              {l.is_revoked ? t`Đã thu hồi` : off ? t`Hết hạn` : t`Đang mở`}
+            </Chip>
+            <Chip tone="info" icon={<IconBook />}>
+              {t`${l.use_count} lượt góp`}
+            </Chip>
+          </div>
+        </div>
+        {!off && (
+          <div className="flex shrink-0 gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10"
+              aria-label={t`Sao chép link`}
+              title={t`Sao chép link`}
+              onClick={() => {
+                void navigator.clipboard
+                  .writeText(contributeLinkUrl(l.token, l.root_person_id))
+                  .then(() => toast.success(t`Đã sao chép link`));
+              }}
+            >
+              <IconCopy className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 text-destructive hover:text-destructive"
+              aria-label={t`Thu hồi link`}
+              title={t`Thu hồi link`}
+              disabled={revoke.isPending}
+              onClick={async () => {
+                if (
+                  await confirm({
+                    title: t`Thu hồi link này?`,
+                    description: t`Người nhận không mở được nữa; đóng góp chưa duyệt gửi qua link sẽ bị ẩn.`,
+                    confirmLabel: t`Thu hồi`,
+                    destructive: true,
+                  })
+                ) {
+                  revoke.mutate(l.id);
+                }
+              }}
+            >
+              <IconX className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
+      </li>
+    );
+  };
+
   return (
-    <SidePanel
-      open={open}
-      onClose={onClose}
-      title={t`Link mời góp đã gửi`}
-      guard={false}
-    >
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>
-      ) : links.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t`Chưa có link nào. Bấm "Mời góp" để tạo.`}</p>
-      ) : (
-        <ul className="divide-y overflow-hidden rounded-xl border bg-card">
-          {links.map((l) => {
-            const expired = new Date(l.expires_at) < new Date();
-            const off = l.is_revoked || expired;
-            return (
-              <li key={l.id} className="space-y-2 p-3 text-sm">
-                <p className="font-medium">
-                  {l.recipient_label || t`(không ghi người nhận)`}
-                </p>
-                {l.person_name && (
-                  <p className="text-xs text-muted-foreground">{t`Về ${l.person_name}`}</p>
-                )}
-                <p className="text-xs text-muted-foreground/80">
-                  {t`Tạo ${new Date(l.created_at).toLocaleDateString("vi-VN")} · hết hạn ${new Date(l.expires_at).toLocaleDateString("vi-VN")}`}
-                </p>
-                <div className="flex flex-wrap items-center justify-end gap-1.5">
-                  <Chip
-                    tone={off ? "neutral" : "success"}
-                    icon={off ? <IconX /> : <IconCheck />}
+    <SidePanel open={open} onClose={onClose} size="lg" title={t`Link mời góp`} subtitle={clan.name} guard={false}>
+      {/* MỘT phần tử gốc (thân SidePanel giãn mọi con trực tiếp) — danh sách không bị kéo cao. */}
+      <div>
+        <div className="space-y-3">
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>
+          ) : links.length === 0 ? (
+            <EmptyState
+              icon={<IconLink className="h-10 w-10" />}
+              title={t`Chưa có link mời góp`}
+              description={t`Tạo link gửi qua Zalo / Facebook — người nhận đóng góp được ngay, không cần tài khoản.`}
+            />
+          ) : (
+            <>
+              {active.length > 0 ? (
+                <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">{active.map(row)}</ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t`Không còn link nào đang mở.`}</p>
+              )}
+              {old.length > 0 && (
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowOld((v) => !v)}
+                    aria-expanded={showOld}
+                    className="text-sm font-medium text-primary hover:underline"
                   >
-                    {l.is_revoked
-                      ? t`Đã thu hồi`
-                      : expired
-                        ? t`Hết hạn`
-                        : t`${l.use_count} lượt góp`}
-                  </Chip>
+                    {showOld ? t`Ẩn link đã hết hạn / thu hồi` : t`Xem ${old.length} link đã hết hạn / thu hồi`}
+                  </button>
+                  {showOld && (
+                    <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">{old.map(row)}</ul>
+                  )}
                 </div>
-                {!off && (
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => revoke.mutate(l.id)}
-                    >
-                      <IconX className="mr-1.5 h-4 w-4" />
-                      {t`Thu hồi`}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        void navigator.clipboard
-                          .writeText(
-                            contributeLinkUrl(l.token, l.root_person_id),
-                          )
-                          .then(() => toast.success(t`Đã sao chép`));
-                      }}
-                    >
-                      <IconCopy className="mr-1.5 h-4 w-4" />
-                      {t`Sao chép`}
-                    </Button>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+              )}
+            </>
+          )}
+        </div>
+        <DrawerViewActions>
+          <Button onClick={onCreate}>
+            <IconPlus className="mr-1.5 h-4 w-4" />
+            {t`Tạo link mời`}
+          </Button>
+        </DrawerViewActions>
+      </div>
     </SidePanel>
   );
 }
