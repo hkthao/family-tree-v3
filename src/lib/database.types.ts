@@ -2594,6 +2594,64 @@ export type Database = {
           },
         ]
       }
+      family_questions: {
+        Row: {
+          about_person_id: string | null
+          answered_at: string | null
+          ask_person_id: string | null
+          asked_by: string | null
+          clan_id: string
+          created_at: string
+          id: string
+          question: string
+          status: string
+        }
+        Insert: {
+          about_person_id?: string | null
+          answered_at?: string | null
+          ask_person_id?: string | null
+          asked_by?: string | null
+          clan_id: string
+          created_at?: string
+          id?: string
+          question: string
+          status?: string
+        }
+        Update: {
+          about_person_id?: string | null
+          answered_at?: string | null
+          ask_person_id?: string | null
+          asked_by?: string | null
+          clan_id?: string
+          created_at?: string
+          id?: string
+          question?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_questions_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_questions_about_person_id_fkey"
+            columns: ["about_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_questions_ask_person_id_fkey"
+            columns: ["ask_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       person_memories: {
         Row: {
           allow_ai_reuse: boolean
@@ -2606,12 +2664,14 @@ export type Database = {
           duration_sec: number | null
           external_url: string | null
           guest_key: string | null
+          identify: boolean
           id: string
           kind: string
           media_mime: string | null
           media_path: string | null
           person_id: string | null
           place: string | null
+          question_id: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           source: string | null
@@ -2634,12 +2694,14 @@ export type Database = {
           duration_sec?: number | null
           external_url?: string | null
           guest_key?: string | null
+          identify?: boolean
           id?: string
           kind: string
           media_mime?: string | null
           media_path?: string | null
           person_id?: string | null
           place?: string | null
+          question_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           source?: string | null
@@ -2662,12 +2724,14 @@ export type Database = {
           duration_sec?: number | null
           external_url?: string | null
           guest_key?: string | null
+          identify?: boolean
           id?: string
           kind?: string
           media_mime?: string | null
           media_path?: string | null
           person_id?: string | null
           place?: string | null
+          question_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           source?: string | null
@@ -2699,6 +2763,85 @@ export type Database = {
             columns: ["via_link_id"]
             isOneToOne: false
             referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photo_faces: {
+        Row: {
+          box_h: number
+          box_w: number
+          box_x: number
+          box_y: number
+          clan_id: string
+          created_at: string
+          guest_key: string | null
+          id: string
+          memory_id: string
+          person_id: string | null
+          reviewed_by: string | null
+          status: string
+          suggested_name: string | null
+          suggested_note: string | null
+          tagged_by: string | null
+          tagger_name: string | null
+        }
+        Insert: {
+          box_h: number
+          box_w: number
+          box_x: number
+          box_y: number
+          clan_id: string
+          created_at?: string
+          guest_key?: string | null
+          id?: string
+          memory_id: string
+          person_id?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_name?: string | null
+          suggested_note?: string | null
+          tagged_by?: string | null
+          tagger_name?: string | null
+        }
+        Update: {
+          box_h?: number
+          box_w?: number
+          box_x?: number
+          box_y?: number
+          clan_id?: string
+          created_at?: string
+          guest_key?: string | null
+          id?: string
+          memory_id?: string
+          person_id?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_name?: string | null
+          suggested_note?: string | null
+          tagged_by?: string | null
+          tagger_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_faces_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "person_memories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_faces_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_faces_tagged_by_fkey"
+            columns: ["tagged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3759,6 +3902,10 @@ export type Database = {
       }
     }
     Functions: {
+      clan_pending_faces: {
+        Args: { p_clan_id: string }
+        Returns: number
+      }
       clan_community_summary: {
         Args: { p_clan_id: string }
         Returns: Json

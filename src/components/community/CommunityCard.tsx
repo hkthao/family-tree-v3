@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { SectionCard } from "@/components/SectionCard";
 import { IconBook, IconClock } from "@/components/icons";
 import { getCommunitySummary } from "@/lib/queries/community";
+import { supabase } from "@/lib/supabase";
 
 import { t } from "@lingui/core/macro";
 
@@ -27,6 +28,17 @@ export function CommunityCard({ clanId, canModerate }: { clanId: string; canMode
   const { data: summary } = useCommunitySummary(clanId);
   const pending = canModerate ? (summary?.pending_memories ?? 0) : 0;
   const pendingContrib = canModerate ? (summary?.pending_contributions ?? 0) : 0;
+  // Gợi ý nhận diện người trong ảnh chờ xác nhận (P2) — RPC trả 0 cho người không phải editor+.
+  const { data: pendingFaces = 0 } = useQuery({
+    queryKey: ["pending-faces", clanId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("clan_pending_faces", { p_clan_id: clanId });
+      if (error) return 0;
+      return (data as number | null) ?? 0;
+    },
+    enabled: canModerate,
+    staleTime: 60_000,
+  });
 
   return (
     <SectionCard
@@ -34,8 +46,8 @@ export function CommunityCard({ clanId, canModerate }: { clanId: string; canMode
       icon={<IconBook />}
       title={t`Đóng góp mới`}
       action={
-        pending + pendingContrib > 0 ? (
-          <span className="text-xs text-muted-foreground">{t`${pending + pendingContrib} chờ duyệt`}</span>
+        pending + pendingContrib + pendingFaces > 0 ? (
+          <span className="text-xs text-muted-foreground">{t`${pending + pendingContrib + pendingFaces} chờ duyệt`}</span>
         ) : undefined
       }
       footer={
@@ -61,6 +73,16 @@ export function CommunityCard({ clanId, canModerate }: { clanId: string; canMode
           >
             <IconClock className="h-4 w-4 text-primary" />
             {t`${pendingContrib} đề xuất sửa thông tin đang chờ xác nhận →`}
+          </Link>
+        )}
+
+        {pendingFaces > 0 && (
+          <Link
+            to={`/clans/${clanId}/dong-gop?loai=identify`}
+            className="flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm hover:border-primary"
+          >
+            <IconClock className="h-4 w-4 text-primary" />
+            {t`${pendingFaces} gợi ý nhận diện người trong ảnh chờ xác nhận →`}
           </Link>
         )}
 

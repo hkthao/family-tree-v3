@@ -8,7 +8,9 @@ import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { FilterableSelect } from "@/components/FilterableSelect";
-import { Fab } from "@/components/Fab";
+import { FabGroup } from "@/components/FabGroup";
+import { MemoryFaces } from "@/components/community/MemoryFaces";
+import { QuestionPanel } from "@/components/community/QuestionPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
@@ -23,6 +25,7 @@ import {
   IconCheck,
   IconClock,
   IconCopy,
+  IconHelp,
   IconLink,
   IconMicrophone,
   IconPencil,
@@ -59,7 +62,10 @@ import {
   listClanMemories,
   listContributeLinks,
   revokeContributeLink,
+  listQuestions,
+  setQuestionStatus,
   type ContributeLink,
+  type FamilyQuestion,
   setMemoryModeration,
   setMemoryStatus,
   type MemoryModeration,
@@ -94,7 +100,7 @@ const STATUS_STYLE: Record<
 };
 
 type StatusFilter = MemoryStatus | "all";
-type KindFilter = "all" | "story" | "photo" | "audio";
+type KindFilter = "all" | "story" | "photo" | "audio" | "answer" | "identify";
 type SourceFilter = "all" | "member" | "guest";
 
 type PanelState =
@@ -103,7 +109,8 @@ type PanelState =
   | { mode: "new" }
   | { mode: "invite" }
   | { mode: "links" }
-  | { mode: "settings" };
+  | { mode: "settings" }
+  | { mode: "question"; existing: FamilyQuestion | null };
 
 /**
  * /clans/:id/dong-gop — "Đóng góp nội dung" (docs/plan-dong-gop-cong-dong.md): danh sách theo chuẩn
@@ -148,8 +155,11 @@ export default function Memories() {
       (m) =>
         (status === "all" || m.status === status) &&
         (kind === "all" ||
-          m.kind === kind ||
-          (kind === "story" && m.kind === "answer")) &&
+          (kind === "answer"
+            ? !!m.question_id
+            : kind === "identify"
+              ? m.identify
+              : m.kind === kind || (kind === "story" && m.kind === "answer"))) &&
         (source === "all" || (source === "guest") === m.is_guest) &&
         (!q ||
           unaccent(
@@ -301,6 +311,8 @@ export default function Memories() {
             <option value="story">{t`Câu chuyện`}</option>
             <option value="photo">{t`Ảnh`}</option>
             <option value="audio">{t`Ghi âm`}</option>
+            <option value="answer">{t`Trả lời câu hỏi`}</option>
+            <option value="identify">{t`Ảnh nhờ nhận diện`}</option>
           </Select>
           <Select
             value={source}
@@ -350,6 +362,8 @@ export default function Memories() {
         />
       )}
 
+      <QuestionsSection onResend={(q) => setPanel({ mode: "question", existing: q })} />
+
       {filtered.length > 0 && (
         <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
           {paging.paged.map((m) => (
@@ -375,13 +389,27 @@ export default function Memories() {
         />
       )}
 
-      <Fab
-        label={t`Đóng góp về một người`}
-        active={panel.mode === "new"}
-        onClick={() =>
-          setPanel(panel.mode === "new" ? { mode: "closed" } : { mode: "new" })
-        }
-        icon={<IconPlus className="h-6 w-6" />}
+      <FabGroup
+        label={t`Thêm`}
+        actions={[
+          {
+            label: t`Đóng góp về một người`,
+            icon: <IconPlus />,
+            onClick: () => setPanel({ mode: "new" }),
+          },
+          {
+            label: t`Hỏi ông bà`,
+            icon: <IconHelp />,
+            onClick: () => setPanel({ mode: "question", existing: null }),
+          },
+        ]}
+      />
+
+      <QuestionPanel
+        open={panel.mode === "question"}
+        onClose={close}
+        clanId={clan.id}
+        existing={panel.mode === "question" ? panel.existing : null}
       />
 
       {/* Xem một ký ức — thanh nút đáy: tác giả xoá; editor+ xoá / ẩn / duyệt. */}
@@ -400,6 +428,9 @@ export default function Memories() {
           <div>
             <div className="space-y-4">
               <MemoryCard memory={viewing} />
+              {viewing.identify && viewing.media_url && !viewing.is_external && (
+                <MemoryFaces memory={viewing} canModerate={canModerate} />
+              )}
               <dl className="grid grid-cols-1 gap-2 text-sm">
                 <div>
                   <dt className="text-xs text-muted-foreground">{t`Trạng thái`}</dt>
@@ -551,6 +582,16 @@ function MemoryRow({ m, onOpen }: { m: PersonMemory; onOpen: () => void }) {
             {m.is_guest && (
               <Chip tone="orange" icon={<IconLink />}>
                 {t`Qua link`}
+              </Chip>
+            )}
+            {m.question_id && (
+              <Chip tone="indigo" icon={<IconHelp />}>
+                {t`Trả lời`}
+              </Chip>
+            )}
+            {m.identify && (
+              <Chip tone="rose" icon={<IconUser />}>
+                {t`Nhờ nhận diện`}
               </Chip>
             )}
             <Chip tone={k.tone} icon={<KindIcon />}>
@@ -907,5 +948,114 @@ function ModerationPanel({
         </FormActions>
       </form>
     </SidePanel>
+  );
+}
+
+/**
+ * Câu hỏi đang hỏi (P1): câu hỏi · hỏi ai / về ai · số câu trả lời. Nút icon: gửi link (tạo link mới
+ * cho câu hỏi), đóng câu hỏi (người hỏi / editor+). Câu hỏi đã đóng gom thu gọn.
+ */
+function QuestionsSection({ onResend }: { onResend: (q: FamilyQuestion) => void }) {
+  const { clan } = useClanContext();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+  const canModerate = canEditClan(clan);
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [showClosed, setShowClosed] = useState(false);
+  const { data: questions = [] } = useQuery({
+    queryKey: ["family-questions", clan.id],
+    queryFn: () => listQuestions(clan.id),
+    enabled: !!userId,
+  });
+  const closeQ = useMutation({
+    mutationFn: (id: string) => setQuestionStatus(id, "closed"),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["family-questions", clan.id] });
+      toast.success(t`Đã đóng câu hỏi`);
+    },
+    onError: (e) => toast.error(t`Không đóng được`, { description: (e as Error).message }),
+  });
+  if (questions.length === 0) return null;
+  const openQs = questions.filter((q) => q.status !== "closed");
+  const closedQs = questions.filter((q) => q.status === "closed");
+
+  const row = (q: FamilyQuestion) => (
+    <li key={q.id} className="flex items-start gap-2 p-3">
+      <div className="min-w-0 flex-1">
+        <p className="font-medium">“{q.question}”</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {[
+            q.ask_person_name ? t`Hỏi ${q.ask_person_name}` : null,
+            q.about_person_name ? t`về ${q.about_person_name}` : null,
+            q.asked_by_name ? t`do ${q.asked_by_name} đặt` : null,
+            new Date(q.created_at).toLocaleDateString("vi-VN"),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <Chip
+            tone={q.status === "closed" ? "neutral" : q.answers > 0 ? "success" : "warning"}
+            icon={q.status === "closed" ? <IconX /> : q.answers > 0 ? <IconCheck /> : <IconClock />}
+          >
+            {q.status === "closed" ? t`Đã đóng` : q.answers > 0 ? t`${q.answers} câu trả lời` : t`Chờ trả lời`}
+          </Chip>
+        </div>
+      </div>
+      {q.status !== "closed" && (
+        <div className="flex shrink-0 gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10"
+            aria-label={t`Gửi link trả lời`}
+            title={t`Gửi link trả lời`}
+            onClick={() => onResend(q)}
+          >
+            <IconSend className="h-5 w-5" />
+          </Button>
+          {(canModerate || q.asked_by === userId) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10"
+              aria-label={t`Đóng câu hỏi`}
+              title={t`Đóng câu hỏi`}
+              onClick={() => closeQ.mutate(q.id)}
+            >
+              <IconX className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
+      )}
+    </li>
+  );
+
+  return (
+    <section aria-label={t`Câu hỏi đang hỏi`} className="space-y-2">
+      <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+        <IconHelp className="h-4 w-4 text-primary" />
+        {t`Hỏi ông bà`}
+      </h2>
+      {openQs.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">{openQs.map(row)}</ul>
+      )}
+      {closedQs.length > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setShowClosed((v) => !v)}
+            aria-expanded={showClosed}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            {showClosed ? t`Ẩn câu hỏi đã đóng` : t`Xem ${closedQs.length} câu hỏi đã đóng`}
+          </button>
+          {showClosed && (
+            <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">{closedQs.map(row)}</ul>
+          )}
+        </>
+      )}
+    </section>
   );
 }

@@ -1253,6 +1253,7 @@ export default function Share() {
                   token={token}
                   clanId={data.clan_id}
                   clanName={data.clan_name ?? null}
+                  initialQuestionId={searchParams.get("q")}
                   initialPersonId={
                     invitedPersonId ??
                     (focal && data.persons.find((p) => p.id === focal && !p.is_living) ? focal : null)

@@ -9,6 +9,10 @@
  *   elapsed_ms (thời gian từ lúc mở form), file? (ảnh / ghi âm) HOẶC external_url? (link https —
  *   Google Photos, Drive, YouTube… — không tốn ổ cứng server, ưu tiên khi server hạn chế dung lượng)
  *
+ * kind=face (P2 "Ảnh: đây là ai?"): memory_id, box_x/box_y/box_w/box_h (tỉ lệ 0..1), person_id? hoặc
+ *   suggested_name (+ suggested_note: nghề…) → photo_faces trạng thái 'suggested' (chỉ editor+ xác nhận).
+ * question_id? (P1 "Hỏi ông bà"): câu trả lời gắn vào câu hỏi của cùng dòng họ.
+ *
  * Chống spam (plan §7):
  *   - bẫy `website` có chữ → trả ok giả, không ghi gì;
  *   - điền form < 3 giây → từ chối;
@@ -114,6 +118,11 @@ Deno.serve(async (req) => {
   const yearRaw = str(form, "year_approx", 6);
   const allowAi = form.get("allow_ai_reuse") !== "0";
   const file = form.get("file");
+  const questionId = str(form, "question_id", 40);
+  const memoryId = str(form, "memory_id", 40);
+  const suggestedName = str(form, "suggested_name", 120);
+  const suggestedNote = str(form, "suggested_note", 200);
+  const box = ["box_x", "box_y", "box_w", "box_h"].map((k) => Number(form.get(k)));
   const externalRaw = str(form, "external_url", 1000);
   let externalUrl: string | null = null;
   if (externalRaw) {
@@ -127,14 +136,25 @@ Deno.serve(async (req) => {
   }
 
   if (!token) return err("Thiếu link", 400);
-  if (!kind || !["story", "photo", "audio"].includes(kind)) return err("Loại ký ức không hợp lệ", 400);
+  if (!kind || !["story", "photo", "audio", "face"].includes(kind)) return err("Loại đóng góp không hợp lệ", 400);
   if (!authorName) return err("Cho biết tên của bạn nhé", 400);
   if (body && body.length > MAX_GUEST_BODY) return err(`Nội dung tối đa ${MAX_GUEST_BODY} chữ`, 400);
   if (kind === "story" && !body) return err("Bạn chưa kể gì", 400);
+  if (kind === "face") {
+    if (!memoryId) return err("Thiếu ảnh", 400);
+    const [bx, by, bw, bh] = box;
+    if (
+      ![bx, by, bw, bh].every((v) => Number.isFinite(v)) ||
+      bx < 0 || by < 0 || bw <= 0 || bh <= 0 || bx + bw > 1.001 || by + bh > 1.001
+    ) {
+      return err("Khung khuôn mặt không hợp lệ", 400);
+    }
+    if (!personId && !suggestedName) return err("Chọn người trong gia phả hoặc ghi tên", 400);
+  }
   if ((kind === "photo" || kind === "audio") && !(file instanceof File) && !externalUrl) {
     return err("Chọn tệp hoặc dán link", 400);
   }
-  for (const t of [body, authorName, authorRelation, place, source]) {
+  for (const t of [body, authorName, authorRelation, place, source, suggestedName, suggestedNote]) {
     if (t && LINK_RE.test(t)) return err("Vui lòng không dán đường link vào nội dung", 400);
   }
   let yearApprox: number | null = null;
@@ -186,6 +206,51 @@ Deno.serve(async (req) => {
   const { data: linkHits } = await sb.rpc("bump_community_submit_rate", { p_bucket: `link:${link.id}` });
   if ((linkHits ?? 0) > LINK_PER_HOUR) return err("Link này đang nhận quá nhiều đóng góp, vui lòng thử lại sau", 429);
 
+  const guestKey = guestKeyRaw ? await sha256(`${link.clan_id}:${guestKeyRaw}`) : null;
+
+  // ─── kind=face: khoanh một khuôn mặt trên ảnh "nhờ nhận diện" ──
+  if (kind === "face") {
+    const { data: mem } = await sb
+      .from("person_memories")
+      .select("clan_id, identify, status")
+      .eq("id", memoryId!)
+      .maybeSingle();
+    if (!mem || mem.clan_id !== link.clan_id || !mem.identify || mem.status !== "visible") {
+      return err("Ảnh này không nhận nhận diện", 404);
+    }
+    const [bx, by, bw, bh] = box;
+    const { data: face, error: faceErr } = await sb
+      .from("photo_faces")
+      .insert({
+        memory_id: memoryId,
+        box_x: bx,
+        box_y: by,
+        box_w: Math.min(bw, 1 - bx),
+        box_h: Math.min(bh, 1 - by),
+        person_id: personId,
+        suggested_name: suggestedName,
+        suggested_note: suggestedNote,
+        status: "suggested",
+        tagger_name: authorName,
+        guest_key: guestKey,
+      })
+      .select("id")
+      .single();
+    if (faceErr) return err(faceErr.message, 500);
+    await sb.from("share_links").update({ use_count: (link.use_count ?? 0) + 1 }).eq("id", link.id);
+    return json({ ok: true, id: face.id, status: "pending" });
+  }
+
+  // ─── Câu hỏi (P1): chỉ nhận câu hỏi của cùng dòng họ, chưa đóng ──
+  if (questionId) {
+    const { data: q } = await sb
+      .from("family_questions")
+      .select("clan_id, status")
+      .eq("id", questionId)
+      .maybeSingle();
+    if (!q || q.clan_id !== link.clan_id || q.status === "closed") return err("Câu hỏi không còn nhận trả lời", 404);
+  }
+
   // ─── Tệp ────────────────────────────────────────────────────────
   let mediaPath: string | null = null;
   let mediaMime: string | null = null;
@@ -211,7 +276,6 @@ Deno.serve(async (req) => {
   }
 
   // ─── Khách quen? → quyết định trạng thái ───────────────────────
-  const guestKey = guestKeyRaw ? await sha256(`${link.clan_id}:${guestKeyRaw}`) : null;
   const { data: clan } = await sb
     .from("clans")
     .select("memory_moderation")
@@ -239,6 +303,7 @@ Deno.serve(async (req) => {
       media_path: mediaPath,
       media_mime: mediaMime,
       external_url: kind === "photo" || kind === "audio" ? externalUrl : null,
+      question_id: questionId,
       year_approx: yearApprox,
       place,
       source,

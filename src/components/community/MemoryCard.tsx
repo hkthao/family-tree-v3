@@ -22,6 +22,11 @@ export interface MemoryCardData {
   media_url: string | null;
   /** media_url là link ngoài (Google Photos, Drive, YouTube…), không phải tệp của server. */
   is_external?: boolean;
+  /** Ảnh nhờ nhận diện (P2) + số khung đã khoanh. */
+  identify?: boolean;
+  face_count?: number;
+  /** Trả lời câu hỏi (P1). */
+  question_text?: string | null;
   year_approx: number | null;
   place: string | null;
   source?: string | null;
@@ -41,11 +46,14 @@ export function MemoryCard({
   badge,
   actions,
   showPerson = false,
+  onIdentify,
 }: {
   memory: MemoryCardData;
   badge?: ReactNode;
   actions?: ReactNode;
   showPerson?: boolean;
+  /** Ảnh nhờ nhận diện: bấm "Đây là ai?" mở công cụ khoanh mặt. */
+  onIdentify?: () => void;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   // Link ngoài: chỉ nhúng thẳng khi là tệp ảnh / âm thanh trực tiếp; còn lại (Google Photos, Drive,
@@ -71,6 +79,12 @@ export function MemoryCard({
           )}
           {badge}
         </div>
+      )}
+
+      {memory.question_text && (
+        <p className="border-l-2 border-primary/60 pl-2 text-sm italic text-muted-foreground">
+          {t`Trả lời câu hỏi: “${memory.question_text}”`}
+        </p>
       )}
 
       {linkOnly && (
@@ -118,6 +132,18 @@ export function MemoryCard({
             />
           </button>
         ))}
+      {memory.identify && onIdentify && (
+        <button
+          type="button"
+          onClick={onIdentify}
+          className="flex min-h-10 items-center gap-2 rounded-md border border-primary/40 bg-primary/5 px-3 text-sm font-medium text-primary hover:border-primary"
+        >
+          <IconUser className="h-4 w-4" />
+          {memory.face_count
+            ? t`Đây là ai? · đã khoanh ${memory.face_count} người`
+            : t`Đây là ai? Khoanh mặt người bạn nhận ra`}
+        </button>
+      )}
       {!linkOnly && memory.kind === "audio" && memory.media_url && (
         <audio
           controls

@@ -1,12 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { MemoryCard } from "@/components/community/MemoryCard";
 import { MemoryForm } from "@/components/community/MemoryForm";
 import { FilterableSelect } from "@/components/FilterableSelect";
+import { FaceTagger } from "@/components/community/FaceTagger";
+import { useToast } from "@/components/Toast";
 import { IconBook, IconUser } from "@/components/icons";
+import { Input } from "@/components/ui/input";
+import { readGuestProfile, saveGuestProfile, submitGuestFace } from "@/lib/queries/community";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import type { ShareViewCommunity, ShareViewPerson } from "@/lib/queries/share-view";
+import type { ShareViewCommunity, ShareViewFace, ShareViewPerson } from "@/lib/queries/share-view";
 
 import { t } from "@lingui/core/macro";
 
@@ -35,6 +39,7 @@ export function CommunitySharePanel({
   clanId,
   clanName,
   initialPersonId,
+  initialQuestionId,
   fixedPersonId,
 }: {
   community: ShareViewCommunity;
@@ -43,10 +48,22 @@ export function CommunitySharePanel({
   clanId: string;
   clanName: string | null;
   initialPersonId?: string | null;
+  /** Link trả lời câu hỏi (?q=) — mở thẳng câu hỏi đó. */
+  initialQuestionId?: string | null;
   fixedPersonId?: string | null;
 }) {
-  const [personId, setPersonId] = useState<string>(fixedPersonId ?? initialPersonId ?? "");
+  const [personId, setPersonId] = useState<string>(() => {
+    if (fixedPersonId) return fixedPersonId;
+    const q = (community.questions ?? []).find((x) => x.id === initialQuestionId);
+    return q?.about_person_id ?? q?.ask_person_id ?? initialPersonId ?? "";
+  });
   const [sent, setSent] = useState<null | "pending" | "visible">(null);
+  const questions = community.questions ?? [];
+  const [questionId, setQuestionId] = useState<string>(
+    initialQuestionId && questions.some((q) => q.id === initialQuestionId) ? initialQuestionId : "",
+  );
+  const question = questions.find((q) => q.id === questionId) ?? null;
+  const [tagging, setTagging] = useState<string | null>(null);
 
   const byId = useMemo(() => new Map(persons.map((p) => [p.id, p])), [persons]);
   const memoryCount = useMemo(() => {
@@ -98,6 +115,47 @@ export function CommunitySharePanel({
         </p>
       </section>
 
+      {/* P1 "Hỏi ông bà": câu hỏi đang chờ — bấm "Trả lời" để ghi âm / viết câu trả lời. */}
+      {!fixedPersonId && questions.filter((q) => q.status !== "closed").length > 0 && (
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold">{t`Câu hỏi cả nhà đang hỏi`}</h3>
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card">
+            {questions
+              .filter((q) => q.status !== "closed")
+              .slice(0, 6)
+              .map((q) => (
+                <li key={q.id} className={`flex items-center gap-2 p-3 ${q.id === questionId ? "bg-primary/5" : ""}`}>
+                  <p className="min-w-0 flex-1 text-sm">
+                    “{q.question}”
+                    {(q.ask_person_id || q.about_person_id) && (
+                      <span className="block text-xs text-muted-foreground">
+                        {[
+                          q.ask_person_id ? t`Hỏi ${byId.get(q.ask_person_id)?.full_name ?? ""}` : null,
+                          q.about_person_id ? t`về ${byId.get(q.about_person_id)?.full_name ?? ""}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    )}
+                  </p>
+                  <Button
+                    size="sm"
+                    variant={q.id === questionId ? "default" : "outline"}
+                    className="shrink-0"
+                    onClick={() => {
+                      setQuestionId(q.id === questionId ? "" : q.id);
+                      setPersonId(q.about_person_id ?? q.ask_person_id ?? "");
+                      setSent(null);
+                    }}
+                  >
+                    {q.id === questionId ? t`Đang trả lời` : t`Trả lời`}
+                  </Button>
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
+
       {!fixedPersonId && (
         <div className="space-y-1.5">
           <Label htmlFor="community-person">{t`Bạn muốn đóng góp về ai?`}</Label>
@@ -138,8 +196,10 @@ export function CommunitySharePanel({
             </p>
           )}
           <MemoryForm
-            key={personId || "clan"}
+            key={`${personId || "clan"}:${questionId}`}
             mode="guest"
+            questionId={questionId || null}
+            questionText={question?.question ?? null}
             token={token}
             clanId={clanId}
             personId={personId || null}
@@ -169,17 +229,116 @@ export function CommunitySharePanel({
             {person ? t`Đóng góp về ${person.full_name}` : t`Các đóng góp`}
           </h3>
           {shown.map((m) => (
-            <MemoryCard
-              key={m.id}
-              showPerson={!personId}
-              memory={{
-                ...m,
-                author_label: m.author_name ?? t`Người thân`,
-                person_name: m.person_id ? (byId.get(m.person_id)?.full_name ?? null) : null,
-              }}
-            />
+            <div key={m.id} className="space-y-2">
+              <MemoryCard
+                showPerson={!personId}
+                memory={{
+                  ...m,
+                  author_label: m.author_name ?? t`Người thân`,
+                  person_name: m.person_id ? (byId.get(m.person_id)?.full_name ?? null) : null,
+                  face_count: m.faces?.length ?? 0,
+                  question_text: m.question_id
+                    ? (questions.find((q) => q.id === m.question_id)?.question ?? null)
+                    : null,
+                }}
+                onIdentify={
+                  m.identify && m.media_url && !m.is_external
+                    ? () => setTagging(tagging === m.id ? null : m.id)
+                    : undefined
+                }
+              />
+              {tagging === m.id && m.media_url && (
+                <GuestFaces token={token} memoryId={m.id} src={m.media_url} faces={m.faces ?? []} persons={persons} />
+              )}
+            </div>
           ))}
         </section>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Khách khoanh mặt trên ảnh "nhờ nhận diện" (qua community-submit, kind=face). Khung đã xác nhận
+ * có tên; gợi ý của người khác chỉ hiện "chờ xác nhận" (plan §11, câu 8). Cần tên người góp.
+ */
+function GuestFaces({
+  token,
+  memoryId,
+  src,
+  faces,
+  persons,
+}: {
+  token: string;
+  memoryId: string;
+  src: string;
+  faces: ShareViewFace[];
+  persons: ShareViewPerson[];
+}) {
+  const toast = useToast();
+  const openedAt = useRef(performance.now());
+  const [name, setName] = useState(() => readGuestProfile().name);
+  const [mine, setMine] = useState<ShareViewFace[]>([]);
+  const [busy, setBusy] = useState(false);
+  const options = useMemo(
+    () =>
+      [...persons]
+        .sort((a, b) => a.full_name.localeCompare(b.full_name, "vi"))
+        .map((p) => ({ value: p.id, label: `${p.full_name}${p.is_living ? "" : " †"}` })),
+    [persons],
+  );
+  const all = [...faces, ...mine];
+  return (
+    <div className="space-y-3 rounded-xl border bg-card p-3">
+      <div className="space-y-1.5">
+        <label htmlFor={`face-guest-${memoryId}`} className="text-sm font-medium">
+          {t`Tên của bạn (để ghi người nhận diện)`}
+        </label>
+        <Input
+          id={`face-guest-${memoryId}`}
+          icon={<IconUser />}
+          value={name}
+          maxLength={80}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t`Ví dụ: Nguyễn Minh`}
+        />
+      </div>
+      <FaceTagger
+        src={src}
+        alt={t`Ảnh nhờ nhận diện`}
+        canAdd={!!name.trim()}
+        submitting={busy}
+        personOptions={options}
+        faces={all.map((f) => ({
+          id: f.id,
+          box: f.box,
+          confirmed: f.confirmed,
+          label: f.label,
+          note: f.note,
+        }))}
+        onSubmit={async (f) => {
+          setBusy(true);
+          try {
+            const prof = readGuestProfile();
+            saveGuestProfile({ name: name.trim(), relation: prof.relation });
+            await submitGuestFace({
+              token,
+              memory_id: memoryId,
+              ...f,
+              author_name: name.trim(),
+              elapsed_ms: performance.now() - openedAt.current,
+            });
+            setMine((m) => [...m, { id: `mine-${m.length}`, box: f.box, confirmed: false, label: null, note: null }]);
+            toast.success(t`Đã gửi, cảm ơn bạn! Người quản lý dòng họ sẽ xác nhận.`);
+          } catch (e) {
+            toast.error(t`Chưa gửi được`, { description: (e as Error).message });
+          } finally {
+            setBusy(false);
+          }
+        }}
+      />
+      {!name.trim() && (
+        <p className="text-xs text-muted-foreground">{t`Ghi tên của bạn để bắt đầu khoanh mặt.`}</p>
       )}
     </div>
   );

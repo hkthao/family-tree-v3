@@ -127,12 +127,34 @@ export interface ShareViewMemory {
   media_url: string | null;
   /** media_url là link ngoài (https) chứ không phải tệp của server. */
   is_external?: boolean;
+  /** Ảnh "nhờ cả nhà nhận diện" (P2) + các khung khuôn mặt (tên chỉ có khi đã xác nhận). */
+  identify?: boolean;
+  faces?: ShareViewFace[];
+  /** Trả lời câu hỏi (P1). */
+  question_id?: string | null;
   media_mime: string | null;
   duration_sec: number | null;
   year_approx: number | null;
   place: string | null;
   author_name: string | null;
   author_relation: string | null;
+  created_at: string;
+}
+
+export interface ShareViewFace {
+  id: string;
+  box: [number, number, number, number];
+  confirmed: boolean;
+  label: string | null;
+  note: string | null;
+}
+
+export interface ShareViewQuestion {
+  id: string;
+  question: string;
+  status: string;
+  about_person_id: string | null;
+  ask_person_id: string | null;
   created_at: string;
 }
 
@@ -143,6 +165,7 @@ export interface ShareViewCommunity {
   recipient_label: string | null;
   stats: { visits_total: number; visits_week: number; contributors: number; memories: number } | null;
   memories: ShareViewMemory[];
+  questions?: ShareViewQuestion[];
 }
 
 export interface ShareViewPayload {
