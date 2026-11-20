@@ -6,7 +6,7 @@ import { SectionCard } from "@/components/SectionCard";
 import { SidePanel } from "@/components/SidePanel";
 import { ContributeLinkPanel } from "@/components/community/ContributeLinkPanel";
 import { MemoryCard } from "@/components/community/MemoryCard";
-import { MemoryForm } from "@/components/community/MemoryForm";
+import { MemoryForm, type PersonFacts } from "@/components/community/MemoryForm";
 import { IconBook, IconPlus, IconSend } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { listPersonMemories, type MemoryStatus } from "@/lib/queries/community";
@@ -43,6 +43,7 @@ export function PersonMemoriesSection({
   personName,
   userId,
   canModerate,
+  facts,
 }: {
   clanId: string;
   clanName: string;
@@ -50,6 +51,8 @@ export function PersonMemoriesSection({
   personName: string;
   userId: string;
   canModerate: boolean;
+  /** Thông tin hiện có — để form có loại "Sửa thông tin" điền sẵn. */
+  facts?: PersonFacts;
 }) {
   const qc = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
@@ -143,6 +146,7 @@ export function PersonMemoriesSection({
           userId={userId}
           personId={personId}
           personName={personName}
+          facts={facts}
           onCancel={() => setFormOpen(false)}
           onDone={() => {
             setFormOpen(false);

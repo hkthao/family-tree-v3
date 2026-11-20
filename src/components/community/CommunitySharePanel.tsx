@@ -144,6 +144,20 @@ export function CommunitySharePanel({
             clanId={clanId}
             personId={personId || null}
             personName={person?.full_name ?? null}
+            facts={
+              person
+                ? {
+                    full_name: person.full_name,
+                    is_living: person.is_living,
+                    birth_date: person.birth_date,
+                    death_date: person.death_date,
+                    birth_place: person.birth_place ?? null,
+                    burial_place: person.burial_place ?? null,
+                    death_anniv_lunar_month: person.death_anniv_lunar_month ?? null,
+                    death_anniv_lunar_day: person.death_anniv_lunar_day ?? null,
+                  }
+                : null
+            }
             onDone={(s) => setSent(s === "visible" ? "visible" : "pending")}
           />
         </section>

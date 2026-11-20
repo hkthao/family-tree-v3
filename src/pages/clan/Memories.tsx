@@ -625,6 +625,18 @@ function NewMemoryPanel({
           userId={userId}
           personId={personId || null}
           personName={person?.full_name ?? null}
+          facts={
+            person
+              ? {
+                  full_name: person.full_name,
+                  is_living: person.is_living,
+                  birth_date: person.birth_date,
+                  death_date: person.death_date,
+                  death_anniv_lunar_month: person.death_anniv_lunar_month ?? null,
+                  death_anniv_lunar_day: person.death_anniv_lunar_day ?? null,
+                }
+              : null
+          }
           onCancel={finish}
           onDone={() => {
             onDone();
