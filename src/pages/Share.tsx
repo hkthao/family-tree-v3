@@ -1041,11 +1041,11 @@ export default function Share() {
       {/* Thanh TAB: trang xem thử công khai (Cây | Sự kiện & giỗ | Di sản | Chi tiết) và link chia sẻ
           nhận đóng góp (Cây | Cùng góp). */}
       {(publicClan || !!token) && data && data.persons.length > 0 && (
-        <div className="shrink-0 border-b print-hide">
+        <div className="shrink-0 print-hide">
           <div
             role="tablist"
             aria-label={t`Nội dung dòng họ`}
-            className="container flex max-w-6xl overflow-x-auto px-2"
+            className="container flex max-w-6xl gap-2 overflow-x-auto pt-3"
             style={{ scrollbarWidth: "none" }}
           >
             {/* Link chia sẻ: "Tổng quan" thay cho tab Cây (cây là một card trong đó). Trang xem công khai giữ tab Cây. */}
@@ -1428,10 +1428,11 @@ function ShareTab({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`h-11 shrink-0 whitespace-nowrap border-b-2 px-4 text-sm font-medium transition-colors ${
+      // Cùng kiểu tab trong app (vd trang Việc cần làm): nút viên nhỏ, tab đang chọn nền màu chủ đạo.
+      className={`inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-md border px-3 text-sm font-medium transition-colors ${
         active
-          ? "border-primary text-primary"
-          : "border-transparent text-muted-foreground hover:text-foreground"
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-input bg-background hover:bg-muted/50"
       }`}
     >
       {children}
