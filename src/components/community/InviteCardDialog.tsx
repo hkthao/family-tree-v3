@@ -39,7 +39,9 @@ export interface InviteContext {
 }
 
 const PREVIEW_MAX = 360;
-const THUMB_W = 76;
+const THUMB_W = 84;
+/** Viền + đệm nút (12) + đệm cột (16) + thanh cuộn dọc (~14). */
+const COL_EXTRA = 42;
 
 /**
  * "Tạo ảnh để đăng" (plan §4.3): ảnh infographic mời góp + tin nhắn soạn sẵn, cùng lựa chọn người đọc,
@@ -156,7 +158,7 @@ export function InviteCardDialog({
     ro.observe(el);
     return () => ro.disconnect();
   }, [open]);
-  const previewW = Math.max(160, Math.min(PREVIEW_MAX, (stageW || PREVIEW_MAX + THUMB_W + 40) - THUMB_W - 40));
+  const previewW = Math.max(160, Math.min(PREVIEW_MAX, (stageW || PREVIEW_MAX + THUMB_W + COL_EXTRA + 24) - THUMB_W - COL_EXTRA - 24));
   const scale = previewW / dim.w;
 
   async function render(): Promise<Blob> {
@@ -218,8 +220,9 @@ export function InviteCardDialog({
             <div
               role="listbox"
               aria-label={t`Chọn mẫu (${templates.length} mẫu)`}
-              className="flex shrink-0 snap-y flex-col gap-1.5 overflow-y-auto border-l pl-2 sm:pl-3"
-              style={{ height: dim.h * scale, width: THUMB_W + 16 }}
+              className="flex shrink-0 snap-y flex-col gap-1.5 overflow-y-auto overflow-x-hidden border-l pl-2 pr-1 sm:pl-3"
+              // rộng = ảnh thu nhỏ + viền/đệm nút (12) + đệm cột (≤16) + chỗ thanh cuộn dọc → không bao giờ cuộn ngang
+              style={{ height: dim.h * scale, width: THUMB_W + COL_EXTRA }}
             >
               {templates.map((tp) => {
                 const active = tp.variant === variant && tp.theme === theme;
