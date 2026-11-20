@@ -3209,6 +3209,11 @@ msgstr "Chọn loại thông tin hiện ở chi tiết ngày."
 msgid "Chọn mẫu"
 msgstr "Chọn mẫu"
 
+#. placeholder {0}: templates.length
+#: src/components/community/InviteCardDialog.tsx
+msgid "Chọn mẫu ({0} mẫu)"
+msgstr "Chọn mẫu ({0} mẫu)"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Chọn màu bất kỳ"
 msgstr "Chọn màu bất kỳ"
@@ -6085,6 +6090,10 @@ msgstr "Đem dữ liệu đi nơi khác hoặc nạp từ phần mềm khác."
 msgid "Đếm tổng có {0} nhưng không lấy được context — có thể row đã bị cascade xoá."
 msgstr "Đếm tổng có {0} nhưng không lấy được context — có thể row đã bị cascade xoá."
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đêm vàng"
+msgstr "Đêm vàng"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Đen"
 msgstr "Đen"
@@ -6251,6 +6260,10 @@ msgstr "Do quản trị nền tảng đặt, không sửa được ở đây."
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đỏ rượu"
 msgstr "Đỏ rượu"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đỏ rượu vang"
+msgstr "Đỏ rượu vang"
 
 #: src/components/PersonAvatar.tsx
 msgid "Đỏ son viền vàng"
@@ -7171,6 +7184,10 @@ msgstr "Giấy kẻ ô"
 #: src/components/community/MemoryForm.tsx
 msgid "Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…"
 msgstr "Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Giấy ngà"
+msgstr "Giấy ngà"
 
 #: src/pages/clan/Tree.tsx
 msgid "Giỗ {anniv}"
@@ -10256,8 +10273,8 @@ msgid "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài k
 msgstr "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Mã QR trên ảnh"
-msgstr "Mã QR trên ảnh"
+#~ msgid "Mã QR trên ảnh"
+#~ msgstr "Mã QR trên ảnh"
 
 #: src/lib/navModel.tsx
 msgid "Mã QR từng người để in/khắc — quét ra trang cá nhân."
@@ -10337,8 +10354,8 @@ msgid "Màu"
 msgstr "Màu"
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Mẫu"
-msgstr "Mẫu"
+#~ msgid "Mẫu"
+#~ msgstr "Mẫu"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Màu bục"

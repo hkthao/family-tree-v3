@@ -12,6 +12,11 @@ import { CARD_DIMENSIONS, type CardFormat } from "@/lib/cards/types";
 export type InviteVariant = "chung" | "hoso" | "hoi" | "camon";
 export type InviteAudience = "young" | "old";
 export type InviteLinkPlace = "qr" | "post" | "comment" | "sticker";
+/** Tông màu — áp cho mọi mẫu (đỏ rượu vang · đêm vàng · giấy ngà), theo màu của app. */
+export type InviteTheme = "ruou" | "dem" | "nga";
+export const INVITE_THEMES: InviteTheme[] = ["ruou", "dem", "nga"];
+/** Tông mặc định của từng mẫu (đúng design đã duyệt). */
+export const DEFAULT_THEME: Record<InviteVariant, InviteTheme> = { chung: "ruou", camon: "ruou", hoi: "dem", hoso: "nga" };
 
 export interface InviteFact {
   label: string;
@@ -21,6 +26,7 @@ export interface InviteFact {
 export interface InviteCardData {
   clanName: string;
   variant: InviteVariant;
+  theme?: InviteTheme;
   audience: InviteAudience;
   xungHo: string;
   linkPlace: InviteLinkPlace;
@@ -49,8 +55,80 @@ const SOFT = "#E7D9C3";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+interface Palette {
+  bg: string;
+  ink: string;
+  soft: string;
+  heading: string;
+  accent: string;
+  /** Chữ trên nền accent (số bước). */
+  accentInk: string;
+  /** Khối nổi (câu hỏi / thanh kêu gọi) và chữ trên đó. */
+  panel: string;
+  panelInk: string;
+  panelAccent: string;
+  tint: string;
+  border: string;
+  track: string;
+  bar: string;
+}
+
+const PALETTES: Record<InviteTheme, Palette> = {
+  ruou: {
+    bg: OX,
+    ink: CREAM,
+    soft: SOFT,
+    heading: CREAM,
+    accent: GOLD,
+    accentInk: "#511C1C",
+    panel: "#FBF7F0",
+    panelInk: "#511C1C",
+    panelAccent: "#7A2E2E",
+    tint: "rgba(243,233,216,0.1)",
+    border: "rgba(217,180,104,0.4)",
+    track: "rgba(243,233,216,0.18)",
+    bar: GOLD,
+  },
+  dem: {
+    bg: NIGHT,
+    ink: CREAM,
+    soft: SOFT,
+    heading: CREAM,
+    accent: "#C9A227",
+    accentInk: "#1c1714",
+    panel: "#F5EFE6",
+    panelInk: "#511C1C",
+    panelAccent: "#7A2E2E",
+    tint: "rgba(201,162,39,0.1)",
+    border: "rgba(201,162,39,0.45)",
+    track: "rgba(243,233,216,0.15)",
+    bar: "#C9A227",
+  },
+  nga: {
+    bg: "linear-gradient(180deg, #FBF7F0, #F3E9D8)",
+    ink: "#2B2320",
+    soft: "#4A3A33",
+    heading: "#511C1C",
+    accent: "#7A2E2E",
+    accentInk: CREAM,
+    panel: "#7A2E2E",
+    panelInk: CREAM,
+    panelAccent: GOLD,
+    tint: "rgba(122,46,46,0.06)",
+    border: "rgba(122,46,46,0.25)",
+    track: "#E6D6BC",
+    bar: "#B8893B",
+  },
+};
+
+export const paletteOf = (d: Pick<InviteCardData, "variant" | "theme">): Palette => PALETTES[d.theme ?? DEFAULT_THEME[d.variant]];
+
 /** Bước 1 theo chỗ đặt link (ảnh trên mạng xã hội không bấm được). */
-function linkStep(place: InviteLinkPlace, old: boolean): string {
+function linkStep(place: InviteLinkPlace, old: boolean, qr: boolean): string {
+  if (qr && place !== "qr") {
+    const where = place === "comment" ? "ở bình luận" : "trong bài";
+    return old ? `Quét mã QR trên ảnh, hoặc bấm đường link ${where}` : `Quét mã QR, hoặc bấm link ${where}`;
+  }
   switch (place) {
     case "qr":
       return old ? "Dùng điện thoại quét mã trên ảnh" : "Quét mã QR trên ảnh này";
@@ -63,10 +141,10 @@ function linkStep(place: InviteLinkPlace, old: boolean): string {
   }
 }
 
-function copyFor(d: InviteCardData) {
+function copyFor(d: InviteCardData, qr: boolean) {
   const old = d.audience === "old";
   const x = d.xungHo;
-  const L = linkStep(d.linkPlace, old);
+  const L = linkStep(d.linkPlace, old, qr);
   switch (d.variant) {
     case "hoso":
       return {
@@ -146,7 +224,7 @@ function Steps({ steps, color, num, numInk, size }: { steps: string[]; color: st
   );
 }
 
-function Frame({ format, bg, children, style }: { format: CardFormat; bg: string; children: ReactNode; style?: CSSProperties }) {
+function Frame({ format, bg, ink, children, style }: { format: CardFormat; bg: string; ink: string; children: ReactNode; style?: CSSProperties }) {
   const { w, h } = CARD_DIMENSIONS[format];
   const vertical = format === "vertical";
   return (
@@ -157,7 +235,7 @@ function Frame({ format, bg, children, style }: { format: CardFormat; bg: string
         boxSizing: "border-box",
         padding: vertical ? "250px 72px 280px" : "56px 72px",
         background: bg,
-        color: CREAM,
+        color: ink,
         fontFamily: SANS,
         display: "flex",
         flexDirection: "column",
@@ -172,7 +250,8 @@ function Frame({ format, bg, children, style }: { format: CardFormat; bg: string
   );
 }
 
-function Footer({ d, format, ink = GOLD }: { d: InviteCardData; format: CardFormat; ink?: string }) {
+function Footer({ d, format, P }: { d: InviteCardData; format: CardFormat; P: Palette }) {
+  const ink = P.accent;
   const vertical = format === "vertical";
   if (vertical) {
     return (
@@ -182,7 +261,7 @@ function Footer({ d, format, ink = GOLD }: { d: InviteCardData; format: CardForm
             {d.audience === "old" ? "Ô đường link ở đây ạ" : "Dán nhãn link vào đây"}
           </div>
         ) : (
-          <div style={{ background: "#FBF7F0", color: "#511C1C", fontSize: 34, fontWeight: 800, padding: "20px 44px", borderRadius: 999 }}>
+          <div style={{ background: P.panel, color: P.panelInk, fontSize: 34, fontWeight: 800, padding: "20px 44px", borderRadius: 999 }}>
             {d.linkPlace === "comment" ? "Link ở bình luận nha" : d.linkPlace === "post" ? "Link ở trong bài nha" : d.shortLink}
           </div>
         )}
@@ -195,47 +274,53 @@ function Footer({ d, format, ink = GOLD }: { d: InviteCardData; format: CardForm
 
 /** Tấm ảnh đủ kích thước (1080×1080 hoặc 1080×1920) — dùng cho xem trước (scale) và xuất PNG. */
 export function InviteCard({ data: d, format }: { data: InviteCardData; format: CardFormat }) {
-  const c = copyFor(d);
   const old = d.audience === "old";
   const vertical = format === "vertical";
+  // Ảnh vuông LUÔN có mã QR (design đã duyệt); Story thì không (không ai quét màn hình của chính mình).
+  const showQr = !vertical && !!d.qrDataUrl;
+  const c = copyFor(d, showQr);
+  const P = paletteOf(d);
   const stepSize = vertical ? (old ? 38 : 34) : old ? 30 : 26;
-  const showQr = d.linkPlace === "qr" && !vertical;
+  const linkNote = d.linkPlace === "comment" ? "Link ở bình luận" : d.linkPlace === "post" ? "Link ở trong bài" : d.shortLink;
 
   // ─── Hỏi ông bà (nền đêm, câu hỏi chữ to) ──────────────────────
   if (d.variant === "hoi") {
     return (
-      <Frame format={format} bg={NIGHT}>
+      <Frame format={format} bg={P.bg} ink={P.ink}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 24 }}>
-          <span style={{ fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#C9A227" }}>{c.kicker}</span>
-          <span style={{ color: SOFT }}>{d.clanName}</span>
+          <span style={{ fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: P.accent }}>{c.kicker}</span>
+          <span style={{ color: P.soft }}>{d.clanName}</span>
         </div>
         <div>
-          <div style={{ fontSize: 28, color: SOFT }}>{c.lead}</div>
-          <div style={{ fontSize: vertical ? 56 : 46, fontWeight: 800 }}>{cap(c.title)}</div>
+          <div style={{ fontSize: 28, color: P.soft }}>{c.lead}</div>
+          <div style={{ fontSize: vertical ? 56 : 46, fontWeight: 800, color: P.heading }}>{cap(c.title)}</div>
         </div>
-        <div style={{ position: "relative", background: "#F5EFE6", color: "#511C1C", borderRadius: 26, padding: "44px 46px 36px" }}>
-          <div style={{ position: "absolute", top: -28, left: 44, fontFamily: SERIF, fontSize: 120, lineHeight: 1, color: "#C9A227" }}>“</div>
+        <div style={{ position: "relative", background: P.panel, color: P.panelInk, borderRadius: 26, padding: "44px 46px 36px" }}>
+          <div style={{ position: "absolute", top: -28, left: 44, fontFamily: SERIF, fontSize: 120, lineHeight: 1, color: P.panelAccent === GOLD ? GOLD : "#C9A227" }}>“</div>
           <p style={{ margin: 0, fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: vertical ? 64 : 54, lineHeight: 1.22 }}>
             {d.question}
           </p>
         </div>
         {d.showGuide ? (
           <div>
-            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C9A227", marginBottom: 12 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: P.accent, marginBottom: 12 }}>
               {c.cta}
             </div>
-            <Steps steps={c.steps} color={CREAM} num="#C9A227" numInk="#1c1714" size={stepSize} />
+            <Steps steps={c.steps} color={P.ink} num={P.accent} numInk={P.accentInk} size={stepSize} />
           </div>
         ) : (
           <div style={{ fontSize: stepSize + 4, fontWeight: 700 }}>{c.cta}</div>
         )}
         {vertical ? (
-          <Footer d={d} format={format} ink="#C9A227" />
+          <Footer d={d} format={format} P={P} />
         ) : (
-          <div style={{ marginTop: "auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderTop: "2px solid rgba(201,162,39,0.45)", paddingTop: 18 }}>
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#C9A227" }}>{d.linkPlace === "qr" ? d.shortLink : d.linkPlace === "comment" ? "Link ở bình luận" : "Link ở trong bài"}</div>
+          <div style={{ marginTop: "auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderTop: `2px solid ${P.border}`, paddingTop: 18 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontSize: 26, fontWeight: 700, color: P.accent }}>{showQr ? "Quét mã để trả lời" : linkNote}</div>
+              <div style={{ fontSize: 22, color: P.soft }}>{showQr ? `${linkNote} · ${d.shortLink}` : ""}</div>
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-              <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.12em", color: "#C9A227" }}>DÒNG HỌ VIỆT</span>
+              <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.12em", color: P.accent }}>DÒNG HỌ VIỆT</span>
               {showQr && <Qr src={d.qrDataUrl} size={130} />}
             </div>
           </div>
@@ -250,10 +335,10 @@ export function InviteCard({ data: d, format }: { data: InviteCardData; format: 
     const done = facts.filter((f) => f.done).length;
     const pct = facts.length ? Math.round((done / facts.length) * 100) : 0;
     return (
-      <Frame format={format} bg="linear-gradient(180deg, #FBF7F0, #F3E9D8)" style={{ color: "#2B2320" }}>
+      <Frame format={format} bg={P.bg} ink={P.ink}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 24, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#7A2E2E" }}>{c.kicker}</span>
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.12em", color: "#7A2E2E" }}>DÒNG HỌ VIỆT</span>
+          <span style={{ fontSize: 24, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: P.accent }}>{c.kicker}</span>
+          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.12em", color: P.accent }}>DÒNG HỌ VIỆT</span>
         </div>
         <div style={{ display: "flex", gap: 36, alignItems: "center" }}>
           {d.photoDataUrl ? (
@@ -262,39 +347,40 @@ export function InviteCard({ data: d, format }: { data: InviteCardData; format: 
             <div style={{ width: 180, height: 220, borderRadius: 16, background: "linear-gradient(170deg, #C9B08A, #8E7556)", border: "6px solid #fff", flexShrink: 0 }} />
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ fontSize: 28, fontWeight: 600, color: "#7A2E2E" }}>{c.lead}</div>
-            <div style={{ fontFamily: SERIF, fontSize: 66, lineHeight: 1.05, fontWeight: 700, color: "#511C1C" }}>{c.title}</div>
-            {d.personYears && <div style={{ fontSize: 28, color: "#4A3A33" }}>{d.personYears}</div>}
+            <div style={{ fontSize: 28, fontWeight: 600, color: P.accent }}>{c.lead}</div>
+            <div style={{ fontFamily: SERIF, fontSize: 66, lineHeight: 1.05, fontWeight: 700, color: P.heading }}>{c.title}</div>
+            {d.personYears && <div style={{ fontSize: 28, color: P.soft }}>{d.personYears}</div>}
           </div>
         </div>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 26, fontWeight: 700, marginBottom: 10 }}>
             <span>{old ? `Gia phả mới ghi được ${done} trong ${facts.length} điều về cụ` : `Nhà mình mới biết được ${done} / ${facts.length} điều về cụ`}</span>
-            <span style={{ color: "#7A2E2E" }}>{pct}%</span>
+            <span style={{ color: P.accent }}>{pct}%</span>
           </div>
-          <div style={{ height: 20, borderRadius: 999, background: "#E6D6BC", overflow: "hidden" }}>
-            <div style={{ width: `${pct}%`, height: "100%", background: "#B8893B", borderRadius: 999 }} />
+          <div style={{ height: 20, borderRadius: 999, background: P.track, overflow: "hidden" }}>
+            <div style={{ width: `${pct}%`, height: "100%", background: P.bar, borderRadius: 999 }} />
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px 28px", fontSize: old ? 30 : 28 }}>
           {facts.map((f) => (
-            <div key={f.label} style={{ display: "flex", gap: 14, alignItems: "center", fontWeight: f.done ? 400 : 700, color: f.done ? "#4A3A33" : "#511C1C" }}>
+            <div key={f.label} style={{ display: "flex", gap: 14, alignItems: "center", fontWeight: f.done ? 400 : 700, color: f.done ? P.soft : P.heading }}>
               {f.done ? (
                 <span style={{ width: 36, height: 36, flexShrink: 0, borderRadius: "50%", background: "#2E7D5B", color: "#fff", fontSize: 22, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>✓</span>
               ) : (
-                <span style={{ width: 32, height: 32, flexShrink: 0, borderRadius: "50%", border: "4px dashed #B8893B" }} />
+                <span style={{ width: 32, height: 32, flexShrink: 0, borderRadius: "50%", border: `4px dashed ${P.bar}` }} />
               )}
               {f.label}
             </div>
           ))}
         </div>
-        <div style={{ marginTop: "auto", display: "flex", gap: 28, alignItems: "center", background: "#7A2E2E", color: CREAM, borderRadius: 22, padding: "24px 28px" }}>
+        <div style={{ marginTop: vertical ? 0 : "auto", display: "flex", gap: 28, alignItems: "center", background: P.panel, color: P.panelInk, borderRadius: 22, padding: "24px 28px" }}>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ fontSize: 34, fontWeight: 800 }}>{c.cta}</div>
-            {d.showGuide && <Steps steps={c.steps} color={CREAM} num={GOLD} numInk="#511C1C" size={old ? 26 : 24} />}
+            {d.showGuide && <Steps steps={c.steps} color={P.panelInk} num={P.panelAccent} numInk={P.panel} size={old ? 26 : 24} />}
           </div>
           {showQr && <Qr src={d.qrDataUrl} size={150} />}
         </div>
+        {vertical && <Footer d={d} format={format} P={P} />}
       </Frame>
     );
   }
@@ -313,40 +399,39 @@ export function InviteCard({ data: d, format }: { data: InviteCardData; format: 
           { n: s.memories, l: "câu chuyện, ảnh cũ" },
         ];
   return (
-    <Frame format={format} bg={OX} style={{ alignItems: "center", textAlign: "center" }}>
-      <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: GOLD }}>{c.kicker}</div>
-      <div style={{ fontFamily: SERIF, fontSize: vertical ? 80 : 68, lineHeight: 1.1, fontWeight: 700 }}>{c.title}</div>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, color: GOLD }}>
-        <span style={{ height: 2, width: 110, background: GOLD }} />
+    <Frame format={format} bg={P.bg} ink={P.ink} style={{ alignItems: "center", textAlign: "center" }}>
+      <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: P.accent }}>{c.kicker}</div>
+      <div style={{ fontFamily: SERIF, fontSize: vertical ? 80 : 68, lineHeight: 1.1, fontWeight: 700, color: P.heading }}>{c.title}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, color: P.accent }}>
+        <span style={{ height: 2, width: 110, background: P.accent }} />
         <span style={{ fontSize: 22 }}>◆</span>
-        <span style={{ height: 2, width: 110, background: GOLD }} />
+        <span style={{ height: 2, width: 110, background: P.accent }} />
       </div>
       {boxes.some((b) => b.n > 0) && (
         <div style={{ width: "100%", display: "grid", gridTemplateColumns: `repeat(${boxes.length}, minmax(0, 1fr))`, gap: 18 }}>
           {boxes.map((b) => (
-            <div key={b.l} style={{ background: "rgba(243,233,216,0.1)", border: "2px solid rgba(217,180,104,0.4)", borderRadius: 20, padding: "24px 12px" }}>
-              <div style={{ fontSize: 80, fontWeight: 800, lineHeight: 1, color: GOLD }}>{b.n}</div>
+            <div key={b.l} style={{ background: P.tint, border: `2px solid ${P.border}`, borderRadius: 20, padding: "24px 12px" }}>
+              <div style={{ fontSize: 80, fontWeight: 800, lineHeight: 1, color: P.accent }}>{b.n}</div>
               <div style={{ fontSize: 24, marginTop: 8 }}>{b.l}</div>
             </div>
           ))}
         </div>
       )}
       {d.showGuide && (
-        <div style={{ width: "100%", textAlign: "left", background: "rgba(243,233,216,0.08)", borderRadius: 20, padding: "20px 24px" }}>
-          <Steps steps={c.steps} color={CREAM} num={GOLD} numInk="#511C1C" size={stepSize} />
+        <div style={{ width: "100%", textAlign: "left", background: P.tint, borderRadius: 20, padding: "20px 24px", boxSizing: "border-box" }}>
+          <Steps steps={c.steps} color={P.ink} num={P.accent} numInk={P.accentInk} size={stepSize} />
         </div>
       )}
       {vertical ? (
-        <Footer d={d} format={format} />
+        <Footer d={d} format={format} P={P} />
       ) : (
-        <div style={{ marginTop: "auto", width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#FBF7F0", color: "#511C1C", borderRadius: 20, padding: "20px 28px", boxSizing: "border-box", textAlign: "left" }}>
-          <div>
+        <div style={{ marginTop: "auto", width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20, background: P.panel, color: P.panelInk, borderRadius: 20, padding: "20px 28px", boxSizing: "border-box", textAlign: "left" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <div style={{ fontSize: 30, fontWeight: 800 }}>{c.cta}</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#7A2E2E" }}>
-              {d.linkPlace === "qr" ? d.shortLink : d.linkPlace === "comment" ? "Link ở bình luận" : "Link ở trong bài"}
-            </div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: P.panelAccent }}>{showQr ? `Quét mã · ${linkNote.toLowerCase()}` : linkNote}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "0.12em", color: P.panelAccent, opacity: 0.8 }}>DÒNG HỌ VIỆT</div>
           </div>
-          {showQr ? <Qr src={d.qrDataUrl} size={130} /> : <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "0.12em", color: "#7A2E2E" }}>DÒNG HỌ VIỆT</span>}
+          {showQr && <Qr src={d.qrDataUrl} size={130} />}
         </div>
       )}
     </Frame>

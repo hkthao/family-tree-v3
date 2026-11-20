@@ -3209,6 +3209,11 @@ msgstr "Choose which details to show for each day."
 msgid "Chọn mẫu"
 msgstr "Choose a template"
 
+#. placeholder {0}: templates.length
+#: src/components/community/InviteCardDialog.tsx
+msgid "Chọn mẫu ({0} mẫu)"
+msgstr "Choose a template ({0})"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Chọn màu bất kỳ"
 msgstr "Choose any color"
@@ -6085,6 +6090,10 @@ msgstr "Take your data elsewhere or load it from other software."
 msgid "Đếm tổng có {0} nhưng không lấy được context — có thể row đã bị cascade xoá."
 msgstr "The total count is {0} but the context could not be fetched — the row may have been deleted by a cascade."
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đêm vàng"
+msgstr "Gold night"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Đen"
 msgstr "Black"
@@ -6250,6 +6259,10 @@ msgstr "Set by the platform administrator; it can't be changed here."
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đỏ rượu"
+msgstr "Wine red"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đỏ rượu vang"
 msgstr "Wine red"
 
 #: src/components/PersonAvatar.tsx
@@ -7171,6 +7184,10 @@ msgstr "Grid paper"
 #: src/components/community/MemoryForm.tsx
 msgid "Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…"
 msgstr "Birth certificate · gravestone · old family records · my parents told me…"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Giấy ngà"
+msgstr "Ivory paper"
 
 #: src/pages/clan/Tree.tsx
 msgid "Giỗ {anniv}"
@@ -10256,8 +10273,8 @@ msgid "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài k
 msgstr "This QR code does not belong to Dòng Họ Việt. Ignored to protect your account."
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Mã QR trên ảnh"
-msgstr "QR code on the image"
+#~ msgid "Mã QR trên ảnh"
+#~ msgstr "QR code on the image"
 
 #: src/lib/navModel.tsx
 msgid "Mã QR từng người để in/khắc — quét ra trang cá nhân."
@@ -10337,8 +10354,8 @@ msgid "Màu"
 msgstr "Color"
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Mẫu"
-msgstr "Template"
+#~ msgid "Mẫu"
+#~ msgstr "Template"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Màu bục"

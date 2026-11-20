@@ -4,9 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
 import {
+  DEFAULT_THEME,
+  INVITE_THEMES,
   InviteCard,
   inviteMessage,
   type InviteAudience,
+  type InviteTheme,
   type InviteCardData,
   type InviteFact,
   type InviteLinkPlace,
@@ -36,6 +39,7 @@ export interface InviteContext {
 }
 
 const PREVIEW_W = 360;
+const THUMB_W = 104;
 
 /**
  * "Tạo ảnh để đăng" (plan §4.3): ảnh infographic mời góp + tin nhắn soạn sẵn, cùng lựa chọn người đọc,
@@ -62,7 +66,18 @@ export function InviteCardDialog({
 }) {
   const toast = useToast();
   const exportRef = useRef<HTMLDivElement>(null);
+  // Danh sách mẫu: mẫu riêng của ngữ cảnh + "Mời cả nhà góp" / "Cảm ơn cả nhà" (trừ link câu hỏi), mỗi mẫu 3 tông màu.
+  const allVariants = useMemo<InviteVariant[]>(
+    () => (variants.includes("hoi") ? variants : [...new Set<InviteVariant>([...variants, "chung", "camon"])]),
+    [variants],
+  );
+  const templates = useMemo(
+    () =>
+      allVariants.flatMap((v) => [DEFAULT_THEME[v], ...INVITE_THEMES.filter((th) => th !== DEFAULT_THEME[v])].map((theme) => ({ variant: v, theme }))),
+    [allVariants],
+  );
   const [variant, setVariant] = useState<InviteVariant>(variants[0]);
+  const [theme, setTheme] = useState<InviteTheme>(DEFAULT_THEME[variants[0]]);
   const [format, setFormat] = useState<CardFormat>("square");
   const [audience, setAudience] = useState<InviteAudience>("young");
   const [xungHo, setXungHo] = useState("con");
@@ -79,22 +94,20 @@ export function InviteCardDialog({
     if (context?.photoUrl) void imageUrlToDataUrl(context.photoUrl).then(setPhoto);
   }, [open, url, context?.photoUrl]);
 
-  // Story thì không có QR (không ai quét màn hình của chính mình) → mặc định nhãn dán link.
+  // Ảnh vuông luôn có QR; "Link nằm ở đâu" chỉ đổi câu hướng dẫn. Nhãn dán link chỉ có ở Story.
   useEffect(() => {
-    if (format === "vertical" && linkPlace === "qr") setLinkPlace("sticker");
     if (format === "square" && linkPlace === "sticker") setLinkPlace("comment");
   }, [format, linkPlace]);
 
-  const needsStats = variant === "camon" || variant === "chung";
   const { data: summary } = useQuery({
     queryKey: ["community-summary", clanId],
     queryFn: () => getCommunitySummary(clanId),
-    enabled: open && needsStats,
+    enabled: open, // ảnh thu nhỏ mẫu "chung"/"camon" luôn có trong danh sách
   });
   const { data: memories } = useQuery({
     queryKey: ["clan-memories-count", clanId],
     queryFn: () => listClanMemories(clanId),
-    enabled: open && needsStats,
+    enabled: open, // ảnh thu nhỏ mẫu "chung"/"camon" luôn có trong danh sách
     staleTime: 60_000,
   });
   const stats = useMemo(() => {
@@ -110,6 +123,7 @@ export function InviteCardDialog({
   const data: InviteCardData = {
     clanName,
     variant,
+    theme,
     audience,
     xungHo,
     linkPlace,
@@ -140,13 +154,14 @@ export function InviteCardDialog({
     await fonts?.load('700 64px "Noto Serif"', "Gia phả họ Nguyễn ữỗọệ").catch(() => undefined);
     return nodeToPngBlob(exportRef.current!.firstElementChild as HTMLElement, dim.w, dim.h);
   }
-  const filename = `moi-gop-${variant}-${format}.png`;
+  const filename = `moi-gop-${variant}-${theme}-${format}.png`;
+  const THEME_LABEL: Record<InviteTheme, string> = { ruou: t`Đỏ rượu vang`, dem: t`Đêm vàng`, nga: t`Giấy ngà` };
 
   async function onDownload() {
     setBusy(true);
     try {
       downloadBlob(await render(), filename);
-      track("community_invite_card", { variant, format, action: "download" });
+      track("community_invite_card", { variant, theme, format, action: "download" });
     } catch (e) {
       toast.error(t`Không tạo được ảnh`, { description: (e as Error).message });
     } finally {
@@ -157,7 +172,7 @@ export function InviteCardDialog({
     setBusy(true);
     try {
       const r = await sharePngBlob(await render(), filename, message);
-      track("community_invite_card", { variant, format, action: r });
+      track("community_invite_card", { variant, theme, format, action: r });
       if (r === "downloaded") {
         await navigator.clipboard.writeText(message).catch(() => undefined);
         toast.success(t`Đã tải ảnh và sao chép tin nhắn — dán vào bài đăng nhé`);
@@ -188,19 +203,38 @@ export function InviteCardDialog({
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label>{t`Chọn mẫu (${templates.length} mẫu)`}</Label>
+            <div className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-2">
+              {templates.map((tp) => {
+                const active = tp.variant === variant && tp.theme === theme;
+                return (
+                  <button
+                    key={`${tp.variant}-${tp.theme}`}
+                    type="button"
+                    onClick={() => {
+                      setVariant(tp.variant);
+                      setTheme(tp.theme);
+                    }}
+                    aria-pressed={active}
+                    title={`${VARIANT_LABEL[tp.variant]} · ${THEME_LABEL[tp.theme]}`}
+                    className={`shrink-0 snap-start rounded-lg border-2 p-1 text-left transition-colors ${active ? "border-primary" : "border-transparent hover:border-muted-foreground/40"}`}
+                    style={{ width: THUMB_W + 12 }}
+                  >
+                    <div className="overflow-hidden rounded" style={{ width: THUMB_W, height: dim.h * (THUMB_W / dim.w) }}>
+                      <div style={{ transform: `scale(${THUMB_W / dim.w})`, transformOrigin: "top left", width: dim.w, height: dim.h, pointerEvents: "none" }}>
+                        <InviteCard data={{ ...data, variant: tp.variant, theme: tp.theme }} format={format} />
+                      </div>
+                    </div>
+                    <div className="mt-1 truncate text-xs font-medium">{VARIANT_LABEL[tp.variant]}</div>
+                    <div className="truncate text-[11px] text-muted-foreground">{THEME_LABEL[tp.theme]}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {variants.length > 1 && (
-              <div className="space-y-1.5">
-                <Label htmlFor="inv-variant">{t`Mẫu`}</Label>
-                <Select id="inv-variant" icon={<IconCamera />} value={variant} onChange={(e) => setVariant(e.target.value as InviteVariant)}>
-                  {variants.map((v) => (
-                    <option key={v} value={v}>
-                      {VARIANT_LABEL[v]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            )}
             <div className="space-y-1.5">
               <Label htmlFor="inv-format">{t`Khổ ảnh`}</Label>
               <Select id="inv-format" icon={<IconCamera />} value={format} onChange={(e) => setFormat(e.target.value as CardFormat)}>
@@ -228,7 +262,6 @@ export function InviteCardDialog({
             <div className="space-y-1.5">
               <Label htmlFor="inv-link">{t`Link nằm ở đâu`}</Label>
               <Select id="inv-link" icon={<IconLink />} value={linkPlace} onChange={(e) => setLinkPlace(e.target.value as InviteLinkPlace)}>
-                {format === "square" && <option value="qr">{t`Mã QR trên ảnh`}</option>}
                 <option value="post">{t`Link trong bài viết`}</option>
                 <option value="comment">{t`Link ở bình luận`}</option>
                 {format === "vertical" && <option value="sticker">{t`Nhãn dán link (Story)`}</option>}
