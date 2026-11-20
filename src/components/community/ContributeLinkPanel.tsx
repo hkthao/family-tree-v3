@@ -21,11 +21,13 @@ import { t } from "@lingui/core/macro";
 
 /** Tin nhắn soạn sẵn kiểu nhắn nhóm gia đình (plan §4.3) — người gửi sửa tự do trước khi gửi. */
 function draftMessage(opts: { clanName: string; personName?: string | null; recipient?: string | null; url: string }) {
+  // Giọng trung tính, không xưng hô / kính ngữ (ai gửi cho ai cũng dùng được). Tên dòng họ dùng
+  // nguyên văn ("Họ Hồ") — không ghép thêm chữ "họ" để khỏi thành "họ Họ Hồ".
   const hi = opts.recipient ? `${opts.recipient} ơi` : t`Cả nhà ơi`;
   const about = opts.personName
-    ? t`con đang góp chuyện về ${opts.personName} vào gia phả họ ${opts.clanName}`
-    : t`con đang góp chuyện, ảnh cũ vào gia phả họ ${opts.clanName}`;
-  return t`${hi}, ${about}. Ai nhớ chút gì (một kỷ niệm, tấm ảnh cũ, hay ghi âm vài câu) thì bấm link này đóng góp giúp con nha, không cần đăng ký đâu ạ 🙏\n${opts.url}`;
+    ? t`gia phả ${opts.clanName} đang thu thập câu chuyện, ảnh cũ về ${opts.personName}`
+    : t`gia phả ${opts.clanName} đang thu thập câu chuyện, ảnh cũ về ông bà, tổ tiên`;
+  return t`${hi}, ${about}. Ai nhớ một kỷ niệm, có tấm ảnh cũ hay muốn ghi âm vài câu thì bấm link dưới đây để đóng góp, không cần đăng ký.\n${opts.url}`;
 }
 
 /**
