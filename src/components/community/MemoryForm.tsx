@@ -61,6 +61,9 @@ interface BaseProps {
   personName?: string | null;
   /** Có thì hiện thêm loại "Sửa thông tin" (đề xuất sửa dữ kiện, luôn chờ admin xác nhận). */
   facts?: PersonFacts | null;
+  /** Trả lời câu hỏi (P1 "Hỏi ông bà"): hiện câu hỏi ở đầu form, mặc định ghi âm. */
+  questionId?: string | null;
+  questionText?: string | null;
   onDone: (status: MemoryStatus) => void;
   onCancel?: () => void;
 }
@@ -91,7 +94,11 @@ export function MemoryForm(props: Props) {
   const toast = useToast();
   const isGuest = props.mode === "guest";
   const openedAt = useRef(performance.now());
-  const [kind, setKind] = useState<Kind>("story");
+  const [kind, setKind] = useState<Kind>(
+    props.questionId && isAudioRecordingSupported() ? "audio" : "story",
+  );
+  // Ảnh nhờ cả nhà nhận diện người trong ảnh (P2) — chỉ thành viên đặt.
+  const [identify, setIdentify] = useState(false);
   const [body, setBody] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   // Ảnh / ghi âm: tải tệp lên server, hoặc dán link (Google Photos, Drive, YouTube…) — không tốn ổ cứng.
@@ -287,6 +294,7 @@ export function MemoryForm(props: Props) {
           file: blob,
           file_name: blob ? `memory.${ext}` : undefined,
           external_url: externalUrl ?? undefined,
+          question_id: props.questionId ?? null,
           website,
           elapsed_ms: performance.now() - openedAt.current,
         });
@@ -311,12 +319,15 @@ export function MemoryForm(props: Props) {
         media_path: mediaPath,
         media_mime: mime,
         external_url: externalUrl,
+        identify: kind === "photo" && identify,
+        question_id: props.questionId ?? null,
         duration_sec: durationSec,
         year_approx: yearNum,
         place,
         source,
         author_relation: relation,
-        visibility: showOnShare ? "share" : "clan",
+        // Ảnh nhờ nhận diện phải hiện ở trang chia sẻ thì người nhận link mới khoanh mặt được.
+        visibility: showOnShare || (kind === "photo" && identify) ? "share" : "clan",
         allow_ai_reuse: allowAi,
       });
       return res.status;
@@ -360,7 +371,7 @@ export function MemoryForm(props: Props) {
           },
         ]
       : []),
-    ...(props.personId && f
+    ...(props.personId && f && !props.questionId
       ? [
           {
             key: "info" as const,
@@ -380,6 +391,15 @@ export function MemoryForm(props: Props) {
         mutation.mutate();
       }}
     >
+      {props.questionText && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">{t`Câu hỏi`}</p>
+          <p className="mt-1 font-serif text-lg italic leading-snug">“{props.questionText}”</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t`Bấm Ghi âm để người được hỏi kể (tối đa 2 phút), hoặc viết câu trả lời.`}
+          </p>
+        </div>
+      )}
       <div
         role="radiogroup"
         aria-label={t`Cách góp`}
@@ -486,6 +506,20 @@ export function MemoryForm(props: Props) {
             />
           )}
         </div>
+      )}
+
+      {/* Ảnh tập thể chưa rõ ai: nhờ cả nhà khoanh mặt, ghi tên (P2). Chỉ thành viên, chỉ ảnh tải lên
+          (link Google Photos / Drive không vẽ khung lên được). */}
+      {kind === "photo" && mediaSource === "file" && !isGuest && (
+        <label className="flex cursor-pointer items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 accent-primary"
+            checked={identify}
+            onChange={(e) => setIdentify(e.target.checked)}
+          />
+          <span>{t`Nhờ cả nhà nhận diện người trong ảnh (ai cũng khoanh mặt, ghi tên được; người quản lý xác nhận)`}</span>
+        </label>
       )}
 
       {kind === "audio" && mediaSource === "file" && (

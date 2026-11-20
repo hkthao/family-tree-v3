@@ -41,11 +41,16 @@ export interface PersonMemory {
   media_url: string | null;
   /** true = media là link ngoài (Google Photos, Drive, YouTube…), không phải tệp của server. */
   is_external: boolean;
+  /** Ảnh "nhờ cả nhà nhận diện" (P2). */
+  identify: boolean;
+  /** Là câu trả lời cho câu hỏi (P1) — kèm nội dung câu hỏi để hiện phía trên. */
+  question_id: string | null;
+  question_text: string | null;
   person_name?: string | null;
 }
 
 const MEMORY_SELECT =
-  "id, clan_id, person_id, kind, body, media_path, media_mime, external_url, duration_sec, year_approx, place, source, author_user_id, author_name, author_relation, visibility, status, created_at, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name)";
+  "id, clan_id, person_id, kind, body, media_path, media_mime, external_url, identify, question_id, duration_sec, year_approx, place, source, author_user_id, author_name, author_relation, visibility, status, created_at, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name), question:family_questions!person_memories_question_fk(question)";
 
 interface MemoryRow {
   id: string;
@@ -56,6 +61,9 @@ interface MemoryRow {
   media_path: string | null;
   media_mime: string | null;
   external_url: string | null;
+  identify: boolean;
+  question_id: string | null;
+  question: { question: string } | null;
   duration_sec: number | null;
   year_approx: number | null;
   place: string | null;
@@ -95,6 +103,9 @@ async function hydrate(rows: MemoryRow[]): Promise<PersonMemory[]> {
     created_at: r.created_at,
     media_url: r.media_path ? (urls.get(r.media_path) ?? null) : r.external_url,
     is_external: !r.media_path && !!r.external_url,
+    identify: !!r.identify,
+    question_id: r.question_id,
+    question_text: r.question?.question ?? null,
     person_name: r.person?.full_name ?? null,
   }));
 }
@@ -211,6 +222,8 @@ export interface CreateMemoryInput {
   media_path?: string | null;
   media_mime?: string | null;
   external_url?: string | null;
+  identify?: boolean;
+  question_id?: string | null;
   duration_sec?: number | null;
   year_approx?: number | null;
   place?: string | null;
@@ -235,6 +248,8 @@ export async function createMemory(
       media_path: input.media_path ?? null,
       media_mime: input.media_mime ?? null,
       external_url: input.external_url?.trim() || null,
+      identify: input.identify ?? false,
+      question_id: input.question_id ?? null,
       duration_sec: input.duration_sec ?? null,
       year_approx: input.year_approx ?? null,
       place: input.place?.trim() || null,
@@ -465,6 +480,8 @@ export interface GuestMemoryInput {
   file_name?: string;
   /** Link https thay cho tệp (ảnh / ghi âm) — không tốn ổ cứng server. */
   external_url?: string;
+  /** Trả lời câu hỏi (P1). */
+  question_id?: string | null;
   /** Ô bẫy bot — luôn rỗng với người thật. */
   website?: string;
   elapsed_ms: number;
@@ -487,6 +504,7 @@ export async function submitGuestMemory(
   fd.set("guest_key", guestKey());
   fd.set("website", input.website ?? "");
   fd.set("elapsed_ms", String(Math.round(input.elapsed_ms)));
+  if (input.question_id) fd.set("question_id", input.question_id);
   if (input.external_url) fd.set("external_url", input.external_url);
   else if (input.file) fd.set("file", input.file, input.file_name ?? "file");
 
@@ -500,4 +518,242 @@ export async function submitGuestMemory(
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error ?? `community-submit (${res.status})`);
   return body as { id: string; status: MemoryStatus };
+}
+
+// ─── P1: Hỏi ông bà ─────────────────────────────────────────────
+
+export type QuestionStatus = "open" | "answered" | "closed";
+
+export interface FamilyQuestion {
+  id: string;
+  clan_id: string;
+  question: string;
+  status: QuestionStatus;
+  about_person_id: string | null;
+  about_person_name: string | null;
+  ask_person_id: string | null;
+  ask_person_name: string | null;
+  asked_by: string | null;
+  asked_by_name: string | null;
+  answers: number;
+  created_at: string;
+}
+
+/** Câu hỏi gợi ý — ngắn, dễ trả lời bằng một đoạn ghi âm, khơi chuyện ngày xưa. */
+export const SUGGESTED_QUESTIONS: string[] = [
+  "Ngày nhỏ ông/bà hay chơi trò gì?",
+  "Quê mình ngày xưa trông như thế nào?",
+  "Ông bà gặp nhau lần đầu ở đâu, thế nào?",
+  "Hồi trẻ ông/bà làm nghề gì để sống?",
+  "Món ăn nào làm ông/bà nhớ nhà nhất?",
+  "Kỷ niệm đáng nhớ nhất về cha mẹ của ông/bà là gì?",
+  "Ngày Tết ngày xưa nhà mình thường làm gì?",
+  "Lời dặn nào của ông bà tổ tiên mà ông/bà nhớ nhất?",
+  "Thời chiến tranh gia đình mình đã sống ra sao?",
+  "Ông/bà có biết vì sao họ mình về sống ở quê này không?",
+  "Cụ cao nhất mà ông/bà còn nhớ tên là ai, cụ là người thế nào?",
+  "Có bài hát, câu ca dao nào ông/bà hay hát cho con cháu?",
+];
+
+/** Câu hỏi gợi ý của tuần — đổi mỗi tuần, cả họ cùng một câu. */
+export function weeklyQuestion(now = new Date()): string {
+  const week = Math.floor(now.getTime() / (7 * 86400_000));
+  return SUGGESTED_QUESTIONS[week % SUGGESTED_QUESTIONS.length];
+}
+
+export async function listQuestions(clanId: string, client: Client = defaultClient): Promise<FamilyQuestion[]> {
+  const { data, error } = await client
+    .from("family_questions")
+    .select(
+      "id, clan_id, question, status, about_person_id, ask_person_id, asked_by, created_at, about:persons!family_questions_about_person_id_fkey(full_name), ask:persons!family_questions_ask_person_id_fkey(full_name), asker:profiles(display_name), answers:person_memories!person_memories_question_fk(count)",
+    )
+    .eq("clan_id", clanId)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as unknown as {
+    id: string;
+    clan_id: string;
+    question: string;
+    status: string;
+    about_person_id: string | null;
+    ask_person_id: string | null;
+    asked_by: string | null;
+    created_at: string;
+    about: { full_name: string } | null;
+    ask: { full_name: string } | null;
+    asker: { display_name: string | null } | null;
+    answers: { count: number }[];
+  }[]).map((q) => ({
+    id: q.id,
+    clan_id: q.clan_id,
+    question: q.question,
+    status: q.status as QuestionStatus,
+    about_person_id: q.about_person_id,
+    about_person_name: q.about?.full_name ?? null,
+    ask_person_id: q.ask_person_id,
+    ask_person_name: q.ask?.full_name ?? null,
+    asked_by: q.asked_by,
+    asked_by_name: q.asker?.display_name ?? null,
+    answers: q.answers?.[0]?.count ?? 0,
+    created_at: q.created_at,
+  }));
+}
+
+export async function createQuestion(
+  input: { clan_id: string; question: string; about_person_id?: string | null; ask_person_id?: string | null },
+  client: Client = defaultClient,
+): Promise<{ id: string }> {
+  const { data, error } = await client
+    .from("family_questions")
+    .insert({
+      clan_id: input.clan_id,
+      question: input.question.trim(),
+      about_person_id: input.about_person_id ?? null,
+      ask_person_id: input.ask_person_id ?? null,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return { id: data.id };
+}
+
+export async function setQuestionStatus(id: string, status: QuestionStatus, client: Client = defaultClient) {
+  const { error } = await client.from("family_questions").update({ status }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteQuestion(id: string, client: Client = defaultClient) {
+  const { error } = await client.from("family_questions").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Link trả lời một câu hỏi: trang chia sẻ mở thẳng tab Cùng góp với câu hỏi đó. */
+export function questionLinkUrl(token: string, questionId: string): string {
+  return `${window.location.origin}/share/${token}?tab=gop&q=${questionId}`;
+}
+
+// ─── P2: Ảnh "đây là ai?" ───────────────────────────────────────
+
+export type FaceStatus = "suggested" | "confirmed" | "rejected";
+
+export interface PhotoFace {
+  id: string;
+  memory_id: string;
+  /** [x, y, w, h] theo tỉ lệ 0..1 của ảnh. */
+  box: [number, number, number, number];
+  person_id: string | null;
+  person_name: string | null;
+  suggested_name: string | null;
+  suggested_note: string | null;
+  status: FaceStatus;
+  tagger_label: string;
+  tagged_by: string | null;
+  created_at: string;
+}
+
+export async function listFaces(memoryId: string, client: Client = defaultClient): Promise<PhotoFace[]> {
+  const { data, error } = await client
+    .from("photo_faces")
+    .select(
+      "id, memory_id, box_x, box_y, box_w, box_h, person_id, suggested_name, suggested_note, status, tagged_by, tagger_name, created_at, person:persons(full_name), tagger:profiles!photo_faces_tagged_by_fkey(display_name)",
+    )
+    .eq("memory_id", memoryId)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as unknown as {
+    id: string;
+    memory_id: string;
+    box_x: number;
+    box_y: number;
+    box_w: number;
+    box_h: number;
+    person_id: string | null;
+    suggested_name: string | null;
+    suggested_note: string | null;
+    status: string;
+    tagged_by: string | null;
+    tagger_name: string | null;
+    created_at: string;
+    person: { full_name: string } | null;
+    tagger: { display_name: string | null } | null;
+  }[]).map((f) => ({
+    id: f.id,
+    memory_id: f.memory_id,
+    box: [f.box_x, f.box_y, f.box_w, f.box_h],
+    person_id: f.person_id,
+    person_name: f.person?.full_name ?? null,
+    suggested_name: f.suggested_name,
+    suggested_note: f.suggested_note,
+    status: f.status as FaceStatus,
+    tagger_label: f.tagger?.display_name || f.tagger_name || "Người thân",
+    tagged_by: f.tagged_by,
+    created_at: f.created_at,
+  }));
+}
+
+export interface FaceInput {
+  memory_id: string;
+  box: [number, number, number, number];
+  person_id?: string | null;
+  suggested_name?: string | null;
+  suggested_note?: string | null;
+}
+
+/** Thành viên khoanh mặt (editor+ gắn người trong cây → xác nhận luôn, do trigger quyết). */
+export async function addFace(input: FaceInput, client: Client = defaultClient): Promise<void> {
+  const [x, y, w, h] = input.box;
+  const { error } = await client.from("photo_faces").insert({
+    memory_id: input.memory_id,
+    clan_id: "00000000-0000-0000-0000-000000000000", // trigger ghi đè từ ảnh
+    box_x: x,
+    box_y: y,
+    box_w: w,
+    box_h: h,
+    person_id: input.person_id ?? null,
+    suggested_name: input.suggested_name?.trim() || null,
+    suggested_note: input.suggested_note?.trim() || null,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function setFaceStatus(id: string, status: FaceStatus, client: Client = defaultClient) {
+  const { error } = await client.from("photo_faces").update({ status }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteFace(id: string, client: Client = defaultClient) {
+  const { error } = await client.from("photo_faces").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Khách khoanh mặt qua link (edge function community-submit, kind=face). */
+export async function submitGuestFace(
+  input: FaceInput & { token: string; author_name: string; elapsed_ms: number; website?: string },
+): Promise<void> {
+  const fd = new FormData();
+  fd.set("token", input.token);
+  fd.set("kind", "face");
+  fd.set("memory_id", input.memory_id);
+  const [x, y, w, h] = input.box;
+  fd.set("box_x", String(x));
+  fd.set("box_y", String(y));
+  fd.set("box_w", String(w));
+  fd.set("box_h", String(h));
+  if (input.person_id) fd.set("person_id", input.person_id);
+  if (input.suggested_name) fd.set("suggested_name", input.suggested_name);
+  if (input.suggested_note) fd.set("suggested_note", input.suggested_note);
+  fd.set("author_name", input.author_name);
+  fd.set("guest_key", guestKey());
+  fd.set("website", input.website ?? "");
+  fd.set("elapsed_ms", String(Math.round(input.elapsed_ms)));
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const res = await fetch(`${base}/functions/v1/community-submit`, {
+    method: "POST",
+    headers: { apikey: anon, Authorization: `Bearer ${anon}` },
+    body: fd,
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error ?? `community-submit (${res.status})`);
 }

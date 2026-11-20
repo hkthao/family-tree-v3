@@ -626,7 +626,7 @@ Deno.serve(async (req) => {
   const { data: memRows } = await sb
     .from("person_memories")
     .select(
-      "id, person_id, kind, body, media_path, media_mime, external_url, duration_sec, year_approx, place, author_name, author_relation, created_at, author:profiles!person_memories_author_user_id_fkey(display_name)",
+      "id, person_id, kind, body, media_path, media_mime, external_url, identify, question_id, duration_sec, year_approx, place, author_name, author_relation, created_at, author:profiles!person_memories_author_user_id_fkey(display_name)",
     )
     .eq("clan_id", link.clan_id)
     .eq("status", "visible")
@@ -648,6 +648,49 @@ Deno.serve(async (req) => {
       if (row.signedUrl && row.path) memSigned.set(row.path, stripOrigin(row.signedUrl));
     }
   }
+  // Ảnh "đây là ai?": khung khuôn mặt. Khách chỉ thấy TÊN khi đã xác nhận; gợi ý chưa duyệt chỉ
+  // thấy số lượng (plan §11, câu 8). Người còn sống đã xác nhận vẫn hiện tên (như cây chia sẻ).
+  const identifyIds = memAllowed.filter((m) => m.identify).map((m) => m.id as string);
+  // deno-lint-ignore no-explicit-any
+  const facesByMemory = new Map<string, any[]>();
+  if (identifyIds.length > 0) {
+    const { data: faces } = await sb
+      .from("photo_faces")
+      .select("id, memory_id, box_x, box_y, box_w, box_h, status, suggested_name, suggested_note, person:persons(full_name)")
+      .in("memory_id", identifyIds)
+      .neq("status", "rejected")
+      .order("created_at", { ascending: true });
+    for (const f of faces ?? []) {
+      // deno-lint-ignore no-explicit-any
+      const ff = f as any;
+      const confirmed = ff.status === "confirmed";
+      const arr = facesByMemory.get(ff.memory_id) ?? [];
+      arr.push({
+        id: ff.id,
+        box: [ff.box_x, ff.box_y, ff.box_w, ff.box_h],
+        confirmed,
+        label: confirmed ? (ff.person?.full_name ?? ff.suggested_name) : null,
+        note: confirmed ? ff.suggested_note : null,
+      });
+      facesByMemory.set(ff.memory_id, arr);
+    }
+  }
+
+  // Câu hỏi (P1 "Hỏi ông bà"): câu hỏi đang mở + đã có trả lời gần đây — để khách trả lời qua link.
+  const { data: qRows } = await sb
+    .from("family_questions")
+    .select("id, question, status, about_person_id, ask_person_id, created_at")
+    .eq("clan_id", link.clan_id)
+    .neq("status", "closed")
+    .order("created_at", { ascending: false })
+    .limit(20);
+  const scopedIds = new Set(scopedPersons.map((p) => p.id));
+  const questions = (qRows ?? []).filter(
+    (q) =>
+      (!q.about_person_id || scopedIds.has(q.about_person_id)) &&
+      (!q.ask_person_id || scopedIds.has(q.ask_person_id)),
+  );
+
   const memories = memAllowed.map((m) => ({
     id: m.id,
     person_id: m.person_id,
@@ -656,6 +699,9 @@ Deno.serve(async (req) => {
     // Tệp trong bucket → URL ký; link ngoài (https) → dùng thẳng.
     media_url: m.media_path ? (memSigned.get(m.media_path) ?? null) : (m.external_url ?? null),
     is_external: !m.media_path && !!m.external_url,
+    identify: !!m.identify,
+    question_id: m.question_id ?? null,
+    faces: facesByMemory.get(m.id) ?? [],
     media_mime: m.media_mime,
     duration_sec: m.duration_sec,
     year_approx: m.year_approx,
@@ -676,6 +722,7 @@ Deno.serve(async (req) => {
       recipient_label: link.recipient_label ?? null,
       stats: communityStats ?? null,
       memories,
+      questions,
     },
     scope: link.scope,
     generation_offset: generationOffset,
