@@ -117,7 +117,10 @@ function render() {
             //     của người đã mở trang lưu lại DANH SÁCH RỖNG. Đồng bộ xong
             //     vẫn thấy "Chưa có tập nào" — đúng vết xe của v5 (danh sách
             //     thông báo cached rỗng trước khi seed prod).
-            buster: "v9",
+            // v10: đóng góp cộng đồng (person_memories) thêm applied / identify /
+            //     question_id… Cache cũ thiếu `applied` → đọc applied.length trên
+            //     undefined làm hỏng dòng ở trang Đóng góp nội dung (MemoryRow).
+            buster: "v10",
           }}
         >
           <I18nRoot>
