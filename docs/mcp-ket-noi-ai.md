@@ -89,6 +89,7 @@ trả **link tải có hạn 30 phút** (signed URL). Không tạo link chia s�
 
 - `list_memories` (đọc): đóng góp đã duyệt mà người kể cho phép dùng lại (câu chuyện, ảnh, trả lời câu hỏi) — kèm người kể, quan hệ, năm, nơi chốn, nguồn, đã/chưa đưa vào gia phả.
 - `propose_add_note` / `propose_edit_person` / `propose_add_person` nhận thêm `source_memory_ids`. **AI luôn chỉ đề xuất** (kể cả token admin — gói admin nay gọi được `propose_*`); admin duyệt trong app thì trigger `contributions_mark_source_memories` tự đánh dấu các đóng góp nguồn "đã đưa vào gia phả".
+- `get_biography_sources` (đọc, P4): gom trong một lần gọi dữ kiện đã ghi, cha mẹ / vợ chồng / con, tiểu sử hiện có và các đóng góp đánh số [n] kèm id + hướng dẫn soạn (trình tự thời gian, ghi nguồn từng câu, không bịa, mâu thuẫn thì nêu cả hai, giữ riêng tư người còn sống). AI soạn xong gửi `propose_edit_person` (changes.bio) / `propose_add_note` kèm `source_memory_ids`.
 - Trong app, admin cũng tự "Đưa vào gia phả" (tiểu sử / ảnh đại diện / đánh dấu) ở trang Đóng góp nội dung.
 
 ## Token ADMIN HỆ THỐNG (gói `admin`)
