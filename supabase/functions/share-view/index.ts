@@ -15,6 +15,8 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+import { buildShareSections } from "./sections.ts";
+
 /**
  * Ảnh là link ngoài (vd ảnh Wikimedia Commons của dòng họ lịch sử) — photo_path
  * / path bắt đầu bằng https://. Dùng thẳng, không ký URL trong bucket.
@@ -191,7 +193,7 @@ Deno.serve(async (req) => {
   // ---- 2b. Fetch clan-level toggles that affect masking + display ----
   const { data: clanRow } = await sb
     .from("clans")
-    .select("name, hide_photos_in_share, generation_offset")
+    .select("name, hide_photos_in_share, generation_offset, share_sections")
     .eq("id", link.clan_id)
     .maybeSingle();
   const hidePhotos = !!clanRow?.hide_photos_in_share;
@@ -712,6 +714,27 @@ Deno.serve(async (req) => {
     created_at: m.created_at,
   }));
   // Link tự tạm dừng vì nhận quá nhiều (có thể bị lộ) → trang vẫn xem được, chỉ ẩn phần góp.
+  // Tab "Tổng quan" của link chia sẻ: các phần admin chọn (clans.share_sections). Chỉ cho link token
+  // (trang xem công khai /xem/clans/… giữ public_show_* riêng).
+  const shareSections = token && link.scope !== "single_person"
+    ? await buildShareSections(
+        {
+          sb,
+          clanId: link.clan_id,
+          hidePhotos,
+          sign: async (paths) => {
+            const m = new Map<string, string>();
+            const { data: signed } = await sb.storage.from("person-photos").createSignedUrls([...new Set(paths)], 3600);
+            for (const r of signed ?? []) if (r.signedUrl && r.path) m.set(r.path, stripOrigin(r.signedUrl));
+            return m;
+          },
+        },
+        (clanRow?.share_sections as string[] | null) ?? [],
+        scopedPersons,
+        generationOffset,
+      )
+    : {};
+
   const canContribute =
     !!token && link.scope !== "resting_place" && link.scope !== "heritage_item" && !link.contrib_paused_at;
 
@@ -719,6 +742,7 @@ Deno.serve(async (req) => {
     clan_id: link.clan_id,
     clan_name: clanName,
     root_person_id: link.root_person_id,
+    sections: shareSections,
     community: {
       can_contribute: canContribute,
       recipient_label: link.recipient_label ?? null,

@@ -42,6 +42,7 @@ import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
 import { useTreeViewPrefs } from "@/lib/tree/viewPrefs";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
+import { ShareOverview } from "@/components/share/ShareOverview";
 import {
   CommunitySharePanel,
   CommunityStatsLine,
@@ -227,13 +228,16 @@ export default function Share() {
   // Link mời góp mở thẳng tab "Cùng góp" (?tab=gop, ?p=<người được kể>).
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<
-    "tree" | "events" | "heritage" | "details" | "gop" | "hoi"
+    "overview" | "tree" | "events" | "heritage" | "details" | "gop" | "hoi"
   >(() =>
     searchParams.get("q") || searchParams.get("tab") === "hoi"
       ? "hoi"
       : searchParams.get("tab") === "gop"
         ? "gop"
-        : "tree",
+        : searchParams.get("tab") === "tree" || !token
+          ? "tree"
+          : // Link chia sẻ mở vào "Tổng quan" (các card); cây gia phả là một card mở toàn khung.
+            "overview",
   );
   const invitedPersonId = searchParams.get("p");
   // Dòng họ có nguồn sử liệu (gia phả lịch sử) → thêm tab "Chi tiết" cho người
@@ -1033,7 +1037,7 @@ export default function Share() {
 
       {/* Thanh TAB: trang xem thử công khai (Cây | Sự kiện & giỗ | Di sản | Chi tiết) và link chia sẻ
           nhận đóng góp (Cây | Cùng góp). */}
-      {(publicClan || canGop) && data && data.persons.length > 0 && (
+      {(publicClan || !!token) && data && data.persons.length > 0 && (
         <div className="shrink-0 border-b print-hide">
           <div
             role="tablist"
@@ -1041,9 +1045,16 @@ export default function Share() {
             className="container flex max-w-6xl overflow-x-auto px-2"
             style={{ scrollbarWidth: "none" }}
           >
-            <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
-              {t`Cây gia phả`}
-            </ShareTab>
+            {/* Link chia sẻ: "Tổng quan" thay cho tab Cây (cây là một card trong đó). Trang xem công khai giữ tab Cây. */}
+            {token ? (
+              <ShareTab active={tab === "overview" || tab === "tree"} onClick={() => setTab("overview")}>
+                {t`Tổng quan`}
+              </ShareTab>
+            ) : (
+              <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
+                {t`Cây gia phả`}
+              </ShareTab>
+            )}
             {(data.events?.length || hasAnniversaries(data)) && (
               <ShareTab
                 active={tab === "events"}
@@ -1116,6 +1127,17 @@ export default function Share() {
                 tab === "tree" ? "flex flex-1 min-h-0 flex-col" : "hidden"
               }
             >
+              {token && (
+                <div className="container max-w-6xl shrink-0 pt-2 print-hide">
+                  <button
+                    type="button"
+                    onClick={() => setTab("overview")}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    {t`← Tổng quan`}
+                  </button>
+                </div>
+              )}
               {/* Thanh công cụ gọn: ô chọn người trung tâm (có ô tìm), icon Tuỳ chọn cây nằm trong ô. */}
               <div className="container flex max-w-6xl shrink-0 items-center gap-2 py-3 print-hide">
                 <div className="min-w-0 flex-1">
@@ -1256,6 +1278,16 @@ export default function Share() {
             </div>
 
             {/* TAB Sự kiện & giỗ / Di sản — chỉ trang xem thử công khai. */}
+            {token && tab === "overview" && (
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <ShareOverview
+                  persons={data.persons}
+                  generationOffset={data.generation_offset ?? 0}
+                  sections={data.sections ?? {}}
+                  onOpenTree={() => setTab("tree")}
+                />
+              </div>
+            )}
             {canGop && (tab === "gop" || tab === "hoi") && data.community && token && (
               <div className="flex-1 min-h-0 overflow-y-auto">
                 <CommunitySharePanel

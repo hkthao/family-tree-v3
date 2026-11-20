@@ -727,6 +727,7 @@ export type Database = {
           name_unaccent: string | null
           owner_id: string | null
           person_count: number
+          share_sections: string[]
           public_show_events: boolean
           public_show_graves: boolean
           public_show_heritage: boolean
@@ -757,6 +758,7 @@ export type Database = {
           name_unaccent?: string | null
           owner_id?: string | null
           person_count?: number
+          share_sections?: string[]
           public_show_events?: boolean
           public_show_graves?: boolean
           public_show_heritage?: boolean
@@ -787,6 +789,7 @@ export type Database = {
           name_unaccent?: string | null
           owner_id?: string | null
           person_count?: number
+          share_sections?: string[]
           public_show_events?: boolean
           public_show_graves?: boolean
           public_show_heritage?: boolean
