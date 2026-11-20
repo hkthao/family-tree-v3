@@ -15728,6 +15728,7 @@ msgid "Trang này được tạo từ<0>Dòng Họ Việt</0> — nơi lưu gi�
 msgstr "Trang này được tạo từ<0>Dòng Họ Việt</0> — nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của dòng họ."
 
 #: src/components/Pagination.tsx
+#: src/components/share/ShareOverview.tsx
 msgid "Trang sau"
 msgstr "Trang sau"
 
@@ -15758,6 +15759,7 @@ msgid "Trang trống hoàn toàn"
 msgstr "Trang trống hoàn toàn"
 
 #: src/components/Pagination.tsx
+#: src/components/share/ShareOverview.tsx
 msgid "Trang trước"
 msgstr "Trang trước"
 
@@ -16979,8 +16981,8 @@ msgid "Xem thêm {0} sự kiện →"
 msgstr "Xem thêm {0} sự kiện →"
 
 #: src/components/share/ShareOverview.tsx
-msgid "Xem thêm {n}"
-msgstr "Xem thêm {n}"
+#~ msgid "Xem thêm {n}"
+#~ msgstr "Xem thêm {n}"
 
 #: src/lib/pageTitle.ts
 msgid "Xem thử gia phả mẫu"

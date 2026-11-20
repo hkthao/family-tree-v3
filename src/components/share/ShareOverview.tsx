@@ -4,6 +4,7 @@ import { Chip } from "@/components/Chip";
 import { ProvinceMap } from "@/components/ProvinceMap";
 import { SectionCard } from "@/components/SectionCard";
 import {
+  IconArrowLeft,
   IconArrowRight,
   IconAward,
   IconGrave,
@@ -29,25 +30,54 @@ const vnd = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} đ`;
 const day = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString("vi-VN") : "";
 
-/** Một mục có "Xem thêm" khi danh sách dài — giữ card gọn. */
-function useMore<T>(rows: T[], first = 4) {
-  const [all, setAll] = useState(false);
+/** Phân trang trong card: số dòng cố định mỗi trang → chiều cao card ổn định, không vỡ layout 2 cột. */
+function usePager<T>(rows: T[], size: number) {
+  const [page, setPage] = useState(0);
+  const pages = Math.max(1, Math.ceil(rows.length / size));
+  const p = Math.min(page, pages - 1);
   return {
-    shown: all ? rows : rows.slice(0, first),
-    more: rows.length > first && !all,
-    showAll: () => setAll(true),
+    shown: rows.slice(p * size, p * size + size),
+    page: p,
+    pages,
+    prev: () => setPage(Math.max(0, p - 1)),
+    next: () => setPage(Math.min(pages - 1, p + 1)),
   };
 }
 
-function MoreButton({ onClick, n }: { onClick: () => void; n: number }) {
+function Pager({
+  pager,
+}: {
+  pager: { page: number; pages: number; prev: () => void; next: () => void };
+}) {
+  if (pager.pages <= 1) return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-sm font-medium text-primary hover:underline"
-    >
-      {t`Xem thêm ${n}`}
-    </button>
+    <div className="mt-auto flex items-center justify-end gap-1 pt-2 text-sm">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        aria-label={t`Trang trước`}
+        disabled={pager.page === 0}
+        onClick={pager.prev}
+      >
+        <IconArrowLeft className="h-4 w-4" />
+      </Button>
+      <span className="min-w-12 text-center tabular-nums text-muted-foreground">
+        {pager.page + 1}/{pager.pages}
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        aria-label={t`Trang sau`}
+        disabled={pager.page >= pager.pages - 1}
+        onClick={pager.next}
+      >
+        <IconArrowRight className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }
 
@@ -72,10 +102,10 @@ export function ShareOverview({
   const maxGen = gens.length ? Math.max(...gens) - generationOffset : null;
   const root = persons.find((p) => p.is_root && !p.is_living);
   const info = sections.info;
-  const board = useMore(sections.board ?? [], 3);
-  const heritage = useMore(sections.heritage ?? []);
-  const graves = useMore(sections.graves ?? []);
-  const honor = useMore(sections.honor ?? [], 5);
+  const board = usePager(sections.board ?? [], 3);
+  const heritage = usePager(sections.heritage ?? [], 4);
+  const graves = usePager(sections.graves ?? [], 4);
+  const honor = usePager(sections.honor ?? [], 5);
 
   return (
     // Cùng bề rộng với thanh mời góp / thanh tab (max-w-6xl). Màn rộng: 2 cột, hai card cùng hàng cao bằng
@@ -148,7 +178,7 @@ export function ShareOverview({
       {sections.board && sections.board.length > 0 && (
         <SectionCard
           id="share-board"
-          bodyClassName="flex-1 p-3 sm:p-4"
+          bodyClassName="flex flex-1 flex-col p-3 sm:p-4"
           icon={<IconSparkles />}
           title={t`Bảng tin`}
         >
@@ -173,12 +203,7 @@ export function ShareOverview({
               </li>
             ))}
           </ul>
-          {board.more && (
-            <MoreButton
-              onClick={board.showAll}
-              n={(sections.board?.length ?? 0) - board.shown.length}
-            />
-          )}
+          <Pager pager={board} />
         </SectionCard>
       )}
 
@@ -188,7 +213,7 @@ export function ShareOverview({
           0 && (
           <SectionCard
             id="share-map"
-            bodyClassName="flex-1 p-3 sm:p-4"
+            bodyClassName="flex flex-1 flex-col p-3 sm:p-4"
             icon={<IconMapPin />}
             title={t`Bản đồ dòng họ`}
           >
@@ -228,7 +253,7 @@ export function ShareOverview({
       {sections.heritage && sections.heritage.length > 0 && (
         <SectionCard
           id="share-heritage"
-          bodyClassName="flex-1 p-3 sm:p-4"
+          bodyClassName="flex flex-1 flex-col p-3 sm:p-4"
           icon={<IconScroll />}
           title={t`Di sản dòng họ`}
         >
@@ -266,19 +291,14 @@ export function ShareOverview({
               </li>
             ))}
           </ul>
-          {heritage.more && (
-            <MoreButton
-              onClick={heritage.showAll}
-              n={(sections.heritage?.length ?? 0) - heritage.shown.length}
-            />
-          )}
+          <Pager pager={heritage} />
         </SectionCard>
       )}
 
       {sections.graves && sections.graves.length > 0 && (
         <SectionCard
           id="share-graves"
-          bodyClassName="flex-1 p-3 sm:p-4"
+          bodyClassName="flex flex-1 flex-col p-3 sm:p-4"
           icon={<IconGrave />}
           title={t`Mộ phần & tro cốt`}
         >
@@ -312,19 +332,14 @@ export function ShareOverview({
               </li>
             ))}
           </ul>
-          {graves.more && (
-            <MoreButton
-              onClick={graves.showAll}
-              n={(sections.graves?.length ?? 0) - graves.shown.length}
-            />
-          )}
+          <Pager pager={graves} />
         </SectionCard>
       )}
 
       {sections.honor && sections.honor.length > 0 && (
         <SectionCard
           id="share-honor"
-          bodyClassName="flex-1 p-3 sm:p-4"
+          bodyClassName="flex flex-1 flex-col p-3 sm:p-4"
           icon={<IconAward />}
           title={t`Bảng vàng công đức`}
         >
@@ -360,19 +375,14 @@ export function ShareOverview({
               </li>
             ))}
           </ul>
-          {honor.more && (
-            <MoreButton
-              onClick={honor.showAll}
-              n={(sections.honor?.length ?? 0) - honor.shown.length}
-            />
-          )}
+          <Pager pager={honor} />
         </SectionCard>
       )}
 
       {sections.mosaic && sections.mosaic.tiles.length > 0 && (
         <SectionCard
           id="share-mosaic"
-          bodyClassName="flex-1 p-3 sm:p-4"
+          bodyClassName="flex flex-1 flex-col p-3 sm:p-4"
           icon={<IconPuzzle />}
           title={sections.mosaic.title || t`Ảnh ghép đại gia đình`}
         >
