@@ -10701,6 +10701,11 @@ msgstr "Mọi dòng họ trên nền tảng."
 msgid "Mời góp"
 msgstr "Mời góp"
 
+#. placeholder {0}: missing.join(", ")
+#: src/pages/clan/People.tsx
+msgid "Mời góp thông tin — còn thiếu: {0}"
+msgstr "Mời góp thông tin — còn thiếu: {0}"
+
 #: src/pages/clan/Audit.tsx
 msgid "Mọi hành động"
 msgstr "Mọi hành động"
@@ -10781,6 +10786,11 @@ msgstr "Mời người thân đóng góp"
 #: src/pages/clan/Memories.tsx
 msgid "Mời người thân góp"
 msgstr "Mời người thân góp"
+
+#. placeholder {0}: person.full_name
+#: src/pages/clan/People.tsx
+msgid "Mời người thân góp thông tin về {0}"
+msgstr "Mời người thân góp thông tin về {0}"
 
 #: src/pages/clan/Members.tsx
 msgid "Mời người, đổi vai trò, gỡ thành viên."
@@ -10878,6 +10888,10 @@ msgstr "Một câu tóm tắt, hiện ở danh sách"
 #: src/pages/admin/Config.tsx
 msgid "một hoặc nhiều"
 msgstr "một hoặc nhiều"
+
+#: src/pages/clan/People.tsx
+msgid "Một kỷ niệm về cụ"
+msgstr "Một kỷ niệm về cụ"
 
 #: src/components/community/MemoryForm.tsx
 msgid "Một kỷ niệm, món ăn hay nấu, câu hay dặn, công việc ngày trước…"
@@ -11031,6 +11045,7 @@ msgstr "năm mất"
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/pages/clan/People.tsx
 msgid "Năm mất"
 msgstr "Năm mất"
 
@@ -11058,6 +11073,7 @@ msgstr "năm sinh"
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/pages/clan/People.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Năm sinh"
 msgstr "Năm sinh"
@@ -11231,6 +11247,7 @@ msgid "Ngày giỗ"
 msgstr "Ngày giỗ"
 
 #: src/components/community/MemoryForm.tsx
+#: src/pages/clan/People.tsx
 msgid "Ngày giỗ (âm lịch)"
 msgstr "Ngày giỗ (âm lịch)"
 
@@ -12045,6 +12062,7 @@ msgstr "Nơi an nghỉ liên quan"
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/NewPerson.tsx
+#: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Nơi an táng"
@@ -12579,6 +12597,7 @@ msgstr "Quay về tự động"
 msgid "Quê gốc"
 msgstr "Quê gốc"
 
+#: src/pages/clan/People.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
