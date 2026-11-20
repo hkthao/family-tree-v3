@@ -62,6 +62,7 @@ const ContributionDetail = lazy(
   () => import("@/pages/clan/ContributionDetail"),
 );
 const Contributions = lazy(() => import("@/pages/clan/Contributions"));
+const Memories = lazy(() => import("@/pages/clan/Memories"));
 const Dashboard = lazy(() => import("@/pages/clan/Dashboard"));
 const EditPerson = lazy(() => import("@/pages/clan/EditPerson"));
 const Events = lazy(() => import("@/pages/clan/Events"));
@@ -436,6 +437,7 @@ export default function App() {
                 <Route path="relations" element={<Relations />} />
                 <Route path="menu" element={<ClanMenu />} />
                 <Route path="contributions" element={<Contributions />} />
+                <Route path="dong-gop" element={<Memories />} />
                 <Route
                   path="contributions/:contribId"
                   element={<ContributionDetail />}

@@ -435,6 +435,14 @@ export function buildSections(
         icon: <IconSparkles className={ic} />,
       });
     }
+    if (isMember && clan?.kind !== "historical") {
+      communityItems.push({
+        to: `/clans/${clanId}/dong-gop`,
+        label: t`Đóng góp nội dung`,
+        hint: t`Câu chuyện, ảnh cũ, ghi âm về người thân; mời người thân góp qua link.`,
+        icon: <IconBook className={ic} />,
+      });
+    }
     if (isMember) {
       communityItems.push({
         to: `/clans/${clanId}/map`,

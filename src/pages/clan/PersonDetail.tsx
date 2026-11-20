@@ -38,6 +38,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ContributeDialog } from "@/components/ContributeDialog";
+import { PersonMemoriesSection } from "@/components/community/PersonMemoriesSection";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { KhoeButton } from "@/components/KhoeButton";
@@ -661,6 +662,18 @@ export default function PersonDetail({
               viewingClanId={clan.id}
             />
             <RelatedPostsSection personId={personId!} clanId={clan.id} />
+
+            {/* Ký ức cộng đồng (docs/plan-dong-gop-cong-dong.md): mọi thành viên kể / mời người khác kể. */}
+            {effectiveRole(clan) !== null && clan.kind !== "historical" && userId && (
+              <PersonMemoriesSection
+                clanId={clan.id}
+                clanName={clan.name}
+                personId={person.id}
+                personName={person.full_name}
+                userId={userId}
+                canModerate={canEdit}
+              />
+            )}
 
             {/* Actions row — desktop: nút rộng cố định 100px, dạt phải; mobile: các nút
                 chia đều bề ngang để cả hàng nằm gọn một dòng (cố định 100px thì 4 nút

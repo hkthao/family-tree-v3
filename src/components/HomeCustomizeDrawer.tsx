@@ -11,6 +11,8 @@ function cardLabel(k: HomeCardKey): string {
   switch (k) {
     case "today":
       return t`Lịch hôm nay`;
+    case "community":
+      return t`Đóng góp mới`;
     case "nextstep":
       return t`Gợi ý bước tiếp theo`;
     case "stats":

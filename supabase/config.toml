@@ -422,6 +422,11 @@ verify_jwt = false
 # clan before inserting via the service role.
 verify_jwt = false
 
+[functions.community-submit]
+# Khách góp ký ức qua link (không có JWT). Function tự kiểm tra token link,
+# bẫy bot, giới hạn tần suất theo IP băm + theo link, rồi ghi bằng service role.
+verify_jwt = false
+
 [functions.notify-contribution]
 # Fire-and-forget from client + submit-contribution. The function
 # only reads from the contributions table and dispatches the email

@@ -2,12 +2,14 @@ import { lockBodyScroll } from "@/lib/scrollLock";
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import {
   IconDownload,
   IconFlame,
+  IconBook,
   IconLogIn,
+  IconSend,
   IconMaximize,
   IconMinimize,
   IconPlus,
@@ -40,6 +42,10 @@ import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
 import { useTreeViewPrefs } from "@/lib/tree/viewPrefs";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
+import {
+  CommunitySharePanel,
+  CommunityStatsLine,
+} from "@/components/community/CommunitySharePanel";
 import { SharedRestingPlaceCard } from "@/components/SharedRestingPlaceCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -218,9 +224,12 @@ export default function Share() {
 
   // Trang xem thử công khai chia TAB: Cây | Sự kiện & giỗ | Di sản. Giữ cây
   // luôn mounted (ẩn bằng CSS) để khỏi dựng lại chart; refit khi quay lại.
-  const [tab, setTab] = useState<"tree" | "events" | "heritage" | "details">(
-    "tree",
-  );
+  // Link mời góp mở thẳng tab "Cùng góp" (?tab=gop, ?p=<người được kể>).
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState<
+    "tree" | "events" | "heritage" | "details" | "gop"
+  >(() => (searchParams.get("tab") === "gop" ? "gop" : "tree"));
+  const invitedPersonId = searchParams.get("p");
   // Dòng họ có nguồn sử liệu (gia phả lịch sử) → thêm tab "Chi tiết" cho người
   // đang chọn: tiểu sử, trị vì, nguồn — khách chưa đăng nhập cũng đọc được.
   const { data: hasSources } = useQuery({
@@ -244,6 +253,8 @@ export default function Share() {
     enabled: !!token || !!clanId,
     retry: false,
   });
+  // Link chia sẻ (token) nhận ký ức của khách → banner mời góp + tab "Cùng góp".
+  const canGop = !!token && !!data?.community?.can_contribute && data.persons.length > 0;
 
   // Tiêu đề thật theo tên dòng họ — trang /xem/clans/:id là trang công
   // khai được Google index, tiêu đề chung chung thì không xếp hạng được.
@@ -909,6 +920,16 @@ export default function Share() {
               {t`Không tìm thấy thông tin người này.`}
             </p>
           )}
+          {focalPerson && token && data.community?.can_contribute && !focalPerson.is_living && (
+            <CommunitySharePanel
+              community={data.community}
+              persons={data.persons}
+              token={token}
+              clanId={data.clan_id}
+              clanName={data.clan_name ?? null}
+              fixedPersonId={focalPerson.id}
+            />
+          )}
         </main>
       </div>
     );
@@ -981,8 +1002,32 @@ export default function Share() {
         </div>
       )}
 
-      {/* Thanh TAB (chỉ trang xem thử công khai): Cây | Sự kiện & giỗ | Di sản. */}
-      {publicClan && data && data.persons.length > 0 && (
+      {/* Mời góp (link chia sẻ / link mời góp): ai mở link cũng thấy họ đang cần mình kể gì. */}
+      {canGop && tab !== "gop" && (
+        <div className="container max-w-6xl shrink-0 pt-2 print-hide">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+            <IconBook className="h-5 w-5 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="font-medium">
+                {data?.community?.recipient_label
+                  ? t`${data.community.recipient_label} ơi, cả nhà nhờ bạn đóng góp chuyện ông bà, ảnh cũ`
+                  : t`Cả nhà đang cùng đóng góp chuyện ông bà, ảnh cũ — bạn góp một chút nhé`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {data?.community && <CommunityStatsLine community={data.community} />}
+              </p>
+            </div>
+            <Button size="sm" className="shrink-0" onClick={() => setTab("gop")}>
+              <IconSend className="mr-1.5 h-4 w-4" />
+              {t`Cùng góp`}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Thanh TAB: trang xem thử công khai (Cây | Sự kiện & giỗ | Di sản | Chi tiết) và link chia sẻ
+          nhận đóng góp (Cây | Cùng góp). */}
+      {(publicClan || canGop) && data && data.persons.length > 0 && (
         <div className="shrink-0 border-b print-hide">
           <div
             role="tablist"
@@ -1017,6 +1062,11 @@ export default function Share() {
                 {t`Chi tiết & nguồn`}
               </ShareTab>
             ) : null}
+            {canGop && (
+              <ShareTab active={tab === "gop"} onClick={() => setTab("gop")}>
+                {t`Cùng góp`}
+              </ShareTab>
+            )}
           </div>
         </div>
       )}
@@ -1052,9 +1102,7 @@ export default function Share() {
             {/* CÂY — luôn mounted, ẩn bằng CSS khi ở tab khác (khỏi dựng lại chart). */}
             <div
               className={
-                !publicClan || tab === "tree"
-                  ? "flex flex-1 min-h-0 flex-col"
-                  : "hidden"
+                tab === "tree" ? "flex flex-1 min-h-0 flex-col" : "hidden"
               }
             >
               {/* Thanh công cụ gọn: ô chọn người trung tâm (có ô tìm), icon Tuỳ chọn cây nằm trong ô. */}
@@ -1197,6 +1245,21 @@ export default function Share() {
             </div>
 
             {/* TAB Sự kiện & giỗ / Di sản — chỉ trang xem thử công khai. */}
+            {canGop && tab === "gop" && data.community && token && (
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <CommunitySharePanel
+                  community={data.community}
+                  persons={data.persons}
+                  token={token}
+                  clanId={data.clan_id}
+                  clanName={data.clan_name ?? null}
+                  initialPersonId={
+                    invitedPersonId ??
+                    (focal && data.persons.find((p) => p.id === focal && !p.is_living) ? focal : null)
+                  }
+                />
+              </div>
+            )}
             {publicClan && tab === "events" && <EventsGioPanel data={data} />}
             {publicClan && tab === "heritage" && <HeritagePanel data={data} />}
             {publicClan && tab === "details" && (

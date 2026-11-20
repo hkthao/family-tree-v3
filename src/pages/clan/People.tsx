@@ -34,6 +34,8 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
+  IconBook,
+  IconClock,
   IconCopy,
   IconGrid,
   IconList,
@@ -46,6 +48,7 @@ import {
   IconUsers,
   IconX,
 } from "@/components/icons";
+import { Chip } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
@@ -64,6 +67,10 @@ import {
   useClanContext,
 } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
+import {
+  getCommunityInfoByPerson,
+  type PersonCommunityInfo,
+} from "@/lib/queries/community";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
 import { savePersonNav } from "@/lib/personNav";
@@ -365,6 +372,17 @@ export default function People() {
     staleTime: PHOTO_URL_STALE_MS,
   });
 
+  // Đóng góp cộng đồng theo từng người — admin đọc lướt ngay ở Danh bạ rồi mở hồ sơ để cập nhật.
+  const { data: communityInfo } = useQuery({
+    queryKey: ["community-info-by-person", clan.id, userId],
+    queryFn: () => getCommunityInfoByPerson(clan.id),
+    enabled: !!userId && isMember && clan.kind !== "historical",
+    staleTime: 60_000,
+  });
+  const pendingCommunity = communityInfo
+    ? [...communityInfo.values()].reduce((n, i) => n + i.pending, 0)
+    : 0;
+
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const canEdit = canEditClan(clan);
@@ -422,6 +440,17 @@ export default function People() {
         completion.percent !== null && (
           <CompactCompletion clanId={clan.id} completion={completion} />
         )}
+
+      {/* Có đóng góp cộng đồng chờ duyệt → nhắc admin ngay ở Danh bạ. */}
+      {canEdit && view === "people" && pendingCommunity > 0 && (
+        <Link
+          to={`/clans/${clan.id}/dong-gop?tt=pending`}
+          className="flex min-h-11 items-center gap-2 rounded-xl border bg-card px-3 text-sm shadow-sm hover:border-primary"
+        >
+          <IconClock className="h-4 w-4 shrink-0 text-primary" />
+          {t`${pendingCommunity} đóng góp nội dung đang chờ duyệt — xem và đưa vào gia phả →`}
+        </Link>
+      )}
 
       {isMember && view === "people" && missingRoot && (
         <Alert>
@@ -832,6 +861,8 @@ export default function People() {
                   selected={selected.has(p.id)}
                   onToggleSelect={() => toggleSelected(p.id)}
                   canCopy={canEdit}
+                  community={communityInfo?.get(p.id)}
+                  showPending={canEdit}
                 />
               ))}
             </ul>
@@ -852,6 +883,7 @@ export default function People() {
                   onToggleSelect={() => toggleSelected(p.id)}
                   canCopy={canEdit}
                   canRelate={isMember}
+                  community={communityInfo?.get(p.id)}
                 />
               ))}
             </ul>
@@ -950,6 +982,8 @@ function PersonListItem({
   selected,
   onToggleSelect,
   canCopy,
+  community,
+  showPending,
 }: {
   person: PersonRow;
   clanId: string;
@@ -963,6 +997,8 @@ function PersonListItem({
   selected?: boolean;
   onToggleSelect?: () => void;
   canCopy?: boolean;
+  community?: PersonCommunityInfo;
+  showPending?: boolean;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
@@ -1047,6 +1083,7 @@ function PersonListItem({
               person={person}
               className="text-xs text-muted-foreground/80 mt-1 truncate"
             />
+            <CommunityHint info={community} showPending={showPending} />
           </div>
         </PanelLink>
       </div>
@@ -1099,6 +1136,42 @@ function PersonListItem({
   );
 }
 
+/**
+ * Đóng góp cộng đồng của một người ngay trong dòng Danh bạ: trích đoạn mới nhất + chip số lượng
+ * (và số chờ duyệt cho editor+). Bấm dòng mở hồ sơ, nơi có mục "Người thân kể về …".
+ */
+function CommunityHint({
+  info,
+  showPending,
+  compact = false,
+}: {
+  info: PersonCommunityInfo | undefined;
+  showPending?: boolean;
+  compact?: boolean;
+}) {
+  if (!info || info.total === 0) return null;
+  const pending = showPending ? info.pending : 0;
+  return (
+    <div className="mt-1.5 space-y-1">
+      {!compact && info.latest?.excerpt && (
+        <p className="line-clamp-1 text-xs italic text-muted-foreground">
+          “{info.latest.excerpt}” — {info.latest.author}
+        </p>
+      )}
+      <div className="flex flex-wrap justify-end gap-1.5">
+        <Chip tone="rose" icon={<IconBook />}>
+          {t`${info.total} đóng góp`}
+        </Chip>
+        {pending > 0 && (
+          <Chip tone="warning" icon={<IconClock />}>
+            {t`${pending} chờ duyệt`}
+          </Chip>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PersonGridCard({
   person,
   clanId,
@@ -1110,6 +1183,7 @@ function PersonGridCard({
   onToggleSelect,
   canCopy,
   canRelate,
+  community,
 }: {
   person: PersonRow;
   clanId: string;
@@ -1121,6 +1195,7 @@ function PersonGridCard({
   selected?: boolean;
   onToggleSelect?: () => void;
   canCopy?: boolean;
+  community?: PersonCommunityInfo;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
@@ -1204,6 +1279,7 @@ function PersonGridCard({
             person={person}
             className="text-[10px] text-muted-foreground/80 mt-1 truncate"
           />
+          <CommunityHint info={community} compact />
         </div>
       </PanelLink>
     </li>

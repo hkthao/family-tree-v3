@@ -264,6 +264,55 @@ export async function uploadHeritageAudio(
 }
 
 /**
+ * Nén ảnh ký ức (ảnh cũ người thân góp): ≤ 400 KB / 1600px — đủ nét để nhận
+ * mặt người trong ảnh cũ, vẫn nhẹ cho VPS. Dùng chung cho thành viên (tải
+ * thẳng lên storage) và khách (gửi qua edge function community-submit).
+ */
+export async function compressMemoryPhoto(
+  file: File,
+  onProgress?: (p: UploadProgress) => void,
+): Promise<File> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("File phải là ảnh (JPG / PNG / WebP / HEIC)");
+  }
+  onProgress?.({ phase: "compress", percent: 0 });
+  return imageCompression(file, {
+    maxSizeMB: 0.4,
+    maxWidthOrHeight: 1600,
+    useWebWorker: true,
+    initialQuality: 0.82,
+    fileType: "image/jpeg",
+    onProgress: (percent: number) => onProgress?.({ phase: "compress", percent }),
+  });
+}
+
+/**
+ * Tải ảnh / ghi âm ký ức của THÀNH VIÊN. Path `{clanId}/memories/{userId}/{uuid}.{ext}`:
+ * đoạn thứ 3 là user id để policy storage cho mọi thành viên (kể cả viewer) tự up/xoá
+ * tệp của mình — giống mảnh ảnh ghép. Ảnh phải nén trước bằng compressMemoryPhoto.
+ */
+export async function uploadMemoryMedia(
+  clanId: string,
+  userId: string,
+  blob: Blob,
+  ext: string,
+  onProgress?: (p: UploadProgress) => void,
+): Promise<UploadResult> {
+  onProgress?.({ phase: "upload", percent: 0 });
+  const path = `${clanId}/memories/${userId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: blob.type || "application/octet-stream",
+    });
+  if (error) throw new Error(`upload: ${error.message}`);
+  onProgress?.({ phase: "upload", percent: 100 });
+  return { path, bytes: blob.size };
+}
+
+/**
  * Hạn URL ký mặc định = 7 ngày. URL ký càng dài thì cùng 1 URL được tái
  * dùng càng lâu → trình duyệt cache ảnh suốt thời gian đó, giảm số lần ký
  * lại + tải lại từ storage (giảm tải server). Bảo mật không đổi: muốn có

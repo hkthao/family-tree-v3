@@ -10,7 +10,7 @@ import {
 import { useHomePrefs } from "@/hooks/useHomePrefs";
 import { PodcastTodayCard } from "@/components/PodcastTodayCard";
 import { upcomingFestivals } from "@/lib/festivals";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
@@ -23,6 +23,11 @@ import {
   IconTree,
 } from "@/components/icons";
 import { ClanStatsPanel } from "@/components/ClanStatsPanel";
+import {
+  CommunityCard,
+  useCommunitySummary,
+} from "@/components/community/CommunityCard";
+import { recordMemberVisit } from "@/lib/queries/community";
 import { MyProfileCard } from "@/components/MyProfileCard";
 import { FamilyPhotoCard } from "@/components/mosaic/FamilyPhotoCard";
 import { SectionCard } from "@/components/SectionCard";
@@ -108,6 +113,16 @@ export default function Dashboard() {
     enabled: !!userId && isMember,
     staleTime: 60_000,
   });
+  // Ký ức cộng đồng: hàng số trong thẻ Số liệu + thẻ "Đóng góp mới" (gia phả lịch sử không có).
+  const communityOn = isMember && clan.kind !== "historical";
+  const { data: community } = useCommunitySummary(clan.id, !!userId && communityOn);
+  useEffect(() => {
+    if (!userId || !isMember) return;
+    // Server bỏ qua admin dòng họ / admin hệ thống; client chỉ gọi 1 lần / ngày.
+    recordMemberVisit(clan.id).catch(() => {
+      /* đếm lượt không quan trọng bằng trang */
+    });
+  }, [clan.id, userId, isMember]);
   // Non-members of a public clan need the masked view; raw `persons`
   // RLS would return zero rows for them. Same pattern as /tree.
   const treeSource =
@@ -376,6 +391,14 @@ export default function Dashboard() {
         <TodayHubCard clanId={clan.id} events={cardEvents} />
       )}
 
+      {/* "Đóng góp mới" — ký ức / đóng góp cộng đồng, dưới gợi ý + Hôm nay (giữ đầu trang như cũ) (docs/plan-dong-gop-cong-dong.md). */}
+      {tree &&
+        tree.persons.length > 0 &&
+        communityOn &&
+        show("community") && (
+          <CommunityCard clanId={clan.id} canModerate={canEdit} />
+        )}
+
       {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
 
       {/* Empty-state check uses the tree query (which goes through the
@@ -456,6 +479,25 @@ export default function Dashboard() {
                         to={`/clans/${clan.id}/heritage`}
                         label={t`Di sản văn hoá`}
                         value={contentCounts.heritage_items}
+                      />
+                    </div>
+                  )}
+                  {communityOn && community && (
+                    <div className="grid grid-cols-3 gap-2 border-t pt-4">
+                      <ResourceLink
+                        to={`/clans/${clan.id}/dong-gop`}
+                        label={t`Lượt ghé tuần này`}
+                        value={community.visits_week}
+                      />
+                      <ResourceLink
+                        to={`/clans/${clan.id}/dong-gop`}
+                        label={t`Người góp tuần này`}
+                        value={community.contributors_week}
+                      />
+                      <ResourceLink
+                        to={`/clans/${clan.id}/dong-gop`}
+                        label={t`Đóng góp mới`}
+                        value={community.memories_week}
                       />
                     </div>
                   )}
