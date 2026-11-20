@@ -2771,6 +2771,10 @@ msgstr "Copy the show-off link:"
 msgid "chép link trên thanh địa chỉ (dạng"
 msgstr "copy the link from the address bar (in the form"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Chép tin"
+msgstr "Copy text"
+
 #: src/components/ApiTokenPanels.tsx
 #: src/components/ApiTokenPanels.tsx
 msgid "Chép token"
@@ -6301,12 +6305,16 @@ msgid "Dọc"
 msgstr "Portrait"
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Dọc (Story, TikTok)"
-msgstr "Vertical (Story, TikTok)"
+#~ msgid "Dọc (Story, TikTok)"
+#~ msgstr "Vertical (Story, TikTok)"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Dọc (story)"
 msgstr "Portrait (story)"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Dọc (Story)"
+msgstr "Vertical (Story)"
 
 #: src/components/apiTokenMeta.ts
 msgid "Đọc + đề xuất"
@@ -11611,8 +11619,12 @@ msgid "Người liên quan trong họ (tuỳ chọn)"
 msgstr "Related people in the clan (optional)"
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Người lớn tuổi (lễ phép, chữ to)"
-msgstr "Elders (polite, large text)"
+msgid "Người lớn tuổi"
+msgstr "Elders"
+
+#: src/components/community/InviteCardDialog.tsx
+#~ msgid "Người lớn tuổi (lễ phép, chữ to)"
+#~ msgstr "Elders (polite, large text)"
 
 #: src/components/ShareSectionsCard.tsx
 msgid "Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt \"Hiển thị & quyền xem\" riêng."
@@ -11701,8 +11713,12 @@ msgid "Người thân"
 msgstr "Relative"
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Người trẻ (thân mật)"
-msgstr "Young people (casual)"
+msgid "Người trẻ"
+msgstr "Young people"
+
+#: src/components/community/InviteCardDialog.tsx
+#~ msgid "Người trẻ (thân mật)"
+#~ msgstr "Young people (casual)"
 
 #: src/components/ClanFormFields.tsx
 msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
@@ -16754,8 +16770,12 @@ msgid "Vuông (đăng tường)"
 msgstr "Square (for posting on a wall)"
 
 #: src/components/community/InviteCardDialog.tsx
-msgid "Vuông (Facebook, Zalo)"
-msgstr "Square (Facebook, Zalo)"
+#~ msgid "Vuông (Facebook, Zalo)"
+#~ msgstr "Square (Facebook, Zalo)"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Vuông (FB, Zalo)"
+msgstr "Square (FB, Zalo)"
 
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/lib/tree/canvasModel.ts

@@ -158,7 +158,11 @@ export function InviteCardDialog({
     ro.observe(el);
     return () => ro.disconnect();
   }, [open]);
-  const previewW = Math.max(160, Math.min(PREVIEW_MAX, (stageW || PREVIEW_MAX + THUMB_W + COL_EXTRA + 24) - THUMB_W - COL_EXTRA - 24));
+  // Màn hẹp (điện thoại): ảnh lớn chiếm cả bề rộng, hàng mẫu nằm NGANG ngay dưới ảnh.
+  const narrow = stageW > 0 && stageW < 460;
+  const previewW = narrow
+    ? Math.min(PREVIEW_MAX, stageW - 16)
+    : Math.max(160, Math.min(PREVIEW_MAX, (stageW || PREVIEW_MAX + THUMB_W + COL_EXTRA + 24) - THUMB_W - COL_EXTRA - 24));
   const scale = previewW / dim.w;
 
   async function render(): Promise<Blob> {
@@ -208,8 +212,8 @@ export function InviteCardDialog({
     <SidePanel open={open} onClose={onClose} size="lg" title={t`Tạo ảnh để đăng`} subtitle={t`Ảnh + tin nhắn mời người thân góp`} guard={false}>
       <div>
         <div className="space-y-4">
-          {/* Ảnh lớn bên trái + cột mẫu DỌC bên phải (cuộn trong khung cao bằng ảnh) — bấm mẫu thấy ngay ảnh đổi. */}
-          <div ref={stageRef} className="flex gap-2 rounded-lg border bg-muted/40 p-2 sm:gap-3 sm:p-3">
+          {/* Ảnh lớn + cột mẫu DỌC bên phải (cuộn trong khung cao bằng ảnh); điện thoại: hàng mẫu ngang dưới ảnh. */}
+          <div ref={stageRef} className={`flex gap-2 rounded-lg border bg-muted/40 p-2 sm:gap-3 sm:p-3 ${narrow ? "flex-col" : ""}`}>
             <div className="flex min-w-0 flex-1 justify-center">
               <div className="rounded-xl shadow-sm" style={{ width: previewW, height: dim.h * scale, overflow: "hidden" }}>
                 <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: dim.w, height: dim.h }}>
@@ -220,9 +224,13 @@ export function InviteCardDialog({
             <div
               role="listbox"
               aria-label={t`Chọn mẫu (${templates.length} mẫu)`}
-              className="flex shrink-0 snap-y flex-col gap-1.5 overflow-y-auto overflow-x-hidden border-l pl-2 pr-1 sm:pl-3"
+              className={
+                narrow
+                  ? "flex snap-x gap-1.5 overflow-x-auto border-t pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  : "flex shrink-0 snap-y flex-col gap-1.5 overflow-y-auto overflow-x-hidden border-l pl-2 pr-1 sm:pl-3"
+              }
               // rộng = ảnh thu nhỏ + viền/đệm nút (12) + đệm cột (≤16) + chỗ thanh cuộn dọc → không bao giờ cuộn ngang
-              style={{ height: dim.h * scale, width: THUMB_W + COL_EXTRA }}
+              style={narrow ? undefined : { height: dim.h * scale, width: THUMB_W + COL_EXTRA }}
             >
               {templates.map((tp) => {
                 const active = tp.variant === variant && tp.theme === theme;
@@ -237,6 +245,7 @@ export function InviteCardDialog({
                       setTheme(tp.theme);
                     }}
                     title={`${VARIANT_LABEL[tp.variant]} · ${THEME_LABEL[tp.theme]}`}
+                    style={narrow ? { width: THUMB_W + 12 } : undefined}
                     className={`shrink-0 snap-start rounded-lg border-2 p-1 text-left transition-colors ${active ? "border-primary bg-background" : "border-transparent hover:border-muted-foreground/40"}`}
                   >
                     <div className="overflow-hidden rounded-md" style={{ width: THUMB_W, height: dim.h * (THUMB_W / dim.w) }}>
@@ -252,22 +261,22 @@ export function InviteCardDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-x-2 gap-y-3 sm:gap-x-3">
+            <div className="min-w-0 space-y-1.5">
               <Label htmlFor="inv-format">{t`Khổ ảnh`}</Label>
               <Select id="inv-format" icon={<IconCamera />} value={format} onChange={(e) => setFormat(e.target.value as CardFormat)}>
-                <option value="square">{t`Vuông (Facebook, Zalo)`}</option>
-                <option value="vertical">{t`Dọc (Story, TikTok)`}</option>
+                <option value="square">{t`Vuông (FB, Zalo)`}</option>
+                <option value="vertical">{t`Dọc (Story)`}</option>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <Label htmlFor="inv-aud">{t`Người đọc`}</Label>
               <Select id="inv-aud" icon={<IconUsers />} value={audience} onChange={(e) => setAudience(e.target.value as InviteAudience)}>
-                <option value="young">{t`Người trẻ (thân mật)`}</option>
-                <option value="old">{t`Người lớn tuổi (lễ phép, chữ to)`}</option>
+                <option value="young">{t`Người trẻ`}</option>
+                <option value="old">{t`Người lớn tuổi`}</option>
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <Label htmlFor="inv-xh">{t`Xưng hô`}</Label>
               <Select id="inv-xh" icon={<IconUser />} value={xungHo} onChange={(e) => setXungHo(e.target.value)}>
                 {["con", "cháu", "em", "mình"].map((x) => (
@@ -277,7 +286,7 @@ export function InviteCardDialog({
                 ))}
               </Select>
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <Label htmlFor="inv-link">{t`Link nằm ở đâu`}</Label>
               <Select id="inv-link" icon={<IconLink />} value={linkPlace} onChange={(e) => setLinkPlace(e.target.value as InviteLinkPlace)}>
                 <option value="post">{t`Link trong bài viết`}</option>
@@ -285,7 +294,7 @@ export function InviteCardDialog({
                 {format === "vertical" && <option value="sticker">{t`Nhãn dán link (Story)`}</option>}
               </Select>
             </div>
-            <label className="flex cursor-pointer items-center gap-2 text-sm sm:mt-7">
+            <label className="col-span-2 flex cursor-pointer items-center gap-2 text-sm">
               <input type="checkbox" className="h-4 w-4 accent-primary" checked={showGuide} onChange={(e) => setShowGuide(e.target.checked)} />
               {t`Hiện hướng dẫn 3 bước`}
             </label>
@@ -295,7 +304,7 @@ export function InviteCardDialog({
             <Label htmlFor="inv-msg">{t`Tin nhắn đăng kèm (sửa thoải mái)`}</Label>
             <Textarea
               id="inv-msg"
-              rows={5}
+              rows={4}
               value={message}
               onChange={(e) => {
                 setEdited(true);
@@ -308,7 +317,7 @@ export function InviteCardDialog({
           </div>
         </div>
 
-        <FormActions>
+        <FormActions className="max-sm:flex-nowrap max-sm:[&>*]:flex-[1_0_auto] max-sm:[&>*]:px-2.5">
           <Button
             type="button"
             variant="outline"
@@ -317,7 +326,8 @@ export function InviteCardDialog({
             }}
           >
             <IconCopy className="mr-1.5 h-4 w-4" />
-            {t`Sao chép tin nhắn`}
+            <span className="sm:hidden">{t`Chép tin`}</span>
+            <span className="hidden sm:inline">{t`Sao chép tin nhắn`}</span>
           </Button>
           <Button type="button" variant="outline" disabled={busy} onClick={() => void onDownload()}>
             <IconDownload className="mr-1.5 h-4 w-4" />
