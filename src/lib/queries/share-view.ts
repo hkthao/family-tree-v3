@@ -125,6 +125,8 @@ export interface ShareViewMemory {
   kind: string;
   body: string | null;
   media_url: string | null;
+  /** media_url là link ngoài (https) chứ không phải tệp của server. */
+  is_external?: boolean;
   media_mime: string | null;
   duration_sec: number | null;
   year_approx: number | null;

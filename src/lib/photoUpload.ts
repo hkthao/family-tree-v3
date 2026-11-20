@@ -264,8 +264,9 @@ export async function uploadHeritageAudio(
 }
 
 /**
- * Nén ảnh ký ức (ảnh cũ người thân góp): ≤ 400 KB / 1600px — đủ nét để nhận
- * mặt người trong ảnh cũ, vẫn nhẹ cho VPS. Dùng chung cho thành viên (tải
+ * Nén ảnh đóng góp (ảnh cũ người thân góp): ≤ 200 KB / 1280px — ổ cứng server
+ * self-host có hạn; vẫn đủ nét để nhận mặt người trong ảnh cũ. Ảnh cần nét hơn
+ * thì người góp dán link (Google Photos / Drive) thay vì tải lên. Dùng chung cho thành viên (tải
  * thẳng lên storage) và khách (gửi qua edge function community-submit).
  */
 export async function compressMemoryPhoto(
@@ -277,10 +278,10 @@ export async function compressMemoryPhoto(
   }
   onProgress?.({ phase: "compress", percent: 0 });
   return imageCompression(file, {
-    maxSizeMB: 0.4,
-    maxWidthOrHeight: 1600,
+    maxSizeMB: 0.2,
+    maxWidthOrHeight: 1280,
     useWebWorker: true,
-    initialQuality: 0.82,
+    initialQuality: 0.8,
     fileType: "image/jpeg",
     onProgress: (percent: number) => onProgress?.({ phase: "compress", percent }),
   });

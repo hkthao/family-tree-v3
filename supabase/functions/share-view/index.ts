@@ -626,7 +626,7 @@ Deno.serve(async (req) => {
   const { data: memRows } = await sb
     .from("person_memories")
     .select(
-      "id, person_id, kind, body, media_path, media_mime, duration_sec, year_approx, place, author_name, author_relation, created_at, author:profiles!person_memories_author_user_id_fkey(display_name)",
+      "id, person_id, kind, body, media_path, media_mime, external_url, duration_sec, year_approx, place, author_name, author_relation, created_at, author:profiles!person_memories_author_user_id_fkey(display_name)",
     )
     .eq("clan_id", link.clan_id)
     .eq("status", "visible")
@@ -653,7 +653,9 @@ Deno.serve(async (req) => {
     person_id: m.person_id,
     kind: m.kind,
     body: m.body,
-    media_url: m.media_path ? (memSigned.get(m.media_path) ?? null) : null,
+    // Tệp trong bucket → URL ký; link ngoài (https) → dùng thẳng.
+    media_url: m.media_path ? (memSigned.get(m.media_path) ?? null) : (m.external_url ?? null),
+    is_external: !m.media_path && !!m.external_url,
     media_mime: m.media_mime,
     duration_sec: m.duration_sec,
     year_approx: m.year_approx,

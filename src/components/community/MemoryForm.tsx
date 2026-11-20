@@ -8,6 +8,7 @@ import {
   IconCamera,
   IconCheck,
   IconMapPin,
+  IconLink,
   IconMicrophone,
   IconPencil,
   IconSend,
@@ -68,7 +69,18 @@ type Props =
   | (BaseProps & { mode: "member"; userId: string })
   | (BaseProps & { mode: "guest"; token: string });
 
-const AUDIO_MAX_SEC = 300;
+/** Ghi âm tối đa 2 phút (~360 KB ở 24 kbps) — ổ cứng server có hạn; dài hơn thì dán link. */
+const AUDIO_MAX_SEC = 120;
+
+/** Link ngoài hợp lệ: chỉ https. */
+function normalizeHttps(raw: string): string | null {
+  try {
+    const u = new URL(raw.trim());
+    return u.protocol === "https:" ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Form kể một ký ức về một người — dùng chung cho thành viên (ghi thẳng, tải tệp lên storage)
@@ -82,6 +94,9 @@ export function MemoryForm(props: Props) {
   const [kind, setKind] = useState<Kind>("story");
   const [body, setBody] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
+  // Ảnh / ghi âm: tải tệp lên server, hoặc dán link (Google Photos, Drive, YouTube…) — không tốn ổ cứng.
+  const [mediaSource, setMediaSource] = useState<"file" | "link">("file");
+  const [linkUrl, setLinkUrl] = useState("");
   const [year, setYear] = useState("");
   const [place, setPlace] = useState("");
   const [source, setSource] = useState("");
@@ -235,7 +250,12 @@ export function MemoryForm(props: Props) {
       let ext = "";
       let mime: string | null = null;
       let durationSec: number | null = null;
-      if (kind === "photo") {
+      let externalUrl: string | null = null;
+      if ((kind === "photo" || kind === "audio") && mediaSource === "link") {
+        externalUrl = normalizeHttps(linkUrl);
+        if (!externalUrl)
+          throw new Error(t`Link không hợp lệ (phải bắt đầu bằng https://)`);
+      } else if (kind === "photo") {
         if (!photo) throw new Error(t`Bạn chưa chọn ảnh`);
         blob = await compressMemoryPhoto(photo);
         ext = "jpg";
@@ -266,6 +286,7 @@ export function MemoryForm(props: Props) {
           allow_ai_reuse: allowAi,
           file: blob,
           file_name: blob ? `memory.${ext}` : undefined,
+          external_url: externalUrl ?? undefined,
           website,
           elapsed_ms: performance.now() - openedAt.current,
         });
@@ -289,6 +310,7 @@ export function MemoryForm(props: Props) {
         body: body.trim() || null,
         media_path: mediaPath,
         media_mime: mime,
+        external_url: externalUrl,
         duration_sec: durationSec,
         year_approx: yearNum,
         place,
@@ -382,7 +404,71 @@ export function MemoryForm(props: Props) {
         ))}
       </div>
 
-      {kind === "photo" && (
+      {(kind === "photo" || kind === "audio") && (
+        <div
+          role="radiogroup"
+          aria-label={t`Cách đưa tệp`}
+          className="grid grid-cols-2 gap-2"
+        >
+          {(["file", "link"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="radio"
+              aria-checked={mediaSource === m}
+              onClick={() => setMediaSource(m)}
+              className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-2 text-sm transition-colors ${
+                mediaSource === m
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "bg-card hover:border-primary/60"
+              }`}
+            >
+              {m === "file" ? (
+                <>
+                  {kind === "photo" ? (
+                    <IconCamera className="h-4 w-4" />
+                  ) : (
+                    <IconMicrophone className="h-4 w-4" />
+                  )}
+                  {kind === "photo" ? t`Tải ảnh lên` : t`Ghi âm`}
+                </>
+              ) : (
+                <>
+                  <IconLink className="h-4 w-4" />
+                  {t`Dán link`}
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(kind === "photo" || kind === "audio") && mediaSource === "link" && (
+        <div className="space-y-1.5">
+          <Label htmlFor="memory-link">
+            {kind === "photo" ? t`Link ảnh` : t`Link ghi âm / video`}
+          </Label>
+          <Input
+            id="memory-link"
+            type="url"
+            inputMode="url"
+            icon={<IconLink />}
+            value={linkUrl}
+            maxLength={1000}
+            onChange={(e) => setLinkUrl(e.target.value)}
+            placeholder={
+              kind === "photo"
+                ? t`https://photos.google.com/… hoặc link Google Drive`
+                : t`https://youtube.com/… hoặc link Google Drive`
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            {t`Ảnh / ghi âm vẫn nằm ở Google Photos, Drive, YouTube… — nhớ để chế độ "ai có link đều xem được".`}
+          </p>
+        </div>
+      )}
+
+      {kind === "photo" && mediaSource === "file" && (
         <div className="space-y-2">
           <Label htmlFor="memory-photo">{t`Chọn ảnh`}</Label>
           <Input
@@ -402,10 +488,10 @@ export function MemoryForm(props: Props) {
         </div>
       )}
 
-      {kind === "audio" && (
+      {kind === "audio" && mediaSource === "file" && (
         <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
           <p className="text-sm text-muted-foreground">
-            {t`Bấm nút micrô rồi kể, tối đa 5 phút. Bấm lần nữa để dừng.`}
+            {t`Bấm nút micrô rồi kể, tối đa 2 phút. Bấm lần nữa để dừng. Dài hơn thì quay bằng điện thoại rồi dán link.`}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             {recorder.state !== "recording" ? (
