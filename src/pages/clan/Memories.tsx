@@ -348,7 +348,7 @@ export default function Memories() {
           description={
             search.trim() || activeFilters
               ? t`Thử bỏ bớt từ khoá hoặc đặt lại bộ lọc.`
-              : t`Bấm nút + để đóng góp về một người, hoặc "Mời người khác góp" để gửi link cho người thân chưa có tài khoản.`
+              : t`Bấm nút + để đóng góp về một người, hoặc "Mời người thân góp" để gửi link cho người thân chưa có tài khoản.`
           }
         />
       )}
@@ -394,7 +394,7 @@ export default function Memories() {
             onClick: () => setPanel({ mode: "question", existing: null }),
           },
           {
-            label: t`Mời người khác góp`,
+            label: t`Mời người thân góp`,
             icon: <IconSend />,
             onClick: () => setPanel({ mode: "invite" }),
           },
