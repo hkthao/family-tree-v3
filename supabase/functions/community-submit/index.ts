@@ -324,5 +324,18 @@ Deno.serve(async (req) => {
 
   await sb.from("share_links").update({ use_count: (link.use_count ?? 0) + 1 }).eq("id", link.id);
 
+  // Báo người quản lý (gom tối đa 1 lần / họ / giờ) + người đặt câu hỏi. Không bắt khách chờ, nhưng
+  // giữ isolate sống tới khi gọi xong (EdgeRuntime.waitUntil) — fetch "bắn rồi quên" sau khi trả lời
+  // có thể bị runtime cắt mất. Lỗi gửi thông báo không làm hỏng lượt gửi.
+  const notify = fetch(`${SUPABASE_URL}/functions/v1/notify-contribution`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}` },
+    body: JSON.stringify({ memory_id: row.id }),
+  }).catch(() => {/* xem notify-contribution */});
+  // deno-lint-ignore no-explicit-any
+  const er = (globalThis as any).EdgeRuntime;
+  if (er?.waitUntil) er.waitUntil(notify);
+  else await notify;
+
   return json({ ok: true, id: row.id, status: row.status });
 });

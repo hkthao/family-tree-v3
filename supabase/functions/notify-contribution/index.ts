@@ -20,6 +20,11 @@
  * looks like an email — guests sometimes leave a phone number, in
  * which case we silently skip).
  *
+ * Đóng góp cộng đồng (docs/plan-dong-gop-cong-dong.md): body `{ memory_id }` thay cho contribution_id →
+ *   - báo admin + biên tập viên (trừ chính người viết) có đóng góp mới — GOM tối đa 1 lần / họ / giờ
+ *     (event_key theo giờ; notification_log unique (user, event_key, channel) chặn trùng cả 3 kênh);
+ *   - câu trả lời cho một câu hỏi → báo người đặt câu hỏi (1 lần / câu hỏi).
+ *
  * Security model: anyone with the anon key can call this, but the
  * function never echoes data back — it just reads the contribution
  * via the service role and sends the canonical email for the current
@@ -289,19 +294,21 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, { status: 405 });
 
-  let body: { contribution_id?: string };
+  let body: { contribution_id?: string; memory_id?: string };
   try {
     body = await req.json();
   } catch {
     return json({ error: "Invalid body" }, { status: 400 });
   }
-  if (!body.contribution_id) {
-    return json({ error: "contribution_id required" }, { status: 400 });
-  }
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  if (body.memory_id) return await notifyMemory(sb, body.memory_id);
+  if (!body.contribution_id) {
+    return json({ error: "contribution_id required" }, { status: 400 });
+  }
 
   const { data: c, error: cErr } = await sb
     .from("contributions")
@@ -464,6 +471,119 @@ interface PushSubRow {
 
 // Token of ≥22 chars; 32 bytes random hex = 64 chars — safely beyond
 // the migration's CHECK length(action_token) >= 22.
+
+// ─── Đóng góp cộng đồng ──────────────────────────────────────────
+// deno-lint-ignore no-explicit-any
+type Sb = any;
+
+const KIND_VERB: Record<string, string> = {
+  story: "kể một câu chuyện",
+  photo: "góp một tấm ảnh",
+  audio: "góp một đoạn ghi âm",
+  answer: "trả lời một câu hỏi",
+};
+
+/** Gửi mail cho từng người, chặn trùng theo (user, event_key, 'email') — cùng cơ chế gom theo giờ. */
+async function mailOnce(
+  sb: Sb,
+  userIds: string[],
+  clanId: string,
+  eventKey: string,
+  subject: string,
+  html: string,
+): Promise<number> {
+  let sent = 0;
+  for (const uid of userIds) {
+    const { data: reserved } = await sb
+      .from("notification_log")
+      .upsert(
+        { user_id: uid, clan_id: clanId, event_key: eventKey, channel: "email", status: "sent" },
+        { onConflict: "user_id,event_key,channel", ignoreDuplicates: true },
+      )
+      .select("id");
+    if (!reserved || reserved.length === 0) continue; // đã gửi trong khung này
+    const { data: u } = await sb.auth.admin.getUserById(uid);
+    const to = u?.user?.email as string | undefined;
+    if (!to) continue;
+    const r = await sendMail(to, subject, html);
+    if (r.ok) sent++;
+  }
+  return sent;
+}
+
+async function notifyMemory(sb: Sb, memoryId: string): Promise<Response> {
+  const { data: m } = await sb
+    .from("person_memories")
+    .select(
+      "id, clan_id, person_id, kind, status, question_id, author_user_id, author_name, author_relation, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name)",
+    )
+    .eq("id", memoryId)
+    .maybeSingle();
+  if (!m) return json({ error: "Not found" }, { status: 404 });
+  if (m.status === "hidden") return json({ ok: true, skipped: "hidden" });
+
+  const { data: clan } = await sb.from("clans").select("name").eq("id", m.clan_id).maybeSingle();
+  const clanName = (clan?.name as string | undefined) ?? "Dòng Họ Việt";
+  const who = (m.author?.display_name as string | undefined) ?? (m.author_name as string | undefined) ?? "Một người thân";
+  const personName = (m.person?.full_name as string | undefined) ?? null;
+  const verb = m.question_id ? KIND_VERB.answer : (KIND_VERB[m.kind as string] ?? "đóng góp");
+  const what = `${who}${m.author_relation ? ` (${m.author_relation})` : ""} vừa ${verb}${personName ? ` về ${personName}` : ""}.`;
+  const result: Record<string, unknown> = { ok: true };
+
+  // 1) Người quản lý (admin + biên tập viên), trừ chính người viết — gom theo giờ.
+  const { data: mods } = await sb
+    .from("clan_members")
+    .select("user_id")
+    .eq("clan_id", m.clan_id)
+    .in("role", ["admin", "editor"]);
+  const modIds = ((mods ?? []) as { user_id: string }[])
+    .map((r) => r.user_id)
+    .filter((id) => id !== m.author_user_id);
+  if (modIds.length > 0) {
+    const hour = new Date().toISOString().slice(0, 13); // YYYY-MM-DDTHH (UTC)
+    const eventKey = `community:${m.clan_id}:${hour}`;
+    const pending = m.status === "pending";
+    const url = `${APP_BASE_URL}/clans/${m.clan_id}/dong-gop${pending ? "?tt=pending" : ""}`;
+    const title = pending ? `Có đóng góp mới chờ duyệt — ${clanName}` : `Có đóng góp mới — ${clanName}`;
+    const bodyText = `${what}${pending ? " Đóng góp đang chờ bạn duyệt." : ""} (Thông báo gom: tối đa một lần mỗi giờ.)`;
+    await pushContribution({ sb, userIds: modIds, title, body: bodyText, url, eventKey, clanId: m.clan_id as string });
+    const html = emailLayout({
+      clanName,
+      title: pending ? "Có đóng góp mới chờ duyệt" : "Có đóng góp mới",
+      body: `<p>${esc(what)}</p>
+        <p style="color:#6F665F;font-size:13px;">Có thể đã có thêm đóng góp khác trong giờ này — mỗi giờ chỉ gửi một thư để không làm phiền bạn.</p>`,
+      ctaLabel: pending ? "Xem & duyệt" : "Xem đóng góp",
+      ctaHref: url,
+    });
+    result.moderators_mailed = await mailOnce(sb, modIds, m.clan_id as string, eventKey, `[Dòng Họ Việt ${clanName}] ${title}`, html);
+  }
+
+  // 2) Câu trả lời → báo người đặt câu hỏi (một lần cho mỗi câu hỏi).
+  if (m.question_id) {
+    const { data: q } = await sb
+      .from("family_questions")
+      .select("id, question, asked_by")
+      .eq("id", m.question_id)
+      .maybeSingle();
+    const asker = q?.asked_by as string | undefined;
+    if (asker && asker !== m.author_user_id && !modIds.includes(asker)) {
+      const eventKey = `question:${q.id}:answered`;
+      const url = `${APP_BASE_URL}/clans/${m.clan_id}/dong-gop?loai=answer`;
+      const title = `Câu hỏi của bạn có câu trả lời — ${clanName}`;
+      await pushContribution({ sb, userIds: [asker], title, body: `${who} vừa trả lời: “${q.question}”`, url, eventKey, clanId: m.clan_id as string });
+      const html = emailLayout({
+        clanName,
+        title: "Câu hỏi của bạn có câu trả lời",
+        body: `<p>${esc(who)} vừa trả lời câu hỏi <i>“${esc(q.question as string)}”</i>.</p>`,
+        ctaLabel: "Xem câu trả lời",
+        ctaHref: url,
+      });
+      result.asker_mailed = await mailOnce(sb, [asker], m.clan_id as string, eventKey, `[Dòng Họ Việt ${clanName}] ${title}`, html);
+    }
+  }
+  return json(result);
+}
+
 function generateActionToken(): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
