@@ -1,0 +1,114 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+
+import { useToast } from "@/components/Toast";
+import { IconCheck } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
+
+import { t } from "@lingui/core/macro";
+
+export const SHARE_SECTIONS = ["info", "board", "map", "heritage", "graves", "honor", "mosaic"] as const;
+export type ShareSection = (typeof SHARE_SECTIONS)[number];
+
+function sectionLabel(k: ShareSection): { title: string; hint: string } {
+  switch (k) {
+    case "info":
+      return { title: t`Thông tin dòng họ`, hint: t`Mô tả, thuỷ tổ, số đời / người, quê gốc, từ đường, giỗ tổ, trưởng họ.` };
+    case "board":
+      return { title: t`Bảng tin`, hint: t`Các bài đã đăng mới nhất (tin vui, thông báo).` };
+    case "map":
+      return { title: t`Bản đồ`, hint: t`Chỉ số người theo tỉnh — không lộ địa chỉ hay tên.` };
+    case "heritage":
+      return { title: t`Di sản`, hint: t`Từ đường, tục lệ, giai thoại, kỷ vật (kèm ảnh bìa).` };
+    case "graves":
+      return { title: t`Mộ phần & tro cốt`, hint: t`Tên, khu vực, người an nghỉ đã mất — không có toạ độ.` };
+    case "honor":
+      return { title: t`Bảng vàng công đức`, hint: t`Người được vinh danh, loại, số tiền (nếu có).` };
+    case "mosaic":
+      return { title: t`Ảnh ghép đại gia đình`, hint: t`Bức ảnh ghép mới nhất (ẩn nếu đã bật "ẩn ảnh khi chia sẻ").` };
+  }
+}
+
+/**
+ * Cài đặt "Link chia sẻ hiển thị gì" (clans.share_sections): admin tick phần nào hiện ở tab Tổng
+ * quan của link chia sẻ /share/… (cây gia phả luôn có). Mặc định không chia sẻ thêm gì. Đọc / ghi
+ * riêng cột này để trang khác không phụ thuộc vào migration.
+ */
+export function ShareSectionsCard({ clanId }: { clanId: string }) {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const key = ["share-sections", clanId] as const;
+  const { data } = useQuery({
+    queryKey: key,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("clans").select("share_sections").eq("id", clanId).maybeSingle();
+      if (error) throw new Error(error.message);
+      return ((data?.share_sections as string[] | null) ?? []) as ShareSection[];
+    },
+  });
+  const [picked, setPicked] = useState<Set<ShareSection>>(new Set());
+  useEffect(() => {
+    if (data) setPicked(new Set(data));
+  }, [data]);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("clans")
+        .update({ share_sections: SHARE_SECTIONS.filter((k) => picked.has(k)) })
+        .eq("id", clanId);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: key });
+      toast.success(t`Đã lưu — link chia sẻ sẽ hiện các phần đã chọn`);
+    },
+    onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }),
+  });
+
+  const toggle = (k: ShareSection) =>
+    setPicked((s) => {
+      const n = new Set(s);
+      if (n.has(k)) n.delete(k);
+      else n.add(k);
+      return n;
+    });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t`Link chia sẻ hiển thị gì`}</CardTitle>
+        <CardDescription>
+          {t`Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt "Hiển thị & quyền xem" riêng.`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {SHARE_SECTIONS.map((k) => {
+          const l = sectionLabel(k);
+          return (
+            <label key={k} className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 hover:bg-muted/40">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-primary"
+                checked={picked.has(k)}
+                onChange={() => toggle(k)}
+              />
+              <span>
+                <span className="block font-medium">{l.title}</span>
+                <span className="block text-sm text-muted-foreground">{l.hint}</span>
+              </span>
+            </label>
+          );
+        })}
+      </CardContent>
+      <CardFooter className="justify-end border-t pt-4">
+        <Button size="sm" variant="outline" disabled={save.isPending || !data} onClick={() => save.mutate()}>
+          <IconCheck className="mr-1.5 h-4 w-4" />
+          {save.isPending ? t`Đang lưu…` : t`Lưu thay đổi`}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}

@@ -168,6 +168,55 @@ export interface ShareViewCommunity {
   questions?: ShareViewQuestion[];
 }
 
+/** Các phần admin chọn chia sẻ ở tab Tổng quan (clans.share_sections). Phần không bật thì vắng. */
+export interface ShareViewSections {
+  info?: {
+    description: string | null;
+    root_name: string | null;
+    persons: number;
+    generations: number | null;
+    origin_place: string | null;
+    ancestral_hall: string | null;
+    ancestor_anniversary: string | null;
+    chief_name: string | null;
+  };
+  board?: { id: string; type: string; title: string | null; excerpt: string; pinned: boolean; created_at: string }[];
+  map?: { people: Record<string, number>; graves: Record<string, number>; province_names: Record<string, string> };
+  heritage?: {
+    id: string;
+    category: string;
+    title: string;
+    summary: string | null;
+    location_name: string | null;
+    built_year: number | null;
+    photo_url: string | null;
+  }[];
+  graves?: {
+    id: string;
+    kind: string;
+    name: string | null;
+    location_name: string | null;
+    status: string;
+    built_year: number | null;
+    occupants: string[];
+  }[];
+  honor?: {
+    id: string;
+    honoree_name: string;
+    category: string;
+    amount: number | null;
+    note: string | null;
+    occurred_on: string | null;
+  }[];
+  mosaic?: {
+    title: string;
+    description: string | null;
+    cols: number;
+    slots: number;
+    tiles: { position: number; caption: string | null; photo_url: string | null }[];
+  };
+}
+
 export interface ShareViewPayload {
   clan_id: string;
   /** Tên dòng họ — hiển thị tiêu đề + CTA "tạo gia phả họ bạn". */
@@ -190,6 +239,8 @@ export interface ShareViewPayload {
   /** Trang xem thử công khai: sự kiện + di sản (chỉ khi ?clan=<id>). */
   events?: ShareViewEvent[];
   heritage?: ShareViewHeritageListItem[];
+  /** Tab Tổng quan của link chia sẻ — các phần admin chọn. */
+  sections?: ShareViewSections;
   /** Đóng góp cộng đồng (docs/plan-dong-gop-cong-dong.md). Thiếu khi function chưa cập nhật. */
   community?: ShareViewCommunity;
 }
@@ -278,6 +329,18 @@ async function fetchShareViewQuery(qs: string): Promise<ShareViewPayload> {
           audios: payload.heritage_item.audios.map((a) => ({ ...a, url: fixUrl(a.url) })),
           // Video là link ngoài (YouTube/file) — giữ nguyên, không prefix base.
           videos: payload.heritage_item.videos ?? [],
+        }
+      : undefined,
+    sections: payload.sections
+      ? {
+          ...payload.sections,
+          heritage: payload.sections.heritage?.map((h) => ({ ...h, photo_url: h.photo_url ? fixUrl(h.photo_url) : null })),
+          mosaic: payload.sections.mosaic
+            ? {
+                ...payload.sections.mosaic,
+                tiles: payload.sections.mosaic.tiles.map((t) => ({ ...t, photo_url: t.photo_url ? fixUrl(t.photo_url) : null })),
+              }
+            : undefined,
         }
       : undefined,
     community: payload.community

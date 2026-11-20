@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { ShareSectionsCard } from "@/components/ShareSectionsCard";
 import { PageHeader } from "@/components/PageHeader";
 import { CsvExportButton } from "@/components/CsvExportButton";
 import { AvatarFramePicker } from "@/components/AvatarFramePicker";
@@ -120,6 +121,8 @@ export default function Settings() {
       />
 
       <FeaturesCard clan={clan} userId={userId} queryClient={queryClient} />
+
+      <ShareSectionsCard clanId={clan.id} />
 
       <form
         onSubmit={(e) => {
