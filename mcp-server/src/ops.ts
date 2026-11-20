@@ -620,7 +620,119 @@ async function listMemories(c: Ctx, a: Args): Promise<string> {
     .join("\n")}`;
 }
 
+
+/**
+ * P4 — nguồn soạn tiểu sử một người trong MỘT lần gọi: dữ kiện đã ghi, cha mẹ / vợ chồng / con,
+ * tiểu sử hiện có, đóng góp cộng đồng (đã duyệt, cho phép dùng lại) đánh số [n] + hướng dẫn soạn.
+ * AI soạn xong gửi propose_edit_person (bio) / propose_add_note kèm source_memory_ids — admin duyệt.
+ */
+async function biographySources(c: Ctx, a: Args): Promise<string> {
+  const id = uuid(a.person_id, "person_id");
+  const { data: p } = await c.db
+    .from("persons")
+    .select(
+      "id, full_name, nickname, courtesy_name, posthumous_name, gender, is_living, generation, birth_date, death_date, birth_place, burial_place, death_anniv_lunar_day, death_anniv_lunar_month, bio, birth_family_id",
+    )
+    .eq("clan_id", c.clanId)
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (!p) throw new UserError(NOT_FOUND);
+
+  // Cha mẹ (gia đình sinh ra) + các cuộc hôn nhân (vợ / chồng, con).
+  const names = async (ids: string[]) => {
+    if (!ids.length) return [] as string[];
+    const { data } = await c.db.from("persons").select("id, full_name, birth_date, death_date").in("id", ids).is("deleted_at", null);
+    return ((data ?? []) as Record<string, unknown>[]).map((r) => `${r.full_name}${life(r) ? ` (${life(r)})` : ""}`);
+  };
+  let parents: string[] = [];
+  if (p.birth_family_id) {
+    const { data: f } = await c.db.from("families").select("husband_id, wife_id").eq("id", p.birth_family_id).maybeSingle();
+    parents = await names([f?.husband_id, f?.wife_id].filter(Boolean) as string[]);
+  }
+  const { data: fams } = await c.db
+    .from("families")
+    .select("id, husband_id, wife_id")
+    .eq("clan_id", c.clanId)
+    .or(`husband_id.eq.${id},wife_id.eq.${id}`)
+    .is("deleted_at", null);
+  const famIds = ((fams ?? []) as { id: string }[]).map((f) => f.id);
+  const spouses = await names(
+    ((fams ?? []) as { husband_id: string | null; wife_id: string | null }[])
+      .map((f) => (f.husband_id === id ? f.wife_id : f.husband_id))
+      .filter(Boolean) as string[],
+  );
+  let children: string[] = [];
+  if (famIds.length) {
+    const { data: kids } = await c.db.from("persons").select("id").in("birth_family_id", famIds).is("deleted_at", null);
+    children = await names(((kids ?? []) as { id: string }[]).map((k) => k.id));
+  }
+
+  const { data: mems } = await c.db
+    .from("person_memories")
+    .select(
+      "id, kind, body, external_url, year_approx, place, source, author_name, author_relation, applied_to, author:profiles!person_memories_author_user_id_fkey(display_name), question:family_questions!person_memories_question_fk(question)",
+    )
+    .eq("clan_id", c.clanId)
+    .eq("person_id", id)
+    .eq("status", "visible")
+    .eq("allow_ai_reuse", true)
+    .order("year_approx", { ascending: true, nullsFirst: false })
+    .limit(60);
+  // deno-lint-ignore no-explicit-any
+  const rows = (mems ?? []) as any[];
+
+  const fact = (label: string, v: unknown) => (v ? `- ${label}: ${v}` : null);
+  const anniv = p.death_anniv_lunar_day ? `${p.death_anniv_lunar_day}/${p.death_anniv_lunar_month} âm lịch` : null;
+  const facts = [
+    fact("Họ tên", p.full_name),
+    fact("Tên thường gọi", p.nickname),
+    fact("Tên tự / huý", p.courtesy_name),
+    fact("Thuỵ hiệu", p.posthumous_name),
+    fact("Giới tính", p.gender === "M" ? "Nam" : "Nữ"),
+    fact("Đời thứ", p.generation),
+    fact("Ngày sinh", p.birth_date),
+    fact("Nơi sinh / quê", p.birth_place),
+    p.is_living ? "- Còn sống" : fact("Ngày mất", p.death_date ?? "chưa rõ"),
+    fact("Ngày giỗ", anniv),
+    fact("Nơi an táng", p.burial_place),
+    fact("Cha mẹ", parents.join("; ")),
+    fact("Vợ / chồng", spouses.join("; ")),
+    fact("Con", children.join("; ")),
+  ].filter(Boolean);
+
+  const sources = rows.map((r, i) => {
+    const who = [r.author?.display_name ?? r.author_name ?? "Người thân", r.author_relation].filter(Boolean).join(", ");
+    const meta = [r.year_approx ? `khoảng ${r.year_approx}` : null, r.place, r.source ? `biết từ: ${r.source}` : null].filter(Boolean).join("; ");
+    const q = r.question?.question ? ` (trả lời câu hỏi “${r.question.question}”)` : "";
+    const content = r.body ? String(r.body).slice(0, 2000) : r.external_url ? `(ảnh / tư liệu: ${r.external_url})` : "";
+    const used = Array.isArray(r.applied_to) && r.applied_to.length ? " — ĐÃ dùng trong gia phả" : "";
+    return `[${i + 1}] id=${r.id} · ${who}${meta ? ` · ${meta}` : ""}${q}${used}\n${content}`;
+  });
+
+  return [
+    `NGUỒN SOẠN TIỂU SỬ — ${p.full_name} (person_id ${p.id})`,
+    "",
+    "Dữ kiện đã ghi trong gia phả (đã được xác nhận):",
+    ...facts,
+    "",
+    `Tiểu sử hiện có: ${p.bio ? `\n${p.bio}` : "(chưa có)"}`,
+    "",
+    rows.length ? `Đóng góp của người thân (${rows.length}):` : "Chưa có đóng góp nào được duyệt và cho phép dùng lại.",
+    ...sources,
+    "",
+    "HƯỚNG DẪN SOẠN:",
+    "- Viết tiếng Việt, giọng trang trọng, ấm áp như tiểu sử trong sổ gia phả; 3–6 đoạn, theo trình tự thời gian (gốc gác → tuổi trẻ → lập gia đình, nghề nghiệp → về già → lời nhắc con cháu). Tối đa 4000 ký tự.",
+    "- Mỗi chi tiết lấy từ đóng góp ghi nguồn [n] ngay sau câu. Dữ kiện đã ghi trong gia phả không cần nguồn.",
+    "- Không bịa. Chi tiết chỉ một người kể hoặc nghe kể lại thì viết 'theo lời kể của …'. Hai nguồn mâu thuẫn thì nêu cả hai, KHÔNG tự chọn — để người quản lý quyết.",
+    "- Không đưa chi tiết riêng tư của người còn sống (địa chỉ, số điện thoại, bệnh tật, chuyện nhạy cảm).",
+    "- Giữ những ý quan trọng của tiểu sử hiện có, trừ khi đóng góp cho thấy nó sai (khi đó nêu rõ trong reason).",
+    "- Gửi bằng propose_edit_person { person_id, changes: { bio }, reason, source_memory_ids: [id các nguồn đã dùng] } (thay cả tiểu sử) hoặc propose_add_note (chỉ nối thêm). Người quản lý duyệt trong app; duyệt xong các đóng góp nguồn tự đánh dấu đã đưa vào gia phả.",
+  ].join("\n");
+}
+
 export const OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> = {
+  get_biography_sources: biographySources,
   list_memories: listMemories,
   list_persons: listPersons,
   get_tree: getTree,

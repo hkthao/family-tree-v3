@@ -166,6 +166,13 @@ export const MCP_TOOLS: McpToolSpec[] = [
     }),
   },
   {
+    name: "get_biography_sources",
+    needs: "read",
+    description:
+      "Everything needed to DRAFT a professional biography of one person in a single call: recorded facts (names, dates, places, generation), parents / spouses / children, the current biography, and every approved community contribution the authors allowed for reuse — each numbered [n] with its id, author and source — plus writing guidelines. Then send the draft with propose_edit_person (changes.bio, replaces the biography) or propose_add_note (appends), passing source_memory_ids. An admin reviews it before anything changes.",
+    inputSchema: obj({ person_id: personId }, ["person_id"]),
+  },
+  {
     name: "list_memories",
     needs: "read",
     description:
