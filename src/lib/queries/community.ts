@@ -276,7 +276,25 @@ export async function createMemory(
     .select("id, status")
     .single();
   if (error) throw new Error(error.message);
+  notifyMemory(data.id);
   return { id: data.id, status: data.status as MemoryStatus };
+}
+
+/**
+ * Báo người quản lý có đóng góp mới (gom tối đa 1 lần / họ / giờ) và báo người đặt câu hỏi khi có
+ * câu trả lời — gọi notify-contribution kiểu "bắn rồi quên", lỗi gửi không ảnh hưởng việc lưu.
+ */
+function notifyMemory(id: string): void {
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!base || !anon) return;
+  fetch(`${base}/functions/v1/notify-contribution`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: anon, Authorization: `Bearer ${anon}` },
+    body: JSON.stringify({ memory_id: id }),
+  }).catch(() => {
+    /* thông báo là phụ */
+  });
 }
 
 export async function setMemoryStatus(
