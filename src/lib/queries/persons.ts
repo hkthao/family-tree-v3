@@ -28,6 +28,11 @@ export interface PersonRow {
    */
   created_at?: string | null;
   updated_at?: string | null;
+  /** Chỉ có khi đọc `persons` (thành viên) — để Danh bạ biết hồ sơ người đã mất còn thiếu gì. */
+  birth_place?: string | null;
+  burial_place?: string | null;
+  death_anniv_lunar_month?: number | null;
+  death_anniv_lunar_day?: number | null;
 }
 
 export type PersonsSource = "persons" | "persons_public_safe";
@@ -87,7 +92,7 @@ export async function listPersons(
       : client
           .from("persons")
           .select(
-            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path, created_at, updated_at",
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path, created_at, updated_at, birth_place, burial_place, death_anniv_lunar_month, death_anniv_lunar_day",
             { count: "exact" },
           )
           .eq("clan_id", clanId)

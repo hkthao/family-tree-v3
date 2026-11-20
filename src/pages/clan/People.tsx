@@ -36,6 +36,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   IconBook,
   IconClock,
+  IconSend,
   IconCopy,
   IconGrid,
   IconList,
@@ -49,6 +50,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { Chip } from "@/components/Chip";
+import { ContributeLinkPanel } from "@/components/community/ContributeLinkPanel";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
@@ -379,6 +381,7 @@ export default function People() {
     enabled: !!userId && isMember && clan.kind !== "historical",
     staleTime: 60_000,
   });
+  const [invitePerson, setInvitePerson] = useState<PersonRow | null>(null);
   const pendingCommunity = communityInfo
     ? [...communityInfo.values()].reduce((n, i) => n + i.pending, 0)
     : 0;
@@ -863,6 +866,7 @@ export default function People() {
                   canCopy={canEdit}
                   community={communityInfo?.get(p.id)}
                   showPending={canEdit}
+                  onInvite={isMember && clan.kind !== "historical" ? setInvitePerson : undefined}
                 />
               ))}
             </ul>
@@ -901,6 +905,26 @@ export default function People() {
             onPageSizeChange={setPageSize}
           />
         </>
+      )}
+      {invitePerson && (
+        <ContributeLinkPanel
+          open
+          onClose={() => setInvitePerson(null)}
+          clanId={clan.id}
+          clanName={clan.name}
+          personId={invitePerson.id}
+          personName={invitePerson.full_name}
+          invite={{
+            variants: ["hoso", "chung"],
+            context: {
+              personYears: [invitePerson.birth_date?.slice(0, 4) ?? "?", invitePerson.death_date?.slice(0, 4) ?? "?"].join(" – "),
+              facts: [
+                ...personFacts(invitePerson),
+                { label: t`Một kỷ niệm về cụ`, done: (communityInfo?.get(invitePerson.id)?.total ?? 0) > 0 },
+              ],
+            },
+          }}
+        />
       )}
     </div>
   );
@@ -984,6 +1008,7 @@ function PersonListItem({
   canCopy,
   community,
   showPending,
+  onInvite,
 }: {
   person: PersonRow;
   clanId: string;
@@ -999,8 +1024,14 @@ function PersonListItem({
   canCopy?: boolean;
   community?: PersonCommunityInfo;
   showPending?: boolean;
+  /** Người đã mất còn thiếu thông tin → nút "Mời góp thông tin" (tạo link + ảnh "Hồ sơ còn thiếu"). */
+  onInvite?: (p: PersonRow) => void;
 }) {
   const rel = lookupRelatives(person.id, relatives);
+  const missing =
+    onInvite && !person.is_living && person.birth_place !== undefined
+      ? personFacts(person).filter((f) => !f.done).map((f) => f.label)
+      : [];
   const life = lifespan(person);
   const metaBits = [genderLabel(person.gender)];
   if (life) metaBits.push(life);
@@ -1089,8 +1120,19 @@ function PersonListItem({
       </div>
       {/* Hành động của người: MỘT hàng ngang (quan hệ · khoe · sao chép). Điện thoại: ở đáy hàng, căn phải;
           từ sm: nằm bên phải, giữa chiều cao mục — khỏi tốn thêm một dòng. */}
-      {(canCopy || showKhoe) && (
+      {(canCopy || showKhoe || missing.length > 0) && (
         <div className="-mt-1 flex items-center justify-end gap-0.5 px-3 pb-2 sm:mt-0 sm:shrink-0 sm:pb-0">
+          {missing.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onInvite!(person)}
+              aria-label={t`Mời người thân góp thông tin về ${person.full_name}`}
+              title={t`Mời góp thông tin — còn thiếu: ${missing.join(", ")}`}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-muted"
+            >
+              <IconSend className="h-4 w-4" />
+            </button>
+          )}
           {showKhoe && (
             <Link
               to={`/clans/${clanId}/relations?p=${person.id}`}
@@ -1134,6 +1176,17 @@ function PersonListItem({
       )}
     </li>
   );
+}
+
+/** Các mục hồ sơ của người đã mất (năm sinh / mất, ngày giỗ, quê, nơi an táng) — dùng cho nút "Mời góp thông tin". */
+function personFacts(p: PersonRow): { label: string; done: boolean }[] {
+  return [
+    { label: t`Năm sinh`, done: !!p.birth_date },
+    { label: t`Năm mất`, done: !!p.death_date },
+    { label: t`Ngày giỗ (âm lịch)`, done: !!p.death_anniv_lunar_day },
+    { label: t`Quê quán`, done: !!p.birth_place },
+    { label: t`Nơi an táng`, done: !!p.burial_place },
+  ];
 }
 
 /**

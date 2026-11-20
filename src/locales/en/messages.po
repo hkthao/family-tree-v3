@@ -10701,6 +10701,11 @@ msgstr "Every clan on the platform."
 msgid "Mời góp"
 msgstr "Invite"
 
+#. placeholder {0}: missing.join(", ")
+#: src/pages/clan/People.tsx
+msgid "Mời góp thông tin — còn thiếu: {0}"
+msgstr "Invite contributions — missing: {0}"
+
 #: src/pages/clan/Audit.tsx
 msgid "Mọi hành động"
 msgstr "All actions"
@@ -10781,6 +10786,11 @@ msgstr "Invite relatives to contribute"
 #: src/pages/clan/Memories.tsx
 msgid "Mời người thân góp"
 msgstr "Invite relatives"
+
+#. placeholder {0}: person.full_name
+#: src/pages/clan/People.tsx
+msgid "Mời người thân góp thông tin về {0}"
+msgstr "Invite relatives to contribute information about {0}"
 
 #: src/pages/clan/Members.tsx
 msgid "Mời người, đổi vai trò, gỡ thành viên."
@@ -10878,6 +10888,10 @@ msgstr "A one-sentence summary, shown in the list"
 #: src/pages/admin/Config.tsx
 msgid "một hoặc nhiều"
 msgstr "one or more"
+
+#: src/pages/clan/People.tsx
+msgid "Một kỷ niệm về cụ"
+msgstr "A memory of them"
 
 #: src/components/community/MemoryForm.tsx
 msgid "Một kỷ niệm, món ăn hay nấu, câu hay dặn, công việc ngày trước…"
@@ -11031,6 +11045,7 @@ msgstr "year of death"
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/pages/clan/People.tsx
 msgid "Năm mất"
 msgstr "Year of death"
 
@@ -11058,6 +11073,7 @@ msgstr "year of birth"
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/pages/clan/People.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Năm sinh"
 msgstr "Year of birth"
@@ -11231,6 +11247,7 @@ msgid "Ngày giỗ"
 msgstr "Death anniversary"
 
 #: src/components/community/MemoryForm.tsx
+#: src/pages/clan/People.tsx
 msgid "Ngày giỗ (âm lịch)"
 msgstr "Death anniversary (lunar)"
 
@@ -12045,6 +12062,7 @@ msgstr "Related resting places"
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/NewPerson.tsx
+#: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Nơi an táng"
@@ -12579,6 +12597,7 @@ msgstr "Back to automatic"
 msgid "Quê gốc"
 msgstr "Hometown"
 
+#: src/pages/clan/People.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
