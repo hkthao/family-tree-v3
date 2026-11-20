@@ -227,8 +227,14 @@ export default function Share() {
   // Link mời góp mở thẳng tab "Cùng góp" (?tab=gop, ?p=<người được kể>).
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<
-    "tree" | "events" | "heritage" | "details" | "gop"
-  >(() => (searchParams.get("tab") === "gop" ? "gop" : "tree"));
+    "tree" | "events" | "heritage" | "details" | "gop" | "hoi"
+  >(() =>
+    searchParams.get("q") || searchParams.get("tab") === "hoi"
+      ? "hoi"
+      : searchParams.get("tab") === "gop"
+        ? "gop"
+        : "tree",
+  );
   const invitedPersonId = searchParams.get("p");
   // Dòng họ có nguồn sử liệu (gia phả lịch sử) → thêm tab "Chi tiết" cho người
   // đang chọn: tiểu sử, trị vì, nguồn — khách chưa đăng nhập cũng đọc được.
@@ -1003,7 +1009,7 @@ export default function Share() {
       )}
 
       {/* Mời góp (link chia sẻ / link mời góp): ai mở link cũng thấy họ đang cần mình kể gì. */}
-      {canGop && tab !== "gop" && (
+      {canGop && tab !== "gop" && tab !== "hoi" && (
         <div className="container max-w-6xl shrink-0 pt-2 print-hide">
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
             <IconBook className="h-5 w-5 shrink-0 text-primary" />
@@ -1065,6 +1071,11 @@ export default function Share() {
             {canGop && (
               <ShareTab active={tab === "gop"} onClick={() => setTab("gop")}>
                 {t`Cùng góp`}
+              </ShareTab>
+            )}
+            {canGop && (data.community?.questions?.length ?? 0) > 0 && (
+              <ShareTab active={tab === "hoi"} onClick={() => setTab("hoi")}>
+                {t`Hỏi & trả lời`}
               </ShareTab>
             )}
           </div>
@@ -1245,9 +1256,11 @@ export default function Share() {
             </div>
 
             {/* TAB Sự kiện & giỗ / Di sản — chỉ trang xem thử công khai. */}
-            {canGop && tab === "gop" && data.community && token && (
+            {canGop && (tab === "gop" || tab === "hoi") && data.community && token && (
               <div className="flex-1 min-h-0 overflow-y-auto">
                 <CommunitySharePanel
+                  key={tab}
+                  mode={tab === "hoi" ? "hoi" : "gop"}
                   community={data.community}
                   persons={data.persons}
                   token={token}

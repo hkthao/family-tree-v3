@@ -41,6 +41,7 @@ export function CommunitySharePanel({
   initialPersonId,
   initialQuestionId,
   fixedPersonId,
+  mode = "gop",
 }: {
   community: ShareViewCommunity;
   persons: ShareViewPerson[];
@@ -50,17 +51,21 @@ export function CommunitySharePanel({
   initialPersonId?: string | null;
   /** Link trả lời câu hỏi (?q=) — mở thẳng câu hỏi đó. */
   initialQuestionId?: string | null;
+  /** "gop" = tab Cùng góp (đóng góp thường); "hoi" = tab Hỏi & trả lời (câu hỏi + câu trả lời). */
+  mode?: "gop" | "hoi";
   fixedPersonId?: string | null;
 }) {
   const [personId, setPersonId] = useState<string>(() => {
     if (fixedPersonId) return fixedPersonId;
-    const q = (community.questions ?? []).find((x) => x.id === initialQuestionId);
+    const q = mode === "hoi" ? (community.questions ?? []).find((x) => x.id === initialQuestionId) : undefined;
     return q?.about_person_id ?? q?.ask_person_id ?? initialPersonId ?? "";
   });
   const [sent, setSent] = useState<null | "pending" | "visible">(null);
   const questions = community.questions ?? [];
   const [questionId, setQuestionId] = useState<string>(
-    initialQuestionId && questions.some((q) => q.id === initialQuestionId) ? initialQuestionId : "",
+    mode === "hoi" && initialQuestionId && questions.some((q) => q.id === initialQuestionId)
+      ? initialQuestionId
+      : "",
   );
   const question = questions.find((q) => q.id === questionId) ?? null;
   const [tagging, setTagging] = useState<string | null>(null);
@@ -97,18 +102,30 @@ export function CommunitySharePanel({
   );
 
   const person = personId ? byId.get(personId) : null;
-  const shown = community.memories.filter((m) => (personId ? m.person_id === personId : true));
+  const isHoi = mode === "hoi";
+  // Tab Hỏi & trả lời chỉ hiện câu trả lời (lọc theo câu hỏi đang chọn); tab Cùng góp chỉ hiện đóng góp thường.
+  const shown = community.memories.filter((m) =>
+    isHoi
+      ? !!m.question_id && (!questionId || m.question_id === questionId)
+      : !m.question_id && (personId ? m.person_id === personId : true),
+  );
 
   return (
     <div className="container max-w-3xl space-y-4 py-4">
       <section className="space-y-1 rounded-xl border border-primary/30 bg-primary/5 p-3">
         <h2 className="font-semibold">
           {community.recipient_label
-            ? t`Chào ${community.recipient_label}! Cả nhà nhờ bạn đóng góp giúp`
-            : t`Cùng đóng góp câu chuyện của gia đình`}
+            ? isHoi
+              ? t`Chào ${community.recipient_label}! Cả nhà muốn hỏi bạn`
+              : t`Chào ${community.recipient_label}! Cả nhà nhờ bạn đóng góp giúp`
+            : isHoi
+              ? t`Cả nhà cùng hỏi, ông bà cùng kể`
+              : t`Cùng đóng góp câu chuyện của gia đình`}
         </h2>
         <p className="text-sm text-muted-foreground">
-          {t`Chọn người · viết, góp ảnh cũ hoặc ghi âm · bấm Gửi. Không cần đăng ký.`}
+          {isHoi
+            ? t`Chọn câu hỏi · bấm Trả lời · ghi âm hoặc viết · bấm Gửi. Không cần đăng ký.`
+            : t`Chọn người · viết, góp ảnh cũ hoặc ghi âm · bấm Gửi. Không cần đăng ký.`}
         </p>
         <p className="text-xs text-muted-foreground">
           <CommunityStatsLine community={community} />
@@ -116,13 +133,12 @@ export function CommunitySharePanel({
       </section>
 
       {/* P1 "Hỏi ông bà": câu hỏi đang chờ — bấm "Trả lời" để ghi âm / viết câu trả lời. */}
-      {!fixedPersonId && questions.filter((q) => q.status !== "closed").length > 0 && (
+      {isHoi && questions.filter((q) => q.status !== "closed").length > 0 && (
         <section className="space-y-2">
           <h3 className="text-sm font-semibold">{t`Câu hỏi cả nhà đang hỏi`}</h3>
           <ul className="divide-y overflow-hidden rounded-xl border bg-card">
             {questions
               .filter((q) => q.status !== "closed")
-              .slice(0, 6)
               .map((q) => (
                 <li key={q.id} className={`flex items-center gap-2 p-3 ${q.id === questionId ? "bg-primary/5" : ""}`}>
                   <p className="min-w-0 flex-1 text-sm">
@@ -156,7 +172,7 @@ export function CommunitySharePanel({
         </section>
       )}
 
-      {!fixedPersonId && (
+      {!fixedPersonId && !isHoi && (
         <div className="space-y-1.5">
           <Label htmlFor="community-person">{t`Bạn muốn đóng góp về ai?`}</Label>
           <FilterableSelect
@@ -175,7 +191,11 @@ export function CommunitySharePanel({
         </div>
       )}
 
-      {sent ? (
+      {isHoi && !questionId && !sent ? (
+        <p className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+          {t`Chọn một câu hỏi ở trên rồi bấm "Trả lời".`}
+        </p>
+      ) : sent ? (
         <section className="space-y-3 rounded-xl border bg-card p-4 text-center">
           <p className="font-semibold">{t`Cảm ơn bạn đã đóng góp! 🙏`}</p>
           <p className="text-sm text-muted-foreground">
@@ -185,7 +205,7 @@ export function CommunitySharePanel({
           </p>
           <Button variant="outline" onClick={() => setSent(null)}>
             <IconBook className="mr-1.5 h-4 w-4" />
-            {t`Đóng góp thêm`}
+            {isHoi ? t`Trả lời câu khác` : t`Đóng góp thêm`}
           </Button>
         </section>
       ) : (
@@ -226,7 +246,13 @@ export function CommunitySharePanel({
       {shown.length > 0 && (
         <section className="space-y-3">
           <h3 className="font-semibold">
-            {person ? t`Đóng góp về ${person.full_name}` : t`Các đóng góp`}
+            {isHoi
+              ? question
+                ? t`Câu trả lời cho câu hỏi này`
+                : t`Các câu trả lời`
+              : person
+                ? t`Đóng góp về ${person.full_name}`
+                : t`Các đóng góp`}
           </h3>
           {shown.map((m) => (
             <div key={m.id} className="space-y-2">
