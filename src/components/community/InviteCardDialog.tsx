@@ -211,7 +211,7 @@ export function InviteCardDialog({
           {/* Ảnh lớn bên trái + cột mẫu DỌC bên phải (cuộn trong khung cao bằng ảnh) — bấm mẫu thấy ngay ảnh đổi. */}
           <div ref={stageRef} className="flex gap-2 rounded-lg border bg-muted/40 p-2 sm:gap-3 sm:p-3">
             <div className="flex min-w-0 flex-1 justify-center">
-              <div style={{ width: previewW, height: dim.h * scale, overflow: "hidden" }}>
+              <div className="rounded-xl shadow-sm" style={{ width: previewW, height: dim.h * scale, overflow: "hidden" }}>
                 <div style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: dim.w, height: dim.h }}>
                   <InviteCard data={data} format={format} />
                 </div>
@@ -239,7 +239,7 @@ export function InviteCardDialog({
                     title={`${VARIANT_LABEL[tp.variant]} · ${THEME_LABEL[tp.theme]}`}
                     className={`shrink-0 snap-start rounded-lg border-2 p-1 text-left transition-colors ${active ? "border-primary bg-background" : "border-transparent hover:border-muted-foreground/40"}`}
                   >
-                    <div className="overflow-hidden rounded" style={{ width: THUMB_W, height: dim.h * (THUMB_W / dim.w) }}>
+                    <div className="overflow-hidden rounded-md" style={{ width: THUMB_W, height: dim.h * (THUMB_W / dim.w) }}>
                       <div style={{ transform: `scale(${THUMB_W / dim.w})`, transformOrigin: "top left", width: dim.w, height: dim.h, pointerEvents: "none" }}>
                         <InviteCard data={{ ...data, variant: tp.variant, theme: tp.theme }} format={format} />
                       </div>
