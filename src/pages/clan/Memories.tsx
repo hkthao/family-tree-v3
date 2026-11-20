@@ -165,7 +165,7 @@ export default function Memories() {
               ? m.identify
               : m.kind === kind || (kind === "story" && m.kind === "answer"))) &&
         (source === "all" || (source === "guest") === m.is_guest) &&
-        (applied === "all" || (applied === "yes") === m.applied.length > 0) &&
+        (applied === "all" || (applied === "yes") === (m.applied?.length ?? 0) > 0) &&
         (!q ||
           unaccent(
             `${m.person_name ?? ""} ${m.author_label} ${m.author_relation ?? ""} ${m.body ?? ""} ${m.place ?? ""}`,
@@ -469,7 +469,7 @@ export default function Memories() {
                 <div>
                   <dt className="text-xs text-muted-foreground">{t`Đưa vào gia phả`}</dt>
                   <dd>
-                    {viewing.applied.length === 0
+                    {!viewing.applied?.length
                       ? t`Chưa`
                       : viewing.applied
                           .map((a) =>
@@ -636,7 +636,7 @@ function MemoryRow({ m, onOpen }: { m: PersonMemory; onOpen: () => void }) {
                 {t`Qua link`}
               </Chip>
             )}
-            {m.applied.length > 0 && (
+            {(m.applied?.length ?? 0) > 0 && (
               <Chip tone="success" icon={<IconBook />}>
                 {t`Đã vào gia phả`}
               </Chip>
