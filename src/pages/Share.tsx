@@ -946,7 +946,10 @@ export default function Share() {
   }
 
   return (
-    <div className="h-dvh bg-background flex flex-col">
+    // Tab Cây: khung cố định cao bằng màn hình (cây tự kéo/phóng). Các tab khác (Tổng quan, Cùng góp…):
+    // CẢ TRANG cuộn — thông báo, thanh mời góp, CTA cuối trang trôi theo nội dung, không chiếm chỗ cố
+    // định (trên điện thoại chúng từng chiếm gần hết màn hình, nội dung chỉ còn một khe nhỏ).
+    <div className={`${tab === "tree" ? "h-dvh" : "min-h-dvh"} bg-background flex flex-col`}>
       {/* Thanh đầu theo kiểu app: tên dòng họ ở giữa, nút sáng/tối bên phải (trang công khai
           không có thanh đầu của app). Hai đầu cân nhau để tên luôn nằm giữa. */}
       <header className="sticky top-0 z-30 shrink-0 border-b bg-background">
