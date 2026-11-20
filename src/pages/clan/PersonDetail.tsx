@@ -672,6 +672,16 @@ export default function PersonDetail({
                 personName={person.full_name}
                 userId={userId}
                 canModerate={canEdit}
+                facts={{
+                  full_name: person.full_name,
+                  is_living: person.is_living,
+                  birth_date: person.birth_date,
+                  death_date: person.death_date,
+                  birth_place: person.birth_place,
+                  burial_place: person.burial_place,
+                  death_anniv_lunar_month: person.death_anniv_lunar_month,
+                  death_anniv_lunar_day: person.death_anniv_lunar_day,
+                }}
               />
             )}
 
