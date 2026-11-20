@@ -2542,6 +2542,7 @@ msgid "cây"
 msgstr "trees"
 
 #: src/components/ClanLayout.tsx
+#: src/pages/Share.tsx
 msgid "Cây"
 msgstr "Tree"
 
@@ -2927,6 +2928,7 @@ msgstr "Only invited members can view it."
 
 #: src/pages/AnnouncementDetail.tsx
 #: src/pages/clan/ContributionDetail.tsx
+#: src/pages/Share.tsx
 msgid "Chi tiết"
 msgstr "Details"
 
@@ -7197,6 +7199,10 @@ msgstr "Birth certificate · gravestone · old family records · my parents told
 msgid "Giấy ngà"
 msgstr "Ivory paper"
 
+#: src/pages/Share.tsx
+msgid "Giỗ"
+msgstr "Death anniv."
+
 #: src/pages/clan/Tree.tsx
 msgid "Giỗ {anniv}"
 msgstr "Death anniversary {anniv}"
@@ -8044,6 +8050,10 @@ msgstr "Ask whom? (optional)"
 #: src/pages/Contact.tsx
 msgid "Hỏi cách dùng, hỏi về dữ liệu…"
 msgstr "Ask how to use something, or about your data…"
+
+#: src/pages/Share.tsx
+msgid "Hỏi đáp"
+msgstr "Q&A"
 
 #: src/components/community/InviteCardDialog.tsx
 #: src/components/community/QuestionPanel.tsx
@@ -12139,6 +12149,7 @@ msgstr "General content about Vietnamese customs and rituals from the system's C
 msgid "Nội dung đoạn này…"
 msgstr "Content of this section…"
 
+#: src/pages/Share.tsx
 #: src/pages/Share.tsx
 msgid "Nội dung dòng họ"
 msgstr "Clan content"
