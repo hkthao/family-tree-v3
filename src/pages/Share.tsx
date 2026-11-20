@@ -222,6 +222,27 @@ export default function Share() {
       /* private mode — ignore */
     }
   };
+  // Thanh mời góp + thanh "Tạo gia phả miễn phí": người xem tắt được (đỡ chiếm chỗ), nhớ theo thiết bị.
+  const useDismiss = (key: string) => {
+    const [open, setOpen] = useState<boolean>(() => {
+      try {
+        return localStorage.getItem(key) !== "1";
+      } catch {
+        return true;
+      }
+    });
+    const close = () => {
+      setOpen(false);
+      try {
+        localStorage.setItem(key, "1");
+      } catch {
+        /* private mode — ignore */
+      }
+    };
+    return [open, close] as const;
+  };
+  const [gopBannerOpen, dismissGopBanner] = useDismiss("family-tree:share-gop-banner-dismissed");
+  const [ctaOpen, dismissCta] = useDismiss("family-tree:share-cta-dismissed");
   // Kiểu thẻ: dọc (hẹp, xem được nhiều người) hoặc ngang; ảnh mặc định ẩn.
   // Nền / khung / kiểu thẻ / ảnh / font / avatar: dùng CHUNG với trang Cây (lib/tree/viewPrefs).
   const prefs = useTreeViewPrefs();
@@ -953,8 +974,8 @@ export default function Share() {
   // Danh sách tab (dùng cho cả thanh tab trên — máy tính — và thanh tab đáy — điện thoại).
   const tabItems: { key: string; label: string; short?: string; icon: React.ReactNode; active: boolean; onClick: () => void }[] = [];
   if ((publicClan || !!token) && data && data.persons.length > 0) {
-    if (token) tabItems.push({ key: "overview", label: t`Tổng quan`, icon: <IconHome />, active: tab === "overview" || tab === "tree", onClick: () => setTab("overview") });
-    else tabItems.push({ key: "tree", label: t`Cây gia phả`, short: t`Cây`, icon: <IconTree />, active: tab === "tree", onClick: () => setTab("tree") });
+    if (token) tabItems.push({ key: "overview", label: t`Tổng quan`, icon: <IconHome />, active: tab === "overview", onClick: () => setTab("overview") });
+    tabItems.push({ key: "tree", label: t`Cây gia phả`, short: t`Cây`, icon: <IconTree />, active: tab === "tree", onClick: () => setTab("tree") });
     if (data.events?.length || hasAnniversaries(data))
       tabItems.push({ key: "events", label: t`Sự kiện & giỗ`, short: t`Giỗ`, icon: <IconCalendar />, active: tab === "events", onClick: () => setTab("events") });
     if (data.heritage?.length) tabItems.push({ key: "heritage", label: t`Di sản`, icon: <IconBook />, active: tab === "heritage", onClick: () => setTab("heritage") });
@@ -985,7 +1006,7 @@ export default function Share() {
       </header>
 
       {/* Lưu ý quyền riêng tư: đóng được bằng dấu X, nhớ lựa chọn trên thiết bị này. */}
-      {noticeOpen && (
+      {noticeOpen && tab !== "tree" && (
         <div className="container max-w-6xl shrink-0 pt-2 print-hide">
           {/* Cùng kiểu thông báo của app (EnablePushPrompt): nền/viền nhạt màu chủ đạo, icon bên
               trái, đóng được bằng dấu X và nhớ lựa chọn trên thiết bị này. */}
@@ -1035,7 +1056,7 @@ export default function Share() {
       )}
 
       {/* Mời góp (link chia sẻ / link mời góp): ai mở link cũng thấy họ đang cần mình kể gì. */}
-      {canGop && tab !== "gop" && tab !== "hoi" && (
+      {canGop && gopBannerOpen && tab === "overview" && (
         <div className="container max-w-6xl shrink-0 pt-2 print-hide">
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
             <IconBook className="h-5 w-5 shrink-0 text-primary" />
@@ -1053,6 +1074,15 @@ export default function Share() {
               <IconSend className="mr-1.5 h-4 w-4" />
               {t`Cùng góp`}
             </Button>
+            <button
+              type="button"
+              onClick={dismissGopBanner}
+              className="shrink-0 self-start text-muted-foreground hover:text-foreground"
+              aria-label={t`Đóng thông báo`}
+              title={t`Đóng`}
+            >
+              <IconX className="h-4 w-4" />
+            </button>
           </div>
         </div>
       )}
@@ -1106,17 +1136,6 @@ export default function Share() {
                 tab === "tree" ? "flex flex-1 min-h-0 flex-col" : "hidden"
               }
             >
-              {token && (
-                <div className="container max-w-6xl shrink-0 pt-2 print-hide">
-                  <button
-                    type="button"
-                    onClick={() => setTab("overview")}
-                    className="text-sm font-medium text-primary hover:underline"
-                  >
-                    {t`← Tổng quan`}
-                  </button>
-                </div>
-              )}
               {/* Thanh công cụ gọn: ô chọn người trung tâm (có ô tìm), icon Tuỳ chọn cây nằm trong ô. */}
               <div className="container flex max-w-6xl shrink-0 items-center gap-2 py-3 print-hide">
                 <div className="min-w-0 flex-1">
@@ -1302,7 +1321,7 @@ export default function Share() {
           lẫn /xem/clans/:id). Đây là đầu phễu tăng trưởng: người xem cây họ
           người khác từ Facebook → mời tạo gia phả của chính họ. Ẩn khi toàn
           màn hình và khi in. */}
-      {data && data.persons.length > 0 && !isFullscreen && (
+      {data && data.persons.length > 0 && !isFullscreen && ctaOpen && tab !== "tree" && (
         <div className="shrink-0 border-t bg-primary/5 px-4 py-3 print-hide">
           <div className="container mx-auto flex max-w-6xl flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-left">
             <p className="text-sm">
@@ -1317,6 +1336,7 @@ export default function Share() {
                 {t`Tạo cây gia phả cho dòng họ bạn — miễn phí, chỉ vài phút.`}
               </span>
             </p>
+            <div className="flex shrink-0 items-center gap-2">
             <Button asChild size="sm" className="shrink-0">
               <Link
                 to="/signup"
@@ -1330,6 +1350,16 @@ export default function Share() {
                 {t`Tạo gia phả miễn phí`}
               </Link>
             </Button>
+            <button
+              type="button"
+              onClick={dismissCta}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label={t`Đóng thông báo`}
+              title={t`Đóng`}
+            >
+              <IconX className="h-4 w-4" />
+            </button>
+            </div>
           </div>
         </div>
       )}

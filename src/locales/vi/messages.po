@@ -795,8 +795,8 @@ msgid "← Sổ tay Văn hoá"
 msgstr "← Sổ tay Văn hoá"
 
 #: src/pages/Share.tsx
-msgid "← Tổng quan"
-msgstr "← Tổng quan"
+#~ msgid "← Tổng quan"
+#~ msgstr "← Tổng quan"
 
 #: src/pages/Docs.tsx
 msgid "← Trước"
@@ -6502,6 +6502,8 @@ msgstr "Đơn vị này đang được dùng trong địa chỉ thành viên."
 #: src/pages/clan/Tree.tsx
 #: src/pages/CustomsForm.tsx
 #: src/pages/Share.tsx
+#: src/pages/Share.tsx
+#: src/pages/Share.tsx
 msgid "Đóng"
 msgstr "Đóng"
 
@@ -6754,6 +6756,8 @@ msgstr "Dòng thời gian: năm “{0}” chưa hợp lệ."
 msgid "Dòng thời gian: năm {year} chưa có nội dung."
 msgstr "Dòng thời gian: năm {year} chưa có nội dung."
 
+#: src/pages/Share.tsx
+#: src/pages/Share.tsx
 #: src/pages/Share.tsx
 msgid "Đóng thông báo"
 msgstr "Đóng thông báo"

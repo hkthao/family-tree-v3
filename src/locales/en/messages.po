@@ -795,8 +795,8 @@ msgid "← Sổ tay Văn hoá"
 msgstr "← Culture Handbook"
 
 #: src/pages/Share.tsx
-msgid "← Tổng quan"
-msgstr "← Overview"
+#~ msgid "← Tổng quan"
+#~ msgstr "← Overview"
 
 #: src/pages/Docs.tsx
 msgid "← Trước"
@@ -6502,6 +6502,8 @@ msgstr "This unit is used in member addresses."
 #: src/pages/clan/Tree.tsx
 #: src/pages/CustomsForm.tsx
 #: src/pages/Share.tsx
+#: src/pages/Share.tsx
+#: src/pages/Share.tsx
 msgid "Đóng"
 msgstr "Close"
 
@@ -6754,6 +6756,8 @@ msgstr "Timeline: year “{0}” is not valid."
 msgid "Dòng thời gian: năm {year} chưa có nội dung."
 msgstr "Timeline: year {year} has no content yet."
 
+#: src/pages/Share.tsx
+#: src/pages/Share.tsx
 #: src/pages/Share.tsx
 msgid "Đóng thông báo"
 msgstr "Close notice"
