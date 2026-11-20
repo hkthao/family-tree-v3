@@ -2578,6 +2578,10 @@ msgstr "Family tree & People"
 msgid "Cây gia phả được chia sẻ"
 msgstr "Shared family tree"
 
+#: src/components/ShareTreeButton.tsx
+msgid "Cây gia phả luôn có. Áp dụng cho mọi link chia sẻ của dòng họ."
+msgstr "The family tree is always included. Applies to every share link of the clan."
+
 #: src/pages/clan/Tree.tsx
 msgid "Cây gia phả tương tác"
 msgstr "Interactive family tree"
@@ -4570,6 +4574,7 @@ msgstr "Removed from the list"
 
 #: src/components/community/MemoryFaces.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/components/ShareSectionsCard.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -11625,6 +11630,10 @@ msgstr "The recipient can no longer open it; unreviewed contributions sent throu
 #: src/components/ShareTreeButton.tsx
 msgid "Người nhận xem được cây chỉ-đọc, không cần đăng nhập."
 msgstr "Recipients see a read-only tree, no sign-in needed."
+
+#: src/components/ShareTreeButton.tsx
+msgid "Người nhận xem được thêm (tick là lưu ngay):"
+msgstr "Recipients can also see (saved as you tick):"
 
 #: src/pages/clan/MapStats.tsx
 msgid "Người ở nước ngoài không được tính vào bản đồ tỉnh."

@@ -2578,6 +2578,10 @@ msgstr "Cây gia phả & Danh bạ"
 msgid "Cây gia phả được chia sẻ"
 msgstr "Cây gia phả được chia sẻ"
 
+#: src/components/ShareTreeButton.tsx
+msgid "Cây gia phả luôn có. Áp dụng cho mọi link chia sẻ của dòng họ."
+msgstr "Cây gia phả luôn có. Áp dụng cho mọi link chia sẻ của dòng họ."
+
 #: src/pages/clan/Tree.tsx
 msgid "Cây gia phả tương tác"
 msgstr "Cây gia phả tương tác"
@@ -4570,6 +4574,7 @@ msgstr "Đã loại khỏi danh sách"
 
 #: src/components/community/MemoryFaces.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/components/ShareSectionsCard.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -11625,6 +11630,10 @@ msgstr "Người nhận không mở được nữa; đóng góp chưa duyệt g�
 #: src/components/ShareTreeButton.tsx
 msgid "Người nhận xem được cây chỉ-đọc, không cần đăng nhập."
 msgstr "Người nhận xem được cây chỉ-đọc, không cần đăng nhập."
+
+#: src/components/ShareTreeButton.tsx
+msgid "Người nhận xem được thêm (tick là lưu ngay):"
+msgstr "Người nhận xem được thêm (tick là lưu ngay):"
 
 #: src/pages/clan/MapStats.tsx
 msgid "Người ở nước ngoài không được tính vào bản đồ tỉnh."

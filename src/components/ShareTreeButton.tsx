@@ -4,7 +4,9 @@ import { useState } from "react";
 
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconCopy, IconLink, IconShare2 } from "@/components/icons";
+import { ShareSectionsPicker } from "@/components/ShareSectionsCard";
 import { SidePanel } from "@/components/SidePanel";
+import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { Button } from "@/components/ui/button";
 import { getOrCreateTreeShareLink } from "@/lib/queries/share-links";
 
@@ -27,6 +29,7 @@ interface Props {
  * browsers where navigator.share() is missing.
  */
 export function ShareTreeButton({ clanId, clanName, compact }: Props) {
+  const { clan } = useClanContext();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -156,7 +159,7 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
               </div>
 
               {hasNativeShare && (
-                <Button type="button" className="w-full" onClick={nativeShare}>
+                <Button type="button" size="sm" className="w-full" onClick={nativeShare}>
                   <IconShare2 className="h-4 w-4 mr-1.5" />
                   {t`Chia sẻ qua ứng dụng…`}
                 </Button>
@@ -201,6 +204,17 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
                   />
                 </div>
               </div>
+
+              {/* Chọn phần nào hiện ở tab Tổng quan của link (cài đặt cả họ, chỉ admin đổi được). */}
+              {isClanAdmin(clan) && (
+                <div className="space-y-2 border-t pt-4">
+                  <p className="text-sm font-medium">{t`Người nhận xem được thêm (tick là lưu ngay):`}</p>
+                  <ShareSectionsPicker clanId={clanId} autoSave compact />
+                  <p className="text-xs text-muted-foreground">
+                    {t`Cây gia phả luôn có. Áp dụng cho mọi link chia sẻ của dòng họ.`}
+                  </p>
+                </div>
+              )}
 
               {expiresAt && (
                 <p className="text-xs text-muted-foreground">

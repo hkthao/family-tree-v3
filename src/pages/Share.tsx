@@ -1027,7 +1027,7 @@ export default function Share() {
                 {data?.community && <CommunityStatsLine community={data.community} />}
               </p>
             </div>
-            <Button size="sm" className="shrink-0" onClick={() => setTab("gop")}>
+            <Button size="sm" className="h-9 shrink-0 px-3 text-sm" onClick={() => setTab("gop")}>
               <IconSend className="mr-1.5 h-4 w-4" />
               {t`Cùng góp`}
             </Button>
