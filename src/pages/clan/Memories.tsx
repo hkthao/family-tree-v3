@@ -63,6 +63,7 @@ import {
   listClanMemories,
   listContributeLinks,
   revokeContributeLink,
+  resumeContributeLink,
   listQuestions,
   PHOTO_IDENTIFY_ENABLED,
   setQuestionStatus,
@@ -774,6 +775,14 @@ function LinksPanel({
     },
     onError: (e) => toast.error(t`Không thu hồi được`, { description: (e as Error).message }),
   });
+  const resume = useMutation({
+    mutationFn: (id: string) => resumeContributeLink(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["contribute-links", clan.id] });
+      toast.success(t`Đã mở lại link`);
+    },
+    onError: (e) => toast.error(t`Không mở lại được`, { description: (e as Error).message }),
+  });
 
   const now = new Date();
   const isOff = (l: ContributeLink) => l.is_revoked || new Date(l.expires_at) < now;
@@ -800,10 +809,10 @@ function LinksPanel({
           </p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             <Chip
-              tone={l.is_revoked ? "danger" : off ? "neutral" : "success"}
-              icon={l.is_revoked ? <IconX /> : off ? <IconClock /> : <IconCheck />}
+              tone={l.is_revoked ? "danger" : off ? "neutral" : l.contrib_paused_at ? "warning" : "success"}
+              icon={l.is_revoked ? <IconX /> : off ? <IconClock /> : l.contrib_paused_at ? <IconClock /> : <IconCheck />}
             >
-              {l.is_revoked ? t`Đã thu hồi` : off ? t`Hết hạn` : t`Đang mở`}
+              {l.is_revoked ? t`Đã thu hồi` : off ? t`Hết hạn` : l.contrib_paused_at ? t`Tạm dừng — nhận quá nhiều` : t`Đang mở`}
             </Chip>
             <Chip tone="info" icon={<IconBook />}>
               {t`${l.use_count} lượt góp`}
@@ -812,6 +821,19 @@ function LinksPanel({
         </div>
         {!off && (
           <div className="flex shrink-0 gap-1">
+            {l.contrib_paused_at && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 text-emerald-600"
+                aria-label={t`Mở lại nhận đóng góp`}
+                title={t`Mở lại nhận đóng góp (link tự tạm dừng vì nhận quá nhiều trong 24 giờ — xem đóng góp chờ duyệt trước)`}
+                disabled={resume.isPending}
+                onClick={() => resume.mutate(l.id)}
+              >
+                <IconCheck className="h-5 w-5" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"

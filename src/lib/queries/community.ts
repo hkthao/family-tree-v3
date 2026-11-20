@@ -385,6 +385,8 @@ export interface ContributeLink {
   expires_at: string;
   is_revoked: boolean;
   use_count: number;
+  /** Tự tạm dừng nhận đóng góp (quá nhiều trong 24 giờ — có thể link bị lộ). */
+  contrib_paused_at: string | null;
   created_by: string | null;
   created_at: string;
 }
@@ -434,7 +436,7 @@ export async function listContributeLinks(
   const { data, error } = await client
     .from("share_links")
     .select(
-      "id, token, recipient_label, root_person_id, expires_at, is_revoked, use_count, created_by, created_at, person:persons(full_name)",
+      "id, token, recipient_label, root_person_id, expires_at, is_revoked, use_count, contrib_paused_at, created_by, created_at, person:persons(full_name)",
     )
     .eq("clan_id", clanId)
     .eq("scope", "contribute")
@@ -444,6 +446,12 @@ export async function listContributeLinks(
   return ((data ?? []) as unknown as (ContributeLink & { person: { full_name: string } | null })[]).map(
     ({ person, ...rest }) => ({ ...rest, person_name: person?.full_name ?? null }),
   );
+}
+
+/** Mở lại link đã tự tạm dừng (người tạo link / admin). */
+export async function resumeContributeLink(id: string, client: Client = defaultClient): Promise<void> {
+  const { error } = await client.from("share_links").update({ contrib_paused_at: null }).eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export async function revokeContributeLink(id: string, client: Client = defaultClient): Promise<void> {

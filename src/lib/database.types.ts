@@ -3433,6 +3433,7 @@ export type Database = {
         Row: {
           allow: Json
           clan_id: string
+          contrib_paused_at: string | null
           created_at: string
           created_by: string | null
           expires_at: string
@@ -3449,6 +3450,7 @@ export type Database = {
         Insert: {
           allow?: Json
           clan_id: string
+          contrib_paused_at?: string | null
           created_at?: string
           created_by?: string | null
           expires_at: string
@@ -3465,6 +3467,7 @@ export type Database = {
         Update: {
           allow?: Json
           clan_id?: string
+          contrib_paused_at?: string | null
           created_at?: string
           created_by?: string | null
           expires_at?: string
