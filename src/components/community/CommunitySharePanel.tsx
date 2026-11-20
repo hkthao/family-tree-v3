@@ -124,7 +124,7 @@ export function CommunitySharePanel({
         </h2>
         <p className="text-sm text-muted-foreground">
           {isHoi
-            ? t`Chọn câu hỏi · bấm Trả lời · ghi âm hoặc viết · bấm Gửi. Không cần đăng ký.`
+            ? t`Chọn câu hỏi · bấm Trả lời · viết (hoặc bấm 🎤 trên bàn phím để nói) · bấm Gửi. Không cần đăng ký.`
             : t`Chọn người · viết, góp ảnh cũ hoặc ghi âm · bấm Gửi. Không cần đăng ký.`}
         </p>
         <p className="text-xs text-muted-foreground">

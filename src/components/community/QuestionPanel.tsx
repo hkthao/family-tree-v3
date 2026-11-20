@@ -27,7 +27,7 @@ import { t } from "@lingui/core/macro";
 
 function draftQuestionMessage(opts: { askName: string | null; question: string; url: string }) {
   const who = opts.askName ? t`hỏi ${opts.askName}` : t`hỏi ông bà, cha mẹ`;
-  return t`Cả nhà ơi, tuần này cùng ${who} một câu: “${opts.question}”. Ai đang ở gần thì bấm link dưới đây, ghi âm câu trả lời (tối đa 2 phút) hoặc viết lại, không cần đăng ký.\n${opts.url}`;
+  return t`Cả nhà ơi, tuần này cùng ${who} một câu: “${opts.question}”. Ai biết thì bấm link dưới đây viết câu trả lời (trên điện thoại bấm 🎤 trên bàn phím để nói cho nhanh), không cần đăng ký.\n${opts.url}`;
 }
 
 /**
@@ -134,7 +134,7 @@ export function QuestionPanel({
       onClose={close}
       size="lg"
       title={existing ? t`Gửi link trả lời` : t`Hỏi ông bà`}
-      subtitle={existing ? existing.question : t`Một câu hỏi, người được hỏi ghi âm câu trả lời`}
+      subtitle={existing ? existing.question : t`Một câu hỏi, người được hỏi trả lời qua link`}
     >
       {!result ? (
         <form
@@ -198,7 +198,7 @@ export function QuestionPanel({
             </>
           )}
           <p className="text-sm text-muted-foreground">
-            {t`Tạo link riêng gửi qua Zalo / Facebook. Người nhận mở link là thấy câu hỏi, bấm ghi âm để trả lời — không cần tài khoản.`}
+            {t`Tạo link riêng gửi qua Zalo / Facebook. Người nhận mở link là thấy câu hỏi và viết câu trả lời (bấm 🎤 trên bàn phím để nói) — không cần tài khoản.`}
           </p>
           <FormActions>
             <Button type="button" variant="outline" onClick={close}>

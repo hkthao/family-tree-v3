@@ -61,7 +61,7 @@ interface BaseProps {
   personName?: string | null;
   /** Có thì hiện thêm loại "Sửa thông tin" (đề xuất sửa dữ kiện, luôn chờ admin xác nhận). */
   facts?: PersonFacts | null;
-  /** Trả lời câu hỏi (P1 "Hỏi ông bà"): hiện câu hỏi ở đầu form, mặc định ghi âm. */
+  /** Trả lời câu hỏi (P1 "Hỏi ông bà"): form tối giản — câu hỏi + một ô chữ (nói qua micro bàn phím). */
   questionId?: string | null;
   questionText?: string | null;
   onDone: (status: MemoryStatus) => void;
@@ -94,9 +94,7 @@ export function MemoryForm(props: Props) {
   const toast = useToast();
   const isGuest = props.mode === "guest";
   const openedAt = useRef(performance.now());
-  const [kind, setKind] = useState<Kind>(
-    props.questionId && isAudioRecordingSupported() ? "audio" : "story",
-  );
+  const [kind, setKind] = useState<Kind>("story");
   // Ảnh nhờ cả nhà nhận diện người trong ảnh (P2) — chỉ thành viên đặt.
   const [identify, setIdentify] = useState(false);
   const [body, setBody] = useState("");
@@ -327,7 +325,8 @@ export function MemoryForm(props: Props) {
         source,
         author_relation: relation,
         // Ảnh nhờ nhận diện phải hiện ở trang chia sẻ thì người nhận link mới khoanh mặt được.
-        visibility: showOnShare || (kind === "photo" && identify) ? "share" : "clan",
+        visibility:
+          showOnShare || (kind === "photo" && identify) ? "share" : "clan",
         allow_ai_reuse: allowAi,
       });
       return res.status;
@@ -382,6 +381,9 @@ export function MemoryForm(props: Props) {
       : []),
   ];
   const isInfo = kind === "info";
+  // Trả lời câu hỏi: form tối giản — chỉ một ô chữ. Người lớn tuổi bấm micro trên bàn phím điện thoại
+  // để nói, máy tự chuyển thành chữ (không cần ghi âm trong app, không tốn ổ cứng server).
+  const answerMode = !!props.questionId;
 
   return (
     <form
@@ -394,35 +396,39 @@ export function MemoryForm(props: Props) {
       {props.questionText && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">{t`Câu hỏi`}</p>
-          <p className="mt-1 font-serif text-lg italic leading-snug">“{props.questionText}”</p>
+          <p className="mt-1 font-serif text-lg italic leading-snug">
+            “{props.questionText}”
+          </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {t`Bấm Ghi âm để người được hỏi kể (tối đa 2 phút), hoặc viết câu trả lời.`}
+            {t`Viết câu trả lời bên dưới. Trên điện thoại: bấm biểu tượng 🎤 trên bàn phím rồi nói, máy tự chuyển thành chữ.`}
           </p>
         </div>
       )}
-      <div
-        role="radiogroup"
-        aria-label={t`Cách góp`}
-        className={`grid gap-2 ${kinds.length > 3 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"}`}
-      >
-        {kinds.map((k) => (
-          <button
-            key={k.key}
-            type="button"
-            role="radio"
-            aria-checked={kind === k.key}
-            onClick={() => setKind(k.key)}
-            className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg border px-2 text-sm font-medium transition-colors ${
-              kind === k.key
-                ? "border-primary bg-primary/10 text-primary"
-                : "bg-card hover:border-primary/60"
-            }`}
-          >
-            {k.icon}
-            {k.label}
-          </button>
-        ))}
-      </div>
+      {!answerMode && (
+        <div
+          role="radiogroup"
+          aria-label={t`Cách góp`}
+          className={`grid gap-2 ${kinds.length > 3 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"}`}
+        >
+          {kinds.map((k) => (
+            <button
+              key={k.key}
+              type="button"
+              role="radio"
+              aria-checked={kind === k.key}
+              onClick={() => setKind(k.key)}
+              className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg border px-2 text-sm font-medium transition-colors ${
+                kind === k.key
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "bg-card hover:border-primary/60"
+              }`}
+            >
+              {k.icon}
+              {k.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {(kind === "photo" || kind === "audio") && (
         <div
@@ -680,31 +686,35 @@ export function MemoryForm(props: Props) {
       {!isInfo && (
         <div className="space-y-1.5">
           <Label htmlFor="memory-body">
-            {kind === "story"
-              ? t`Bạn nhớ gì về ${who}?`
-              : kind === "photo"
-                ? t`Vài lời về tấm ảnh (không bắt buộc)`
-                : t`Vài lời về đoạn ghi âm (không bắt buộc)`}
+            {answerMode
+              ? t`Câu trả lời`
+              : kind === "story"
+                ? t`Bạn nhớ gì về ${who}?`
+                : kind === "photo"
+                  ? t`Vài lời về tấm ảnh (không bắt buộc)`
+                  : t`Vài lời về đoạn ghi âm (không bắt buộc)`}
           </Label>
           <Textarea
             id="memory-body"
             icon={<IconBook />}
-            rows={kind === "story" ? 6 : 3}
+            rows={answerMode ? 8 : kind === "story" ? 6 : 3}
             value={body}
             maxLength={isGuest ? 5000 : 20000}
             onChange={(e) => setBody(e.target.value)}
             placeholder={
-              kind === "story"
-                ? t`Một kỷ niệm, món ăn hay nấu, câu hay dặn, công việc ngày trước…`
-                : kind === "photo"
-                  ? t`Ảnh chụp ở đâu, có những ai…`
-                  : t`Ai nói, nói về chuyện gì…`
+              answerMode
+                ? t`Bấm 🎤 trên bàn phím điện thoại để nói, hoặc gõ câu trả lời…`
+                : kind === "story"
+                  ? t`Một kỷ niệm, món ăn hay nấu, câu hay dặn, công việc ngày trước…`
+                  : kind === "photo"
+                    ? t`Ảnh chụp ở đâu, có những ai…`
+                    : t`Ai nói, nói về chuyện gì…`
             }
           />
         </div>
       )}
 
-      {!isInfo && (
+      {!isInfo && !answerMode && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="memory-year">{t`Khoảng năm (nếu nhớ)`}</Label>
@@ -733,25 +743,27 @@ export function MemoryForm(props: Props) {
         </div>
       )}
 
-      <div className="space-y-1.5">
-        <Label htmlFor="memory-source">
-          {isInfo
-            ? t`Bạn biết thông tin này từ đâu? (bắt buộc)`
-            : t`Bạn biết chuyện này từ đâu?`}
-        </Label>
-        <Input
-          id="memory-source"
-          icon={<IconUsers />}
-          value={source}
-          maxLength={200}
-          onChange={(e) => setSource(e.target.value)}
-          placeholder={
-            isInfo
-              ? t`Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…`
-              : t`Chính tôi nhớ · nghe bố mẹ kể · giấy tờ…`
-          }
-        />
-      </div>
+      {!answerMode && (
+        <div className="space-y-1.5">
+          <Label htmlFor="memory-source">
+            {isInfo
+              ? t`Bạn biết thông tin này từ đâu? (bắt buộc)`
+              : t`Bạn biết chuyện này từ đâu?`}
+          </Label>
+          <Input
+            id="memory-source"
+            icon={<IconUsers />}
+            value={source}
+            maxLength={200}
+            onChange={(e) => setSource(e.target.value)}
+            placeholder={
+              isInfo
+                ? t`Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…`
+                : t`Chính tôi nhớ · nghe bố mẹ kể · giấy tờ…`
+            }
+          />
+        </div>
+      )}
 
       {isGuest && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -797,7 +809,7 @@ export function MemoryForm(props: Props) {
         </label>
       </div>
 
-      {!isInfo && (
+      {!isInfo && !answerMode && (
         <div className="space-y-2 text-sm">
           {!isGuest && (
             <label className="flex cursor-pointer items-start gap-2">
@@ -822,7 +834,7 @@ export function MemoryForm(props: Props) {
         </div>
       )}
 
-      {isGuest && (
+      {isGuest && !answerMode && (
         <Alert>
           <AlertDescription>
             {t`Không cần đăng ký. Người quản lý dòng họ sẽ xem trước khi đăng; tên bạn được ghi là người đóng góp.`}
