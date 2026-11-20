@@ -116,7 +116,7 @@ export function CommunitySharePanel({
   );
 
   return (
-    <div className="container max-w-3xl space-y-4 py-4">
+    <div className="container max-w-6xl space-y-4 py-4">
       <section className="space-y-1 rounded-xl border border-primary/30 bg-primary/5 p-3">
         <h2 className="font-semibold">
           {community.recipient_label

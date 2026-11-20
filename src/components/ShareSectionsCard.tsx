@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/components/Toast";
 import { IconCheck } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 
 import { t } from "@lingui/core/macro";
@@ -31,12 +31,7 @@ function sectionLabel(k: ShareSection): { title: string; hint: string } {
   }
 }
 
-/**
- * Cài đặt "Link chia sẻ hiển thị gì" (clans.share_sections): admin tick phần nào hiện ở tab Tổng
- * quan của link chia sẻ /share/… (cây gia phả luôn có). Mặc định không chia sẻ thêm gì. Đọc / ghi
- * riêng cột này để trang khác không phụ thuộc vào migration.
- */
-export function ShareSectionsCard({ clanId }: { clanId: string }) {
+function useShareSections(clanId: string) {
   const qc = useQueryClient();
   const toast = useToast();
   const key = ["share-sections", clanId] as const;
@@ -48,34 +43,87 @@ export function ShareSectionsCard({ clanId }: { clanId: string }) {
       return ((data?.share_sections as string[] | null) ?? []) as ShareSection[];
     },
   });
-  const [picked, setPicked] = useState<Set<ShareSection>>(new Set());
-  useEffect(() => {
-    if (data) setPicked(new Set(data));
-  }, [data]);
-
   const save = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (next: Set<ShareSection>) => {
       const { error } = await supabase
         .from("clans")
-        .update({ share_sections: SHARE_SECTIONS.filter((k) => picked.has(k)) })
+        .update({ share_sections: SHARE_SECTIONS.filter((k) => next.has(k)) })
         .eq("id", clanId);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: key });
-      toast.success(t`Đã lưu — link chia sẻ sẽ hiện các phần đã chọn`);
     },
     onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
+  return { data, save };
+}
 
-  const toggle = (k: ShareSection) =>
-    setPicked((s) => {
-      const n = new Set(s);
-      if (n.has(k)) n.delete(k);
-      else n.add(k);
-      return n;
-    });
+/**
+ * Danh sách ô tick "chia sẻ phần nào" — dùng ở ngăn kéo Chia sẻ cây gia phả (tick là lưu ngay) và
+ * trong card Cài đặt. Cài đặt của CẢ dòng họ (áp cho mọi link chia sẻ), chỉ admin đổi được (RLS).
+ */
+export function ShareSectionsPicker({ clanId, autoSave = false, compact = false }: { clanId: string; autoSave?: boolean; compact?: boolean }) {
+  const toast = useToast();
+  const { data, save } = useShareSections(clanId);
+  const [picked, setPicked] = useState<Set<ShareSection>>(new Set());
+  useEffect(() => {
+    if (data) setPicked(new Set(data));
+  }, [data]);
 
+  const toggle = (k: ShareSection) => {
+    const n = new Set(picked);
+    if (n.has(k)) n.delete(k);
+    else n.add(k);
+    setPicked(n);
+    if (autoSave) save.mutate(n, { onSuccess: () => toast.success(t`Đã lưu`) });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className={compact ? "grid grid-cols-1 gap-1.5 sm:grid-cols-2" : "space-y-2"}>
+        {SHARE_SECTIONS.map((k) => {
+          const l = sectionLabel(k);
+          return (
+            <label
+              key={k}
+              title={l.hint}
+              className={`flex cursor-pointer items-start gap-2.5 rounded-lg border hover:bg-muted/40 ${compact ? "px-3 py-2 text-sm" : "p-3"}`}
+            >
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                checked={picked.has(k)}
+                disabled={!data || save.isPending}
+                onChange={() => toggle(k)}
+              />
+              <span className="min-w-0">
+                <span className="block font-medium">{l.title}</span>
+                {!compact && <span className="block text-sm text-muted-foreground">{l.hint}</span>}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+      {!autoSave && (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={save.isPending || !data}
+            onClick={() => save.mutate(picked, { onSuccess: () => toast.success(t`Đã lưu — link chia sẻ sẽ hiện các phần đã chọn`) })}
+          >
+            <IconCheck className="mr-1.5 h-4 w-4" />
+            {save.isPending ? t`Đang lưu…` : t`Lưu thay đổi`}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Card "Link chia sẻ hiển thị gì" ở trang Cài đặt dòng họ. */
+export function ShareSectionsCard({ clanId }: { clanId: string }) {
   return (
     <Card>
       <CardHeader>
@@ -84,31 +132,9 @@ export function ShareSectionsCard({ clanId }: { clanId: string }) {
           {t`Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt "Hiển thị & quyền xem" riêng.`}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2">
-        {SHARE_SECTIONS.map((k) => {
-          const l = sectionLabel(k);
-          return (
-            <label key={k} className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 hover:bg-muted/40">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 accent-primary"
-                checked={picked.has(k)}
-                onChange={() => toggle(k)}
-              />
-              <span>
-                <span className="block font-medium">{l.title}</span>
-                <span className="block text-sm text-muted-foreground">{l.hint}</span>
-              </span>
-            </label>
-          );
-        })}
+      <CardContent>
+        <ShareSectionsPicker clanId={clanId} />
       </CardContent>
-      <CardFooter className="justify-end border-t pt-4">
-        <Button size="sm" variant="outline" disabled={save.isPending || !data} onClick={() => save.mutate()}>
-          <IconCheck className="mr-1.5 h-4 w-4" />
-          {save.isPending ? t`Đang lưu…` : t`Lưu thay đổi`}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }
