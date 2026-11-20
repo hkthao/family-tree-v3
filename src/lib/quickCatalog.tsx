@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { IconDownload, IconPlus } from "@/components/icons";
+import { IconDownload, IconPlus, IconShare2 } from "@/components/icons";
 import type { DrawerSection } from "@/lib/navModel";
 
 import { t } from "@lingui/core/macro";
@@ -24,7 +24,7 @@ export interface QuickEntry {
   /** Ô thuộc nhóm lõi: luôn đứng đầu khi người dùng chưa ghim. */
   core?: boolean;
   /** Ô hành động đặc biệt không phải liên kết. */
-  special?: "pdf";
+  special?: "pdf" | "share";
 }
 
 /** Nhóm lõi (Tổng quan là chính trang chủ nên không có ô). */
@@ -36,6 +36,8 @@ export const CORE_QUICK_KEYS = ["tree", "people", "relations", "events"] as cons
  */
 const DEFAULT_ORDER = [
   "people/new",
+  "dong-gop",
+  "share",
   "todo",
   "graves",
   "board",
@@ -64,6 +66,8 @@ function shortLabel(key: string, label: string): string {
       return t`Liên kết họ`;
     case "xem-ngay":
       return t`Xem ngày tốt`;
+    case "dong-gop":
+      return t`Đóng góp`;
     default:
       return label;
   }
@@ -108,6 +112,14 @@ export function buildQuickCatalog(
     });
   }
   if (opts.isMember) {
+    // Mở ngăn kéo "Chia sẻ cây gia phả" (link chỉ-đọc + chọn phần chia sẻ).
+    entries.push({
+      key: "share",
+      label: t`Chia sẻ gia phả`,
+      short: t`Chia sẻ`,
+      icon: <IconShare2 className="h-5 w-5" />,
+      special: "share",
+    });
     entries.push({
       key: "pdf",
       label: t`Xuất PDF`,

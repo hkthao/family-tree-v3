@@ -2955,6 +2955,7 @@ msgstr "Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng 
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
+#: src/lib/quickCatalog.tsx
 #: src/pages/CustomsDetail.tsx
 msgid "Chia sẻ"
 msgstr "Chia sẻ"
@@ -2978,6 +2979,10 @@ msgstr "Chia sẻ cây gia phả"
 #: src/lib/tipCatalogue.ts
 msgid "Chia sẻ cây với họ hàng"
 msgstr "Chia sẻ cây với họ hàng"
+
+#: src/lib/quickCatalog.tsx
+msgid "Chia sẻ gia phả"
+msgstr "Chia sẻ gia phả"
 
 #: src/components/InviteLinkCard.tsx
 #: src/components/InviteLinkCard.tsx
@@ -6519,6 +6524,7 @@ msgstr "đóng góp"
 #: src/components/community/PersonMemoriesSection.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/queries/global-search.ts
+#: src/lib/quickCatalog.tsx
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
 msgid "Đóng góp"

@@ -16,6 +16,7 @@ import {
 import { canEditClan, isClanAdmin } from "@/hooks/useClanContext";
 import { useClanFreshness } from "@/hooks/useClanFreshness";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
+import { ShareTreeButton } from "@/components/ShareTreeButton";
 import { SectionCard } from "@/components/SectionCard";
 import { useNavSections } from "@/hooks/useNavSections";
 import { useHomePrefs } from "@/hooks/useHomePrefs";
@@ -158,6 +159,29 @@ function Tile({
 }) {
   if (entry.special === "pdf") {
     return <ExportPdfTile clan={clan} onClick={() => onUse(entry.key)} />;
+  }
+  if (entry.special === "share") {
+    return (
+      <ShareTreeButton
+        clanId={clan.id}
+        clanName={clan.name}
+        trigger={(open) => (
+          <button
+            type="button"
+            className={TILE}
+            onClick={() => {
+              onUse(entry.key);
+              open();
+            }}
+          >
+            <span className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5" aria-hidden="true">
+              {entry.icon}
+            </span>
+            <span className="line-clamp-2 text-sm font-medium leading-tight">{entry.short}</span>
+          </button>
+        )}
+      />
+    );
   }
   return (
     <ActionTile

@@ -1,6 +1,6 @@
 import { currentIntlTag } from "@/lib/i18n";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconCopy, IconLink, IconShare2 } from "@/components/icons";
@@ -17,6 +17,8 @@ interface Props {
   clanName: string;
   /** Render variant — desktop shows full label, mobile compact. */
   compact?: boolean;
+  /** Nút kích hoạt tuỳ chỉnh (vd ô "Chia sẻ" trong Thao tác nhanh) — mở cùng ngăn kéo chia sẻ. */
+  trigger?: (open: () => void) => ReactNode;
 }
 
 /**
@@ -28,7 +30,7 @@ interface Props {
  * platform buttons are kept as a fallback for desktop / older
  * browsers where navigator.share() is missing.
  */
-export function ShareTreeButton({ clanId, clanName, compact }: Props) {
+export function ShareTreeButton({ clanId, clanName, compact, trigger }: Props) {
   const { clan } = useClanContext();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -93,18 +95,22 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
 
   return (
     <>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="h-10 px-2.5 sm:px-3"
-        onClick={openShare}
-        aria-label={t`Chia sẻ cây`}
-        title={t`Tạo link chia sẻ và gửi qua Zalo / Facebook / Email…`}
-      >
-        <IconLink className="h-4 w-4 sm:mr-1.5" />
-        {!compact && <span className="hidden sm:inline">{t`Chia sẻ`}</span>}
-      </Button>
+      {trigger ? (
+        trigger(openShare)
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-10 px-2.5 sm:px-3"
+          onClick={openShare}
+          aria-label={t`Chia sẻ cây`}
+          title={t`Tạo link chia sẻ và gửi qua Zalo / Facebook / Email…`}
+        >
+          <IconLink className="h-4 w-4 sm:mr-1.5" />
+          {!compact && <span className="hidden sm:inline">{t`Chia sẻ`}</span>}
+        </Button>
+      )}
 
       {open && renderShare()}
     </>
@@ -159,7 +165,12 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
               </div>
 
               {hasNativeShare && (
-                <Button type="button" size="sm" className="w-full" onClick={nativeShare}>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full"
+                  onClick={nativeShare}
+                >
                   <IconShare2 className="h-4 w-4 mr-1.5" />
                   {t`Chia sẻ qua ứng dụng…`}
                 </Button>
@@ -219,12 +230,13 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
               {expiresAt && (
                 <p className="text-xs text-muted-foreground">
                   <Trans>
-                  Link hết hạn ngày {expiresAt.toLocaleDateString(currentIntlTag())}.
-                  Quản lý / thu hồi sớm trong{" "}
-                  <a href={`/clans/${clanId}/settings`} className="underline">
-                    Cài đặt
-                  </a>
-                  .
+                    Link hết hạn ngày{" "}
+                    {expiresAt.toLocaleDateString(currentIntlTag())}. Quản lý /
+                    thu hồi sớm trong{" "}
+                    <a href={`/clans/${clanId}/settings`} className="underline">
+                      Cài đặt
+                    </a>
+                    .
                   </Trans>
                 </p>
               )}
