@@ -335,6 +335,14 @@ msgstr "(no name)"
 msgid "(không tiêu đề)"
 msgstr "(no title)"
 
+#: src/pages/clan/Memories.tsx
+msgid "(một đoạn ghi âm)"
+msgstr "(a voice recording)"
+
+#: src/pages/clan/Memories.tsx
+msgid "(một tấm ảnh)"
+msgstr "(a photo)"
+
 #: src/pages/clan/Inlaws.tsx
 msgid "(người bên kia)"
 msgstr "(the person on the other side)"
@@ -430,10 +438,27 @@ msgstr "{0} photos"
 msgid "{0} bức"
 msgstr "{0} mosaics"
 
+#. placeholder {0}: q.answers
+#: src/pages/clan/Memories.tsx
+msgid "{0} câu trả lời"
+msgstr "{0} answers"
+
+#. placeholder {0}: pending + pendingContrib + pendingFaces
+#: src/components/community/CommunityCard.tsx
+msgid "{0} chờ duyệt"
+msgstr "{0} pending"
+
 #. placeholder {0}: lineage.steps.length
 #: src/pages/clan/MyLineage.tsx
 msgid "{0} đời — chưa đến thuỷ tổ"
 msgstr "{0} generations — not yet reaching the founding ancestor"
+
+#. placeholder {0}: info.total
+#. placeholder {0}: s.memories
+#: src/components/community/CommunitySharePanel.tsx
+#: src/pages/clan/People.tsx
+msgid "{0} đóng góp"
+msgstr "{0} contributions"
 
 #. placeholder {0}: tk.clan_count
 #: src/components/ApiTokenPanels.tsx
@@ -449,6 +474,16 @@ msgstr "{0} recordings"
 #: src/components/PhotoUploadField.tsx
 msgid "{0} KB sau khi nén."
 msgstr "{0} KB after compression."
+
+#. placeholder {0}: s.visits_total
+#: src/components/community/CommunitySharePanel.tsx
+msgid "{0} lượt ghé thăm"
+msgstr "{0} visits"
+
+#. placeholder {0}: l.use_count
+#: src/pages/clan/Memories.tsx
+msgid "{0} lượt góp"
+msgstr "{0} contributions"
 
 #. placeholder {0}: -offset
 #: src/components/TodayHubCard.tsx
@@ -484,6 +519,11 @@ msgstr "{0} people · {1} families"
 msgid "{0} người an nghỉ"
 msgstr "{0} people at rest"
 
+#. placeholder {0}: s.contributors
+#: src/components/community/CommunitySharePanel.tsx
+msgid "{0} người đã góp"
+msgstr "{0} people contributed"
+
 #. placeholder {0}: res.imported_persons
 #. placeholder {1}: res.imported_families
 #: src/pages/clan/Import.tsx
@@ -494,6 +534,11 @@ msgstr "{0} people, {1} families"
 #: src/pages/clan/Cemeteries.tsx
 msgid "{0} nơi an nghỉ"
 msgstr "{0} resting places"
+
+#. placeholder {0}: data.community.recipient_label
+#: src/pages/Share.tsx
+msgid "{0} ơi, cả nhà nhờ bạn đóng góp chuyện ông bà, ảnh cũ"
+msgstr "{0}, the family asks you to share stories of our grandparents and old photos"
 
 #. placeholder {0}: clan.person_count
 #. placeholder {0}: clan.person_count.toLocaleString("vi-VN")
@@ -630,6 +675,15 @@ msgstr "{doi} generations"
 msgid "{further} đời sau"
 msgstr "{further} more generations"
 
+#. placeholder {0}: opts.url
+#: src/components/community/ContributeLinkPanel.tsx
+msgid ""
+"{hi}, {about}. Ai nhớ một kỷ niệm, có tấm ảnh cũ hay muốn ghi âm vài câu thì bấm link dưới đây để đóng góp, không cần đăng ký.\n"
+"{0}"
+msgstr ""
+"{hi}, {about}. If you remember something, have an old photo or want to record a few words, tap the link below to contribute — no sign-up needed.\n"
+"{0}"
+
 #: src/pages/clan/EditPerson.tsx
 msgid "{hours} giờ trước"
 msgstr "{hours} hours ago"
@@ -638,9 +692,17 @@ msgstr "{hours} hours ago"
 msgid "{inviteEmail} đã là thành viên."
 msgstr "{inviteEmail} is already a member."
 
+#: src/components/community/MemoryForm.tsx
+msgid "{label} không hợp lệ"
+msgstr "{label} is invalid"
+
 #: src/pages/clan/EditPerson.tsx
 msgid "{mins} phút trước"
 msgstr "{mins} minutes ago"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "{n} đóng góp"
+msgstr "{n} contributions"
 
 #: src/components/MapOverviewCard.tsx
 msgid "{n} người"
@@ -662,6 +724,26 @@ msgstr "in {offset} days"
 msgid "{pctBirth}% thành viên đã có năm sinh"
 msgstr "{pctBirth}% of members have a birth year"
 
+#: src/pages/clan/People.tsx
+msgid "{pending} chờ duyệt"
+msgstr "{pending} pending"
+
+#: src/components/community/CommunityCard.tsx
+msgid "{pending} đóng góp đang chờ duyệt →"
+msgstr "{pending} contributions awaiting review →"
+
+#: src/pages/clan/People.tsx
+msgid "{pendingCommunity} đóng góp nội dung đang chờ duyệt — xem và đưa vào gia phả →"
+msgstr "{pendingCommunity} contributions awaiting review — review them and add them to the family tree →"
+
+#: src/components/community/CommunityCard.tsx
+msgid "{pendingContrib} đề xuất sửa thông tin đang chờ xác nhận →"
+msgstr "{pendingContrib} suggested info corrections awaiting confirmation →"
+
+#: src/components/community/CommunityCard.tsx
+msgid "{pendingFaces} gợi ý nhận diện người trong ảnh chờ xác nhận →"
+msgstr "{pendingFaces} face identifications awaiting confirmation →"
+
 #: src/components/ContributionDiffView.tsx
 msgid "{relation} của người đang xem"
 msgstr "{relation} of the person being viewed"
@@ -676,9 +758,17 @@ msgstr "{shown} people · {0} extra cards / text boxes · {1} connectors"
 msgid "{tho} tuổi"
 msgstr "{tho} years old"
 
+#: src/components/community/PersonMemoriesSection.tsx
+msgid "{visibleCount} đóng góp"
+msgstr "{visibleCount} contributions"
+
 #: src/lib/eventWhen.ts
 msgid "{when} · hằng năm"
 msgstr "{when} · every year"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "← Chọn câu hỏi khác"
+msgstr "← Choose another question"
 
 #: src/components/QuickAddSheet.tsx
 msgid "← Đổi quan hệ"
@@ -955,6 +1045,10 @@ msgstr "The admin will contact you via {0} if needed."
 msgid "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự động sửa cây gia phả."
 msgstr "An admin will review it before applying. Your suggestion does not edit the family tree automatically."
 
+#: src/components/community/QuestionPanel.tsx
+msgid "Ai biết thì trả lời"
+msgstr "Anyone who knows can answer"
+
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "AI chỉ làm việc trong dòng họ này, không vượt quá vai trò của bạn. Bạn thu hồi được bất cứ lúc nào ở Công cụ & Quản trị → Kết nối AI."
 msgstr "The AI only works inside this clan and never beyond your role. You can revoke it any time in Tools & Admin → AI connection."
@@ -974,6 +1068,10 @@ msgstr "The AI works across every clan and the admin functions, only while you r
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "AI làm việc trong các dòng họ đã chọn (bạn chỉ cần nói tên họ), cùng một gói quyền, và ở từng họ không vượt quá vai trò hiện tại của bạn. Thu hồi ở Công cụ & Quản trị → Kết nối AI."
 msgstr "The AI works in the selected clans (you just say the clan name), with one shared permission plan, and in each clan never beyond your current role. Revoke in Tools & Admin → AI connection."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Ai nói, nói về chuyện gì…"
+msgstr "Who is speaking, and about what…"
 
 #: src/components/apiTokenMeta.ts
 msgid "AI thêm, sửa, xoá người ngay, với đúng quyền hiện tại của người tạo token (bị hạ vai trò thì token hạ theo). Mọi thay đổi ghi vào nhật ký dưới tên người tạo và khôi phục được."
@@ -1015,6 +1113,7 @@ msgstr "Audio"
 
 #: src/components/EnablePushPrompt.tsx
 #: src/components/EnablePushPrompt.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Ẩn"
 msgstr "Hide"
 
@@ -1030,6 +1129,10 @@ msgstr "Hide post"
 msgid "Ẩn các thông báo bạn đã đọc."
 msgstr "Hide the announcements you have read."
 
+#: src/pages/clan/Memories.tsx
+msgid "Ẩn câu hỏi đã đóng"
+msgstr "Hide closed questions"
+
 #: src/components/tree/TreeGuide.tsx
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
@@ -1040,6 +1143,10 @@ msgstr "Hide guide"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ẩn khỏi canvas"
 msgstr "Hide from the canvas"
+
+#: src/pages/clan/Memories.tsx
+msgid "Ẩn link đã hết hạn / thu hồi"
+msgstr "Hide expired / revoked links"
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Ẩn mảnh"
@@ -1060,20 +1167,39 @@ msgid "ảnh"
 msgstr "photo"
 
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Ảnh"
 msgstr "Photo"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ảnh + tin nhắn mời người thân góp"
+msgstr "Image + message inviting relatives to contribute"
 
 #. placeholder {0}: siblings.length
 #: src/pages/clan/Relations.tsx
 msgid "Anh chị em ({0})"
 msgstr "Siblings ({0})"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Ảnh chụp ở đâu, có những ai…"
+msgstr "Where was it taken, who is in it…"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Ảnh cũ"
+msgstr "Old photo"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Ảnh đã chọn"
+msgstr "Selected photo"
+
 #: src/components/MyProfileCard.tsx
 msgid "ảnh đại diện"
 msgstr "profile photo"
 
 #: src/pages/clan/EditPerson.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Ảnh đại diện"
 msgstr "Profile photo"
 
@@ -1085,6 +1211,10 @@ msgstr "Cover photo (optional)"
 #: src/pages/clan/Mosaics.tsx
 msgid "Ảnh đại gia đình"
 msgstr "Extended family photo"
+
+#: src/components/community/MemoryCard.tsx
+msgid "Ảnh đóng góp"
+msgstr "Contributed photo"
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Ảnh được tự cắt vuông và nén nhỏ (≈360 px, dưới 40 KB) để tiết kiệm dung lượng."
@@ -1135,6 +1265,12 @@ msgstr "Background image"
 msgid "Ảnh nền quá nặng, hãy chọn ảnh nhỏ hơn"
 msgstr "The background image is too large; choose a smaller one"
 
+#: src/components/community/CommunitySharePanel.tsx
+#: src/components/community/MemoryFaces.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Ảnh nhờ nhận diện"
+msgstr "Photo to identify"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ảnh phủ kín vùng cây (và cả trang khi xuất PDF), được thu nhỏ để lưu cùng bố cục."
 msgstr "The image covers the whole tree area (and the whole page when exporting PDF) and is downscaled to be stored with the layout."
@@ -1155,6 +1291,10 @@ msgstr "Photos are compressed to at most 512×512, ≈ 80 KB (JPEG). Original fo
 msgid "Ảnh thường — phần đang xem"
 msgstr "Regular image — the part you're viewing"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ảnh trên mạng xã hội không bấm được — nhớ dán link ở chỗ đã chọn. Mẹo: để link ở bình luận đầu tiên."
+msgstr "Images on social media can't be tapped — remember to paste the link where you chose. Tip: put the link in the first comment."
+
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Ảnh trên thẻ"
 msgstr "Photo on cards"
@@ -1166,6 +1306,10 @@ msgstr "Photo on the card"
 #: src/components/ImageLightbox.tsx
 msgid "Ảnh trước"
 msgstr "Previous photo"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Ảnh vẫn nằm ở Google Photos / Drive — nhớ để chế độ \"ai có link đều xem được\"."
+msgstr "The photo stays on Google Photos / Drive — make sure sharing is set to \"anyone with the link\"."
 
 #: src/pages/clan/Tree.tsx
 msgid "Ảnh vector (SVG)"
@@ -1241,6 +1385,15 @@ msgstr "Avatar: Royal"
 msgid "Bạc"
 msgstr "Silver"
 
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "Bác Ba, cô Hoa, nhóm Zalo họ…"
+msgstr "Uncle Ba, Aunt Hoa, the family Zalo group…"
+
+#: src/components/community/FaceTagger.tsx
+#: src/components/community/FaceTagger.tsx
+msgid "Bác gợi ý"
+msgstr "Reject suggestion"
+
 #. placeholder {0}: fatherSiblings.length + motherSiblings.length
 #: src/pages/clan/Relations.tsx
 msgid "Bác, chú, cô, cậu, dì ({0})"
@@ -1312,6 +1465,10 @@ msgstr "Tap “Create a new link” to make a public link for the family tree."
 #: src/pages/clan/Merge.tsx
 msgid "Bấm × để chọn lại."
 msgstr "Tap × to choose again."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Bấm 🎤 trên bàn phím điện thoại để nói, hoặc gõ câu trả lời…"
+msgstr "Tap 🎤 on your phone keyboard to speak, or type your answer…"
 
 #: src/components/McpGuidePanel.tsx
 msgid "Bấm Add → đưa chuột vào Custom → chọn Web"
@@ -1390,6 +1547,10 @@ msgstr "Click \"+\" → Add custom MCP server"
 msgid "Bấm nút \"+\" để thêm tỉnh/thành."
 msgstr "Tap the \"+\" button to add a province / city."
 
+#: src/pages/clan/Memories.tsx
+msgid "Bấm nút + để đóng góp về một người, hoặc \"Mời người thân góp\" để gửi link cho người thân chưa có tài khoản."
+msgstr "Tap + to contribute about a person, or \"Invite relatives\" to send a link to relatives without an account."
+
 #: src/components/InstallAppButton.tsx
 msgid "Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn \"Thêm vào Màn hình Chính\". App sẽ mở như ứng dụng riêng, không có thanh URL."
 msgstr "Tap the Share button at the bottom of Safari (the ☐ icon with an arrow pointing up), then scroll down and choose \"Add to Home Screen\". The app will open like a standalone app, without the URL bar."
@@ -1422,6 +1583,14 @@ msgstr "You"
 msgid "Ban biên soạn"
 msgstr "Compilation committee"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Bạn biết chuyện này từ đâu?"
+msgstr "How do you know this story?"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Bạn biết thông tin này từ đâu? (bắt buộc)"
+msgstr "How do you know this information? (required)"
+
 #: src/pages/InlawsConfirm.tsx
 msgid "Bạn cần đăng nhập (với tài khoản admin của dòng họ bên này) để xác nhận liên kết."
 msgstr "You need to sign in (with an admin account of the clan on this side) to confirm the link."
@@ -1434,6 +1603,10 @@ msgstr "You need to be a member of the clan to look up kinship terms."
 msgid "Bạn cần là thành viên dòng họ để xem đường trực hệ."
 msgstr "You need to be a member of the clan to view the direct line."
 
+#: src/components/community/MemoryForm.tsx
+msgid "Bạn chưa chọn ảnh"
+msgstr "You haven't chosen a photo"
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Bạn chưa có ảnh avatar"
 msgstr "You don't have an avatar photo yet"
@@ -1442,6 +1615,10 @@ msgstr "You don't have an avatar photo yet"
 msgid "Bạn chưa gửi góp ý nào"
 msgstr "You haven't sent any feedback yet"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Bạn chưa sửa ô nào"
+msgstr "You haven't changed any field"
+
 #: src/pages/Clans.tsx
 msgid "Bạn chưa tham gia dòng họ nào"
 msgstr "You haven't joined any clan yet"
@@ -1449,6 +1626,10 @@ msgstr "You haven't joined any clan yet"
 #: src/pages/Account.tsx
 msgid "Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của một dòng họ và bật “Theo dõi sự kiện”."
 msgstr "You are not following any clan yet. Open a clan's Events page and turn on “Follow events”."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Bạn chưa viết gì"
+msgstr "You haven't written anything"
 
 #: src/pages/Account.tsx
 msgid "Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá tài khoản, gán quyền."
@@ -1469,6 +1650,10 @@ msgstr "You have contributed all {quota} pieces."
 #: src/lib/tipCatalogue.ts
 msgid "Bạn đã tạo dòng họ chưa?"
 msgstr "Have you created your clan yet?"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Bạn đã tự cập nhật hồ sơ / mộ phần / quan hệ ở chỗ khác."
+msgstr "You already updated the profile / grave / relationships elsewhere."
 
 #: src/components/HomeCustomizeDrawer.tsx
 msgid "Bạn đang tự chọn ô. Tối đa {max} ô; ô cuối luôn là “Tất cả tính năng”."
@@ -1515,6 +1700,14 @@ msgstr "You are"
 msgid "Bạn là ai trong gia phả này?"
 msgstr "Who are you in this family tree?"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Bạn là gì của {who}?"
+msgstr "How are you related to {who}?"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Bạn muốn đóng góp về ai?"
+msgstr "Who would you like to contribute about?"
+
 #: src/pages/Contact.tsx
 msgid "Bạn muốn nói gì?"
 msgstr "What would you like to say?"
@@ -1522,6 +1715,10 @@ msgstr "What would you like to say?"
 #: src/pages/Account.tsx
 msgid "Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận."
 msgstr "You receive emails / notifications reminding you of birthdays, death anniversaries and events for the clans below. Unfollow to stop receiving them."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Bạn nhớ gì về {who}?"
+msgstr "What do you remember about {who}?"
 
 #: src/components/SubscriptionSettings.tsx
 msgid "Bạn sẽ không nhận email nhắc nữa."
@@ -1907,6 +2104,28 @@ msgstr "The whole clan that follows it will be reminded in advance (see Events).
 msgid "Cả năm"
 msgstr "Whole year"
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Cả nhà cùng hỏi, ông bà cùng kể"
+msgstr "The family asks, the elders tell"
+
+#: src/pages/Share.tsx
+msgid "Cả nhà đang cùng đóng góp chuyện ông bà, ảnh cũ — bạn góp một chút nhé"
+msgstr "The family is sharing stories of our grandparents and old photos — please add a little"
+
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "Cả nhà ơi"
+msgstr "Hi everyone"
+
+#. placeholder {0}: opts.question
+#. placeholder {1}: opts.url
+#: src/components/community/QuestionPanel.tsx
+msgid ""
+"Cả nhà ơi, tuần này cùng {who} một câu: “{0}”. Ai biết thì bấm link dưới đây viết câu trả lời (trên điện thoại bấm 🎤 trên bàn phím để nói cho nhanh), không cần đăng ký.\n"
+"{1}"
+msgstr ""
+"Hi everyone, this week let's {who} one question: “{0}”. Anyone who knows, tap the link below to write the answer (on a phone, tap 🎤 on the keyboard to speak), no sign-up needed.\n"
+"{1}"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Cả phả đồ được co vừa một trang giấy khổ bạn chọn."
 msgstr "The whole pedigree is scaled to fit one page of the paper size you choose."
@@ -1918,6 +2137,10 @@ msgstr "The whole diagram on one page, with a paper size calculated from the tre
 #: src/pages/clan/ClanFund.tsx
 msgid "Cả thu và chi"
 msgstr "Income and expenses"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Các câu trả lời"
+msgstr "All answers"
 
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Các cây tự thiết kế của dòng họ: kéo thả thẻ, nối đường, chọn nền rồi xuất PDF."
@@ -1934,6 +2157,10 @@ msgstr "The clan's branches. Each person can belong to one branch."
 #: src/pages/clan/HeritageForm.tsx
 msgid "Các đoạn nội dung (tuỳ chọn)"
 msgstr "Content sections (optional)"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Các đóng góp"
+msgstr "All contributions"
 
 #: src/pages/MyFeedback.tsx
 msgid "Các góp ý bạn đã gửi, trạng thái xử lý và phản hồi của quản trị."
@@ -1976,6 +2203,20 @@ msgstr "The changed fields will overwrite the current data. Continue?"
 #: src/pages/clan/InlawsNew.tsx
 msgid "Cách đề nghị"
 msgstr "How to request"
+
+#: src/pages/clan/Memories.tsx
+msgid "Cách duyệt"
+msgstr "Review mode"
+
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Cách duyệt đóng góp"
+msgstr "Contribution review mode"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Cách góp"
+msgstr "How to contribute"
 
 #: src/components/ClanFormFields.tsx
 msgid "Cách hiển thị"
@@ -2051,9 +2292,17 @@ msgstr "Install the plugin you just created and sign in when asked"
 msgid "Cảm ơn bạn — chúng tôi sẽ xem sớm nhất."
 msgstr "Thank you — we'll look at it as soon as we can."
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Cảm ơn bạn đã đóng góp! 🙏"
+msgstr "Thank you for contributing! 🙏"
+
 #: src/pages/Contact.tsx
 msgid "Cảm ơn bạn. Phản hồi đã ghi nhận. Nếu để lại liên lạc, chúng tôi sẽ trả lời khi có cập nhật."
 msgstr "Thank you. Your feedback has been recorded. If you left contact details, we'll reply when there's an update."
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Cảm ơn cả nhà"
+msgstr "Thank everyone"
 
 #: src/components/TimelineFields.tsx
 msgid "Can chi (tự tính theo năm)"
@@ -2190,6 +2439,28 @@ msgstr "Update token"
 msgid "cát tinh"
 msgstr "auspicious star"
 
+#: src/components/community/MemoryForm.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Câu chuyện"
+msgstr "Story"
+
+#: src/pages/clan/Memories.tsx
+msgid "Câu chuyện, ảnh cũ, ghi âm về người thân — {pendingCount} mục đang chờ duyệt."
+msgstr "Stories, old photos and recordings about relatives — {pendingCount} awaiting review."
+
+#: src/pages/clan/Memories.tsx
+msgid "Câu chuyện, ảnh cũ, ghi âm về người thân do người trong họ và khách qua link góp."
+msgstr "Stories, old photos and recordings about relatives from family members and guests via links."
+
+#: src/lib/navModel.tsx
+msgid "Câu chuyện, ảnh cũ, ghi âm về người thân; mời người thân góp qua link."
+msgstr "Stories, old photos and recordings about relatives; invite relatives to contribute via a link."
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Câu của tuần: {s}"
+msgstr "This week's question: {s}"
+
 #: src/lib/adminScreens.tsx
 #: src/pages/admin/CauHinhPage.tsx
 msgid "Cấu hình nền tảng"
@@ -2199,12 +2470,26 @@ msgstr "Platform settings"
 msgid "Cấu hình, share links, xuất dữ liệu, xoá dòng họ."
 msgstr "Configuration, share links, data export, delete the clan."
 
+#: src/components/community/MemoryForm.tsx
+#: src/components/community/QuestionPanel.tsx
 #: src/pages/admin/Feedback.tsx
 #: src/pages/Contact.tsx
 #: src/pages/CustomsForm.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Câu hỏi"
 msgstr "Question"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Câu hỏi cả nhà đang hỏi"
+msgstr "Questions the family is asking"
+
+#: src/pages/clan/Memories.tsx
+msgid "Câu hỏi đang hỏi"
+msgstr "Open questions"
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Câu hỏi quá ngắn"
+msgstr "The question is too short"
 
 #: src/pages/CustomsDetail.tsx
 msgid "Câu hỏi thường gặp"
@@ -2213,6 +2498,14 @@ msgstr "Frequently asked questions"
 #: src/pages/CustomsForm.tsx
 msgid "Câu hỏi thường gặp (tuỳ chọn)"
 msgstr "Frequently asked questions (optional)"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Câu trả lời"
+msgstr "Answer"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Câu trả lời cho câu hỏi này"
+msgstr "Answers to this question"
 
 #: src/pages/CustomsForm.tsx
 msgid "Câu trả lời…"
@@ -2330,6 +2623,16 @@ msgstr "Tap a card to expand / collapse its branch"
 msgid "Chạm thẻ để đặt trung tâm"
 msgstr "Tap a card to make it the center"
 
+#. placeholder {0}: community.recipient_label
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Chào {0}! Cả nhà muốn hỏi bạn"
+msgstr "Hi {0}! The family would like to ask you"
+
+#. placeholder {0}: community.recipient_label
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Chào {0}! Cả nhà nhờ bạn đóng góp giúp"
+msgstr "Hi {0}! The family asks for your help"
+
 #: src/pages/clan/Dashboard.tsx
 msgid "Chào mừng"
 msgstr "Welcome"
@@ -2350,6 +2653,10 @@ msgstr "ChatGPT opens a page of this system: choose the clan, choose the AI's pe
 #: src/lib/relations.ts
 msgid "cháu"
 msgstr "grandchild (cháu)"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Cháu nội, con dâu, hàng xóm…"
+msgstr "Grandchild, daughter-in-law, neighbour…"
 
 #: src/components/ContributeDialog.tsx
 msgid "cháu nội, em họ, khách…"
@@ -2480,6 +2787,10 @@ msgstr "Visible only to the administrators; not shown to anyone else."
 msgid "Chỉ chưa đọc"
 msgstr "Unread only"
 
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Chỉ đánh dấu đã dùng"
+msgstr "Just mark as used"
+
 #: src/components/apiTokenMeta.ts
 msgid "Chỉ đọc"
 msgstr "Read only"
@@ -2566,6 +2877,11 @@ msgstr "Only the platform administrator can edit the Handbook."
 msgid "Chỉ quản trị xem được; không hiện cho người khác trong họ."
 msgstr "Only the admins can see it; not shown to other people in the clan."
 
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/QuestionPanel.tsx
+msgid "Chỉ sao chép link"
+msgstr "Copy link only"
+
 #: src/components/ClanFormFields.tsx
 msgid "Chỉ thành viên được mời xem được."
 msgstr "Only invited members can view it."
@@ -2600,6 +2916,7 @@ msgstr "Can only be deleted when the province has no communes / wards and nobody
 msgid "Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ. Tỉnh bị chặn sẽ được giữ lại."
 msgstr "Only provinces with no communes / wards and not used as an address can be deleted. Blocked provinces are kept."
 
+#: src/components/community/InviteCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
@@ -2653,6 +2970,10 @@ msgstr "Adjust the 3D object"
 msgid "Chỉnh sửa thông tin dòng họ"
 msgstr "Edit clan details"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Chính tôi nhớ · nghe bố mẹ kể · giấy tờ…"
+msgstr "I remember it myself · my parents told me · documents…"
+
 #: src/lib/relations.ts
 msgid "chít"
 msgstr "great-great-grandchild (chít)"
@@ -2664,6 +2985,19 @@ msgstr "Waiting for admin confirmation"
 #: src/components/ApiTokenPanels.tsx
 msgid "Cho AI bên ngoài làm việc với gia phả"
 msgstr "Let an outside AI work with the family tree"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Cho biết bạn biết thông tin này từ đâu để người quản lý đối chiếu"
+msgstr "Tell us how you know this so the admins can verify it"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Cho biết bạn là gì của {who}"
+msgstr "Tell us how you are related to {who}"
+
+#: src/components/community/MemoryForm.tsx
+#: src/components/community/MemoryForm.tsx
+msgid "Cho biết tên của bạn nhé"
+msgstr "Please tell us your name"
 
 #: src/lib/navModel.tsx
 msgid "Cho Claude, ChatGPT… làm việc với gia phả; xem và thu hồi kết nối."
@@ -2677,15 +3011,26 @@ msgstr "Let Claude, ChatGPT… look up and update the family tree with your own 
 msgid "chờ duyệt"
 msgstr "pending review"
 
+#: src/components/community/PersonMemoriesSection.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/Customs.tsx
 #: src/pages/CustomsForm.tsx
 #: src/pages/CustomsImport.tsx
 msgid "Chờ duyệt"
 msgstr "Pending review"
+
+#: src/pages/clan/Memories.tsx
+msgid "Chờ duyệt trước"
+msgstr "Review first"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Cho hiện ở trang chia sẻ (người ngoài có link cũng đọc được — chỉ áp dụng với người đã mất)"
+msgstr "Show on the shared page (anyone with the link can read it — only for people who have passed away)"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Chờ người dùng gửi."
@@ -2695,6 +3040,10 @@ msgstr "Waiting for users to send some."
 msgid "Cho phép"
 msgstr "Allow"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Cho phép dùng đóng góp này khi soạn tiểu sử / video kỷ niệm của dòng họ"
+msgstr "Allow using this contribution when writing family biographies / memory videos"
+
 #: src/pages/Account.tsx
 msgid "Cho phép thông báo"
 msgstr "Allow notifications"
@@ -2703,9 +3052,18 @@ msgstr "Allow notifications"
 msgid "Chờ quản trị xác nhận"
 msgstr "Waiting for admin confirmation"
 
+#: src/pages/clan/Memories.tsx
+msgid "Chờ trả lời"
+msgstr "Awaiting answer"
+
 #: src/pages/clan/Members.tsx
 msgid "Chờ xác nhận"
 msgstr "Awaiting confirmation"
+
+#. placeholder {0}: f.tagger_label
+#: src/components/community/MemoryFaces.tsx
+msgid "Chờ xác nhận · {0} gợi ý"
+msgstr "Awaiting confirmation · suggested by {0}"
 
 #. placeholder {0}: person.full_name
 #. placeholder {0}: row.full_name
@@ -2719,6 +3077,7 @@ msgstr "Select {0}"
 msgid "Chọn {title}"
 msgstr "Select {title}"
 
+#: src/components/community/MemoryForm.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Chọn ảnh"
 msgstr "Choose an image"
@@ -2742,6 +3101,10 @@ msgstr "Select page ({0})"
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Chọn cả trang này ({count})"
 msgstr "Select this whole page ({count})"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Chọn câu hỏi · bấm Trả lời · viết (hoặc bấm 🎤 trên bàn phím để nói) · bấm Gửi. Không cần đăng ký."
+msgstr "Choose a question · tap Answer · write (or tap 🎤 on the keyboard to speak) · tap Send. No sign-up needed."
 
 #: src/pages/CustomsForm.tsx
 #: src/pages/CustomsImport.tsx
@@ -2818,6 +3181,10 @@ msgstr "Choose a template to start with a complete draft, then edit it; AI draft
 msgid "Chọn một ảnh"
 msgstr "Choose a photo"
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Chọn một câu hỏi ở trên rồi bấm \"Trả lời\"."
+msgstr "Choose a question above, then tap \"Answer\"."
+
 #: src/components/McpGuidePanel.tsx
 msgid "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
 msgstr "Choose one or more clans and the AI's permissions, then click \"Allow\""
@@ -2837,6 +3204,10 @@ msgstr "Choose a person to see their ancestors, spouses, siblings and all descen
 #: src/lib/nextSteps.ts
 msgid "Chọn ngày cho việc lớn"
 msgstr "Pick a day for a big occasion"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Chọn người · viết hoặc góp ảnh cũ · bấm Gửi. Không cần đăng ký."
+msgstr "Choose a person · write or add an old photo · tap Send. No sign-up needed."
 
 #: src/pages/clan/Relations.tsx
 msgid "Chọn người cần xem"
@@ -2942,6 +3313,10 @@ msgstr "Token owner"
 msgid "Chúa"
 msgstr "Lord (Chúa)"
 
+#: src/pages/clan/Memories.tsx
+msgid "Chưa"
+msgstr "Not yet"
+
 #: src/pages/admin/Health.tsx
 msgid "Chưa chạy"
 msgstr "Not run yet"
@@ -3042,8 +3417,17 @@ msgid "Chưa có di sản."
 msgstr "No heritage yet."
 
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Chưa có đóng góp nào"
 msgstr "No contributions yet"
+
+#: src/components/community/CommunityCard.tsx
+msgid "Chưa có đóng góp nào. Mở hồ sơ một người đã mất rồi bấm \"Đóng góp\", hoặc vào \"Xem tất cả đóng góp\" để gửi link mời cả nhà cùng góp ảnh cũ, chuyện xưa."
+msgstr "No contributions yet. Open the profile of someone who has passed away and tap \"Contribute\", or go to \"See all contributions\" to send a link inviting the family to share old photos and stories."
+
+#: src/components/community/PersonMemoriesSection.tsx
+msgid "Chưa có đóng góp về {personName}. Bạn nhớ một kỷ niệm, có tấm ảnh cũ, hay muốn ghi âm lời ông bà? Bấm \"Đóng góp\" — hoặc gửi link mời người biết rõ hơn."
+msgstr "No contributions about {personName} yet. Do you remember something, have an old photo, or want to record your grandparents? Tap \"Contribute\" — or send a link to someone who knows more."
 
 #: src/pages/Clans.tsx
 msgid "Chưa có dòng họ công khai để duyệt"
@@ -3103,6 +3487,10 @@ msgstr "No links yet"
 #: src/components/ShareLinksSection.tsx
 msgid "Chưa có link chia sẻ"
 msgstr "No share links yet"
+
+#: src/pages/clan/Memories.tsx
+msgid "Chưa có link mời góp"
+msgstr "No invite links yet"
 
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Chưa có mộ phần / tro cốt"
@@ -3222,6 +3610,14 @@ msgstr "Not synced"
 msgid "Chưa đồng bộ lần nào"
 msgstr "Never synced"
 
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Chưa đưa vào được"
+msgstr "Couldn't add it"
+
+#: src/pages/clan/Memories.tsx
+msgid "Chưa đưa vào gia phả"
+msgstr "Not yet in the family tree"
+
 #: src/components/ApiTokenPanels.tsx
 msgid "chưa dùng"
 msgstr "never used"
@@ -3262,6 +3658,15 @@ msgstr "No children or descendants recorded."
 msgid "Chưa ghi nhận vợ/chồng."
 msgstr "No spouse recorded."
 
+#: src/components/community/CommunitySharePanel.tsx
+#: src/components/community/MemoryForm.tsx
+msgid "Chưa gửi được"
+msgstr "Couldn't send"
+
+#: src/components/community/MemoryFaces.tsx
+msgid "Chưa lưu được"
+msgstr "Couldn't save"
+
 #: src/pages/NewClan.tsx
 msgid "Chưa lưu được thông tin sổ gia phả"
 msgstr "Could not save the family-book details"
@@ -3287,9 +3692,17 @@ msgstr "No year entered"
 msgid "Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi nối."
 msgstr "No Page connected yet. Syncing won't run until one is connected."
 
+#: src/components/community/QuestionPanel.tsx
+msgid "Chưa tạo được"
+msgstr "Couldn't create"
+
 #: src/components/ShareCardDialog.tsx
 msgid "Chưa tạo được ảnh."
 msgstr "Could not create the image yet."
+
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "Chưa tạo được link"
+msgstr "Couldn't create the link"
 
 #: src/lib/navModel.tsx
 msgid "Chung"
@@ -3307,6 +3720,21 @@ msgstr "Left mouse button"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Chụp ảnh"
 msgstr "Take a photo"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Chuyện chung của {clanName}"
+msgstr "Family story of {clanName}"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Chuyện chung của dòng họ"
+msgstr "Family story of the clan"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Chuyện chung của họ"
+msgstr "Family story"
 
 #: src/components/HomeCustomizeDrawer.tsx
 msgid "Chuyển lên"
@@ -3344,6 +3772,10 @@ msgstr "Other MCP clients (Claude Desktop, ChatGPT…): URL {url}, header Author
 #: src/components/ContributionDiffView.tsx
 msgid "Có"
 msgstr "Yes"
+
+#: src/pages/clan/Memories.tsx
+msgid "Có (nếu người được nhắc đã mất)"
+msgstr "Yes (if the person has passed away)"
 
 #. placeholder {0}: forks.length
 #: src/pages/clan/MyLineage.tsx
@@ -3639,6 +4071,15 @@ msgstr "My clans"
 msgid "Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng loạt rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên tự, ảnh, nơi sinh…) không được mang theo."
 msgstr "The same 9 columns as the Import from Excel template — export it to edit in bulk, then import it back. Fields outside these 9 columns (lunar dates, courtesy name, photos, place of birth…) are not carried over."
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Cùng đóng góp câu chuyện của gia đình"
+msgstr "Share your family's stories together"
+
+#: src/pages/Share.tsx
+#: src/pages/Share.tsx
+msgid "Cùng góp"
+msgstr "Contribute"
+
 #: src/pages/clan/Kinship.tsx
 msgid "Cùng một người."
 msgstr "The same person."
@@ -3656,15 +4097,28 @@ msgstr "Together with"
 msgid "Đã {0} ngày không đồng bộ được tập nào. Token Facebook có thể đã hết hạn — kiểm tra biến FB_PAGE_TOKEN."
 msgstr "It has been {0} days without any episode syncing. The Facebook token may have expired — check the FB_PAGE_TOKEN variable."
 
+#: src/pages/clan/Memories.tsx
+msgid "Đã / chưa đưa vào gia phả"
+msgstr "In / not in the family tree"
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "đã ẩn"
 msgstr "hidden"
 
+#: src/components/community/PersonMemoriesSection.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Đã ẩn"
 msgstr "Hidden"
+
+#. placeholder {0}: f.tagger_label
+#: src/components/community/MemoryFaces.tsx
+msgid "Đã bác · {0} gợi ý"
+msgstr "Rejected · suggested by {0}"
 
 #: src/pages/admin/Config.tsx
 msgid "Đã bật linh vật"
@@ -3814,6 +4268,10 @@ msgstr "New data available"
 msgid "Đã có lỗi xảy ra. Vui lòng thử lại."
 msgstr "Something went wrong. Please try again."
 
+#: src/components/community/FaceTagger.tsx
+msgid "Đã có người gợi ý — chờ xác nhận"
+msgstr "Someone has suggested — awaiting confirmation"
+
 #: src/components/UpdateBanner.tsx
 msgid "Đã có phiên bản mới. Cập nhật để dùng tính năng mới nhất."
 msgstr "A new version is available. Update to get the latest features."
@@ -3875,6 +4333,7 @@ msgstr "Branch renamed"
 msgid "Đã đổi tên hiển thị"
 msgstr "Display name changed"
 
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/Mosaics.tsx
 msgid "Đã đóng"
 msgstr "Closed"
@@ -3885,12 +4344,28 @@ msgstr "Closed"
 msgid "Đã đồng bộ: {0} tập mới, {1} tập cập nhật"
 msgstr "Synced: {0} new episodes, {1} updated"
 
+#: src/pages/clan/Memories.tsx
+msgid "Đã đóng câu hỏi"
+msgstr "Question closed"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Đã đưa vào gia phả"
+msgstr "Added to the family tree"
+
+#: src/pages/clan/Memories.tsx
+msgid "Đã dùng"
+msgstr "Used"
+
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Đã được xử lý lúc"
 msgstr "Handled at"
 
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Đã duyệt"
 msgstr "Approved"
 
@@ -3953,6 +4428,10 @@ msgstr "Request sent to "
 msgid "Đã gửi đề xuất"
 msgstr "Suggestion sent"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Đã gửi đề xuất sửa thông tin, chờ người quản lý xác nhận. Cảm ơn bạn!"
+msgstr "Correction sent, awaiting admin confirmation. Thank you!"
+
 #: src/components/ContributeDialog.tsx
 msgid "Đã gửi đề xuất."
 msgstr "Suggestion sent."
@@ -3980,6 +4459,18 @@ msgstr "We sent you a sign-in link. Check your email."
 #: src/pages/Account.tsx
 msgid "Đã gửi push test"
 msgstr "Test push sent"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Đã gửi, cảm ơn bạn! Người quản lý dòng họ sẽ xác nhận."
+msgstr "Sent, thank you! The clan admins will confirm."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Đã gửi, chờ người quản lý dòng họ duyệt. Cảm ơn bạn!"
+msgstr "Sent, awaiting review by the clan admins. Thank you!"
+
+#: src/components/community/MemoryFaces.tsx
+msgid "Đã gửi, chờ người quản lý xác nhận"
+msgstr "Sent, awaiting admin confirmation"
 
 #: src/components/ShareLinksSection.tsx
 msgid "Đã hết hạn"
@@ -4045,6 +4536,7 @@ msgstr "Removed {count} people from the list"
 msgid "Đã loại khỏi danh sách"
 msgstr "Removed from the list"
 
+#: src/components/community/MemoryFaces.tsx
 #: src/components/QuickDateFixSheet.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/HeritageForm.tsx
@@ -4066,6 +4558,10 @@ msgstr "Layout saved"
 msgid "Đã lưu bức ảnh"
 msgstr "Mosaic saved"
 
+#: src/pages/clan/Memories.tsx
+msgid "Đã lưu cách duyệt đóng góp"
+msgstr "Review mode saved"
+
 #: src/pages/clan/Settings.tsx
 msgid "Đã lưu cài đặt"
 msgstr "Settings saved"
@@ -4081,6 +4577,10 @@ msgstr "Branch saved"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Đã lưu đoạn ghi âm"
 msgstr "Recording saved"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Đã lưu đóng góp, cảm ơn bạn!"
+msgstr "Contribution saved, thank you!"
 
 #: src/pages/admin/Config.tsx
 msgid "Đã lưu dòng họ demo."
@@ -4113,6 +4613,7 @@ msgid "đã mất"
 msgstr "deceased"
 
 #: src/components/ClanStatsPanel.tsx
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
@@ -4132,6 +4633,10 @@ msgstr "Deceased, year unknown"
 #: src/components/ShareCardDialog.tsx
 msgid "Đã mở chia sẻ"
 msgstr "Share opened"
+
+#: src/pages/clan/Memories.tsx
+msgid "Đã mở lại link"
+msgstr "Link reopened"
 
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Đã nhân bản"
@@ -4177,6 +4682,19 @@ msgstr "Imported from Excel"
 msgid "Đã nối Trang {0}"
 msgstr "Connected Page {0}"
 
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/QuestionPanel.tsx
+msgid "Đã sao chép"
+msgstr "Copied"
+
+#: src/pages/clan/Memories.tsx
+msgid "Đã sao chép link"
+msgstr "Link copied"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đã sao chép tin nhắn"
+msgstr "Message copied"
+
 #: src/components/ShareCardDialog.tsx
 msgid "Đã tải ảnh — mở Zalo/Facebook để đăng."
 msgstr "Image downloaded — open Zalo/Facebook to post it."
@@ -4188,6 +4706,10 @@ msgstr "Photo uploaded"
 #: src/components/ShareCardDialog.tsx
 msgid "Đã tải ảnh thiệp"
 msgstr "Card image downloaded"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đã tải ảnh và sao chép tin nhắn — dán vào bài đăng nhé"
+msgstr "Image downloaded and message copied — paste it into your post"
 
 #: src/pages/clan/Events.tsx
 msgid "Đã tải file lịch"
@@ -4363,6 +4885,7 @@ msgstr "Added. Continuing…"
 
 #: src/components/apiTokenMeta.ts
 #: src/components/ShareLinksSection.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Đã thu hồi"
 msgstr "Revoked"
 
@@ -4374,6 +4897,10 @@ msgstr "Link revoked"
 #: src/components/ShareLinksSection.tsx
 msgid "Đã thu hồi link"
 msgstr "Link revoked"
+
+#: src/pages/clan/Memories.tsx
+msgid "Đã thu hồi link — đóng góp chưa duyệt gửi qua link này đã được ẩn"
+msgstr "Link revoked — unreviewed contributions sent through it have been hidden"
 
 #: src/components/CalendarFeedPanel.tsx
 msgid "Đã thu hồi link lịch"
@@ -4392,10 +4919,19 @@ msgstr "Rejected"
 msgid "Đã từ chối đề nghị"
 msgstr "Request rejected"
 
+#: src/pages/clan/Memories.tsx
+msgid "Đã vào gia phả"
+msgstr "In family tree"
+
 #: src/components/MyProfileCard.tsx
 #: src/pages/clan/Members.tsx
 msgid "Đã xác nhận"
 msgstr "Confirmed"
+
+#. placeholder {0}: f.tagger_label
+#: src/components/community/MemoryFaces.tsx
+msgid "Đã xác nhận · {0}"
+msgstr "Confirmed · {0}"
 
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/InlawsConfirm.tsx
@@ -4415,6 +4951,7 @@ msgid "Đã xem"
 msgstr "Seen"
 
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Đã xoá"
@@ -4740,6 +5277,7 @@ msgstr "Limited to the 500 newest feedback items."
 msgid "Đang gộp…"
 msgstr "Merging…"
 
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 #: src/pages/Account.tsx
 #: src/pages/Account.tsx
@@ -4822,6 +5360,7 @@ msgstr "Excluding…"
 
 #: src/components/BoardPostForm.tsx
 #: src/components/BookTextsSection.tsx
+#: src/components/community/ApplyMemoryPanel.tsx
 #: src/components/CriticalBanner.tsx
 #: src/components/NotificationBell.tsx
 #: src/components/QuickAddSheet.tsx
@@ -4855,6 +5394,10 @@ msgstr "Excluding…"
 msgid "Đang lưu…"
 msgstr "Saving…"
 
+#: src/pages/clan/Memories.tsx
+msgid "Đang mở"
+msgstr "Open"
+
 #: src/pages/DemoRedirect.tsx
 msgid "Đang mở gia phả mẫu…"
 msgstr "Opening the sample family tree…"
@@ -4875,6 +5418,10 @@ msgstr "Compressing photo… {0}%"
 #: src/pages/admin/Announcements.tsx
 msgid "Đăng ngay"
 msgstr "Publish now"
+
+#: src/pages/clan/Memories.tsx
+msgid "Đăng ngay, ẩn sau nếu cần"
+msgstr "Publish right away, hide later if needed"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Đang nhận mảnh"
@@ -5017,6 +5564,7 @@ msgstr "loading…"
 #: src/components/BranchesSection.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/ClanApiTokensTab.tsx
+#: src/components/community/PersonMemoriesSection.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/LoadingState.tsx
 #: src/components/MapOverviewCard.tsx
@@ -5071,6 +5619,8 @@ msgstr "loading…"
 #: src/pages/clan/MapStats.tsx
 #: src/pages/clan/MapStats.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/Mosaics.tsx
@@ -5112,6 +5662,9 @@ msgstr "Creating PDF…"
 
 #: src/components/ApiTokenPanels.tsx
 #: src/components/CalendarFeedPanel.tsx
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/InviteCardDialog.tsx
+#: src/components/community/QuestionPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareLinksSection.tsx
@@ -5159,6 +5712,10 @@ msgstr "Searching…"
 #: src/lib/nextSteps.ts
 msgid "Đăng tin vui, tin buồn"
 msgstr "Post good news and sad news"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Đang trả lời"
+msgstr "Answering"
 
 #: src/components/HomeCustomizeDrawer.tsx
 msgid "Đang tự động: app xếp những ô bạn hay bấm lên trước. Chọn ô để tự quyết định."
@@ -5329,6 +5886,10 @@ msgstr "Reset password"
 msgid "Đặt lại về ban đầu"
 msgstr "Reset to the original"
 
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Đặt làm ảnh đại diện"
+msgstr "Set as profile photo"
+
 #: src/lib/nextSteps.ts
 msgid "Đặt lịch họp họ, giỗ Tổ"
 msgstr "Set clan gatherings, Giỗ Tổ"
@@ -5367,6 +5928,15 @@ msgstr "In-laws on the {0} side"
 #: src/components/ClanBadges.tsx
 msgid "Đầy đủ {pctBirth}%"
 msgstr "{pctBirth}% complete"
+
+#. placeholder {0}: memory.face_count
+#: src/components/community/MemoryCard.tsx
+msgid "Đây là ai? · đã khoanh {0} người"
+msgstr "Who is this? · {0} people marked"
+
+#: src/components/community/MemoryCard.tsx
+msgid "Đây là ai? Khoanh mặt người bạn nhận ra"
+msgstr "Who is this? Mark the faces you recognize"
 
 #: src/components/McpGuidePanel.tsx
 msgid "Đây là địa chỉ máy bạn (localhost), ứng dụng AI trên mạng không truy cập được. Hãy sửa thành địa chỉ công khai của hệ thống."
@@ -5450,6 +6020,10 @@ msgstr "Suggestion sent through a share link (guest)."
 #: src/pages/clan/PersonDetail.tsx
 msgid "Đề xuất sửa"
 msgstr "Suggest an edit"
+
+#: src/components/community/CommunityCard.tsx
+msgid "đề xuất sửa thông tin"
+msgstr "suggested an info correction"
 
 #: src/components/ContributeDialog.tsx
 msgid "Đề xuất sửa thông tin"
@@ -5599,6 +6173,11 @@ msgstr "Terms"
 msgid "Định dạng .xlsx hoặc .csv. Các cột:"
 msgstr ".xlsx or .csv format. Columns:"
 
+#. placeholder {0}: q.asked_by_name
+#: src/pages/clan/Memories.tsx
+msgid "do {0} đặt"
+msgstr "asked by {0}"
+
 #: src/components/ContributionDiffView.tsx
 msgid "Độ chính xác ngày mất"
 msgstr "Death date precision"
@@ -5647,9 +6226,21 @@ msgstr "Đỗ Việt Nguyễn"
 msgid "Đoạn {0}"
 msgstr "Clip {0}"
 
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Đoạn sẽ thêm vào tiểu sử"
+msgstr "Text to add to the biography"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Đoạn tiểu sử đang trống"
+msgstr "The biography text is empty"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Dọc"
 msgstr "Portrait"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Dọc (Story, TikTok)"
+msgstr "Vertical (Story, TikTok)"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Dọc (story)"
@@ -5855,6 +6446,11 @@ msgstr "Sync failed"
 msgid "Đồng bộ ngay"
 msgstr "Sync now"
 
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Đóng câu hỏi"
+msgstr "Close question"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đóng công cụ"
 msgstr "Close tools"
@@ -5868,9 +6464,11 @@ msgid "Dòng dõi của tôi"
 msgstr "My lineage"
 
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
 msgid "đóng góp"
 msgstr "contributions"
 
+#: src/components/community/PersonMemoriesSection.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/queries/global-search.ts
 #: src/pages/clan/ContributionDetail.tsx
@@ -5887,13 +6485,60 @@ msgstr "Contributions awaiting review"
 msgid "Đóng góp công sức"
 msgstr "Contribution of effort"
 
+#: src/pages/clan/Memories.tsx
+msgid "Đóng góp của thành viên hiện ngay; người quản lý ẩn khi thấy không phù hợp."
+msgstr "Members' contributions show right away; admins hide anything inappropriate."
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Đóng góp đã được lưu vào gia phả."
+msgstr "Your contribution has been saved to the family tree."
+
+#: src/components/community/CommunityCard.tsx
+#: src/components/HomeCustomizeDrawer.tsx
+#: src/pages/clan/Dashboard.tsx
+msgid "Đóng góp mới"
+msgstr "New contributions"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Đóng góp này không gắn với người nào"
+msgstr "This contribution isn't linked to anyone"
+
+#: src/lib/navModel.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Đóng góp nội dung"
+msgstr "Contributions"
+
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Đóng góp sẽ bị đánh dấu rejected. Người gửi vẫn thấy nó."
 msgstr "The contribution will be marked rejected. The sender can still see it."
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Đóng góp thêm"
+msgstr "Contribute more"
+
 #: src/pages/clan/Contributions.tsx
 msgid "Đóng góp từ cộng đồng"
 msgstr "Community contributions"
+
+#. placeholder {0}: person.full_name
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Đóng góp về {0}"
+msgstr "Contributions about {0}"
+
+#: src/components/community/PersonMemoriesSection.tsx
+#: src/components/community/PersonMemoriesSection.tsx
+msgid "Đóng góp về {personName}"
+msgstr "Contributions about {personName}"
+
+#: src/pages/clan/Memories.tsx
+msgid "Đóng góp về ai?"
+msgstr "Contribute about whom?"
+
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Đóng góp về một người"
+msgstr "Contribute about a person"
 
 #: src/pages/admin/Clans.tsx
 #: src/pages/admin/GiaPha.tsx
@@ -6058,6 +6703,17 @@ msgstr "Move {0} up"
 msgid "Đưa {0} xuống"
 msgstr "Move {0} down"
 
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Đưa vào đâu"
+msgstr "Add to where"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+#: src/components/community/ApplyMemoryPanel.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Đưa vào gia phả"
+msgstr "Add to family tree"
+
 #. placeholder {0}: fmt(tk.last_used_at)
 #: src/components/ApiTokenPanels.tsx
 msgid "Dùng {0}"
@@ -6066,6 +6722,10 @@ msgstr "Used {0}"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Dừng & nghe lại"
 msgstr "Stop & listen back"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Dùng ảnh của đóng góp này làm ảnh chân dung trên cây và hồ sơ."
+msgstr "Use this contribution's photo as the portrait on the tree and profile."
 
 #: src/pages/clan/Merge.tsx
 msgid "Dùng cặp này"
@@ -6159,6 +6819,7 @@ msgid "Đường về Thuỷ tổ của bạn"
 msgstr "Your line back to the founding ancestor"
 
 #: src/pages/clan/ContributionDetail.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/CustomsDetail.tsx
 msgid "Duyệt"
 msgstr "Approve"
@@ -6183,6 +6844,10 @@ msgstr "Approve and publish"
 #: src/components/PersonNavButtons.tsx
 msgid "Duyệt danh bạ"
 msgstr "Browse the People list"
+
+#: src/components/community/PersonMemoriesSection.tsx
+msgid "Duyệt đóng góp chờ →"
+msgstr "Review pending contributions →"
 
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Duyệt đóng góp?"
@@ -6263,6 +6928,11 @@ msgstr "GEDCOM 5.5.1 is the standard for exchanging genealogy data. Importing cr
 msgid "GEDCOM, CSV — đem dữ liệu đi hoặc nạp từ phần mềm khác."
 msgstr "GEDCOM, CSV — take your data elsewhere or load it from other software."
 
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Ghi âm"
+msgstr "Recording"
+
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Share.tsx
 msgid "Ghi âm kể chuyện"
@@ -6277,6 +6947,10 @@ msgstr "Recorded stories"
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Ghi chú"
 msgstr "Note"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Ghi chú (không bắt buộc)"
+msgstr "Note (optional)"
 
 #: src/pages/clan/Branches.tsx
 #: src/pages/clan/ClanFund.tsx
@@ -6344,6 +7018,10 @@ msgstr "Recognize contributions and achievements."
 msgid "Ghi nơi an nghỉ của các cụ"
 msgstr "Record the ancestors' resting places"
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Ghi tên của bạn để bắt đầu khoanh mặt."
+msgstr "Enter your name to start marking faces."
+
 #: src/lib/nextSteps.ts
 msgid "Ghi thu chi, ai cũng xem được"
 msgstr "Record income and expenses, visible to all"
@@ -6376,6 +7054,17 @@ msgstr "The family on that side"
 #: src/pages/Share.tsx
 msgid "Gia phả {0}"
 msgstr "Family tree of {0}"
+
+#. placeholder {0}: opts.clanName
+#. placeholder {1}: opts.personName
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "gia phả {0} đang thu thập câu chuyện, ảnh cũ về {1}"
+msgstr "the {0} family tree is collecting stories and old photos about {1}"
+
+#. placeholder {0}: opts.clanName
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "gia phả {0} đang thu thập câu chuyện, ảnh cũ về ông bà, tổ tiên"
+msgstr "the {0} family tree is collecting stories and old photos of our grandparents and ancestors"
 
 #: src/components/ShareTreeButton.tsx
 msgid "Gia phả {clanName}"
@@ -6419,6 +7108,10 @@ msgstr "Dark mode"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Giấy kẻ ô"
 msgstr "Grid paper"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…"
+msgstr "Birth certificate · gravestone · old family records · my parents told me…"
 
 #: src/pages/clan/Tree.tsx
 msgid "Giỗ {anniv}"
@@ -6609,7 +7302,12 @@ msgstr "Type the full name or part of it…"
 msgid "Gõ tên để lọc (không cần dấu)"
 msgstr "Type a name to filter (no accents needed)"
 
+#: src/components/community/CommunitySharePanel.tsx
+#: src/components/community/FaceTagger.tsx
+#: src/components/community/QuestionPanel.tsx
+#: src/components/community/QuestionPanel.tsx
 #: src/pages/clan/HeritageForm.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/Tree.tsx
@@ -6673,6 +7371,18 @@ msgstr "Merge"
 msgid "Gộp \"{0}\" vào \"{1}\"?"
 msgstr "Merge \"{0}\" into \"{1}\"?"
 
+#: src/components/community/CommunityCard.tsx
+msgid "góp một câu chuyện"
+msgstr "shared a story"
+
+#: src/components/community/CommunityCard.tsx
+msgid "góp một đoạn ghi âm"
+msgstr "shared a recording"
+
+#: src/components/community/CommunityCard.tsx
+msgid "góp một tấm ảnh"
+msgstr "shared a photo"
+
 #: src/lib/navModel.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/Merge.tsx
@@ -6725,6 +7435,7 @@ msgstr "Feedback and bug reports sent by users."
 msgid "GT"
 msgstr "Gender"
 
+#: src/components/community/FaceTagger.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Gửi"
@@ -6734,6 +7445,14 @@ msgstr "Send"
 msgid "Gửi bình luận"
 msgstr "Send comment"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Gửi câu trả lời"
+msgstr "Send answer"
+
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "Gửi cho ai? (không bắt buộc)"
+msgstr "Who is it for? (optional)"
+
 #: src/pages/clan/InlawsNew.tsx
 msgid "Gửi đề nghị"
 msgstr "Send request"
@@ -6741,6 +7460,10 @@ msgstr "Send request"
 #: src/components/ContributeDialog.tsx
 msgid "Gửi đề xuất"
 msgstr "Send suggestion"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Gửi đóng góp"
+msgstr "Send contribution"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Gửi đường dẫn trang:"
@@ -6763,6 +7486,12 @@ msgstr "Send reset link"
 msgid "Gửi liên kết qua email"
 msgstr "Email me a link"
 
+#: src/components/community/QuestionPanel.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Gửi link trả lời"
+msgstr "Send answer link"
+
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Gửi lúc"
 msgstr "Sent at"
@@ -6783,6 +7512,11 @@ msgstr "Send feedback"
 #: src/pages/Account.tsx
 msgid "Gửi thông báo test"
 msgstr "Send a test notification"
+
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/QuestionPanel.tsx
+msgid "Gửi tin nhắn"
+msgstr "Send message"
 
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
@@ -6874,6 +7608,7 @@ msgstr "The system has no clan to attach the link to."
 #: src/components/apiTokenMeta.ts
 #: src/components/ApiTokenPanels.tsx
 #: src/pages/admin/Announcements.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Hết hạn"
 msgstr "Expired"
 
@@ -6881,8 +7616,10 @@ msgstr "Expired"
 msgid "Hết hạn (tuỳ chọn)"
 msgstr "Expires (optional)"
 
+#. placeholder {0}: day(l.expires_at)
 #. placeholder {0}: formatDateOnly(active.token_expires_at) ?? "?"
 #: src/pages/admin/PodcastPage.tsx
+#: src/pages/clan/Memories.tsx
 msgid "hết hạn {0}"
 msgstr "expires {0}"
 
@@ -6922,12 +7659,17 @@ msgstr "Show parent–child and spouse connectors automatically"
 msgid "Hiện hướng dẫn"
 msgstr "Show guide"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Hiện hướng dẫn 3 bước"
+msgstr "Show the 3-step guide"
+
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/lib/queries/restingPlaces.ts
 msgid "Hiện hữu"
 msgstr "Existing"
 
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Hiện lại"
 msgstr "Show again"
 
@@ -6953,6 +7695,10 @@ msgstr "Show piece"
 #: src/components/ClanLayout.tsx
 msgid "Hiện menu"
 msgstr "Show menu"
+
+#: src/pages/clan/Memories.tsx
+msgid "Hiện ở trang chia sẻ"
+msgstr "Shown on the shared page"
 
 #: src/components/ContributionDiffView.tsx
 msgid "Hiện tại"
@@ -7050,6 +7796,10 @@ msgstr "They will no longer appear in To-do and won't count toward the completio
 msgid "Hồ sơ"
 msgstr "Profile"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Hồ sơ còn thiếu"
+msgstr "Missing profile details"
+
 #. placeholder {0}: missing.join(", ")
 #: src/components/MyProfileCard.tsx
 msgid "Hồ sơ của bạn còn thiếu {0}. Bổ sung để người thân dễ nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên cây."
@@ -7101,6 +7851,10 @@ msgstr "Our clan has now completed"
 msgid "Họ tên"
 msgstr "Full name"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Họ tên đầy đủ, có dấu — vd: Nguyễn Văn Tư"
+msgstr "Full name with diacritics — e.g. Nguyễn Văn Tư"
+
 #: src/components/BookMetaFields.tsx
 msgid "Họ tên những người biên soạn"
 msgstr "Names of the compilers"
@@ -7109,6 +7863,7 @@ msgstr "Names of the compilers"
 msgid "Họ tổ"
 msgstr "Ancestral clan"
 
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
@@ -7126,6 +7881,14 @@ msgstr "Full name"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Hoa văn trám"
 msgstr "Lozenge pattern"
+
+#: src/components/community/MemoryForm.tsx
+msgid "hoặc dán link ảnh (Google Photos, Drive) — không tốn dung lượng"
+msgstr "or paste a photo link (Google Photos, Drive) — uses no storage"
+
+#: src/components/community/FaceTagger.tsx
+msgid "Hoặc ghi tên người đó"
+msgstr "Or write the person's name"
 
 #: src/components/ShareTreeButton.tsx
 msgid "Hoặc gửi trực tiếp tới:"
@@ -7170,9 +7933,44 @@ msgstr "Active"
 msgid "Hoạt động gần đây"
 msgstr "Recent activity"
 
+#. placeholder {0}: opts.askName
+#: src/components/community/QuestionPanel.tsx
+msgid "hỏi {0}"
+msgstr "ask {0}"
+
+#. placeholder {0}: byId.get(q.ask_person_id)?.full_name ?? ""
+#. placeholder {0}: q.ask_person_name
+#: src/components/community/CommunitySharePanel.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Hỏi {0}"
+msgstr "Ask {0}"
+
+#: src/pages/Share.tsx
+msgid "Hỏi & trả lời"
+msgstr "Q&A"
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Hỏi ai? (không bắt buộc)"
+msgstr "Ask whom? (optional)"
+
 #: src/pages/Contact.tsx
 msgid "Hỏi cách dùng, hỏi về dữ liệu…"
 msgstr "Ask how to use something, or about your data…"
+
+#: src/components/community/InviteCardDialog.tsx
+#: src/components/community/QuestionPanel.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Hỏi ông bà"
+msgstr "Ask the elders"
+
+#: src/components/community/QuestionPanel.tsx
+msgid "hỏi ông bà, cha mẹ"
+msgstr "ask our grandparents and parents"
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Hỏi về ai? (không bắt buộc)"
+msgstr "About whom? (optional)"
 
 #: src/components/EventsCalendar.tsx
 #: src/components/TodayHubCard.tsx
@@ -7227,6 +8025,10 @@ msgstr "Clan meetings and clan anniversaries — add by solar or lunar date."
 #: src/pages/clan/Events.tsx
 msgid "Họp họ, tảo mộ, chạp họ, kỷ niệm…"
 msgstr "Clan meetings, grave sweeping, year-end rites, anniversaries…"
+
+#: src/components/community/MemoryForm.tsx
+msgid "https://photos.google.com/… hoặc link Google Drive"
+msgstr "https://photos.google.com/… or a Google Drive link"
 
 #: src/pages/clan/GoodDays.tsx
 msgid "hung tinh"
@@ -7314,11 +8116,18 @@ msgid "Hưởng thọ"
 msgstr "Lifespan"
 
 #: src/components/BoardPostForm.tsx
+#: src/components/community/ApplyMemoryPanel.tsx
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/FaceTagger.tsx
+#: src/components/community/FaceTagger.tsx
+#: src/components/community/MemoryForm.tsx
+#: src/components/community/QuestionPanel.tsx
 #: src/components/ConfirmDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 #: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/Mosaics.tsx
@@ -7461,6 +8270,10 @@ msgstr "Drag ready-made cards, connect lines, edit text, choose a background, th
 msgid "Kéo thả vào canvas (hoặc nhấp để thêm)."
 msgstr "Drag onto the canvas (or click to add)."
 
+#: src/components/community/FaceTagger.tsx
+msgid "Kéo trên ảnh để khoanh khuôn mặt người bạn nhận ra."
+msgstr "Drag on the photo to mark the face of someone you recognize."
+
 #: src/lib/nextSteps.ts
 msgid "Kéo, phóng to, chọn người làm tâm"
 msgstr "Drag, zoom, choose a center person"
@@ -7508,6 +8321,14 @@ msgstr "Guest"
 msgid "Khách (chưa đăng nhập)"
 msgstr "Guest (not signed in)"
 
+#: src/pages/clan/Memories.tsx
+msgid "Khách gửi qua link luôn chờ duyệt cho tới khi đã được duyệt 3 lần."
+msgstr "Guests contributing via a link are always reviewed until they have been approved 3 times."
+
+#: src/pages/clan/Memories.tsx
+msgid "Khách qua link"
+msgstr "Guests via link"
+
 #: src/pages/Account.tsx
 msgid "Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào."
 msgstr "When turned on, the app will ask for permission to show notifications. Every morning on a death anniversary / birthday a reminder will appear on your phone — even when the app is closed. You can turn it off at any time."
@@ -7527,6 +8348,10 @@ msgstr "When someone sends a suggestion, the list will appear here."
 #: src/lib/tipCatalogue.ts
 msgid "Khi nhập ngày sinh / mất, có thể bấm 'Nhập theo can-chi' để gõ 'Bính Thìn' — app sẽ tự đổi sang năm dương."
 msgstr "When entering a date of birth / death, you can tap 'Enter by Stem-Branch' to type 'Bính Thìn' — the app converts it to a solar year automatically."
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Khổ ảnh"
+msgstr "Image size"
 
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvas.tsx
@@ -7555,10 +8380,28 @@ msgstr "Lock the account"
 msgid "Khoản thu / chi của quỹ họ."
 msgstr "Income / expense entries of the clan fund."
 
+#. placeholder {0}: memory.year_approx
+#: src/components/community/MemoryCard.tsx
+msgid "khoảng {0}"
+msgstr "around {0}"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Khoảng năm (nếu nhớ)"
+msgstr "Approximate year (if you remember)"
+
+#. placeholder {0}: m.year_approx
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "khoảng năm {0}"
+msgstr "around {0}"
+
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 msgid "Khoảng thời gian"
 msgstr "Time range"
+
+#: src/components/community/FaceTagger.tsx
+msgid "Khoanh một người"
+msgstr "Mark a person"
 
 #: src/components/KhoeButton.tsx
 msgid "Khoe — tạo thẻ cá nhân chia sẻ"
@@ -7608,9 +8451,15 @@ msgstr "Could not turn on notifications"
 msgid "Không bây giờ"
 msgstr "Not now"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Không cần đăng ký. Người quản lý dòng họ sẽ xem trước khi đăng; tên bạn được ghi là người đóng góp."
+msgstr "No sign-up needed. The clan admins review before publishing; you are credited as the contributor."
+
+#: src/components/community/MemoryFaces.tsx
 #: src/components/SubscribeToggle.tsx
 #: src/components/SubscriptionSettings.tsx
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Không cập nhật được"
 msgstr "Could not update"
 
@@ -7711,6 +8560,7 @@ msgid "Không có đề nghị nào đang chờ"
 msgstr "No requests pending"
 
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Không có đóng góp nào khớp"
 msgstr "No matching contributions"
 
@@ -7857,6 +8707,10 @@ msgstr "No matching provinces / cities"
 msgid "Không có token nào khớp"
 msgstr "No tokens match"
 
+#: src/components/community/FaceTagger.tsx
+msgid "Không có trong gia phả / không chắc"
+msgstr "Not in the family tree / not sure"
+
 #: src/pages/Videos.tsx
 msgid "Không có video nào khớp."
 msgstr "No matching videos."
@@ -7868,6 +8722,10 @@ msgstr "No matching communes / wards"
 #: src/pages/clan/Tree.tsx
 msgid "Không còn liên kết nào."
 msgstr "No links left."
+
+#: src/pages/clan/Memories.tsx
+msgid "Không còn link nào đang mở."
+msgstr "No open links."
 
 #: src/pages/clan/Todo.tsx
 msgid "Không còn mục nào thiếu thuộc nhóm đã chọn."
@@ -7910,6 +8768,10 @@ msgstr "Could not change the order"
 msgid "Không đổi tên được"
 msgstr "Could not rename"
 
+#: src/pages/clan/Memories.tsx
+msgid "Không đóng được"
+msgstr "Couldn't close"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Không dùng được ảnh này"
 msgstr "Could not use this image"
@@ -7926,6 +8788,10 @@ msgstr "is not saved"
 #: src/pages/CustomsDetail.tsx
 msgid "Không duyệt được"
 msgstr "Could not approve"
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Không gắn người cụ thể"
+msgstr "Not about a specific person"
 
 #: src/pages/clan/PersonDetail.tsx
 msgid "Không gỡ được"
@@ -8018,6 +8884,7 @@ msgstr "Could not get the location (permission needed)"
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MyLineage.tsx
 #: src/pages/clan/MyLineage.tsx
@@ -8046,6 +8913,10 @@ msgstr "Could not save the room: {msg}"
 #: src/components/QrScannerModal.tsx
 msgid "Không mở được camera. Cho phép quyền camera trong trình duyệt rồi thử lại."
 msgstr "Could not open the camera. Allow camera permission in your browser and try again."
+
+#: src/pages/clan/Memories.tsx
+msgid "Không mở lại được"
+msgstr "Couldn't reopen"
 
 #: src/lib/tipCatalogue.ts
 msgid "Không muốn xem gợi ý?"
@@ -8076,9 +8947,18 @@ msgstr "Don't remember the solar year?"
 msgid "Không nối được"
 msgstr "Could not connect"
 
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/QuestionPanel.tsx
+msgid "Không sao chép được, hãy chọn và sao chép bằng tay"
+msgstr "Couldn't copy — please select and copy it manually"
+
 #: src/components/ShareCardDialog.tsx
 msgid "Không tải được"
 msgstr "Could not download"
+
+#: src/components/community/MemoryCard.tsx
+msgid "Không tải được ảnh"
+msgstr "Couldn't load the photo"
 
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Không tải được danh sách:"
@@ -8096,6 +8976,11 @@ msgstr "Could not load the data"
 #: src/pages/NewClan.tsx
 msgid "Không tạo được"
 msgstr "Could not create"
+
+#: src/components/community/InviteCardDialog.tsx
+#: src/components/community/InviteCardDialog.tsx
+msgid "Không tạo được ảnh"
+msgstr "Couldn't create the image"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Không tạo được bức ảnh"
@@ -8165,6 +9050,7 @@ msgstr "Could not add the photo"
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Không thu hồi được"
 msgstr "Could not revoke"
 
@@ -8268,6 +9154,7 @@ msgid "Không xác nhận được"
 msgstr "Could not confirm"
 
 #: src/components/BranchesSection.tsx
+#: src/components/community/MemoryFaces.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/pages/Account.tsx
@@ -8286,6 +9173,7 @@ msgstr "Could not confirm"
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/People.tsx
@@ -8340,6 +9228,10 @@ msgstr "Could not export the PDF"
 #: src/pages/clan/Tree.tsx
 msgid "Không xuất được SVG. Thử lại hoặc dùng chức năng In."
 msgstr "Could not export the SVG. Try again or use Print."
+
+#: src/pages/clan/Memories.tsx
+msgid "Không, chỉ người trong họ"
+msgstr "No, clan members only"
 
 #: src/lib/queries/historical.ts
 msgid "Khớp nhiều nguồn"
@@ -8461,6 +9353,10 @@ msgstr "Redo (Ctrl+Shift+Z)"
 msgid "Làm mới"
 msgstr "Refresh"
 
+#: src/components/community/FaceTagger.tsx
+msgid "Làm nghề gì / ghi chú (nếu biết)"
+msgstr "Occupation / note (if known)"
+
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
 msgid "Lăn chuột"
@@ -8476,9 +9372,17 @@ msgstr "Last: {0}"
 msgid "Lần đồng bộ gần nhất báo lỗi: {0}"
 msgstr "The last sync reported an error: {0}"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Làng / xã, huyện, tỉnh — vd: Hoằng Hoá, Thanh Hoá"
+msgstr "Village / commune, district, province — e.g. Hoằng Hoá, Thanh Hoá"
+
 #: src/lib/queries/customs.ts
 msgid "Làng xã"
 msgstr "Village customs (làng xã)"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Làng, xã, thành phố…"
+msgstr "Village, commune, city…"
 
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Share.tsx
@@ -8712,6 +9616,10 @@ msgstr "Mascot (drag to move)"
 msgid "Linh vật, dòng họ demo."
 msgstr "Mascot, demo clan."
 
+#: src/components/community/MemoryForm.tsx
+msgid "Link ảnh"
+msgstr "Photo link"
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Link ảnh (https://…)"
 msgstr "Photo link (https://…)"
@@ -8744,6 +9652,10 @@ msgstr "View-only link, no sign-in needed"
 msgid "Link chia sẻ"
 msgstr "Share links"
 
+#: src/pages/clan/Memories.tsx
+msgid "Link chung"
+msgstr "General link"
+
 #: src/pages/JoinClan.tsx
 msgid "Link có thể đã hết hạn hoặc bị thu hồi. Hãy xin người trong họ gửi lại link mới."
 msgstr "The link may have expired or been revoked. Ask someone in the clan to send you a new link."
@@ -8755,6 +9667,10 @@ msgstr "Public links that let guests view the tree (living people hidden), with 
 #: src/components/CalendarFeedPanel.tsx
 msgid "Link cũ ngừng hoạt động; bạn cần đăng ký lại lịch bằng link mới."
 msgstr "The old link stops working; you'll need to subscribe to the calendar again with the new link."
+
+#: src/pages/clan/Memories.tsx
+msgid "Link đã gửi"
+msgstr "Sent links"
 
 #: src/pages/admin/GiaPha.tsx
 msgid "Link gia phả"
@@ -8769,17 +9685,42 @@ msgstr "The link expires on {0}. Manage / revoke early in <0>Settings</0>."
 msgid "Link khoe có hạn"
 msgstr "Expiring show-off link"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Link không hợp lệ (phải bắt đầu bằng https://)"
+msgstr "Invalid link (must start with https://)"
+
 #: src/pages/clan/InlawsNew.tsx
 msgid "Link mời"
+msgstr "Invite link"
+
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Link mời góp"
 msgstr "Invite link"
 
 #: src/pages/JoinClan.tsx
 msgid "Link mời không hợp lệ"
 msgstr "Invalid invite link"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Link nằm ở đâu"
+msgstr "Where is the link"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Link ở bình luận"
+msgstr "Link in the comments"
+
 #: src/lib/queries/heritage.ts
 msgid "Link phải bắt đầu bằng https:// và là địa chỉ hợp lệ."
 msgstr "The link must start with https:// and be a valid address."
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Link trả lời"
+msgstr "Answer link"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Link trong bài viết"
+msgstr "Link in the post"
 
 #: src/lib/queries/restingPlaces.ts
 msgid "Lô – hàng – số"
@@ -8870,6 +9811,7 @@ msgid "Lọc di sản"
 msgstr "Filter heritage"
 
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Lọc đóng góp"
 msgstr "Filter contributions"
 
@@ -8922,6 +9864,10 @@ msgstr "Filter by topic"
 msgid "Lọc theo cơ sở"
 msgstr "Filter by site"
 
+#: src/pages/clan/Memories.tsx
+msgid "Lọc theo đã đưa vào gia phả"
+msgstr "Filter by added to family tree"
+
 #: src/pages/clan/People.tsx
 msgid "Lọc theo đời"
 msgstr "Filter by generation"
@@ -8945,6 +9891,7 @@ msgstr "Filter by type"
 
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/HonorBook.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Lọc theo loại"
 msgstr "Filter by type"
@@ -8958,6 +9905,10 @@ msgstr "Filter by post type"
 #: src/pages/Changelog.tsx
 msgid "Lọc theo mức độ"
 msgstr "Filter by level"
+
+#: src/pages/clan/Memories.tsx
+msgid "Lọc theo người đóng góp"
+msgstr "Filter by contributor"
 
 #: src/components/HistoricalClansSection.tsx
 msgid "Lọc theo nhóm"
@@ -8977,6 +9928,7 @@ msgstr "Filter by size"
 #: src/pages/admin/Feedback.tsx
 #: src/pages/admin/Users.tsx
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Lọc theo trạng thái"
 msgstr "Filter by status"
@@ -9068,6 +10020,10 @@ msgstr "An extra layer of reminders — works even when the app is closed. Requi
 msgid "Lưới"
 msgstr "Grid"
 
+#: src/pages/clan/Dashboard.tsx
+msgid "Lượt ghé tuần này"
+msgstr "Visits this week"
+
 #: src/components/BranchesSection.tsx
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/QuickAddSheet.tsx
@@ -9085,6 +10041,7 @@ msgstr "Grid"
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/HonorBook.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/NewPerson.tsx
@@ -9229,6 +10186,10 @@ msgstr "This QR code is not valid."
 msgid "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 msgstr "This QR code does not belong to Dòng Họ Việt. Ignored to protect your account."
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Mã QR trên ảnh"
+msgstr "QR code on the image"
+
 #: src/lib/navModel.tsx
 msgid "Mã QR từng người để in/khắc — quét ra trang cá nhân."
 msgstr "A QR code per person to print or engrave — scans to their profile."
@@ -9305,6 +10266,10 @@ msgstr "Died{age}."
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Màu"
 msgstr "Color"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Mẫu"
+msgstr "Template"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Màu bục"
@@ -9444,6 +10409,14 @@ msgstr "Open profile →"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Mở lại"
 msgstr "Reopen"
+
+#: src/pages/clan/Memories.tsx
+msgid "Mở lại nhận đóng góp"
+msgstr "Reopen contributions"
+
+#: src/pages/clan/Memories.tsx
+msgid "Mở lại nhận đóng góp (link tự tạm dừng vì nhận quá nhiều trong 24 giờ — xem đóng góp chờ duyệt trước)"
+msgstr "Reopen contributions (the link paused itself after receiving too many in 24 hours — review pending contributions first)"
 
 #: src/components/TodayHubCard.tsx
 msgid "Mở lịch & xem chi tiết ngày này"
@@ -9600,6 +10573,10 @@ msgstr "You're invited to join the family tree of the {clanName} clan"
 msgid "Mời bằng link"
 msgstr "Invite by link"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Mời cả nhà góp"
+msgstr "Invite the family"
+
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Mới cập nhật"
 msgstr "Recently updated"
@@ -9624,6 +10601,10 @@ msgstr "All objects"
 msgid "Mọi dòng được nhập trong một giao dịch — nếu lỗi, không có ai bị thêm."
 msgstr "All rows are imported in a single transaction — if there's an error, nobody is added."
 
+#: src/pages/clan/Memories.tsx
+msgid "Mọi đóng góp của thành viên (trừ biên tập viên) chờ người quản lý duyệt mới hiện."
+msgstr "All contributions from members (except editors) wait for admin review before showing."
+
 #: src/pages/admin/Clans.tsx
 msgid "Mọi dòng họ"
 msgstr "All clans"
@@ -9640,6 +10621,10 @@ msgstr "Each clan can create several mosaics."
 #: src/pages/Clans.tsx
 msgid "Mọi dòng họ trên nền tảng."
 msgstr "Every clan on the platform."
+
+#: src/components/community/PersonMemoriesSection.tsx
+msgid "Mời góp"
+msgstr "Invite"
 
 #: src/pages/clan/Audit.tsx
 msgid "Mọi hành động"
@@ -9660,6 +10645,7 @@ msgstr "Every time a person, family or branch is added / edited / deleted it app
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/HonorBook.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Mọi loại"
 msgstr "All types"
@@ -9685,6 +10671,10 @@ msgstr "One A6 card per person — 4 cards per A4 page. Print and cut along the 
 msgid "Mỗi người có ảnh đại diện trên cây thành một mảnh; đổi avatar thì mảnh tự đổi theo."
 msgstr "Each person who has a profile photo on the tree becomes one piece; when the avatar changes, the piece changes with it."
 
+#: src/pages/clan/Memories.tsx
+msgid "Mọi người đóng góp"
+msgstr "All contributors"
+
 #: src/pages/admin/Config.tsx
 msgid "mọi người dùng"
 msgstr "all users"
@@ -9704,6 +10694,18 @@ msgstr "Each person contributes a piece of a photo, together forming one shared 
 #: src/lib/navModel.tsx
 msgid "Mỗi người góp một mảnh ảnh."
 msgstr "Everyone adds a piece of the photo."
+
+#: src/components/community/PersonMemoriesSection.tsx
+msgid "Mời người khác đóng góp (gửi link, không cần tài khoản)"
+msgstr "Invite others to contribute (send a link, no account needed)"
+
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "Mời người thân đóng góp"
+msgstr "Invite relatives to contribute"
+
+#: src/pages/clan/Memories.tsx
+msgid "Mời người thân góp"
+msgstr "Invite relatives"
 
 #: src/pages/clan/Members.tsx
 msgid "Mời người, đổi vai trò, gỡ thành viên."
@@ -9757,6 +10759,7 @@ msgstr "Anything else."
 #: src/components/admin/ApiTokensAdminTab.tsx
 #: src/components/ClanApiTokensTab.tsx
 #: src/pages/admin/Announcements.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Mọi trạng thái"
 msgstr "All statuses"
 
@@ -9789,6 +10792,10 @@ msgstr "Every opinion helps make the app better. Don't hesitate — a short note
 msgid "Mới: {branchName}"
 msgstr "New: {branchName}"
 
+#: src/components/community/QuestionPanel.tsx
+msgid "Một câu hỏi, người được hỏi trả lời qua link"
+msgstr "One question; the person asked answers via a link"
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "Một câu tóm tắt, hiện ở danh sách"
 msgstr "A one-sentence summary, shown in the list"
@@ -9796,6 +10803,10 @@ msgstr "A one-sentence summary, shown in the list"
 #: src/pages/admin/Config.tsx
 msgid "một hoặc nhiều"
 msgstr "one or more"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Một kỷ niệm, món ăn hay nấu, câu hay dặn, công việc ngày trước…"
+msgstr "A memory, a favourite dish, a saying they often repeated, their work back then…"
 
 #: src/lib/queries/person-links.ts
 msgid "Một người vừa thuộc dòng họ này vừa thuộc dòng họ kia (vd con gái họ này làm dâu họ kia)."
@@ -9930,10 +10941,16 @@ msgstr "Year {0}"
 msgid "Năm biên soạn"
 msgstr "Year compiled"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Năm không hợp lệ"
+msgstr "Invalid year"
+
 #: src/components/QuickDateFixSheet.tsx
 msgid "năm mất"
 msgstr "year of death"
 
+#: src/components/community/MemoryForm.tsx
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/QuickAddSheet.tsx
@@ -9959,6 +10976,8 @@ msgstr "year of death / death anniversary"
 msgid "năm sinh"
 msgstr "year of birth"
 
+#: src/components/community/MemoryForm.tsx
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/QuickAddSheet.tsx
@@ -10136,6 +11155,14 @@ msgstr "Southern Liberation Day"
 msgid "Ngày giỗ"
 msgstr "Death anniversary"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Ngày giỗ (âm lịch)"
+msgstr "Death anniversary (lunar)"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Ngày giỗ không hợp lệ"
+msgstr "Invalid death anniversary"
+
 #: src/components/BookMetaFields.tsx
 msgid "Ngày giỗ tổ"
 msgstr "Founding ancestor's death anniversary (giỗ Tổ)"
@@ -10247,6 +11274,11 @@ msgstr "Good days follow the traditional calendar (the 12 trực indicate what t
 msgid "Ngày xấu (Hắc đạo)"
 msgstr "Inauspicious day (Hắc đạo)"
 
+#. placeholder {0}: hostOf(memory.media_url!)
+#: src/components/community/MemoryCard.tsx
+msgid "Nghe / xem ở {0}"
+msgstr "Listen / watch on {0}"
+
 #: src/components/PodcastTodayCard.tsx
 msgid "Nghe gì hôm nay"
 msgstr "What to listen to today"
@@ -10280,6 +11312,10 @@ msgstr "Cemetery / area"
 #: src/pages/clan/Cemeteries.tsx
 msgid "Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ phần theo cơ sở."
 msgstr "Cemeteries, pagodas, memorial gardens, ash towers… to group graves by site."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Nghĩa trang, xã, tỉnh — vd: nghĩa trang làng Đông Sơn"
+msgstr "Cemetery, commune, province — e.g. the Đông Sơn village cemetery"
 
 #: src/components/BookTextsSection.tsx
 msgid "Ngoại phả"
@@ -10401,6 +11437,10 @@ msgstr "people missing info"
 msgid "Người đã mất: hiện ngày giỗ và tuổi thọ"
 msgstr "Deceased people: show death anniversary and lifespan"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Người đọc"
+msgstr "Reader"
+
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Người đóng góp"
 msgstr "Contributor"
@@ -10424,6 +11464,10 @@ msgstr "The person proposed for the connection:"
 msgid "Người được mời cần có sẵn tài khoản (đã đăng ký bằng email tương ứng). Chưa có cơ chế gửi mail mời tự động."
 msgstr "The invited person must already have an account (registered with that email). There is no automatic invitation email yet."
 
+#: src/pages/clan/Memories.tsx
+msgid "Người được nhắc"
+msgstr "Person mentioned"
+
 #: src/pages/clan/HonorBook.tsx
 msgid "Người được vinh danh"
 msgstr "Honoree"
@@ -10431,6 +11475,10 @@ msgstr "Honoree"
 #: src/pages/clan/AddSpouse.tsx
 msgid "người gốc"
 msgstr "the original person"
+
+#: src/pages/clan/Dashboard.tsx
+msgid "Người góp tuần này"
+msgstr "Contributors this week"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Người gửi"
@@ -10446,6 +11494,10 @@ msgstr "Related people"
 #: src/pages/clan/HeritageForm.tsx
 msgid "Người liên quan trong họ (tuỳ chọn)"
 msgstr "Related people in the clan (optional)"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Người lớn tuổi (lễ phép, chữ to)"
+msgstr "Elders (polite, large text)"
 
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
@@ -10474,6 +11526,7 @@ msgstr "Newly suggested"
 msgid "Người mới sẽ được thêm vào cây gia phả. Tiếp tục?"
 msgstr "The new person will be added to the family tree. Continue?"
 
+#: src/components/community/MemoryForm.tsx
 #: src/components/InlawMiniTree.tsx
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
@@ -10487,6 +11540,18 @@ msgstr "this person"
 msgid "Người này"
 msgstr "This person"
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Người này còn sống: đóng góp chỉ người trong họ xem được, không hiện ở trang chia sẻ."
+msgstr "This person is alive: contributions are visible to clan members only, not on the shared page."
+
+#: src/components/community/FaceTagger.tsx
+msgid "Người này là ai trong gia phả?"
+msgstr "Who is this in the family tree?"
+
+#: src/pages/clan/Memories.tsx
+msgid "Người nhận không mở được nữa; đóng góp chưa duyệt gửi qua link sẽ bị ẩn."
+msgstr "The recipient can no longer open it; unreviewed contributions sent through the link will be hidden."
+
 #: src/components/ShareTreeButton.tsx
 msgid "Người nhận xem được cây chỉ-đọc, không cần đăng nhập."
 msgstr "Recipients see a read-only tree, no sign-in needed."
@@ -10495,6 +11560,10 @@ msgstr "Recipients see a read-only tree, no sign-in needed."
 msgid "Người ở nước ngoài không được tính vào bản đồ tỉnh."
 msgstr "People living abroad are not counted on the provincial map."
 
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Người quản lý dòng họ sẽ xem rồi đưa vào gia phả. Tên bạn được ghi là người đóng góp."
+msgstr "The clan admins will review it and add it to the family tree. You are credited as the contributor."
+
 #: src/components/PersonNavButtons.tsx
 msgid "Người sau →"
 msgstr "Next person →"
@@ -10502,6 +11571,15 @@ msgstr "Next person →"
 #: src/components/ClanFormFields.tsx
 msgid "Người sống: hiện đầy đủ ngày-tháng-năm sinh"
 msgstr "Living people: show the full date of birth"
+
+#: src/components/community/CommunityCard.tsx
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Người thân"
+msgstr "Relative"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Người trẻ (thân mật)"
+msgstr "Young people (casual)"
 
 #: src/components/ClanFormFields.tsx
 msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
@@ -10547,6 +11625,14 @@ msgstr "Reference sources"
 #: src/pages/CustomsDetail.tsx
 msgid "Nguồn:"
 msgstr "Source:"
+
+#. placeholder {0}: memory.source
+#. placeholder {0}: source.trim()
+#: src/components/community/MemoryCard.tsx
+#: src/components/community/MemoryForm.tsx
+#: src/components/community/MemoryForm.tsx
+msgid "Nguồn: {0}"
+msgstr "Source: {0}"
 
 #: src/components/BookMetaFields.tsx
 msgid "Nguyên quán / tổ quán"
@@ -10598,6 +11684,10 @@ msgstr "Duplicate"
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Nhân bản {0}"
 msgstr "Duplicate {0}"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Nhãn dán link (Story)"
+msgstr "Link sticker (Story)"
 
 #: src/components/EnablePushPrompt.tsx
 msgid "Nhận nhắc <0>giỗ</0>, <1>sinh nhật</1> và sự kiện dòng họ ngay trên máy."
@@ -10777,9 +11867,17 @@ msgstr "Tiered"
 msgid "Nhỏ (5–19)"
 msgstr "Small (5–19)"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Nhờ cả nhà nhận diện người trong ảnh (ai cũng khoanh mặt, ghi tên được; người quản lý xác nhận)"
+msgstr "Ask the family to identify people in the photo (anyone can mark faces and add names; admins confirm)"
+
 #: src/lib/queries/customs.ts
 msgid "Nho giáo"
 msgstr "Confucianism"
+
+#: src/pages/clan/Memories.tsx
+msgid "Nhờ nhận diện"
+msgstr "Needs identifying"
 
 #: src/pages/clan/People.tsx
 msgid "Nhờ quản trị viên hoặc người biên tập của dòng họ bổ sung."
@@ -10850,6 +11948,7 @@ msgstr "The ancestors' resting places: graves, ashes kept at a pagoda / clan tow
 msgid "Nơi an nghỉ liên quan"
 msgstr "Related resting places"
 
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
@@ -10977,6 +12076,10 @@ msgstr "Connect a Page"
 msgid "Nối vào đúng đời, đúng nhánh"
 msgstr "Link them to the right generation"
 
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Nối vào tiểu sử"
+msgstr "Append to biography"
+
 #: src/pages/clan/Inlaws.tsx
 msgid "Nối với dòng họ khác (thông gia, cùng tổ tiên, họ hàng) để tra cứu 2 chiều."
 msgstr "Connect to another clan (in-laws, a shared ancestor, relatives) to look things up in both directions."
@@ -11049,6 +12152,10 @@ msgstr "At the end"
 #: src/pages/Share.tsx
 msgid "Ở đâu"
 msgstr "Where"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Ở đâu (nếu nhớ)"
+msgstr "Where (if you remember)"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "ở Graph API Explorer với quyền"
@@ -11248,6 +12355,14 @@ msgstr "Personal QR"
 msgid "QR cá nhân · {0}"
 msgstr "Personal QR · {0}"
 
+#: src/pages/clan/Memories.tsx
+msgid "Qua đề xuất đã duyệt"
+msgstr "Via an approved suggestion"
+
+#: src/pages/clan/Memories.tsx
+msgid "Qua link"
+msgstr "Via link"
+
 #: src/components/ContributionDiffView.tsx
 #: src/components/PersonRelationsQuick.tsx
 #: src/components/SharedPersonCard.tsx
@@ -11379,6 +12494,10 @@ msgstr "Back to automatic"
 #: src/pages/clan/Relations.tsx
 msgid "Quê quán"
 msgstr "Hometown"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Quê quán / nơi sinh"
+msgstr "Hometown / birthplace"
 
 #: src/lib/pageTitle.ts
 #: src/pages/ForgotPassword.tsx
@@ -11520,6 +12639,11 @@ msgstr "Star {0} · Trực {1}"
 msgid "Sao chép {0}"
 msgstr "Copy {0}"
 
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Sao chép link"
+msgstr "Copy link"
+
 #: src/components/panel/PanelHost.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/NewPerson.tsx
@@ -11530,6 +12654,10 @@ msgstr "Copy person"
 #: src/pages/clan/People.tsx
 msgid "Sao chép thành người mới"
 msgstr "Copy as a new person"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Sao chép tin nhắn"
+msgstr "Copy message"
 
 #: src/pages/clan/Heritage.tsx
 msgid "Sắp đầy. Hãy xoá bớt ảnh/ghi âm cũ trước khi thêm mới."
@@ -11972,6 +13100,7 @@ msgstr "Edit name, description, branches; write the foreword, chronicle, materna
 msgid "Sửa thành viên"
 msgstr "Edit member"
 
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/panel/PanelHost.tsx
 #: src/lib/pageTitle.ts
@@ -12020,6 +13149,7 @@ msgstr "Status tabs"
 msgid "Tách nhiều trang A4 theo đời"
 msgstr "Split into several A4 pages by generation"
 
+#: src/components/community/InviteCardDialog.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
@@ -12031,6 +13161,10 @@ msgstr "Upload photo"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Tải ảnh lên"
 msgstr "Upload photo"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Tải ảnh lên thay vì dán link"
+msgstr "Upload a photo instead of pasting a link"
 
 #: src/components/PhotoUploadField.tsx
 msgid "Tải ảnh thất bại"
@@ -12119,6 +13253,10 @@ msgstr "Download all errors and warnings as a CSV to open in Excel next to the o
 msgid "Tạm dừng"
 msgstr "Pause"
 
+#: src/pages/clan/Memories.tsx
+msgid "Tạm dừng — nhận quá nhiều"
+msgstr "Paused — too many submissions"
+
 #: src/components/SubscriptionSettings.tsx
 msgid "Tạm tắt"
 msgstr "Pause"
@@ -12132,6 +13270,11 @@ msgstr "This card may have expired from sharing, or been removed."
 #: src/pages/admin/GiaPha.tsx
 msgid "Tạo"
 msgstr "Create"
+
+#. placeholder {0}: day(l.created_at)
+#: src/pages/clan/Memories.tsx
+msgid "tạo {0}"
+msgstr "created {0}"
 
 #. placeholder {0}: importable.length
 #: src/pages/CustomsImport.tsx
@@ -12149,6 +13292,15 @@ msgstr "Created {createdFull}"
 #: src/components/InviteLinkCard.tsx
 msgid "Tạo 1 link gửi vào nhóm họ (Zalo/Facebook). Người thân bấm vào, đăng nhập là tham gia được — không cần biết trước hay đăng ký sẵn."
 msgstr "Create one link to send to your clan's group chat (Zalo/Facebook). Relatives just tap it and sign in to join — no prior invitation or registration needed."
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Tạo ảnh để đăng"
+msgstr "Create an image to post"
+
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/QuestionPanel.tsx
+msgid "Tạo ảnh để đăng Facebook / Zalo"
+msgstr "Create an image for Facebook / Zalo"
 
 #: src/pages/clan/NewPerson.tsx
 msgid "Tạo bản sao thông tin — không sao chép quan hệ."
@@ -12219,19 +13371,33 @@ msgstr "Create a share link and send it via Zalo / Facebook / Email…"
 msgid "Tạo link đăng ký lịch"
 msgstr "Create a calendar subscription link"
 
+#: src/pages/clan/Memories.tsx
+msgid "Tạo link gửi qua Zalo / Facebook — người nhận đóng góp được ngay, không cần tài khoản."
+msgstr "Create a link to send via Zalo / Facebook — recipients can contribute right away, no account needed."
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Tạo link hỏi"
+msgstr "Create question link"
+
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/ShareLinksSection.tsx
 msgid "Tạo link mới"
 msgstr "Create a new link"
 
+#: src/components/community/ContributeLinkPanel.tsx
 #: src/components/InviteLinkCard.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Tạo link mời"
 msgstr "Create invite link"
 
 #: src/components/CalendarFeedPanel.tsx
 msgid "Tạo link mới?"
 msgstr "Create a new link?"
+
+#: src/components/community/QuestionPanel.tsx
+msgid "Tạo link riêng gửi qua Zalo / Facebook. Người nhận mở link là thấy câu hỏi và viết câu trả lời (bấm 🎤 trên bàn phím để nói) — không cần tài khoản."
+msgstr "Create a personal link to send via Zalo / Facebook. Recipients open it, see the question and write an answer (tap 🎤 on the keyboard to speak) — no account needed."
 
 #: src/pages/clan/InlawsNew.tsx
 msgid "Tạo mã mời"
@@ -12249,6 +13415,10 @@ msgstr "Grave sweeping — {title}"
 #: src/pages/clan/GoodDays.tsx
 msgid "Tảo mộ / Chạp họ"
 msgstr "Grave sweeping / Year-end clan rite"
+
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "Tạo một link riêng gửi qua Zalo / Facebook. Người nhận bấm vào là đóng góp được ngay, không cần tài khoản. Link dùng được {CONTRIBUTE_LINK_TTL_DAYS} ngày, bạn thu hồi được bất cứ lúc nào."
+msgstr "Create a personal link to send via Zalo / Facebook. Recipients can contribute right away, no account needed. The link works for {CONTRIBUTE_LINK_TTL_DAYS} days and you can revoke it any time."
 
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MemoryRooms.tsx
@@ -12468,9 +13638,14 @@ msgstr "Site name"
 msgid "Tên con"
 msgstr "Child's name"
 
+#: src/components/community/MemoryForm.tsx
 #: src/components/ContributeDialog.tsx
 msgid "Tên của bạn"
 msgstr "Your name"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Tên của bạn (để ghi người nhận diện)"
+msgstr "Your name (credited for the identification)"
 
 #: src/pages/clan/EditPerson.tsx
 msgid "Tên đặt khi mất, dùng trong văn cúng"
@@ -12664,6 +13839,10 @@ msgstr "Month"
 msgid "Thẳng"
 msgstr "Straight"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Tháng (âm lịch)"
+msgstr "Month (lunar)"
+
 #. placeholder {0}: info.canChi.month
 #: src/pages/clan/GoodDays.tsx
 msgid "Tháng {0}"
@@ -12737,6 +13916,7 @@ msgstr "members"
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/JoinClan.tsx
 msgid "Thành viên"
 msgstr "Members"
@@ -12784,6 +13964,10 @@ msgstr "Done when dong-ho-viet shows as connected."
 msgid "Thay nội dung đang có bằng mẫu?"
 msgstr "Replace the existing text with the template?"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Thấy thông tin trong gia phả bị sai hoặc thiếu? Sửa ô cần sửa — người quản lý dòng họ sẽ đối chiếu rồi mới cập nhật."
+msgstr "See something wrong or missing in the family tree? Fix the fields that need it — the clan admins will verify before updating."
+
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/People.tsx
 msgid "Thẻ"
@@ -12827,6 +14011,7 @@ msgstr "Cards: Horizontal"
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/HeritageForm.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -12985,6 +14170,10 @@ msgstr "Add milestone"
 msgid "Thêm mới"
 msgstr "Add new"
 
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Thêm một đoạn vào cuối tiểu sử, kèm ghi nguồn. Sửa lại câu chữ trước khi lưu."
+msgstr "Adds a paragraph at the end of the biography, with the source. Edit the wording before saving."
+
 #: src/components/QuickAddSheet.tsx
 msgid "Thêm một hoặc nhiều con"
 msgstr "Add one or more children"
@@ -13105,6 +14294,10 @@ msgstr "Follow events"
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Theo khung chung"
 msgstr "Use the shared frame"
+
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "Theo lời kể của {who}"
+msgstr "As told by {who}"
 
 #: src/pages/Account.tsx
 msgid "theo người"
@@ -13329,6 +14522,10 @@ msgstr "Information for the family book"
 msgid "Thông tin cơ bản"
 msgstr "Basic information"
 
+#: src/pages/clan/Memories.tsx
+msgid "Thông tin đóng góp"
+msgstr "Contribution details"
+
 #: src/pages/clan/BookInfo.tsx
 msgid "Thông tin dòng họ"
 msgstr "Clan details"
@@ -13386,6 +14583,10 @@ msgstr "Try removing some filters."
 msgid "Thử bỏ bớt từ khoá hoặc chọn nhóm khác."
 msgstr "Try removing some keywords or choosing another group."
 
+#: src/pages/clan/Memories.tsx
+msgid "Thử bỏ bớt từ khoá hoặc đặt lại bộ lọc."
+msgstr "Try removing some keywords or resetting the filters."
+
 #: src/pages/Clans.tsx
 msgid "Thử bỏ bớt từ khoá hoặc đổi sang tab Cộng đồng."
 msgstr "Try removing some keywords or switching to the Community tab."
@@ -13420,6 +14621,7 @@ msgstr "Try changing the status or removing some keywords."
 
 #: src/components/BioText.tsx
 #: src/components/CollapsibleCard.tsx
+#: src/components/community/MemoryCard.tsx
 #: src/components/TodayHubCard.tsx
 #: src/components/ui/card.tsx
 #: src/pages/admin/shared.tsx
@@ -13456,6 +14658,7 @@ msgstr "Collapse all"
 #: src/components/CalendarFeedPanel.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Thu hồi"
 msgstr "Revoke"
 
@@ -13471,12 +14674,18 @@ msgstr "Revoke the link?"
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/components/ShareLinksSection.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Thu hồi link"
 msgstr "Revoke link"
 
 #: src/components/CalendarFeedPanel.tsx
 msgid "Thu hồi link lịch?"
 msgstr "Revoke the calendar link?"
+
+#: src/pages/clan/Memories.tsx
+msgid "Thu hồi link này?"
+msgstr "Revoke this link?"
 
 #. placeholder {0}: tk.name
 #: src/components/ApiTokenPanels.tsx
@@ -13623,6 +14832,7 @@ msgstr "The title, description, sections and FAQ currently there will be replace
 #: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -13670,8 +14880,13 @@ msgid "Tìm di sản"
 msgstr "Find heritage"
 
 #: src/pages/clan/Contributions.tsx
+#: src/pages/clan/Memories.tsx
 msgid "Tìm đóng góp"
 msgstr "Find contributions"
+
+#: src/pages/clan/Memories.tsx
+msgid "Tìm đóng góp…"
+msgstr "Search contributions…"
 
 #: src/components/ClanPicker.tsx
 #: src/pages/admin/GiaPha.tsx
@@ -13737,7 +14952,12 @@ msgstr "Find a good day for a major event"
 msgid "Tìm ngày, sự kiện, lễ tết"
 msgstr "Search dates, events, festivals"
 
+#: src/components/community/CommunitySharePanel.tsx
+#: src/components/community/FaceTagger.tsx
+#: src/components/community/QuestionPanel.tsx
+#: src/components/community/QuestionPanel.tsx
 #: src/pages/clan/Branches.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/QrExport.tsx
 msgid "Tìm người"
 msgstr "Find a person"
@@ -14034,6 +15254,15 @@ msgstr "New announcement"
 #: src/lib/queries/customs.ts
 msgid "Tín ngưỡng dân gian"
 msgstr "Folk beliefs"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Tin nhắn đăng kèm (sửa thoải mái)"
+msgstr "Message to post with it (edit freely)"
+
+#: src/components/community/ContributeLinkPanel.tsx
+#: src/components/community/QuestionPanel.tsx
+msgid "Tin nhắn soạn sẵn (sửa thoải mái)"
+msgstr "Ready-made message (edit freely)"
 
 #: src/lib/navModel.tsx
 msgid "Tin từ hệ thống và dòng họ."
@@ -14351,6 +15580,25 @@ msgstr "Relationship lookup for {0}"
 msgid "Tra cứu xưng hô"
 msgstr "Kinship lookup"
 
+#: src/components/community/CommunitySharePanel.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Trả lời"
+msgstr "Answer"
+
+#: src/pages/clan/Memories.tsx
+msgid "Trả lời câu hỏi"
+msgstr "Answers to questions"
+
+#. placeholder {0}: memory.question_text
+#: src/components/community/MemoryCard.tsx
+msgid "Trả lời câu hỏi: “{0}”"
+msgstr "Answer to: “{0}”"
+
+#: src/components/community/CommunitySharePanel.tsx
+msgid "Trả lời câu khác"
+msgstr "Answer another question"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Trần"
 msgstr "Ceiling"
@@ -14392,6 +15640,7 @@ msgstr "Tree diagram pages"
 
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/admin/Feedback.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/CustomsForm.tsx
@@ -14426,6 +15675,10 @@ msgstr "On the family tree, the first person to add is the founding ancestor (ge
 #: src/lib/tipCatalogue.ts
 msgid "Trên cây, bấm dấu + ở góc card — sheet thêm người mở ngay không phải rời cây."
 msgstr "On the tree, tap the + on a card's corner — the add-person sheet opens right away without leaving the tree."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Trên điện thoại: bấm 🎤 trên bàn phím rồi nói, máy tự chuyển thành chữ."
+msgstr "On a phone: tap 🎤 on the keyboard and speak — it turns into text automatically."
 
 #: src/pages/Account.tsx
 msgid "Trên iOS, để nhận thông báo đẩy, cần"
@@ -14788,6 +16041,14 @@ msgstr "A few lines introducing the clan"
 msgid "Vài giây trước"
 msgstr "A few seconds ago"
 
+#: src/components/community/MemoryForm.tsx
+msgid "Vài lời về đoạn ghi âm (không bắt buộc)"
+msgstr "A few words about the recording (optional)"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Vài lời về tấm ảnh (không bắt buộc)"
+msgstr "A few words about the photo (optional)"
+
 #: src/components/QuickAddSheet.tsx
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/Members.tsx
@@ -14832,6 +16093,10 @@ msgstr "Material (optional)"
 msgid "Vd: 10 tháng 3 âm lịch"
 msgstr "E.g. the 10th of the 3rd lunar month"
 
+#: src/components/community/MemoryForm.tsx
+msgid "vd: 15"
+msgstr "e.g. 15"
+
 #: src/pages/CustomsForm.tsx
 msgid "vd: 23 tháng Chạp"
 msgstr "e.g. 23rd of the 12th lunar month"
@@ -14844,6 +16109,10 @@ msgstr "E.g. 24 (up to 150)"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "VD: 6 (từ 3 đến 12)"
 msgstr "E.g. 6 (from 3 to 12)"
+
+#: src/components/community/MemoryForm.tsx
+msgid "vd: 7"
+msgstr "e.g. 7"
 
 #: src/pages/clan/MemoryRooms.tsx
 msgid "VD: Ảnh kỷ niệm dòng họ"
@@ -14888,6 +16157,10 @@ msgstr "e.g. Vĩnh Nghiêm Pagoda"
 #: src/pages/clan/InlawsNew.tsx
 msgid "Vd: Cưới năm 2010, có 2 con."
 msgstr "E.g. Married in 2010, 2 children."
+
+#: src/components/community/ApplyMemoryPanel.tsx
+msgid "vd: đã cập nhật ngày giỗ, đã thêm vào mộ phần"
+msgstr "e.g. updated the death anniversary, added to the grave record"
 
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "vd: đá granit, xi măng"
@@ -14981,6 +16254,10 @@ msgstr "E.g. Nguyễn Văn C"
 msgid "Vd: Ông Lê Văn A, hoặc cháu Lê Thị B"
 msgstr "E.g. Mr. Lê Văn A, or the child Lê Thị B"
 
+#: src/components/community/FaceTagger.tsx
+msgid "vd: ông Tư, bác Hai Lành"
+msgstr "e.g. Mr. Tư, Uncle Hai Lành"
+
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "VD: Phả đồ chi trưởng"
@@ -15006,6 +16283,10 @@ msgstr "e.g. Floor 2, compartment 15"
 msgid "vd: Tháp họ Cao, Hoa viên Bình An"
 msgstr "e.g. Cao clan tower, Bình An memorial garden"
 
+#: src/components/community/FaceTagger.tsx
+msgid "vd: thợ mộc, giáo viên làng"
+msgstr "e.g. carpenter, village teacher"
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "vd: thôn …, xã …"
 msgstr "e.g. … hamlet, … commune"
@@ -15028,6 +16309,28 @@ msgstr "E.g. Donation to build the ancestral hall / Admitted to Bách Khoa Unive
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "vd: xã …, huyện …, tỉnh …"
 msgstr "e.g. … commune, … district, … province"
+
+#: src/components/community/CommunityCard.tsx
+msgid "về"
+msgstr "about"
+
+#. placeholder {0}: byId.get(q.about_person_id)?.full_name ?? ""
+#. placeholder {0}: q.about_person_name
+#: src/components/community/CommunitySharePanel.tsx
+#: src/pages/clan/Memories.tsx
+msgid "về {0}"
+msgstr "about {0}"
+
+#. placeholder {0}: l.person_name
+#. placeholder {0}: memory.person_name
+#: src/components/community/MemoryCard.tsx
+#: src/pages/clan/Memories.tsx
+msgid "Về {0}"
+msgstr "About {0}"
+
+#: src/components/community/ContributeLinkPanel.tsx
+msgid "Về {personName}"
+msgstr "About {personName}"
 
 #: src/pages/ForgotPassword.tsx
 msgid "Về đăng nhập"
@@ -15080,6 +16383,11 @@ msgstr "For example: Claude on my laptop"
 #: src/pages/clan/AddChild.tsx
 msgid "Ví dụ: người chồng có 2 đời vợ — muốn nhập con của vợ hai thì chọn đúng vợ hai ở trên. Nếu vợ/chồng đó chưa có trong cây, hãy thêm bằng \"Thêm vợ/chồng\" trước."
 msgstr "Example: a husband has had 2 wives — to enter the second wife's child, pick the second wife above. If that spouse isn't in the tree yet, add her first with \"Add spouse\"."
+
+#: src/components/community/CommunitySharePanel.tsx
+#: src/components/community/MemoryForm.tsx
+msgid "Ví dụ: Nguyễn Minh"
+msgstr "e.g. Nguyễn Minh"
 
 #: src/pages/clan/GoodDays.tsx
 msgid "Vì sao đẹp?"
@@ -15166,6 +16474,10 @@ msgstr "Write a post"
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Viết bình luận…"
 msgstr "Write a comment…"
+
+#: src/components/community/MemoryForm.tsx
+msgid "Viết câu trả lời bên dưới. Trên điện thoại: bấm biểu tượng 🎤 trên bàn phím rồi nói, máy tự chuyển thành chữ."
+msgstr "Write the answer below. On a phone: tap 🎤 on the keyboard and speak — it turns into text automatically."
 
 #: src/lib/adminScreens.tsx
 #: src/pages/admin/ThongBaoPage.tsx
@@ -15288,6 +16600,10 @@ msgstr "Region (applies to all)"
 msgid "Vuông (đăng tường)"
 msgstr "Square (for posting on a wall)"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Vuông (Facebook, Zalo)"
+msgstr "Square (Facebook, Zalo)"
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/lib/tree/canvasModel.ts
 #: src/pages/clan/TreeCanvas.tsx
@@ -15328,6 +16644,8 @@ msgstr "Communes, wards, special zones"
 msgid "xã/phường"
 msgstr "communes / wards"
 
+#: src/components/community/FaceTagger.tsx
+#: src/components/community/FaceTagger.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
 msgid "Xác nhận"
@@ -15360,6 +16678,16 @@ msgstr "Moss green"
 msgid "Xem"
 msgstr "View"
 
+#. placeholder {0}: closedQs.length
+#: src/pages/clan/Memories.tsx
+msgid "Xem {0} câu hỏi đã đóng"
+msgstr "Show {0} closed questions"
+
+#. placeholder {0}: old.length
+#: src/pages/clan/Memories.tsx
+msgid "Xem {0} link đã hết hạn / thu hồi"
+msgstr "Show {0} expired / revoked links"
+
 #. placeholder {0}: initial.place_count
 #: src/pages/clan/Cemeteries.tsx
 msgid "Xem {0} mộ phần ở cơ sở này →"
@@ -15374,6 +16702,7 @@ msgstr "View & suggest"
 msgid "Xem ảnh"
 msgstr "View photo"
 
+#: src/components/community/MemoryCard.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/RestingPlacePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
@@ -15382,6 +16711,11 @@ msgstr "View photo"
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Xem ảnh lớn"
 msgstr "View large photo"
+
+#. placeholder {0}: hostOf(memory.media_url!)
+#: src/components/community/MemoryCard.tsx
+msgid "Xem ảnh ở {0}"
+msgstr "View the photo on {0}"
 
 #: src/components/BoardPostForm.tsx
 msgid "Xem bình luận →"
@@ -15508,11 +16842,16 @@ msgstr "View account"
 msgid "Xem tất cả"
 msgstr "View all"
 
+#: src/components/community/CommunityCard.tsx
+msgid "Xem tất cả đóng góp →"
+msgstr "See all contributions →"
+
 #: src/components/CriticalBanner.tsx
 msgid "Xem tất cả thông báo"
 msgstr "View all notifications"
 
 #: src/components/BioText.tsx
+#: src/components/community/MemoryCard.tsx
 #: src/pages/admin/shared.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/GoodDays.tsx
@@ -15608,6 +16947,8 @@ msgstr "View tasks"
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Memories.tsx
+#: src/pages/clan/Memories.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
@@ -15741,6 +17082,10 @@ msgstr "Delete section"
 msgid "Xoá dòng"
 msgstr "Delete row"
 
+#: src/pages/clan/Memories.tsx
+msgid "Xoá đóng góp này?"
+msgstr "Delete this contribution?"
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Xoá đường nối"
@@ -15771,6 +17116,11 @@ msgstr "Delete this 3D object?"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Xoá khỏi canvas"
 msgstr "Remove from the canvas"
+
+#: src/components/community/FaceTagger.tsx
+#: src/components/community/FaceTagger.tsx
+msgid "Xoá khung"
+msgstr "Delete box"
 
 #: src/components/ShareLinksSection.tsx
 #: src/components/ShareLinksSection.tsx
@@ -15964,6 +17314,10 @@ msgstr "Export QR cards"
 #: src/pages/clan/Tree.tsx
 msgid "Xuất toàn bộ thông tin dòng họ thành sổ PDF"
 msgstr "Export all of the clan's information as a PDF book"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Xưng hô"
+msgstr "Form of address"
 
 #: src/components/QuickAddSheet.tsx
 #: src/components/RelationshipGroup.tsx
