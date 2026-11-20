@@ -2604,6 +2604,7 @@ export type Database = {
           clan_id: string
           created_at: string
           duration_sec: number | null
+          external_url: string | null
           guest_key: string | null
           id: string
           kind: string
@@ -2631,6 +2632,7 @@ export type Database = {
           clan_id: string
           created_at?: string
           duration_sec?: number | null
+          external_url?: string | null
           guest_key?: string | null
           id?: string
           kind: string
@@ -2658,6 +2660,7 @@ export type Database = {
           clan_id?: string
           created_at?: string
           duration_sec?: number | null
+          external_url?: string | null
           guest_key?: string | null
           id?: string
           kind?: string

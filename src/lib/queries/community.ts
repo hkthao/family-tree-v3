@@ -37,13 +37,15 @@ export interface PersonMemory {
   visibility: MemoryVisibility;
   status: MemoryStatus;
   created_at: string;
-  /** URL ký (ảnh / ghi âm), có khi media_path có. */
+  /** URL ký (tệp trong bucket) hoặc link ngoài https (external_url). */
   media_url: string | null;
+  /** true = media là link ngoài (Google Photos, Drive, YouTube…), không phải tệp của server. */
+  is_external: boolean;
   person_name?: string | null;
 }
 
 const MEMORY_SELECT =
-  "id, clan_id, person_id, kind, body, media_path, media_mime, duration_sec, year_approx, place, source, author_user_id, author_name, author_relation, visibility, status, created_at, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name)";
+  "id, clan_id, person_id, kind, body, media_path, media_mime, external_url, duration_sec, year_approx, place, source, author_user_id, author_name, author_relation, visibility, status, created_at, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name)";
 
 interface MemoryRow {
   id: string;
@@ -53,6 +55,7 @@ interface MemoryRow {
   body: string | null;
   media_path: string | null;
   media_mime: string | null;
+  external_url: string | null;
   duration_sec: number | null;
   year_approx: number | null;
   place: string | null;
@@ -90,7 +93,8 @@ async function hydrate(rows: MemoryRow[]): Promise<PersonMemory[]> {
     visibility: r.visibility as MemoryVisibility,
     status: r.status as MemoryStatus,
     created_at: r.created_at,
-    media_url: r.media_path ? (urls.get(r.media_path) ?? null) : null,
+    media_url: r.media_path ? (urls.get(r.media_path) ?? null) : r.external_url,
+    is_external: !r.media_path && !!r.external_url,
     person_name: r.person?.full_name ?? null,
   }));
 }
@@ -206,6 +210,7 @@ export interface CreateMemoryInput {
   body?: string | null;
   media_path?: string | null;
   media_mime?: string | null;
+  external_url?: string | null;
   duration_sec?: number | null;
   year_approx?: number | null;
   place?: string | null;
@@ -229,6 +234,7 @@ export async function createMemory(
       body: input.body?.trim() || null,
       media_path: input.media_path ?? null,
       media_mime: input.media_mime ?? null,
+      external_url: input.external_url?.trim() || null,
       duration_sec: input.duration_sec ?? null,
       year_approx: input.year_approx ?? null,
       place: input.place?.trim() || null,
@@ -457,6 +463,8 @@ export interface GuestMemoryInput {
   allow_ai_reuse: boolean;
   file?: Blob | null;
   file_name?: string;
+  /** Link https thay cho tệp (ảnh / ghi âm) — không tốn ổ cứng server. */
+  external_url?: string;
   /** Ô bẫy bot — luôn rỗng với người thật. */
   website?: string;
   elapsed_ms: number;
@@ -479,7 +487,8 @@ export async function submitGuestMemory(
   fd.set("guest_key", guestKey());
   fd.set("website", input.website ?? "");
   fd.set("elapsed_ms", String(Math.round(input.elapsed_ms)));
-  if (input.file) fd.set("file", input.file, input.file_name ?? "file");
+  if (input.external_url) fd.set("external_url", input.external_url);
+  else if (input.file) fd.set("file", input.file, input.file_name ?? "file");
 
   const base = import.meta.env.VITE_SUPABASE_URL;
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;

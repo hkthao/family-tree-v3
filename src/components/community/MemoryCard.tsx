@@ -2,7 +2,15 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { Chip } from "@/components/Chip";
-import { IconCalendar, IconCamera, IconClock, IconMapPin, IconUser } from "@/components/icons";
+import {
+  IconCalendar,
+  IconCamera,
+  IconClock,
+  IconLink,
+  IconMapPin,
+  IconMicrophone,
+  IconUser,
+} from "@/components/icons";
 
 import { t } from "@lingui/core/macro";
 
@@ -12,6 +20,8 @@ export interface MemoryCardData {
   kind: string;
   body: string | null;
   media_url: string | null;
+  /** media_url là link ngoài (Google Photos, Drive, YouTube…), không phải tệp của server. */
+  is_external?: boolean;
   year_approx: number | null;
   place: string | null;
   source?: string | null;
@@ -38,9 +48,18 @@ export function MemoryCard({
   showPerson?: boolean;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
+  // Link ngoài: chỉ nhúng thẳng khi là tệp ảnh / âm thanh trực tiếp; còn lại (Google Photos, Drive,
+  // YouTube…) hiện nút mở tab mới — không nhúng iframe trang lạ.
+  const ext =
+    memory.is_external && memory.media_url
+      ? externalKind(memory.media_url)
+      : null;
+  const linkOnly = !!memory.is_external && !!memory.media_url && ext === null;
   const [zoom, setZoom] = useState(false);
   const date = new Date(memory.created_at).toLocaleDateString("vi-VN");
-  const who = [memory.author_label, memory.author_relation].filter(Boolean).join(" · ");
+  const who = [memory.author_label, memory.author_relation]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <article className="space-y-2 rounded-lg border bg-card p-3">
       {(badge || (showPerson && memory.person_name)) && (
@@ -54,7 +73,28 @@ export function MemoryCard({
         </div>
       )}
 
-      {memory.kind === "photo" &&
+      {linkOnly && (
+        <a
+          href={memory.media_url!}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          className="flex min-h-11 items-center gap-2 rounded-md border bg-muted/40 px-3 text-sm hover:border-primary"
+        >
+          {memory.kind === "audio" ? (
+            <IconMicrophone className="h-4 w-4 shrink-0 text-primary" />
+          ) : (
+            <IconCamera className="h-4 w-4 shrink-0 text-primary" />
+          )}
+          <span className="min-w-0 flex-1 truncate">
+            {memory.kind === "audio"
+              ? t`Nghe / xem ở ${hostOf(memory.media_url!)}`
+              : t`Xem ảnh ở ${hostOf(memory.media_url!)}`}
+          </span>
+          <IconLink className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </a>
+      )}
+      {!linkOnly &&
+        memory.kind === "photo" &&
         memory.media_url &&
         (imgFailed ? (
           <div className="flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-md border bg-muted p-2 text-center text-xs text-muted-foreground sm:h-32 sm:w-32">
@@ -78,8 +118,13 @@ export function MemoryCard({
             />
           </button>
         ))}
-      {memory.kind === "audio" && memory.media_url && (
-        <audio controls preload="none" src={memory.media_url} className="w-full" />
+      {!linkOnly && memory.kind === "audio" && memory.media_url && (
+        <audio
+          controls
+          preload="none"
+          src={memory.media_url}
+          className="w-full"
+        />
       )}
       {memory.body && <ClampedText text={memory.body} />}
 
@@ -93,7 +138,10 @@ export function MemoryCard({
         ) : (
           <span />
         )}
-        <span className="flex min-w-0 flex-wrap justify-end gap-1.5" title={memory.source ? t`Nguồn: ${memory.source}` : undefined}>
+        <span
+          className="flex min-w-0 flex-wrap justify-end gap-1.5"
+          title={memory.source ? t`Nguồn: ${memory.source}` : undefined}
+        >
           <Chip tone="neutral" icon={<IconUser />}>
             {who}
           </Chip>
@@ -117,7 +165,11 @@ export function MemoryCard({
         />
       )}
 
-      {actions && <footer className="flex flex-wrap justify-end gap-2 border-t pt-3">{actions}</footer>}
+      {actions && (
+        <footer className="flex flex-wrap justify-end gap-2 border-t pt-3">
+          {actions}
+        </footer>
+      )}
     </article>
   );
 }
@@ -159,4 +211,26 @@ function ClampedText({ text }: { text: string }) {
       )}
     </div>
   );
+}
+
+/** Link ngoài trỏ thẳng tới tệp ảnh / âm thanh (nhúng được) hay chỉ là trang (mở tab mới). */
+function externalKind(url: string): "image" | "audio" | null {
+  const path = (() => {
+    try {
+      return new URL(url).pathname.toLowerCase();
+    } catch {
+      return "";
+    }
+  })();
+  if (/\.(jpe?g|png|webp|gif)$/.test(path)) return "image";
+  if (/\.(mp3|m4a|ogg|webm|wav|aac)$/.test(path)) return "audio";
+  return null;
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }

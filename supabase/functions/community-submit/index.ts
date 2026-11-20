@@ -6,7 +6,8 @@
  *   token, kind (story|photo|audio), person_id?, body?, author_name, author_relation?,
  *   guest_key (chuỗi ngẫu nhiên trình duyệt tự sinh, nhớ trong localStorage),
  *   year_approx?, place?, source?, allow_ai_reuse (1|0), website (bẫy bot — phải trống),
- *   elapsed_ms (thời gian từ lúc mở form), file? (ảnh / ghi âm)
+ *   elapsed_ms (thời gian từ lúc mở form), file? (ảnh / ghi âm) HOẶC external_url? (link https —
+ *   Google Photos, Drive, YouTube… — không tốn ổ cứng server, ưu tiên khi server hạn chế dung lượng)
  *
  * Chống spam (plan §7):
  *   - bẫy `website` có chữ → trả ok giả, không ghi gì;
@@ -28,11 +29,13 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const IP_PER_HOUR = 20;
 const LINK_PER_HOUR = 40;
-const MEDIA_PER_LINK = 40;
+const MEDIA_PER_LINK = 15;
 const MIN_FILL_MS = 3000;
 const MAX_GUEST_BODY = 5000;
-const MAX_PHOTO_BYTES = 6 * 1024 * 1024;
-const MAX_AUDIO_BYTES = 12 * 1024 * 1024;
+// Ổ cứng server có hạn: client đã nén ảnh ≤ 200 KB / 1280px và ghi âm ≤ 2 phút (~360 KB);
+// server chặn cứng ở mức có dư để không phụ thuộc client.
+const MAX_PHOTO_BYTES = 1 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 1.5 * 1024 * 1024;
 const TRUSTED_AFTER_APPROVED = 3;
 
 const PHOTO_EXT: Record<string, string> = {
@@ -111,13 +114,26 @@ Deno.serve(async (req) => {
   const yearRaw = str(form, "year_approx", 6);
   const allowAi = form.get("allow_ai_reuse") !== "0";
   const file = form.get("file");
+  const externalRaw = str(form, "external_url", 1000);
+  let externalUrl: string | null = null;
+  if (externalRaw) {
+    try {
+      const u = new URL(externalRaw);
+      if (u.protocol !== "https:") throw new Error("not https");
+      externalUrl = u.toString();
+    } catch {
+      return err("Link không hợp lệ (phải bắt đầu bằng https://)", 400);
+    }
+  }
 
   if (!token) return err("Thiếu link", 400);
   if (!kind || !["story", "photo", "audio"].includes(kind)) return err("Loại ký ức không hợp lệ", 400);
   if (!authorName) return err("Cho biết tên của bạn nhé", 400);
   if (body && body.length > MAX_GUEST_BODY) return err(`Nội dung tối đa ${MAX_GUEST_BODY} chữ`, 400);
   if (kind === "story" && !body) return err("Bạn chưa kể gì", 400);
-  if ((kind === "photo" || kind === "audio") && !(file instanceof File)) return err("Thiếu tệp", 400);
+  if ((kind === "photo" || kind === "audio") && !(file instanceof File) && !externalUrl) {
+    return err("Chọn tệp hoặc dán link", 400);
+  }
   for (const t of [body, authorName, authorRelation, place, source]) {
     if (t && LINK_RE.test(t)) return err("Vui lòng không dán đường link vào nội dung", 400);
   }
@@ -173,7 +189,7 @@ Deno.serve(async (req) => {
   // ─── Tệp ────────────────────────────────────────────────────────
   let mediaPath: string | null = null;
   let mediaMime: string | null = null;
-  if (file instanceof File && (kind === "photo" || kind === "audio")) {
+  if (!externalUrl && file instanceof File && (kind === "photo" || kind === "audio")) {
     const mime = file.type.split(";")[0].toLowerCase();
     const ext = kind === "photo" ? PHOTO_EXT[mime] : AUDIO_EXT[mime];
     if (!ext) return err(kind === "photo" ? "Chỉ nhận ảnh JPG, PNG, WEBP" : "Định dạng ghi âm không hỗ trợ", 400);
@@ -222,6 +238,7 @@ Deno.serve(async (req) => {
       body,
       media_path: mediaPath,
       media_mime: mediaMime,
+      external_url: kind === "photo" || kind === "audio" ? externalUrl : null,
       year_approx: yearApprox,
       place,
       source,
