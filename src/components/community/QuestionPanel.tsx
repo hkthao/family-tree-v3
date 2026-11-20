@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
-import { IconCopy, IconHelp, IconLink, IconShare2, IconUser, IconUsers } from "@/components/icons";
+import { InviteCardDialog } from "@/components/community/InviteCardDialog";
+import { IconCamera, IconCopy, IconHelp, IconLink, IconShare2, IconUser, IconUsers } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
@@ -38,12 +39,14 @@ export function QuestionPanel({
   open,
   onClose,
   clanId,
+  clanName,
   existing,
   defaultAboutId,
 }: {
   open: boolean;
   onClose: () => void;
   clanId: string;
+  clanName: string;
   existing?: FamilyQuestion | null;
   defaultAboutId?: string | null;
 }) {
@@ -55,7 +58,8 @@ export function QuestionPanel({
   const [question, setQuestion] = useState(weekly);
   const [askId, setAskId] = useState("");
   const [aboutId, setAboutId] = useState(defaultAboutId ?? "");
-  const [result, setResult] = useState<{ url: string; message: string } | null>(null);
+  const [result, setResult] = useState<{ url: string; message: string; question: string; askName: string | null } | null>(null);
+  const [cardOpen, setCardOpen] = useState(false);
 
   const { data: tree } = useQuery({
     queryKey: queryKeys.treeData(clanId, userId, "persons"),
@@ -89,7 +93,7 @@ export function QuestionPanel({
       const askName = q ? q.ask_person_name : nameOf(askId);
       const link = await createContributeLink({ clan_id: clanId, recipient_label: askName, root_person_id: null });
       const url = questionLinkUrl(link.token, qid);
-      return { url, message: draftQuestionMessage({ askName, question: text, url }) };
+      return { url, message: draftQuestionMessage({ askName, question: text, url }), question: text, askName };
     },
     onSuccess: (r) => {
       setResult(r);
@@ -225,6 +229,10 @@ export function QuestionPanel({
               onChange={(e) => setResult({ ...result, message: e.target.value })}
             />
           </div>
+          <Button type="button" variant="outline" className="w-full" onClick={() => setCardOpen(true)}>
+            <IconCamera className="mr-1.5 h-4 w-4" />
+            {t`Tạo ảnh để đăng Facebook / Zalo`}
+          </Button>
           <FormActions>
             <Button type="button" variant="outline" onClick={() => void copy(result.url)}>
               <IconCopy className="mr-1.5 h-4 w-4" />
@@ -236,6 +244,17 @@ export function QuestionPanel({
             </Button>
           </FormActions>
         </div>
+      )}
+      {result && cardOpen && (
+        <InviteCardDialog
+          open
+          onClose={() => setCardOpen(false)}
+          clanId={clanId}
+          clanName={clanName}
+          url={result.url}
+          variants={["hoi"]}
+          context={{ question: result.question, askName: result.askName }}
+        />
       )}
     </SidePanel>
   );
