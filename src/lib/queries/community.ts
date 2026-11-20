@@ -12,6 +12,17 @@ import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 
 type Client = SupabaseClient<Database>;
 
+/** Một lần "đưa vào gia phả": vào đâu, ai làm, khi nào (mark_memory_applied / duyệt đề xuất). */
+export interface AppliedTarget {
+  type: "bio" | "photo" | "manual" | "contribution";
+  person_id?: string | null;
+  contribution_id?: string;
+  contribution_type?: string;
+  note?: string | null;
+  by?: string | null;
+  at?: string;
+}
+
 export type MemoryKind = "story" | "photo" | "audio" | "answer";
 export type MemoryStatus = "pending" | "visible" | "hidden";
 export type MemoryVisibility = "clan" | "share";
@@ -46,11 +57,13 @@ export interface PersonMemory {
   /** Là câu trả lời cho câu hỏi (P1) — kèm nội dung câu hỏi để hiện phía trên. */
   question_id: string | null;
   question_text: string | null;
+  /** Đã đưa vào gia phả ở đâu (rỗng = chưa). */
+  applied: AppliedTarget[];
   person_name?: string | null;
 }
 
 const MEMORY_SELECT =
-  "id, clan_id, person_id, kind, body, media_path, media_mime, external_url, identify, question_id, duration_sec, year_approx, place, source, author_user_id, author_name, author_relation, visibility, status, created_at, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name), question:family_questions!person_memories_question_fk(question)";
+  "id, clan_id, person_id, kind, body, media_path, media_mime, external_url, identify, question_id, applied_to, duration_sec, year_approx, place, source, author_user_id, author_name, author_relation, visibility, status, created_at, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name), question:family_questions!person_memories_question_fk(question)";
 
 interface MemoryRow {
   id: string;
@@ -64,6 +77,7 @@ interface MemoryRow {
   identify: boolean;
   question_id: string | null;
   question: { question: string } | null;
+  applied_to: AppliedTarget[] | null;
   duration_sec: number | null;
   year_approx: number | null;
   place: string | null;
@@ -106,6 +120,7 @@ async function hydrate(rows: MemoryRow[]): Promise<PersonMemory[]> {
     identify: !!r.identify,
     question_id: r.question_id,
     question_text: r.question?.question ?? null,
+    applied: Array.isArray(r.applied_to) ? r.applied_to : [],
     person_name: r.person?.full_name ?? null,
   }));
 }
@@ -763,4 +778,46 @@ export async function submitGuestFace(
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error ?? `community-submit (${res.status})`);
+}
+
+// ─── Đưa vào gia phả ────────────────────────────────────────────
+
+export async function markMemoryApplied(
+  memoryId: string,
+  target: Omit<AppliedTarget, "by" | "at">,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client.rpc("mark_memory_applied", {
+    p_memory_id: memoryId,
+    p_target: target as never,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Nối một đoạn vào tiểu sử người (editor+, audit log ghi lại) rồi đánh dấu đóng góp đã dùng. */
+export async function applyMemoryToBio(
+  memoryId: string,
+  personId: string,
+  text: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { data: p, error: e1 } = await client.from("persons").select("bio").eq("id", personId).single();
+  if (e1) throw new Error(e1.message);
+  const bio = [p.bio?.trim(), text.trim()].filter(Boolean).join("\n\n");
+  const { error: e2 } = await client.from("persons").update({ bio }).eq("id", personId);
+  if (e2) throw new Error(e2.message);
+  await markMemoryApplied(memoryId, { type: "bio", person_id: personId }, client);
+}
+
+/** Dùng ảnh của đóng góp (tệp trong bucket hoặc link https) làm ảnh đại diện. */
+export async function applyMemoryAsPhoto(
+  memory: Pick<PersonMemory, "id" | "media_path" | "media_url" | "is_external">,
+  personId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const path = memory.media_path ?? (memory.is_external ? memory.media_url : null);
+  if (!path) throw new Error("Đóng góp này không có ảnh");
+  const { error } = await client.from("persons").update({ photo_path: path }).eq("id", personId);
+  if (error) throw new Error(error.message);
+  await markMemoryApplied(memory.id, { type: "photo", person_id: personId }, client);
 }

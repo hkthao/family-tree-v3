@@ -115,11 +115,11 @@ describe("isBlockedIp (chống SSRF)", () => {
 });
 
 describe("token admin hệ thống", () => {
-  it("ma trận quyền: admin gọi được tool đọc + ghi + quản trị, KHÔNG gọi propose; gói khác không gọi được tool admin", () => {
+  it("ma trận quyền: admin gọi được tool đọc + ghi + quản trị + đề xuất (tổng hợp đóng góp luôn đi qua propose_*); gói khác không gọi được tool admin", () => {
     expect(scopeAllows("admin", "read")).toBe(true);
     expect(scopeAllows("admin", "write")).toBe(true);
     expect(scopeAllows("admin", "admin")).toBe(true);
-    expect(scopeAllows("admin", "propose")).toBe(false);
+    expect(scopeAllows("admin", "propose")).toBe(true);
     for (const s of ["read", "propose", "write"] as const) expect(scopeAllows(s, "admin")).toBe(false);
   });
   it("mọi tool quản trị đều needs=admin, tên admin_*, schema đóng", () => {

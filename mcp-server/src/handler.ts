@@ -297,6 +297,32 @@ async function personInClan(a: Auth, id: unknown): Promise<boolean> {
   return !!data;
 }
 
+/**
+ * `source_memory_ids` của đề xuất: chỉ nhận id đóng góp CÙNG dòng họ, đã duyệt (RLS: chủ token phải thấy được).
+ * Duyệt đề xuất → trigger contributions_mark_source_memories đánh dấu các đóng góp này đã đưa vào gia phả.
+ */
+async function sourceMemories(
+  a: Auth,
+  raw: unknown,
+): Promise<{ value: { source_memory_ids?: string[] } } | { error: string }> {
+  if (raw === undefined || raw === null) return { value: {} };
+  if (!Array.isArray(raw) || raw.length > 20 || !raw.every((x) => typeof x === "string" && UUID_RE.test(x))) {
+    return { error: "source_memory_ids phải là mảng tối đa 20 id (UUID) lấy từ list_memories." };
+  }
+  const ids = [...new Set(raw as string[])];
+  if (!ids.length) return { value: {} };
+  const { data } = await a.db
+    .from("person_memories")
+    .select("id")
+    .eq("clan_id", a.clanId)
+    .eq("status", "visible")
+    .in("id", ids);
+  if ((data ?? []).length !== ids.length) {
+    return { error: "Có id trong source_memory_ids không phải đóng góp đã duyệt của dòng họ này." };
+  }
+  return { value: { source_memory_ids: ids } };
+}
+
 async function submitProposal(
   a: Auth,
   type: "add_person" | "edit_person" | "add_note",
@@ -407,7 +433,6 @@ async function callAdminTool(a: Auth, name: string, args: Record<string, unknown
     } else {
       const spec = MCP_TOOLS.find((t) => t.name === name);
       if (!spec) res = { text: `Không có công cụ "${name}".`, isError: true };
-      else if (spec.needs === "propose") res = { text: "Token admin ghi thẳng: dùng tool ghi (create_person, update_person…), không dùng propose_*.", isError: true };
       else if (spec.global) res = { text: await ADMIN_OPS.admin_list_clans({ db: a.db, userId: a.userId, tokenId: a.tokenId, mintJwt: a.mintJwt, supabaseUrl: SUPABASE_URL, anonKey: ANON_KEY }, { q: args.q, sort: "members", limit: 30 }) };
       else {
         const { clan, clan_id, ...rest } = args;
@@ -415,8 +440,9 @@ async function callAdminTool(a: Auth, name: string, args: Record<string, unknown
         if ("error" in r) res = { text: r.error, isError: true };
         else {
           clanId = r.id;
-          // Các tool theo dòng họ chạy như gói "write" trên dòng họ vừa chọn (đọc + ghi thẳng).
-          res = await callTool({ ...a, scope: "write", clanId: r.id }, name, rest);
+          // Các tool theo dòng họ chạy như gói "write" trên dòng họ vừa chọn (đọc + ghi thẳng); riêng propose_*
+          // chạy như gói "propose" — vào hàng chờ đề xuất để admin duyệt trong app.
+          res = await callTool({ ...a, scope: spec.needs === "propose" ? "propose" : "write", clanId: r.id }, name, rest);
         }
       }
     }
@@ -489,19 +515,25 @@ async function callTool(a: Auth, name: string, args: Record<string, unknown>): P
         if (rel && !(await personInClan(a, rel.of_person_id))) {
           return { text: "relation_of_person_id không thuộc dòng họ này.", isError: true };
         }
-        return { text: await submitProposal(a, "add_person", null, v.value, args.reason) };
+        const src = await sourceMemories(a, args.source_memory_ids);
+        if ("error" in src) return { text: src.error, isError: true };
+        return { text: await submitProposal(a, "add_person", null, { ...v.value, ...src.value }, args.reason) };
       }
       case "propose_edit_person": {
         if (!(await personInClan(a, args.person_id))) return { text: "person_id không thuộc dòng họ này.", isError: true };
         const v = validateChanges(args.changes);
         if (!v.ok) return { text: v.error, isError: true };
-        return { text: await submitProposal(a, "edit_person", args.person_id as string, { changes: v.value }, args.reason) };
+        const src = await sourceMemories(a, args.source_memory_ids);
+        if ("error" in src) return { text: src.error, isError: true };
+        return { text: await submitProposal(a, "edit_person", args.person_id as string, { changes: v.value, ...src.value }, args.reason) };
       }
       case "propose_add_note": {
         if (!(await personInClan(a, args.person_id))) return { text: "person_id không thuộc dòng họ này.", isError: true };
         const v = validateNote(args.note);
         if (!v.ok) return { text: v.error, isError: true };
-        return { text: await submitProposal(a, "add_note", args.person_id as string, { note_addition: v.value }, args.reason) };
+        const src = await sourceMemories(a, args.source_memory_ids);
+        if ("error" in src) return { text: src.error, isError: true };
+        return { text: await submitProposal(a, "add_note", args.person_id as string, { note_addition: v.value, ...src.value }, args.reason) };
       }
       // search_person, get_kinship, upcoming_anniversaries, search_book, clan_stats:
       // dùng lại đúng bộ tool của trợ lý trong app (cùng logic xưng hô, âm lịch).

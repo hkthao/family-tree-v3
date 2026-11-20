@@ -85,6 +85,12 @@ trả **link tải có hạn 30 phút** (signed URL). Không tạo link chia s�
 - **Số trang mục lục:** dàn trang cả cuốn MỘT lần rồi dàn lại riêng trang mục lục với số trang thật (trước đây dựng cả
   cuốn hai lần chỉ để lấy số trang). Có chốt an toàn: không đúng bố cục dự kiến thì quay về dựng hai lượt.
 
+### Tổng hợp đóng góp cộng đồng vào gia phả (2026-11-20)
+
+- `list_memories` (đọc): đóng góp đã duyệt mà người kể cho phép dùng lại (câu chuyện, ảnh, trả lời câu hỏi) — kèm người kể, quan hệ, năm, nơi chốn, nguồn, đã/chưa đưa vào gia phả.
+- `propose_add_note` / `propose_edit_person` / `propose_add_person` nhận thêm `source_memory_ids`. **AI luôn chỉ đề xuất** (kể cả token admin — gói admin nay gọi được `propose_*`); admin duyệt trong app thì trigger `contributions_mark_source_memories` tự đánh dấu các đóng góp nguồn "đã đưa vào gia phả".
+- Trong app, admin cũng tự "Đưa vào gia phả" (tiểu sử / ảnh đại diện / đánh dấu) ở trang Đóng góp nội dung.
+
 ## Token ADMIN HỆ THỐNG (gói `admin`)
 
 Tạo ở *Quản trị → Kết nối AI* (chọn quyền "Admin hệ thống"), chỉ admin hệ thống tạo được và chỉ cho chính mình. Không gắn
