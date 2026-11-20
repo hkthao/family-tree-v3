@@ -27,6 +27,7 @@ import {
   type EditPersonChanges,
 } from "@/lib/queries/contributions";
 import {
+  PHOTO_IDENTIFY_ENABLED,
   createMemory,
   readGuestProfile,
   saveGuestProfile,
@@ -463,7 +464,7 @@ export function MemoryForm(props: Props) {
 
       {/* Ảnh tập thể chưa rõ ai: nhờ cả nhà khoanh mặt, ghi tên (P2). Chỉ thành viên, chỉ ảnh tải lên
           (link Google Photos / Drive không vẽ khung lên được). */}
-      {kind === "photo" && mediaSource === "file" && !isGuest && (
+      {PHOTO_IDENTIFY_ENABLED && kind === "photo" && mediaSource === "file" && !isGuest && (
         <label className="flex cursor-pointer items-start gap-2 text-sm">
           <input
             type="checkbox"
