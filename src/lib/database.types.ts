@@ -2655,6 +2655,7 @@ export type Database = {
       person_memories: {
         Row: {
           allow_ai_reuse: boolean
+          applied_to: Json
           author_name: string | null
           author_relation: string | null
           author_user_id: string | null
@@ -2685,6 +2686,7 @@ export type Database = {
         }
         Insert: {
           allow_ai_reuse?: boolean
+          applied_to?: Json
           author_name?: string | null
           author_relation?: string | null
           author_user_id?: string | null
@@ -2715,6 +2717,7 @@ export type Database = {
         }
         Update: {
           allow_ai_reuse?: boolean
+          applied_to?: Json
           author_name?: string | null
           author_relation?: string | null
           author_user_id?: string | null
@@ -3902,6 +3905,10 @@ export type Database = {
       }
     }
     Functions: {
+      mark_memory_applied: {
+        Args: { p_memory_id: string; p_target: Json }
+        Returns: undefined
+      }
       clan_pending_faces: {
         Args: { p_clan_id: string }
         Returns: number

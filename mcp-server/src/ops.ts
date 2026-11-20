@@ -576,7 +576,52 @@ export async function getTree(c: Ctx, a: Args): Promise<string> {
 }
 
 /** Tên tool → hàm. Handler tra bảng này trước khi rơi về bộ tool tra cứu cũ. */
+
+/**
+ * Đóng góp cộng đồng (đã duyệt, người kể cho phép dùng lại) — nguồn cho AI soạn tiểu sử / sửa dữ kiện.
+ * AI chỉ ĐỀ XUẤT (propose_* + source_memory_ids); admin duyệt thì đóng góp nguồn tự đánh dấu đã dùng.
+ */
+async function listMemories(c: Ctx, a: Args): Promise<string> {
+  const limit = Math.min(Math.max(Number(a.limit) || 20, 1), MAX_LIST);
+  let q = c.db
+    .from("person_memories")
+    .select(
+      "id, person_id, kind, body, external_url, year_approx, place, source, author_name, author_relation, applied_to, created_at, author:profiles!person_memories_author_user_id_fkey(display_name), person:persons(full_name), question:family_questions!person_memories_question_fk(question)",
+    )
+    .eq("clan_id", c.clanId)
+    .eq("status", "visible")
+    .eq("allow_ai_reuse", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (a.person_id !== undefined) q = q.eq("person_id", uuid(a.person_id, "person_id"));
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  // deno-lint-ignore no-explicit-any
+  let rows = (data ?? []) as any[];
+  if (a.not_applied === true) rows = rows.filter((r) => !Array.isArray(r.applied_to) || r.applied_to.length === 0);
+  if (!rows.length) return "Chưa có đóng góp nào phù hợp (đã duyệt, cho phép dùng lại).";
+  const kind = (k: string) => (k === "photo" ? "ảnh" : k === "audio" ? "ghi âm" : "câu chuyện");
+  return `${rows.length} đóng góp:\n${rows
+    .map((r) => {
+      const who = [r.author?.display_name ?? r.author_name ?? "Người thân", r.author_relation].filter(Boolean).join(", ");
+      const meta = [
+        r.year_approx ? `khoảng ${r.year_approx}` : null,
+        r.place,
+        r.source ? `nguồn: ${r.source}` : null,
+        Array.isArray(r.applied_to) && r.applied_to.length ? "ĐÃ đưa vào gia phả" : "chưa đưa vào gia phả",
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const head = `- [${r.id}] ${kind(r.kind)} về ${r.person?.full_name ?? "(chuyện chung của họ)"}${r.person_id ? ` (person_id ${r.person_id})` : ""} — kể bởi ${who}; ${meta}`;
+      const q = r.question?.question ? `\n  Câu hỏi: ${r.question.question}` : "";
+      const body = r.body ? `\n  ${String(r.body).slice(0, 1500)}` : r.external_url ? `\n  (link: ${r.external_url})` : "";
+      return head + q + body;
+    })
+    .join("\n")}`;
+}
+
 export const OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> = {
+  list_memories: listMemories,
   list_persons: listPersons,
   get_tree: getTree,
   create_person: createPerson,

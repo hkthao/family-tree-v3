@@ -32,7 +32,9 @@ export type Scope = "read" | "propose" | "write" | "admin";
  */
 export function scopeAllows(scope: Scope, needs: Scope): boolean {
   if (needs === "read") return true;
-  if (scope === "admin") return needs === "write" || needs === "admin";
+  // Gói admin: ghi thẳng + quản trị, và cả ĐỀ XUẤT — tổng hợp đóng góp cộng đồng vào gia phả luôn đi qua
+  // propose_* (admin duyệt trong app), kể cả khi AI cầm token admin.
+  if (scope === "admin") return needs === "write" || needs === "admin" || needs === "propose";
   return scope === needs;
 }
 
@@ -44,6 +46,14 @@ const obj = (properties: Record<string, unknown>, required: string[] = []) => ({
 });
 
 const personId = { type: "string", description: "Person id (UUID) from search_person" };
+/** Đóng góp cộng đồng làm nguồn cho đề xuất — admin duyệt thì các đóng góp này tự đánh dấu "đã đưa vào gia phả". */
+const sourceMemoryIds = {
+  type: "array",
+  items: { type: "string" },
+  maxItems: 20,
+  description:
+    "Ids of community contributions (from list_memories) this proposal is based on. When an admin approves the proposal, those contributions are marked as applied to the family tree.",
+};
 
 /** Các trường chỉnh sửa được qua đề xuất — khớp danh sách cột trong apply_contribution. */
 export const EDITABLE_FIELDS = [
@@ -156,6 +166,17 @@ export const MCP_TOOLS: McpToolSpec[] = [
     }),
   },
   {
+    name: "list_memories",
+    needs: "read",
+    description:
+      "Community contributions about people (stories, old photos, answers to family questions) that relatives submitted and the clan approved, and whose authors allowed reuse for biographies. Use these as SOURCES to draft a biography or fix facts — then call propose_add_note / propose_edit_person with source_memory_ids. Never write directly; an admin reviews every proposal. Each item shows author, relation, approximate year, place, how they know, and whether it was already applied to the tree.",
+    inputSchema: obj({
+      person_id: { ...personId, description: "Only contributions about this person (from search_person)" },
+      not_applied: { type: "boolean", description: "Only contributions not yet applied to the tree" },
+      limit: { type: "integer", minimum: 1, maximum: 50 },
+    }),
+  },
+  {
     name: "propose_add_person",
     needs: "propose",
     description:
@@ -173,6 +194,7 @@ export const MCP_TOOLS: McpToolSpec[] = [
         relation_as: { type: "string", enum: ["child", "spouse"] },
         relation_of_person_id: personId,
         reason: { type: "string", description: "Source / why, shown to the reviewer" },
+        source_memory_ids: sourceMemoryIds,
       },
       ["full_name", "gender"],
     ),
@@ -187,6 +209,7 @@ export const MCP_TOOLS: McpToolSpec[] = [
         person_id: personId,
         changes: CHANGES_SCHEMA,
         reason: { type: "string", description: "Source / why, shown to the reviewer" },
+        source_memory_ids: sourceMemoryIds,
       },
       ["person_id", "changes"],
     ),
@@ -201,6 +224,7 @@ export const MCP_TOOLS: McpToolSpec[] = [
         person_id: personId,
         note: { type: "string" },
         reason: { type: "string" },
+        source_memory_ids: sourceMemoryIds,
       },
       ["person_id", "note"],
     ),

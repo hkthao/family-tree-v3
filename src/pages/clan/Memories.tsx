@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { FabGroup } from "@/components/FabGroup";
 import { MemoryFaces } from "@/components/community/MemoryFaces";
+import { ApplyMemoryPanel } from "@/components/community/ApplyMemoryPanel";
 import { QuestionPanel } from "@/components/community/QuestionPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -111,7 +112,8 @@ type PanelState =
   | { mode: "invite" }
   | { mode: "links" }
   | { mode: "settings" }
-  | { mode: "question"; existing: FamilyQuestion | null };
+  | { mode: "question"; existing: FamilyQuestion | null }
+  | { mode: "apply"; id: string };
 
 /**
  * /clans/:id/dong-gop — "Đóng góp nội dung" (docs/plan-dong-gop-cong-dong.md): danh sách theo chuẩn
@@ -133,6 +135,7 @@ export default function Memories() {
   const [status, setStatus] = useUrlFilter<StatusFilter>("tt", "all");
   const [kind, setKind] = useUrlFilter<KindFilter>("loai", "all");
   const [source, setSource] = useUrlFilter<SourceFilter>("nguon", "all");
+  const [applied, setApplied] = useUrlFilter<"all" | "yes" | "no">("dua", "all");
   const {
     q: search,
     text: searchText,
@@ -162,6 +165,7 @@ export default function Memories() {
               ? m.identify
               : m.kind === kind || (kind === "story" && m.kind === "answer"))) &&
         (source === "all" || (source === "guest") === m.is_guest) &&
+        (applied === "all" || (applied === "yes") === m.applied.length > 0) &&
         (!q ||
           unaccent(
             `${m.person_name ?? ""} ${m.author_label} ${m.author_relation ?? ""} ${m.body ?? ""} ${m.place ?? ""}`,
@@ -178,6 +182,7 @@ export default function Memories() {
     status !== "all",
     kind !== "all",
     source !== "all",
+    applied !== "all",
   ].filter(Boolean).length;
 
   const refresh = () => {
@@ -266,7 +271,7 @@ export default function Memories() {
       <CollapsibleFilters
         activeCount={activeFilters}
         onReset={() =>
-          paging.patchAndResetPage({ tt: null, loai: null, nguon: null })
+          paging.patchAndResetPage({ tt: null, loai: null, nguon: null, dua: null })
         }
         title={t`Lọc đóng góp`}
         search={(toggle) => (
@@ -316,6 +321,17 @@ export default function Memories() {
             <option value="all">{t`Mọi người đóng góp`}</option>
             <option value="member">{t`Thành viên`}</option>
             <option value="guest">{t`Khách qua link`}</option>
+          </Select>
+          <Select
+            value={applied}
+            onChange={(e) => setApplied(e.target.value as "all" | "yes" | "no")}
+            aria-label={t`Lọc theo đã đưa vào gia phả`}
+            icon={<IconBook />}
+            className="h-11 w-full text-base"
+          >
+            <option value="all">{t`Đã / chưa đưa vào gia phả`}</option>
+            <option value="no">{t`Chưa đưa vào gia phả`}</option>
+            <option value="yes">{t`Đã đưa vào gia phả`}</option>
           </Select>
         </div>
       </CollapsibleFilters>
@@ -402,6 +418,15 @@ export default function Memories() {
         ]}
       />
 
+      {panel.mode === "apply" && (
+        <ApplyMemoryPanel
+          key={panel.id}
+          open
+          onClose={() => setPanel({ mode: "view", id: panel.id })}
+          memory={(rows ?? []).find((m) => m.id === panel.id) ?? null}
+        />
+      )}
+
       <QuestionPanel
         open={panel.mode === "question"}
         onClose={close}
@@ -439,6 +464,30 @@ export default function Memories() {
                     {viewing.visibility === "share"
                       ? t`Có (nếu người được nhắc đã mất)`
                       : t`Không, chỉ người trong họ`}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">{t`Đưa vào gia phả`}</dt>
+                  <dd>
+                    {viewing.applied.length === 0
+                      ? t`Chưa`
+                      : viewing.applied
+                          .map((a) =>
+                            [
+                              a.type === "bio"
+                                ? t`Tiểu sử`
+                                : a.type === "photo"
+                                  ? t`Ảnh đại diện`
+                                  : a.type === "contribution"
+                                    ? t`Qua đề xuất đã duyệt`
+                                    : t`Đã dùng`,
+                              a.note,
+                              a.at ? new Date(a.at).toLocaleDateString("vi-VN") : null,
+                            ]
+                              .filter(Boolean)
+                              .join(" · "),
+                          )
+                          .join("; ")}
                   </dd>
                 </div>
                 {viewing.person_id && (
@@ -487,6 +536,12 @@ export default function Memories() {
                   >
                     <IconX className="mr-1.5 h-4 w-4" />
                     {t`Ẩn`}
+                  </Button>
+                )}
+                {canModerate && viewing.status === "visible" && (
+                  <Button onClick={() => setPanel({ mode: "apply", id: viewing.id })}>
+                    <IconBook className="mr-1.5 h-4 w-4" />
+                    {t`Đưa vào gia phả`}
                   </Button>
                 )}
                 {canModerate && viewing.status !== "visible" && (
@@ -579,6 +634,11 @@ function MemoryRow({ m, onOpen }: { m: PersonMemory; onOpen: () => void }) {
             {m.is_guest && (
               <Chip tone="orange" icon={<IconLink />}>
                 {t`Qua link`}
+              </Chip>
+            )}
+            {m.applied.length > 0 && (
+              <Chip tone="success" icon={<IconBook />}>
+                {t`Đã vào gia phả`}
               </Chip>
             )}
             {m.question_id && (

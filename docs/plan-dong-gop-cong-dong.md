@@ -13,6 +13,7 @@ Trạng thái: **Plan, chưa làm (2026-11-20)**. Câu hỏi mục 11 đã chố
   - ⏸ **P2 TẠM TẮT (2026-11-20)** vì ổ cứng server không đủ lưu ảnh tải lên — cờ `PHOTO_IDENTIFY_ENABLED = false` (`src/lib/queries/community.ts`); DB / function / UI còn nguyên, bật lại = đổi cờ.
   - P2 "Ảnh: đây là ai?": `person_memories.identify` + bảng `photo_faces` (khung tỉ lệ 0..1, gắn người trong cây hoặc tên + nghề). `FaceTagger` kéo chuột / ngón tay để khoanh; editor+ gắn người trong cây thì xác nhận luôn, còn lại là gợi ý chờ xác nhận / bác. Khách khoanh qua `community-submit` (kind=face); trang chia sẻ chỉ hiện tên khung đã xác nhận. Ảnh nhờ nhận diện tự hiện ở trang chia sẻ. Tổng quan nhắc số gợi ý chờ xác nhận.
 - Giới hạn dung lượng + dán link (migration `20261120200000_memory_external_media.sql`): ảnh nén ≤200 KB / 1280px, ghi âm ≤2 phút; server chặn 1 MB / 1,5 MB, 15 tệp mỗi link; link https (Google Photos, Drive, YouTube…) thay cho tệp.
+- **"Đưa vào gia phả" + MCP (2026-11-20)** — migration `20261120400000_memory_applied.sql`: `person_memories.applied_to`, RPC `mark_memory_applied`, trigger duyệt đề xuất có `source_memory_ids` → tự đánh dấu. App: nút "Đưa vào gia phả" (tiểu sử kèm ghi nguồn / ảnh đại diện / đánh dấu), chip + bộ lọc "Đã vào gia phả". MCP: `list_memories`, `source_memory_ids` cho `propose_*`; AI luôn chỉ đề xuất (đã chốt), token admin gọi được `propose_*`.
 - Chưa làm ở P0: thông báo cho admin khi có ký ức mới, trích xuất chuỗi i18n (EN đang fallback VI).
 
 ## 1. Vấn đề & mục tiêu
