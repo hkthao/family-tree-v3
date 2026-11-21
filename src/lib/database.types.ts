@@ -99,6 +99,96 @@ export type Database = {
         }
         Relationships: []
       }
+      api_token_clans: {
+        Row: {
+          clan_id: string
+          token_id: string
+        }
+        Insert: {
+          clan_id: string
+          token_id: string
+        }
+        Update: {
+          clan_id?: string
+          token_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_token_clans_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_token_clans_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "api_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_tokens: {
+        Row: {
+          clan_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          last_used_at: string | null
+          name: string
+          oauth_client_id: string | null
+          revoked_at: string | null
+          scope: string
+          token_hash: string
+          token_prefix: string
+          user_id: string
+        }
+        Insert: {
+          clan_id?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_used_at?: string | null
+          name: string
+          oauth_client_id?: string | null
+          revoked_at?: string | null
+          scope?: string
+          token_hash: string
+          token_prefix: string
+          user_id: string
+        }
+        Update: {
+          clan_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          oauth_client_id?: string | null
+          revoked_at?: string | null
+          scope?: string
+          token_hash?: string
+          token_prefix?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_tokens_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_tokens_oauth_client_id_fkey"
+            columns: ["oauth_client_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -201,6 +291,41 @@ export type Database = {
             columns: ["head_person_id"]
             isOneToOne: false
             referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_feeds: {
+        Row: {
+          clan_id: string
+          created_at: string
+          id: string
+          last_fetched_at: string | null
+          token: string
+          user_id: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          id?: string
+          last_fetched_at?: string | null
+          token: string
+          user_id: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          id?: string
+          last_fetched_at?: string | null
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_feeds_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
             referencedColumns: ["id"]
           },
         ]
@@ -308,6 +433,65 @@ export type Database = {
             foreignKeyName: "cemeteries_clan_id_fkey"
             columns: ["clan_id"]
             isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clan_book_texts: {
+        Row: {
+          ancestor_anniversary: string | null
+          ancestral_hall: string | null
+          chief_name: string | null
+          clan_id: string
+          compiled_year: string | null
+          compilers: string | null
+          contact: string | null
+          ngoai_pha: string | null
+          origin_place: string | null
+          phaky: string | null
+          phu_khao: string | null
+          place_line: string | null
+          preface: string | null
+          updated_at: string
+        }
+        Insert: {
+          ancestor_anniversary?: string | null
+          ancestral_hall?: string | null
+          chief_name?: string | null
+          clan_id: string
+          compiled_year?: string | null
+          compilers?: string | null
+          contact?: string | null
+          ngoai_pha?: string | null
+          origin_place?: string | null
+          phaky?: string | null
+          phu_khao?: string | null
+          place_line?: string | null
+          preface?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ancestor_anniversary?: string | null
+          ancestral_hall?: string | null
+          chief_name?: string | null
+          clan_id?: string
+          compiled_year?: string | null
+          compilers?: string | null
+          contact?: string | null
+          ngoai_pha?: string | null
+          origin_place?: string | null
+          phaky?: string | null
+          phu_khao?: string | null
+          place_line?: string | null
+          preface?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_book_texts_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: true
             referencedRelation: "clans"
             referencedColumns: ["id"]
           },
@@ -429,6 +613,130 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clan_mosaic_tiles: {
+        Row: {
+          caption: string | null
+          clan_id: string
+          created_at: string
+          id: string
+          mosaic_id: string
+          person_id: string | null
+          photo_path: string
+          position: number
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          caption?: string | null
+          clan_id: string
+          created_at?: string
+          id?: string
+          mosaic_id: string
+          person_id?: string | null
+          photo_path: string
+          position?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          caption?: string | null
+          clan_id?: string
+          created_at?: string
+          id?: string
+          mosaic_id?: string
+          person_id?: string | null
+          photo_path?: string
+          position?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_mosaic_tiles_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_mosaic_tiles_mosaic_id_fkey"
+            columns: ["mosaic_id"]
+            isOneToOne: false
+            referencedRelation: "clan_mosaics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_mosaic_tiles_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_mosaic_tiles_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clan_mosaics: {
+        Row: {
+          clan_id: string
+          cols: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          max_per_member: number
+          show_on_dashboard: boolean
+          slots: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          clan_id: string
+          cols?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          max_per_member?: number
+          show_on_dashboard?: boolean
+          slots?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          clan_id?: string
+          cols?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          max_per_member?: number
+          show_on_dashboard?: boolean
+          slots?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_mosaics_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
             referencedColumns: ["id"]
           },
         ]
@@ -596,84 +904,6 @@ export type Database = {
           },
         ]
       }
-      calendar_feeds: {
-        Row: {
-          clan_id: string
-          created_at: string
-          id: string
-          last_fetched_at: string | null
-          token: string
-          user_id: string
-        }
-        Insert: {
-          clan_id: string
-          created_at?: string
-          id?: string
-          last_fetched_at?: string | null
-          token: string
-          user_id: string
-        }
-        Update: {
-          clan_id?: string
-          created_at?: string
-          id?: string
-          last_fetched_at?: string | null
-          token?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      clan_book_texts: {
-        Row: {
-          origin_place: string | null
-          ancestral_hall: string | null
-          ancestor_anniversary: string | null
-          chief_name: string | null
-          compilers: string | null
-          compiled_year: string | null
-          contact: string | null
-          clan_id: string
-          ngoai_pha: string | null
-          phaky: string | null
-          phu_khao: string | null
-          place_line: string | null
-          preface: string | null
-          updated_at: string
-        }
-        Insert: {
-          origin_place?: string | null
-          ancestral_hall?: string | null
-          ancestor_anniversary?: string | null
-          chief_name?: string | null
-          compilers?: string | null
-          compiled_year?: string | null
-          contact?: string | null
-          clan_id: string
-          ngoai_pha?: string | null
-          phaky?: string | null
-          phu_khao?: string | null
-          place_line?: string | null
-          preface?: string | null
-          updated_at?: string
-        }
-        Update: {
-          origin_place?: string | null
-          ancestral_hall?: string | null
-          ancestor_anniversary?: string | null
-          chief_name?: string | null
-          compilers?: string | null
-          compiled_year?: string | null
-          contact?: string | null
-          clan_id?: string
-          ngoai_pha?: string | null
-          phaky?: string | null
-          phu_khao?: string | null
-          place_line?: string | null
-          preface?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       clan_visit_daily: {
         Row: {
           clan_id: string
@@ -720,18 +950,18 @@ export type Database = {
           id: string
           kind: string
           max_memory_rooms: number
-          memory_moderation: string
           max_persons: number
           max_users: number
+          memory_moderation: string
           name: string
           name_unaccent: string | null
           owner_id: string | null
           person_count: number
-          share_sections: string[]
           public_show_events: boolean
           public_show_graves: boolean
           public_show_heritage: boolean
           public_show_tree: boolean
+          share_sections: string[]
           updated_at: string
           visibility: string
         }
@@ -751,18 +981,18 @@ export type Database = {
           id?: string
           kind?: string
           max_memory_rooms?: number
-          memory_moderation?: string
           max_persons?: number
           max_users?: number
+          memory_moderation?: string
           name: string
           name_unaccent?: string | null
           owner_id?: string | null
           person_count?: number
-          share_sections?: string[]
           public_show_events?: boolean
           public_show_graves?: boolean
           public_show_heritage?: boolean
           public_show_tree?: boolean
+          share_sections?: string[]
           updated_at?: string
           visibility?: string
         }
@@ -782,18 +1012,18 @@ export type Database = {
           id?: string
           kind?: string
           max_memory_rooms?: number
-          memory_moderation?: string
           max_persons?: number
           max_users?: number
+          memory_moderation?: string
           name?: string
           name_unaccent?: string | null
           owner_id?: string | null
           person_count?: number
-          share_sections?: string[]
           public_show_events?: boolean
           public_show_graves?: boolean
           public_show_heritage?: boolean
           public_show_tree?: boolean
+          share_sections?: string[]
           updated_at?: string
           visibility?: string
         }
@@ -806,6 +1036,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      community_submit_rate: {
+        Row: {
+          bucket: string
+          hits: number
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          window_start?: string
+        }
+        Relationships: []
       }
       contributions: {
         Row: {
@@ -1168,6 +1416,118 @@ export type Database = {
           },
         ]
       }
+      export_jobs: {
+        Row: {
+          attempts: number
+          bytes: number | null
+          clan_id: string
+          created_at: string
+          error: string | null
+          file_path: string | null
+          finished_at: string | null
+          heartbeat_at: string | null
+          id: string
+          options: Json
+          person_count: number | null
+          stage: string | null
+          started_at: string | null
+          status: string
+          user_id: string
+          worker: string | null
+        }
+        Insert: {
+          attempts?: number
+          bytes?: number | null
+          clan_id: string
+          created_at?: string
+          error?: string | null
+          file_path?: string | null
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          id?: string
+          options?: Json
+          person_count?: number | null
+          stage?: string | null
+          started_at?: string | null
+          status?: string
+          user_id: string
+          worker?: string | null
+        }
+        Update: {
+          attempts?: number
+          bytes?: number | null
+          clan_id?: string
+          created_at?: string
+          error?: string | null
+          file_path?: string | null
+          finished_at?: string | null
+          heartbeat_at?: string | null
+          id?: string
+          options?: Json
+          person_count?: number | null
+          stage?: string | null
+          started_at?: string | null
+          status?: string
+          user_id?: string
+          worker?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_jobs_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      export_slots: {
+        Row: {
+          clan_id: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          clan_id: string
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          clan_id?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_slots_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      export_workers: {
+        Row: {
+          id: string
+          max_persons: number
+          seen_at: string
+        }
+        Insert: {
+          id: string
+          max_persons?: number
+          seen_at?: string
+        }
+        Update: {
+          id?: string
+          max_persons?: number
+          seen_at?: string
+        }
+        Relationships: []
+      }
       families: {
         Row: {
           clan_id: string
@@ -1243,6 +1603,85 @@ export type Database = {
           },
         ]
       }
+      family_questions: {
+        Row: {
+          about_person_id: string | null
+          answered_at: string | null
+          ask_person_id: string | null
+          asked_by: string | null
+          clan_id: string
+          created_at: string
+          id: string
+          question: string
+          status: string
+        }
+        Insert: {
+          about_person_id?: string | null
+          answered_at?: string | null
+          ask_person_id?: string | null
+          asked_by?: string | null
+          clan_id: string
+          created_at?: string
+          id?: string
+          question: string
+          status?: string
+        }
+        Update: {
+          about_person_id?: string | null
+          answered_at?: string | null
+          ask_person_id?: string | null
+          asked_by?: string | null
+          clan_id?: string
+          created_at?: string
+          id?: string
+          question?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_questions_about_person_id_fkey"
+            columns: ["about_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_questions_about_person_id_fkey"
+            columns: ["about_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_questions_ask_person_id_fkey"
+            columns: ["ask_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_questions_ask_person_id_fkey"
+            columns: ["ask_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_questions_asked_by_fkey"
+            columns: ["asked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_questions_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fb_page_credentials: {
         Row: {
           ciphertext: string
@@ -1297,7 +1736,6 @@ export type Database = {
         Row: {
           admin_note: string | null
           admin_reply: string | null
-          replied_at: string | null
           app_version: string | null
           category: Database["public"]["Enums"]["feedback_category"]
           clan_id: string | null
@@ -1307,6 +1745,7 @@ export type Database = {
           message: string
           page_path: string | null
           page_url: string | null
+          replied_at: string | null
           resolved_at: string | null
           resolved_by: string | null
           status: Database["public"]["Enums"]["feedback_status"]
@@ -1316,7 +1755,6 @@ export type Database = {
         Insert: {
           admin_note?: string | null
           admin_reply?: string | null
-          replied_at?: string | null
           app_version?: string | null
           category?: Database["public"]["Enums"]["feedback_category"]
           clan_id?: string | null
@@ -1326,6 +1764,7 @@ export type Database = {
           message: string
           page_path?: string | null
           page_url?: string | null
+          replied_at?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           status?: Database["public"]["Enums"]["feedback_status"]
@@ -1335,7 +1774,6 @@ export type Database = {
         Update: {
           admin_note?: string | null
           admin_reply?: string | null
-          replied_at?: string | null
           app_version?: string | null
           category?: Database["public"]["Enums"]["feedback_category"]
           clan_id?: string | null
@@ -1345,6 +1783,7 @@ export type Database = {
           message?: string
           page_path?: string | null
           page_url?: string | null
+          replied_at?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           status?: Database["public"]["Enums"]["feedback_status"]
@@ -1906,6 +2345,50 @@ export type Database = {
           },
         ]
       }
+      mcp_admin_log: {
+        Row: {
+          args: Json | null
+          at: string
+          clan_id: string | null
+          id: number
+          is_error: boolean
+          result: string | null
+          token_id: string | null
+          tool: string
+          user_id: string
+        }
+        Insert: {
+          args?: Json | null
+          at?: string
+          clan_id?: string | null
+          id?: never
+          is_error?: boolean
+          result?: string | null
+          token_id?: string | null
+          tool: string
+          user_id: string
+        }
+        Update: {
+          args?: Json | null
+          at?: string
+          clan_id?: string | null
+          id?: never
+          is_error?: boolean
+          result?: string | null
+          token_id?: string | null
+          tool?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_admin_log_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "api_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memory_room_items: {
         Row: {
           caption: string | null
@@ -2137,6 +2620,129 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      oauth_clients: {
+        Row: {
+          client_id: string
+          client_name: string
+          created_at: string
+          last_used_at: string | null
+          redirect_uris: string[]
+        }
+        Insert: {
+          client_id: string
+          client_name: string
+          created_at?: string
+          last_used_at?: string | null
+          redirect_uris: string[]
+        }
+        Update: {
+          client_id?: string
+          client_name?: string
+          created_at?: string
+          last_used_at?: string | null
+          redirect_uris?: string[]
+        }
+        Relationships: []
+      }
+      oauth_codes: {
+        Row: {
+          clan_id: string | null
+          clan_ids: string[] | null
+          client_id: string
+          code_challenge: string
+          code_hash: string
+          expires_at: string
+          grant_id: string | null
+          redirect_uri: string
+          scope: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          clan_id?: string | null
+          clan_ids?: string[] | null
+          client_id: string
+          code_challenge: string
+          code_hash: string
+          expires_at: string
+          grant_id?: string | null
+          redirect_uri: string
+          scope: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          clan_id?: string | null
+          clan_ids?: string[] | null
+          client_id?: string
+          code_challenge?: string
+          code_hash?: string
+          expires_at?: string
+          grant_id?: string | null
+          redirect_uri?: string
+          scope?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_codes_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "oauth_codes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_clients"
+            referencedColumns: ["client_id"]
+          },
+        ]
+      }
+      oauth_tokens: {
+        Row: {
+          client_id: string
+          expires_at: string
+          grant_id: string
+          kind: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          client_id: string
+          expires_at: string
+          grant_id: string
+          kind: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          client_id?: string
+          expires_at?: string
+          grant_id?: string
+          kind?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "oauth_tokens_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "oauth_clients"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "oauth_tokens_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "api_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       person_addresses: {
         Row: {
@@ -2414,6 +3020,152 @@ export type Database = {
           },
         ]
       }
+      person_memories: {
+        Row: {
+          allow_ai_reuse: boolean
+          applied_to: Json
+          author_name: string | null
+          author_relation: string | null
+          author_user_id: string | null
+          body: string | null
+          clan_id: string
+          created_at: string
+          duration_sec: number | null
+          external_url: string | null
+          guest_key: string | null
+          id: string
+          identify: boolean
+          kind: string
+          media_mime: string | null
+          media_path: string | null
+          person_id: string | null
+          place: string | null
+          question_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source: string | null
+          status: string
+          topic: string | null
+          transcript: string | null
+          updated_at: string
+          via_link_id: string | null
+          visibility: string
+          year_approx: number | null
+        }
+        Insert: {
+          allow_ai_reuse?: boolean
+          applied_to?: Json
+          author_name?: string | null
+          author_relation?: string | null
+          author_user_id?: string | null
+          body?: string | null
+          clan_id: string
+          created_at?: string
+          duration_sec?: number | null
+          external_url?: string | null
+          guest_key?: string | null
+          id?: string
+          identify?: boolean
+          kind: string
+          media_mime?: string | null
+          media_path?: string | null
+          person_id?: string | null
+          place?: string | null
+          question_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string | null
+          status?: string
+          topic?: string | null
+          transcript?: string | null
+          updated_at?: string
+          via_link_id?: string | null
+          visibility?: string
+          year_approx?: number | null
+        }
+        Update: {
+          allow_ai_reuse?: boolean
+          applied_to?: Json
+          author_name?: string | null
+          author_relation?: string | null
+          author_user_id?: string | null
+          body?: string | null
+          clan_id?: string
+          created_at?: string
+          duration_sec?: number | null
+          external_url?: string | null
+          guest_key?: string | null
+          id?: string
+          identify?: boolean
+          kind?: string
+          media_mime?: string | null
+          media_path?: string | null
+          person_id?: string | null
+          place?: string | null
+          question_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string | null
+          status?: string
+          topic?: string | null
+          transcript?: string | null
+          updated_at?: string
+          via_link_id?: string | null
+          visibility?: string
+          year_approx?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_memories_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_memories_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_memories_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_memories_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_memories_question_fk"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "family_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_memories_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_memories_via_link_id_fkey"
+            columns: ["via_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       person_reigns: {
         Row: {
           clan_id: string
@@ -2593,261 +3345,6 @@ export type Database = {
             columns: ["person_id"]
             isOneToOne: false
             referencedRelation: "persons_public_safe"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      family_questions: {
-        Row: {
-          about_person_id: string | null
-          answered_at: string | null
-          ask_person_id: string | null
-          asked_by: string | null
-          clan_id: string
-          created_at: string
-          id: string
-          question: string
-          status: string
-        }
-        Insert: {
-          about_person_id?: string | null
-          answered_at?: string | null
-          ask_person_id?: string | null
-          asked_by?: string | null
-          clan_id: string
-          created_at?: string
-          id?: string
-          question: string
-          status?: string
-        }
-        Update: {
-          about_person_id?: string | null
-          answered_at?: string | null
-          ask_person_id?: string | null
-          asked_by?: string | null
-          clan_id?: string
-          created_at?: string
-          id?: string
-          question?: string
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "family_questions_clan_id_fkey"
-            columns: ["clan_id"]
-            isOneToOne: false
-            referencedRelation: "clans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "family_questions_about_person_id_fkey"
-            columns: ["about_person_id"]
-            isOneToOne: false
-            referencedRelation: "persons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "family_questions_ask_person_id_fkey"
-            columns: ["ask_person_id"]
-            isOneToOne: false
-            referencedRelation: "persons"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      person_memories: {
-        Row: {
-          allow_ai_reuse: boolean
-          applied_to: Json
-          author_name: string | null
-          author_relation: string | null
-          author_user_id: string | null
-          body: string | null
-          clan_id: string
-          created_at: string
-          duration_sec: number | null
-          external_url: string | null
-          guest_key: string | null
-          identify: boolean
-          id: string
-          kind: string
-          media_mime: string | null
-          media_path: string | null
-          person_id: string | null
-          place: string | null
-          question_id: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          source: string | null
-          status: string
-          topic: string | null
-          transcript: string | null
-          updated_at: string
-          via_link_id: string | null
-          visibility: string
-          year_approx: number | null
-        }
-        Insert: {
-          allow_ai_reuse?: boolean
-          applied_to?: Json
-          author_name?: string | null
-          author_relation?: string | null
-          author_user_id?: string | null
-          body?: string | null
-          clan_id: string
-          created_at?: string
-          duration_sec?: number | null
-          external_url?: string | null
-          guest_key?: string | null
-          identify?: boolean
-          id?: string
-          kind: string
-          media_mime?: string | null
-          media_path?: string | null
-          person_id?: string | null
-          place?: string | null
-          question_id?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          source?: string | null
-          status?: string
-          topic?: string | null
-          transcript?: string | null
-          updated_at?: string
-          via_link_id?: string | null
-          visibility?: string
-          year_approx?: number | null
-        }
-        Update: {
-          allow_ai_reuse?: boolean
-          applied_to?: Json
-          author_name?: string | null
-          author_relation?: string | null
-          author_user_id?: string | null
-          body?: string | null
-          clan_id?: string
-          created_at?: string
-          duration_sec?: number | null
-          external_url?: string | null
-          guest_key?: string | null
-          identify?: boolean
-          id?: string
-          kind?: string
-          media_mime?: string | null
-          media_path?: string | null
-          person_id?: string | null
-          place?: string | null
-          question_id?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          source?: string | null
-          status?: string
-          topic?: string | null
-          transcript?: string | null
-          updated_at?: string
-          via_link_id?: string | null
-          visibility?: string
-          year_approx?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "person_memories_clan_id_fkey"
-            columns: ["clan_id"]
-            isOneToOne: false
-            referencedRelation: "clans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "person_memories_person_id_fkey"
-            columns: ["person_id"]
-            isOneToOne: false
-            referencedRelation: "persons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "person_memories_via_link_id_fkey"
-            columns: ["via_link_id"]
-            isOneToOne: false
-            referencedRelation: "share_links"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      photo_faces: {
-        Row: {
-          box_h: number
-          box_w: number
-          box_x: number
-          box_y: number
-          clan_id: string
-          created_at: string
-          guest_key: string | null
-          id: string
-          memory_id: string
-          person_id: string | null
-          reviewed_by: string | null
-          status: string
-          suggested_name: string | null
-          suggested_note: string | null
-          tagged_by: string | null
-          tagger_name: string | null
-        }
-        Insert: {
-          box_h: number
-          box_w: number
-          box_x: number
-          box_y: number
-          clan_id: string
-          created_at?: string
-          guest_key?: string | null
-          id?: string
-          memory_id: string
-          person_id?: string | null
-          reviewed_by?: string | null
-          status?: string
-          suggested_name?: string | null
-          suggested_note?: string | null
-          tagged_by?: string | null
-          tagger_name?: string | null
-        }
-        Update: {
-          box_h?: number
-          box_w?: number
-          box_x?: number
-          box_y?: number
-          clan_id?: string
-          created_at?: string
-          guest_key?: string | null
-          id?: string
-          memory_id?: string
-          person_id?: string | null
-          reviewed_by?: string | null
-          status?: string
-          suggested_name?: string | null
-          suggested_note?: string | null
-          tagged_by?: string | null
-          tagger_name?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "photo_faces_memory_id_fkey"
-            columns: ["memory_id"]
-            isOneToOne: false
-            referencedRelation: "person_memories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "photo_faces_person_id_fkey"
-            columns: ["person_id"]
-            isOneToOne: false
-            referencedRelation: "persons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "photo_faces_tagged_by_fkey"
-            columns: ["tagged_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3036,6 +3533,106 @@ export type Database = {
           },
         ]
       }
+      photo_faces: {
+        Row: {
+          box_h: number
+          box_w: number
+          box_x: number
+          box_y: number
+          clan_id: string
+          created_at: string
+          guest_key: string | null
+          id: string
+          memory_id: string
+          person_id: string | null
+          reviewed_by: string | null
+          status: string
+          suggested_name: string | null
+          suggested_note: string | null
+          tagged_by: string | null
+          tagger_name: string | null
+        }
+        Insert: {
+          box_h: number
+          box_w: number
+          box_x: number
+          box_y: number
+          clan_id: string
+          created_at?: string
+          guest_key?: string | null
+          id?: string
+          memory_id: string
+          person_id?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_name?: string | null
+          suggested_note?: string | null
+          tagged_by?: string | null
+          tagger_name?: string | null
+        }
+        Update: {
+          box_h?: number
+          box_w?: number
+          box_x?: number
+          box_y?: number
+          clan_id?: string
+          created_at?: string
+          guest_key?: string | null
+          id?: string
+          memory_id?: string
+          person_id?: string | null
+          reviewed_by?: string | null
+          status?: string
+          suggested_name?: string | null
+          suggested_note?: string | null
+          tagged_by?: string | null
+          tagger_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_faces_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_faces_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "person_memories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_faces_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_faces_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_faces_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_faces_tagged_by_fkey"
+            columns: ["tagged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_settings: {
         Row: {
           key: string
@@ -3120,6 +3717,7 @@ export type Database = {
           id: string
           is_platform_admin: boolean
           is_suspended: boolean
+          locale: string | null
           max_clans: number
           notify_monthly_lunar: boolean
           notify_via_push: boolean
@@ -3131,6 +3729,7 @@ export type Database = {
           id: string
           is_platform_admin?: boolean
           is_suspended?: boolean
+          locale?: string | null
           max_clans?: number
           notify_monthly_lunar?: boolean
           notify_via_push?: boolean
@@ -3142,6 +3741,7 @@ export type Database = {
           id?: string
           is_platform_admin?: boolean
           is_suspended?: boolean
+          locale?: string | null
           max_clans?: number
           notify_monthly_lunar?: boolean
           notify_via_push?: boolean
@@ -3911,22 +4511,6 @@ export type Database = {
       }
     }
     Functions: {
-      mark_memory_applied: {
-        Args: { p_memory_id: string; p_target: Json }
-        Returns: undefined
-      }
-      clan_pending_faces: {
-        Args: { p_clan_id: string }
-        Returns: number
-      }
-      clan_community_summary: {
-        Args: { p_clan_id: string }
-        Returns: Json
-      }
-      record_member_visit: {
-        Args: { p_clan_id: string }
-        Returns: undefined
-      }
       _inlaw_person_card: {
         Args: {
           hide_living: boolean
@@ -3946,25 +4530,23 @@ export type Database = {
           id: string
         }[]
       }
-      cancel_export_job: {
-        Args: { p_id: string }
-        Returns: undefined
-      }
-      create_export_job: {
-        Args: { p_clan: string; p_options?: Json }
-        Returns: Json
-      }
-      get_export_job: {
-        Args: { p_id: string }
-        Returns: Json
-      }
-      acquire_export_slot: {
-        Args: { p_clan: string }
-        Returns: Json
-      }
+      acquire_export_slot: { Args: { p_clan: string }; Returns: Json }
       admin_import_giapha: {
         Args: { p_clan_id: string; p_families: Json; p_persons: Json }
         Returns: Json
+      }
+      admin_set_member_display_name: {
+        Args: { p_clan_id: string; p_name: string; p_user_id: string }
+        Returns: undefined
+      }
+      admin_set_member_self_person: {
+        Args: {
+          p_clan_id: string
+          p_person_id: string
+          p_user_id: string
+          p_verified?: boolean
+        }
+        Returns: undefined
       }
       admin_wipe_clan_directory: { Args: { p_clan_id: string }; Returns: Json }
       announcements_mark_all_read: { Args: never; Returns: number }
@@ -3986,14 +4568,30 @@ export type Database = {
         Args: { p_finalize?: boolean; payload: Json; target_clan: string }
         Returns: Json
       }
+      bump_clan_visit: {
+        Args: { p_clan_id: string; p_source: string }
+        Returns: undefined
+      }
+      bump_community_submit_rate: {
+        Args: { p_bucket: string }
+        Returns: number
+      }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
+      cancel_export_job: { Args: { p_id: string }; Returns: undefined }
+      claim_export_job: { Args: { p_worker: string }; Returns: Json }
+      clan_community_summary: { Args: { p_clan_id: string }; Returns: Json }
       clan_map_stats: {
         Args: { p_clan: string; p_include_deceased?: boolean }
         Returns: Json
       }
+      clan_pending_faces: { Args: { p_clan_id: string }; Returns: number }
       clan_post_moderate: {
         Args: { p_action: string; p_note?: string; p_post_id: string }
         Returns: undefined
+      }
+      clan_public_community_stats: {
+        Args: { p_clan_id: string }
+        Returns: Json
       }
       clan_role: { Args: { target_clan: string }; Returns: string }
       clan_unlinked_count: { Args: { p_clan: string }; Returns: number }
@@ -4065,6 +4663,10 @@ export type Database = {
       }
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
+      create_export_job: {
+        Args: { p_clan: string; p_options?: Json }
+        Returns: Json
+      }
       delete_my_account: { Args: never; Returns: undefined }
       delete_my_push_subscription: {
         Args: { p_endpoint: string }
@@ -4170,6 +4772,7 @@ export type Database = {
           relation: string
         }[]
       }
+      get_export_job: { Args: { p_id: string }; Returns: Json }
       get_historical_person_extras: {
         Args: { p_person_id: string }
         Returns: {
@@ -4240,9 +4843,17 @@ export type Database = {
         Args: { p_clan_id: string }
         Returns: boolean
       }
+      mark_memory_applied: {
+        Args: { p_memory_id: string; p_target: Json }
+        Returns: undefined
+      }
       merge_persons: {
         Args: { p_loser: string; p_winner: string }
         Returns: Json
+      }
+      move_clan_mosaic_tile: {
+        Args: { p_slot: number; p_tile_id: string }
+        Returns: undefined
       }
       my_clan_ids: { Args: never; Returns: string[] }
       notifications_mark_all_read: { Args: never; Returns: number }
@@ -4257,21 +4868,23 @@ export type Database = {
         Returns: number
       }
       prune_share_view_rate: { Args: never; Returns: undefined }
-      release_export_slot: {
-        Args: { p_slot: string }
-        Returns: undefined
-      }
       recompute_generation_for_clan: {
         Args: { target_clan: string }
         Returns: undefined
       }
+      record_member_visit: { Args: { p_clan_id: string }; Returns: undefined }
       redeem_clan_invite: { Args: { p_token: string }; Returns: string }
       reject_contribution: {
         Args: { p_id: string; p_note?: string; p_status: string }
         Returns: undefined
       }
+      release_export_slot: { Args: { p_slot: string }; Returns: undefined }
       resolve_link_token: { Args: { p_token: string }; Returns: Json }
       restore_audit_entry: { Args: { audit_id: string }; Returns: undefined }
+      seed_clan_mosaic_from_members: {
+        Args: { p_mosaic_id: string }
+        Returns: number
+      }
       seed_memory_room_from_members: {
         Args: { p_room_id: string }
         Returns: number
