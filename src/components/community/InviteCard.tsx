@@ -23,6 +23,16 @@ export interface InviteFact {
   done: boolean;
 }
 
+/** Chữ người dùng tự sửa trên ảnh; trường nào chưa sửa (undefined) thì dùng chữ tự sinh. */
+export interface InviteCustomText {
+  kicker?: string;
+  lead?: string;
+  title?: string;
+  cta?: string;
+  /** Ba bước hướng dẫn; phần tử nào undefined thì dùng chữ tự sinh. */
+  steps?: (string | undefined)[];
+}
+
 export interface InviteCardData {
   clanName: string;
   variant: InviteVariant;
@@ -43,6 +53,8 @@ export interface InviteCardData {
   askName?: string | null;
   /** camon / chung: số liệu thật của họ. */
   stats?: { memories: number; contributors: number; visits: number; pending?: number };
+  /** Chữ do người dùng sửa tay (xem InviteCustomText). */
+  custom?: InviteCustomText;
 }
 
 const SERIF = '"Noto Serif", Georgia, serif';
@@ -141,7 +153,8 @@ function linkStep(place: InviteLinkPlace, old: boolean, qr: boolean): string {
   }
 }
 
-function copyFor(d: InviteCardData, qr: boolean) {
+/** Chữ tự sinh theo lựa chọn (người đọc, xưng hô, chỗ đặt link) — chưa áp phần người dùng sửa. */
+export function autoCopyFor(d: InviteCardData, qr: boolean) {
   const old = d.audience === "old";
   const x = d.xungHo;
   const L = linkStep(d.linkPlace, old, qr);
@@ -182,6 +195,71 @@ function copyFor(d: InviteCardData, qr: boolean) {
   }
 }
 
+export interface InviteTextPreset {
+  id: string;
+  label: string;
+  /** Chữ của mẫu; trường để undefined thì giữ chữ tự sinh (vd. bước 1 luôn theo chỗ đặt link). */
+  build: (d: Pick<InviteCardData, "clanName" | "xungHo" | "audience">) => InviteCustomText;
+}
+
+/**
+ * Bộ chữ soạn sẵn cho từng mẫu — bấm là áp, vẫn sửa tiếp được. Không đụng tiêu đề của "Hồ sơ còn thiếu" / "Hỏi ông bà"
+ * (đó là tên người / câu hỏi thật) và luôn giữ bước 1 tự sinh vì nó phụ thuộc chỗ đặt link.
+ */
+export const INVITE_TEXT_PRESETS: Record<InviteVariant, InviteTextPreset[]> = {
+  chung: [
+    {
+      id: "trangtrong",
+      label: "Trang trọng",
+      build: (d) => ({ title: "Kính mời con cháu cùng gìn giữ ký ức dòng họ", cta: `Xin mỗi người góp một chút, ${d.xungHo} cảm ơn ạ`, steps: [undefined, "Chọn người thân mình muốn kể", "Viết vài dòng hoặc gửi một tấm ảnh cũ"] }),
+    },
+    {
+      id: "ngan",
+      label: "Ngắn gọn",
+      build: (d) => ({ title: "Góp một chuyện, một tấm ảnh cho gia phả", cta: `Chỉ mất một phút thôi, giúp ${d.xungHo} nha`, steps: [undefined, "Chọn người", "Viết hoặc gửi ảnh, bấm Gửi"] }),
+    },
+    {
+      id: "kechuyen",
+      label: "Kể chuyện",
+      build: () => ({ title: "Ông bà mình ngày xưa sống thế nào? Cả nhà cùng kể", cta: "Chuyện nhỏ cũng quý, ai nhớ gì cứ kể", steps: [undefined, "Chọn ông bà, cô bác mình nhớ nhất", "Kể lại một kỷ niệm, một câu nói hay thói quen"] }),
+    },
+    {
+      id: "trang",
+      label: "Còn nhiều trang trống",
+      build: (d) => ({ title: `Gia phả ${d.clanName} còn nhiều trang trống, cả nhà cùng điền nha`, cta: "Mỗi người một ít là đầy", steps: [undefined, "Xem ai còn thiếu thông tin", "Điền điều mình biết, bấm Gửi"] }),
+    },
+  ],
+  hoso: [
+    { id: "nhonhe", label: "Nhờ nhớ lại", build: (d) => ({ lead: "Cả nhà nhớ lại giúp về", cta: `Chuyện nhỏ cũng quý, kể giúp ${d.xungHo} nha` }) },
+    { id: "trangtrong", label: "Trang trọng", build: (d) => ({ lead: "Kính nhờ các cụ, các bác bổ sung thông tin về", cta: `Xin góp giúp ${d.xungHo} một chút ạ` }) },
+    { id: "thieu", label: "Còn thiếu nhiều", build: () => ({ lead: "Hồ sơ còn thiếu nhiều điều về", cta: "Ai biết điều nào, điền vào ô còn trống nha" }) },
+  ],
+  hoi: [
+    { id: "gan", label: "Gần gũi", build: (d) => ({ lead: "Tuần này cả nhà thử hỏi", cta: `Ai biết thì kể giúp ${d.xungHo} nha` }) },
+    { id: "trangtrong", label: "Trang trọng", build: (d) => ({ lead: "Con cháu xin hỏi", cta: `Xin được nghe câu trả lời, ${d.xungHo} cảm ơn ạ` }) },
+    { id: "gap", label: "Ai biết giúp", build: () => ({ lead: "Cần hỏi người trong nhà", cta: "Ai nhớ, trả lời giúp nhé" }) },
+  ],
+  camon: [
+    { id: "am", label: "Ấm áp", build: () => ({ title: "Cảm ơn cả nhà, gia phả đầy lên từng ngày nhờ mọi người", cta: "Còn nhiều chuyện chưa kể, vào góp tiếp nha" }) },
+    { id: "trangtrong", label: "Trang trọng", build: (d) => ({ title: "Xin trân trọng cảm ơn mọi người đã cùng gìn giữ ký ức dòng họ", cta: `Xin mời tiếp tục đóng góp, ${d.xungHo} cảm ơn ạ` }) },
+    { id: "ngan", label: "Ngắn gọn", build: () => ({ title: "Cảm ơn cả nhà đã góp!", cta: "Ai chưa góp, vào đây nha" }) },
+  ],
+};
+
+/** Chữ cuối cùng trên ảnh: chữ tự sinh, trường nào người dùng đã sửa thì lấy bản của họ. */
+function copyFor(d: InviteCardData, qr: boolean) {
+  const auto = autoCopyFor(d, qr);
+  const o = d.custom;
+  if (!o) return auto;
+  return {
+    kicker: o.kicker ?? auto.kicker,
+    lead: o.lead ?? auto.lead,
+    title: o.title ?? auto.title,
+    cta: o.cta ?? auto.cta,
+    steps: auto.steps.map((x, i) => o.steps?.[i] ?? x),
+  };
+}
+
 function Qr({ src, size }: { src: string | null; size: number }) {
   if (!src) return null;
   return (
@@ -197,7 +275,7 @@ function Qr({ src, size }: { src: string | null; size: number }) {
 
 function Steps({ steps, color, num, numInk, size }: { steps: string[]; color: string; num: string; numInk: string; size: number }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: Math.round(size * 0.7) }}>
       {steps.map((s, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <span
@@ -418,7 +496,7 @@ export function InviteCard({ data: d, format }: { data: InviteCardData; format: 
         </div>
       )}
       {d.showGuide && (
-        <div style={{ width: "100%", textAlign: "left", background: P.tint, borderRadius: 20, padding: "20px 24px", boxSizing: "border-box" }}>
+        <div style={{ width: "100%", textAlign: "left", background: P.tint, borderRadius: 20, padding: "22px 26px", boxSizing: "border-box" }}>
           <Steps steps={c.steps} color={P.ink} num={P.accent} numInk={P.accentInk} size={stepSize} />
         </div>
       )}

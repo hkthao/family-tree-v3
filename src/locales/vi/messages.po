@@ -794,10 +794,6 @@ msgstr "← Người trước"
 msgid "← Sổ tay Văn hoá"
 msgstr "← Sổ tay Văn hoá"
 
-#: src/pages/Share.tsx
-#~ msgid "← Tổng quan"
-#~ msgstr "← Tổng quan"
-
 #: src/pages/Docs.tsx
 msgid "← Trước"
 msgstr "← Trước"
@@ -1055,6 +1051,10 @@ msgstr "Admin sẽ liên hệ qua {0} nếu cần."
 msgid "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự động sửa cây gia phả."
 msgstr "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự động sửa cây gia phả."
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ai biết giúp"
+msgstr "Ai biết giúp"
+
 #: src/components/community/QuestionPanel.tsx
 msgid "Ai biết thì trả lời"
 msgstr "Ai biết thì trả lời"
@@ -1102,6 +1102,10 @@ msgstr "Âm"
 #: src/components/gallery/palettes.ts
 msgid "Ấm (kem)"
 msgstr "Ấm (kem)"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ấm áp"
+msgstr "Ấm áp"
 
 #: src/components/EventDetailDialog.tsx
 #: src/components/TodayHubCard.tsx
@@ -2097,6 +2101,11 @@ msgstr "Bức trước"
 #: src/components/Tree3DView.tsx
 msgid "bung / thu nhánh con"
 msgstr "bung / thu nhánh con"
+
+#. placeholder {0}: i + 1
+#: src/components/community/InviteCardDialog.tsx
+msgid "Bước {0}"
+msgstr "Bước {0}"
 
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Cả cây"
@@ -4033,11 +4042,19 @@ msgstr "Con gái"
 msgid "Còn gọi: {0}"
 msgstr "Còn gọi: {0}"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Còn nhiều trang trống"
+msgstr "Còn nhiều trang trống"
+
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 msgid "Còn sống"
 msgstr "Còn sống"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Còn thiếu nhiều"
+msgstr "Còn thiếu nhiều"
 
 #: src/components/BirthOrderPicker.tsx
 msgid "Con thứ mấy"
@@ -4759,6 +4776,10 @@ msgstr "Đã sao chép link"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Đã sao chép tin nhắn"
 msgstr "Đã sao chép tin nhắn"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đã sửa tay"
+msgstr "Đã sửa tay"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Đã tải ảnh — mở Zalo/Facebook để đăng."
@@ -6315,10 +6336,6 @@ msgstr "Đoạn tiểu sử đang trống"
 msgid "Dọc"
 msgstr "Dọc"
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Dọc (Story, TikTok)"
-#~ msgstr "Dọc (Story, TikTok)"
-
 #: src/components/ShareCardDialog.tsx
 msgid "Dọc (story)"
 msgstr "Dọc (story)"
@@ -6546,6 +6563,10 @@ msgstr "Đóng công cụ"
 msgid "Đóng công cụ thiết kế"
 msgstr "Đóng công cụ thiết kế"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Dòng dẫn"
+msgstr "Dòng dẫn"
+
 #: src/lib/pageTitle.ts
 msgid "Dòng dõi của tôi"
 msgstr "Dòng dõi của tôi"
@@ -6746,6 +6767,10 @@ msgstr "Đông người nhất"
 #: src/components/ShareCardDialog.tsx
 msgid "Dòng nhãn (vd \"Tin vui dòng họ\")"
 msgstr "Dòng nhãn (vd \"Tin vui dòng họ\")"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Dòng nhỏ trên cùng"
+msgstr "Dòng nhỏ trên cùng"
 
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Dòng phụ (năm sinh–mất…)"
@@ -6996,6 +7021,10 @@ msgstr "Font tên"
 #: src/components/QuickAddSheet.tsx
 msgid "Gắn bạn đời cho người này"
 msgstr "Gắn bạn đời cho người này"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Gần gũi"
+msgstr "Gần gũi"
 
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -8324,6 +8353,10 @@ msgstr "Ít người nhất"
 msgid "Ít nhất 8 ký tự."
 msgstr "Ít nhất 8 ký tự."
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Kể chuyện"
+msgstr "Kể chuyện"
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "Kể lại bằng lời của bạn… (có thể dùng nút micro trên bàn phím điện thoại để đọc cho máy ghi)"
 msgstr "Kể lại bằng lời của bạn… (có thể dùng nút micro trên bàn phím điện thoại để đọc cho máy ghi)"
@@ -8527,6 +8560,10 @@ msgstr "Khởi động lại Claude Code, gõ /mcp để kiểm tra"
 #: src/pages/clan/EditPerson.tsx
 msgid "Khôi phục"
 msgstr "Khôi phục"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Khôi phục chữ gốc"
+msgstr "Khôi phục chữ gốc"
 
 #: src/pages/clan/Audit.tsx
 msgid "Khôi phục về trạng thái trước"
@@ -10094,6 +10131,10 @@ msgstr "Lỗi"
 msgid "Lỗi / sự cố"
 msgstr "Lỗi / sự cố"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Lời kêu gọi"
+msgstr "Lời kêu gọi"
+
 #: src/pages/Account.tsx
 msgid "Lỗi khi test"
 msgstr "Lỗi khi test"
@@ -10307,13 +10348,13 @@ msgstr "Mã QR không hợp lệ."
 msgid "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 msgstr "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Mã QR trên ảnh"
-#~ msgstr "Mã QR trên ảnh"
-
 #: src/lib/navModel.tsx
 msgid "Mã QR từng người để in/khắc — quét ra trang cá nhân."
 msgstr "Mã QR từng người để in/khắc — quét ra trang cá nhân."
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Mặc định (theo lựa chọn ở trên)"
+msgstr "Mặc định (theo lựa chọn ở trên)"
 
 #: src/components/ClanFormFields.tsx
 msgid "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF."
@@ -10388,10 +10429,6 @@ msgstr "Mất{age}."
 msgid "Màu"
 msgstr "Màu"
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Mẫu"
-#~ msgstr "Mẫu"
-
 #: src/components/gallery/GalleryScene.tsx
 msgid "Màu bục"
 msgstr "Màu bục"
@@ -10399,6 +10436,10 @@ msgstr "Màu bục"
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Màu chữ"
 msgstr "Màu chữ"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Mẫu chữ trên ảnh"
+msgstr "Mẫu chữ trên ảnh"
 
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
@@ -11213,6 +11254,10 @@ msgstr "Ngắm"
 msgid "Ngăn / kệ / số hũ"
 msgstr "Ngăn / kệ / số hũ"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ngắn gọn"
+msgstr "Ngắn gọn"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ngang"
 msgstr "Ngang"
@@ -11649,10 +11694,6 @@ msgstr "Người liên quan trong họ (tuỳ chọn)"
 msgid "Người lớn tuổi"
 msgstr "Người lớn tuổi"
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Người lớn tuổi (lễ phép, chữ to)"
-#~ msgstr "Người lớn tuổi (lễ phép, chữ to)"
-
 #: src/components/ShareSectionsCard.tsx
 msgid "Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt \"Hiển thị & quyền xem\" riêng."
 msgstr "Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt \"Hiển thị & quyền xem\" riêng."
@@ -11742,10 +11783,6 @@ msgstr "Người thân"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Người trẻ"
 msgstr "Người trẻ"
-
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Người trẻ (thân mật)"
-#~ msgstr "Người trẻ (thân mật)"
 
 #: src/components/ClanFormFields.tsx
 msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
@@ -12048,6 +12085,10 @@ msgstr "Nho giáo"
 #: src/pages/clan/Memories.tsx
 msgid "Nhờ nhận diện"
 msgstr "Nhờ nhận diện"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Nhờ nhớ lại"
+msgstr "Nhờ nhớ lại"
 
 #: src/pages/clan/People.tsx
 msgid "Nhờ quản trị viên hoặc người biên tập của dòng họ bổ sung."
@@ -13219,6 +13260,10 @@ msgstr "Sửa chi"
 msgid "Sửa chi tiết khác"
 msgstr "Sửa chi tiết khác"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Sửa chữ trên ảnh"
+msgstr "Sửa chữ trên ảnh"
+
 #: src/pages/clan/Cemeteries.tsx
 msgid "Sửa cơ sở"
 msgstr "Sửa cơ sở"
@@ -13304,6 +13349,10 @@ msgstr "Sửa tin"
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Sửa tỉnh/thành"
 msgstr "Sửa tỉnh/thành"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Sửa trực tiếp, ảnh đổi ngay. Chữ đã sửa chỉ áp cho mẫu đang chọn. Đổi người đọc, xưng hô hay chỗ đặt link sẽ không ghi đè chỗ bạn đã sửa."
+msgstr "Sửa trực tiếp, ảnh đổi ngay. Chữ đã sửa chỉ áp cho mẫu đang chọn. Đổi người đọc, xưng hô hay chỗ đặt link sẽ không ghi đè chỗ bạn đã sửa."
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Sửa xã/phường"
@@ -15011,6 +15060,10 @@ msgstr "Tiêu đề đoạn"
 msgid "Tiêu đề đoạn (vd Lời nói đầu)"
 msgstr "Tiêu đề đoạn (vd Lời nói đầu)"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Tiêu đề lớn"
+msgstr "Tiêu đề lớn"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Tiêu đề tập"
 msgstr "Tiêu đề tập"
@@ -15847,6 +15900,10 @@ msgstr "Trạng thái dữ liệu"
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Trạng thái:"
 msgstr "Trạng thái:"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Trang trọng"
+msgstr "Trang trọng"
 
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 msgid "Trang trống hoàn toàn"
@@ -16806,10 +16863,6 @@ msgid "Vuông (đăng tường)"
 msgstr "Vuông (đăng tường)"
 
 #: src/components/community/InviteCardDialog.tsx
-#~ msgid "Vuông (Facebook, Zalo)"
-#~ msgstr "Vuông (Facebook, Zalo)"
-
-#: src/components/community/InviteCardDialog.tsx
 msgid "Vuông (FB, Zalo)"
 msgstr "Vuông (FB, Zalo)"
 
@@ -17077,10 +17130,6 @@ msgstr "Xem thêm {0} cặp"
 #: src/components/TodayHubCard.tsx
 msgid "Xem thêm {0} sự kiện →"
 msgstr "Xem thêm {0} sự kiện →"
-
-#: src/components/share/ShareOverview.tsx
-#~ msgid "Xem thêm {n}"
-#~ msgstr "Xem thêm {n}"
 
 #: src/lib/pageTitle.ts
 msgid "Xem thử gia phả mẫu"
