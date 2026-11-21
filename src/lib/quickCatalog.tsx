@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { IconDownload, IconPlus, IconShare2 } from "@/components/icons";
+import { IconCamera, IconDownload, IconPlus, IconShare2 } from "@/components/icons";
 import type { DrawerSection } from "@/lib/navModel";
 
 import { t } from "@lingui/core/macro";
@@ -24,7 +24,7 @@ export interface QuickEntry {
   /** Ô thuộc nhóm lõi: luôn đứng đầu khi người dùng chưa ghim. */
   core?: boolean;
   /** Ô hành động đặc biệt không phải liên kết. */
-  special?: "pdf" | "share";
+  special?: "pdf" | "share" | "invite-image";
 }
 
 /** Nhóm lõi (Tổng quan là chính trang chủ nên không có ô). */
@@ -38,6 +38,7 @@ const DEFAULT_ORDER = [
   "people/new",
   "dong-gop",
   "share",
+  "invite-image",
   "todo",
   "graves",
   "board",
@@ -119,6 +120,14 @@ export function buildQuickCatalog(
       short: t`Chia sẻ`,
       icon: <IconShare2 className="h-5 w-5" />,
       special: "share",
+    });
+    // Mở thẳng trình tạo ảnh mời góp (tự lấy link mời góp chung của mình).
+    entries.push({
+      key: "invite-image",
+      label: t`Ảnh mời cả nhà góp`,
+      short: t`Ảnh mời góp`,
+      icon: <IconCamera className="h-5 w-5" />,
+      special: "invite-image",
     });
     entries.push({
       key: "pdf",

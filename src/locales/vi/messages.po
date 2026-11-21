@@ -1269,6 +1269,14 @@ msgstr "Ảnh minh hoạ (https://…, tuỳ chọn)"
 msgid "Ảnh minh hoạ trong đoạn phải là https://…"
 msgstr "Ảnh minh hoạ trong đoạn phải là https://…"
 
+#: src/lib/quickCatalog.tsx
+msgid "Ảnh mời cả nhà góp"
+msgstr "Ảnh mời cả nhà góp"
+
+#: src/lib/quickCatalog.tsx
+msgid "Ảnh mời góp"
+msgstr "Ảnh mời góp"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ảnh nền"
 msgstr "Ảnh nền"
@@ -5706,6 +5714,7 @@ msgid "Đang tải…"
 msgstr "Đang tải…"
 
 #: src/components/ShareTreeButton.tsx
+#: src/components/ShareTreeButton.tsx
 msgid "Đang tạo link…"
 msgstr "Đang tạo link…"
 
@@ -9093,6 +9102,10 @@ msgstr "Không tạo được bức ảnh"
 msgid "Không tạo được link chia sẻ"
 msgstr "Không tạo được link chia sẻ"
 
+#: src/components/community/InviteImageButton.tsx
+msgid "Không tạo được link mời góp"
+msgstr "Không tạo được link mời góp"
+
 #: src/components/QrSignInButton.tsx
 msgid "Không tạo được mã QR"
 msgstr "Không tạo được mã QR"
@@ -12020,6 +12033,10 @@ msgstr "Nhiều tầng"
 msgid "Nhỏ (5–19)"
 msgstr "Nhỏ (5–19)"
 
+#: src/components/ShareTreeButton.tsx
+msgid "Nhờ cả nhà góp chuyện, ảnh cũ:"
+msgstr "Nhờ cả nhà góp chuyện, ảnh cũ:"
+
 #: src/components/community/MemoryForm.tsx
 msgid "Nhờ cả nhà nhận diện người trong ảnh (ai cũng khoanh mặt, ghi tên được; người quản lý xác nhận)"
 msgstr "Nhờ cả nhà nhận diện người trong ảnh (ai cũng khoanh mặt, ghi tên được; người quản lý xác nhận)"
@@ -13461,6 +13478,10 @@ msgstr "Tạo ảnh để đăng"
 #: src/components/community/QuestionPanel.tsx
 msgid "Tạo ảnh để đăng Facebook / Zalo"
 msgstr "Tạo ảnh để đăng Facebook / Zalo"
+
+#: src/components/ShareTreeButton.tsx
+msgid "Tạo ảnh mời góp (có mã QR)"
+msgstr "Tạo ảnh mời góp (có mã QR)"
 
 #: src/pages/clan/NewPerson.tsx
 msgid "Tạo bản sao thông tin — không sao chép quan hệ."
