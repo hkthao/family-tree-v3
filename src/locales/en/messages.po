@@ -794,10 +794,6 @@ msgstr "← Previous person"
 msgid "← Sổ tay Văn hoá"
 msgstr "← Culture Handbook"
 
-#: src/pages/Share.tsx
-#~ msgid "← Tổng quan"
-#~ msgstr "← Overview"
-
 #: src/pages/Docs.tsx
 msgid "← Trước"
 msgstr "← Previous"
@@ -1055,6 +1051,10 @@ msgstr "The admin will contact you via {0} if needed."
 msgid "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự động sửa cây gia phả."
 msgstr "An admin will review it before applying. Your suggestion does not edit the family tree automatically."
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ai biết giúp"
+msgstr "Anyone who knows"
+
 #: src/components/community/QuestionPanel.tsx
 msgid "Ai biết thì trả lời"
 msgstr "Anyone who knows can answer"
@@ -1102,6 +1102,10 @@ msgstr "Lunar"
 #: src/components/gallery/palettes.ts
 msgid "Ấm (kem)"
 msgstr "Warm (cream)"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ấm áp"
+msgstr "Warm"
 
 #: src/components/EventDetailDialog.tsx
 #: src/components/TodayHubCard.tsx
@@ -2097,6 +2101,11 @@ msgstr "Previous picture"
 #: src/components/Tree3DView.tsx
 msgid "bung / thu nhánh con"
 msgstr "expand / collapse child branches"
+
+#. placeholder {0}: i + 1
+#: src/components/community/InviteCardDialog.tsx
+msgid "Bước {0}"
+msgstr "Step {0}"
 
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Cả cây"
@@ -4033,11 +4042,19 @@ msgstr "Daughter"
 msgid "Còn gọi: {0}"
 msgstr "Also known as: {0}"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Còn nhiều trang trống"
+msgstr "Many blank pages"
+
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 msgid "Còn sống"
 msgstr "Living"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Còn thiếu nhiều"
+msgstr "Much still missing"
 
 #: src/components/BirthOrderPicker.tsx
 msgid "Con thứ mấy"
@@ -4759,6 +4776,10 @@ msgstr "Link copied"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Đã sao chép tin nhắn"
 msgstr "Message copied"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Đã sửa tay"
+msgstr "Edited by hand"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Đã tải ảnh — mở Zalo/Facebook để đăng."
@@ -6315,10 +6336,6 @@ msgstr "The biography text is empty"
 msgid "Dọc"
 msgstr "Portrait"
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Dọc (Story, TikTok)"
-#~ msgstr "Vertical (Story, TikTok)"
-
 #: src/components/ShareCardDialog.tsx
 msgid "Dọc (story)"
 msgstr "Portrait (story)"
@@ -6546,6 +6563,10 @@ msgstr "Close tools"
 msgid "Đóng công cụ thiết kế"
 msgstr "Close design tools"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Dòng dẫn"
+msgstr "Lead-in line"
+
 #: src/lib/pageTitle.ts
 msgid "Dòng dõi của tôi"
 msgstr "My lineage"
@@ -6746,6 +6767,10 @@ msgstr "Most members"
 #: src/components/ShareCardDialog.tsx
 msgid "Dòng nhãn (vd \"Tin vui dòng họ\")"
 msgstr "Label line (e.g. \"Good news for the clan\")"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Dòng nhỏ trên cùng"
+msgstr "Small top line"
 
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Dòng phụ (năm sinh–mất…)"
@@ -6996,6 +7021,10 @@ msgstr "Name font"
 #: src/components/QuickAddSheet.tsx
 msgid "Gắn bạn đời cho người này"
 msgstr "Link a partner to this person"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Gần gũi"
+msgstr "Friendly"
 
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -8324,6 +8353,10 @@ msgstr "Fewest people"
 msgid "Ít nhất 8 ký tự."
 msgstr "At least 8 characters."
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Kể chuyện"
+msgstr "Storytelling"
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "Kể lại bằng lời của bạn… (có thể dùng nút micro trên bàn phím điện thoại để đọc cho máy ghi)"
 msgstr "Tell it in your own words… (you can use the microphone on your phone's keyboard to dictate)"
@@ -8527,6 +8560,10 @@ msgstr "Restart Claude Code and type /mcp to check"
 #: src/pages/clan/EditPerson.tsx
 msgid "Khôi phục"
 msgstr "Restore"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Khôi phục chữ gốc"
+msgstr "Restore original text"
 
 #: src/pages/clan/Audit.tsx
 msgid "Khôi phục về trạng thái trước"
@@ -10094,6 +10131,10 @@ msgstr "Errors"
 msgid "Lỗi / sự cố"
 msgstr "Bug / problem"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Lời kêu gọi"
+msgstr "Call to action"
+
 #: src/pages/Account.tsx
 msgid "Lỗi khi test"
 msgstr "Error during the test"
@@ -10307,13 +10348,13 @@ msgstr "This QR code is not valid."
 msgid "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 msgstr "This QR code does not belong to Dòng Họ Việt. Ignored to protect your account."
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Mã QR trên ảnh"
-#~ msgstr "QR code on the image"
-
 #: src/lib/navModel.tsx
 msgid "Mã QR từng người để in/khắc — quét ra trang cá nhân."
 msgstr "A QR code per person to print or engrave — scans to their profile."
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Mặc định (theo lựa chọn ở trên)"
+msgstr "Default (follows the choices above)"
 
 #: src/components/ClanFormFields.tsx
 msgid "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF."
@@ -10388,10 +10429,6 @@ msgstr "Died{age}."
 msgid "Màu"
 msgstr "Color"
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Mẫu"
-#~ msgstr "Template"
-
 #: src/components/gallery/GalleryScene.tsx
 msgid "Màu bục"
 msgstr "Pedestal color"
@@ -10399,6 +10436,10 @@ msgstr "Pedestal color"
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Màu chữ"
 msgstr "Text color"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Mẫu chữ trên ảnh"
+msgstr "Text style on the image"
 
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
@@ -11213,6 +11254,10 @@ msgstr "View"
 msgid "Ngăn / kệ / số hũ"
 msgstr "Compartment / shelf / urn number"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Ngắn gọn"
+msgstr "Short"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ngang"
 msgstr "Landscape"
@@ -11649,10 +11694,6 @@ msgstr "Related people in the clan (optional)"
 msgid "Người lớn tuổi"
 msgstr "Elders"
 
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Người lớn tuổi (lễ phép, chữ to)"
-#~ msgstr "Elders (polite, large text)"
-
 #: src/components/ShareSectionsCard.tsx
 msgid "Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt \"Hiển thị & quyền xem\" riêng."
 msgstr "People opening the share link (/share/…) see an Overview tab with the family tree and the sections you choose below. Nothing extra is shared by default. The public preview page uses the separate \"Display & access\" settings."
@@ -11742,10 +11783,6 @@ msgstr "Relative"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Người trẻ"
 msgstr "Young people"
-
-#: src/components/community/InviteCardDialog.tsx
-#~ msgid "Người trẻ (thân mật)"
-#~ msgstr "Young people (casual)"
 
 #: src/components/ClanFormFields.tsx
 msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
@@ -12048,6 +12085,10 @@ msgstr "Confucianism"
 #: src/pages/clan/Memories.tsx
 msgid "Nhờ nhận diện"
 msgstr "Needs identifying"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Nhờ nhớ lại"
+msgstr "Ask to recall"
 
 #: src/pages/clan/People.tsx
 msgid "Nhờ quản trị viên hoặc người biên tập của dòng họ bổ sung."
@@ -13219,6 +13260,10 @@ msgstr "Edit branch"
 msgid "Sửa chi tiết khác"
 msgstr "Edit more details"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Sửa chữ trên ảnh"
+msgstr "Edit text on the image"
+
 #: src/pages/clan/Cemeteries.tsx
 msgid "Sửa cơ sở"
 msgstr "Edit site"
@@ -13304,6 +13349,10 @@ msgstr "Edit announcement"
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Sửa tỉnh/thành"
 msgstr "Edit province / city"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Sửa trực tiếp, ảnh đổi ngay. Chữ đã sửa chỉ áp cho mẫu đang chọn. Đổi người đọc, xưng hô hay chỗ đặt link sẽ không ghi đè chỗ bạn đã sửa."
+msgstr "Edit directly and the image updates right away. Edited text applies only to the selected template. Changing audience, form of address or link placement will not overwrite what you edited."
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Sửa xã/phường"
@@ -15011,6 +15060,10 @@ msgstr "Section title"
 msgid "Tiêu đề đoạn (vd Lời nói đầu)"
 msgstr "Section title (e.g. Foreword)"
 
+#: src/components/community/InviteCardDialog.tsx
+msgid "Tiêu đề lớn"
+msgstr "Main heading"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Tiêu đề tập"
 msgstr "Episode title"
@@ -15847,6 +15900,10 @@ msgstr "Data status"
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Trạng thái:"
 msgstr "Status:"
+
+#: src/components/community/InviteCardDialog.tsx
+msgid "Trang trọng"
+msgstr "Formal"
 
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 msgid "Trang trống hoàn toàn"
@@ -16806,10 +16863,6 @@ msgid "Vuông (đăng tường)"
 msgstr "Square (for posting on a wall)"
 
 #: src/components/community/InviteCardDialog.tsx
-#~ msgid "Vuông (Facebook, Zalo)"
-#~ msgstr "Square (Facebook, Zalo)"
-
-#: src/components/community/InviteCardDialog.tsx
 msgid "Vuông (FB, Zalo)"
 msgstr "Square (FB, Zalo)"
 
@@ -17077,10 +17130,6 @@ msgstr "View {0} more pairs"
 #: src/components/TodayHubCard.tsx
 msgid "Xem thêm {0} sự kiện →"
 msgstr "View {0} more events →"
-
-#: src/components/share/ShareOverview.tsx
-#~ msgid "Xem thêm {n}"
-#~ msgstr "Show {n} more"
 
 #: src/lib/pageTitle.ts
 msgid "Xem thử gia phả mẫu"
