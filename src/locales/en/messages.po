@@ -1269,6 +1269,14 @@ msgstr "Illustration image (https://…, optional)"
 msgid "Ảnh minh hoạ trong đoạn phải là https://…"
 msgstr "The illustration image in a section must be https://…"
 
+#: src/lib/quickCatalog.tsx
+msgid "Ảnh mời cả nhà góp"
+msgstr "Family invite image"
+
+#: src/lib/quickCatalog.tsx
+msgid "Ảnh mời góp"
+msgstr "Invite image"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ảnh nền"
 msgstr "Background image"
@@ -5706,6 +5714,7 @@ msgid "Đang tải…"
 msgstr "Loading…"
 
 #: src/components/ShareTreeButton.tsx
+#: src/components/ShareTreeButton.tsx
 msgid "Đang tạo link…"
 msgstr "Creating link…"
 
@@ -9093,6 +9102,10 @@ msgstr "Could not create the mosaic"
 msgid "Không tạo được link chia sẻ"
 msgstr "Could not create the share link"
 
+#: src/components/community/InviteImageButton.tsx
+msgid "Không tạo được link mời góp"
+msgstr "Could not create the invite link"
+
 #: src/components/QrSignInButton.tsx
 msgid "Không tạo được mã QR"
 msgstr "Could not create the QR code"
@@ -12020,6 +12033,10 @@ msgstr "Tiered"
 msgid "Nhỏ (5–19)"
 msgstr "Small (5–19)"
 
+#: src/components/ShareTreeButton.tsx
+msgid "Nhờ cả nhà góp chuyện, ảnh cũ:"
+msgstr "Ask the family for stories and old photos:"
+
 #: src/components/community/MemoryForm.tsx
 msgid "Nhờ cả nhà nhận diện người trong ảnh (ai cũng khoanh mặt, ghi tên được; người quản lý xác nhận)"
 msgstr "Ask the family to identify people in the photo (anyone can mark faces and add names; admins confirm)"
@@ -13461,6 +13478,10 @@ msgstr "Create an image to post"
 #: src/components/community/QuestionPanel.tsx
 msgid "Tạo ảnh để đăng Facebook / Zalo"
 msgstr "Create an image for Facebook / Zalo"
+
+#: src/components/ShareTreeButton.tsx
+msgid "Tạo ảnh mời góp (có mã QR)"
+msgstr "Create invite image (with QR code)"
 
 #: src/pages/clan/NewPerson.tsx
 msgid "Tạo bản sao thông tin — không sao chép quan hệ."

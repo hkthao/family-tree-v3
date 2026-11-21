@@ -16,6 +16,7 @@ import {
 import { canEditClan, isClanAdmin } from "@/hooks/useClanContext";
 import { useClanFreshness } from "@/hooks/useClanFreshness";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
+import { InviteImageButton } from "@/components/community/InviteImageButton";
 import { ShareTreeButton } from "@/components/ShareTreeButton";
 import { SectionCard } from "@/components/SectionCard";
 import { useNavSections } from "@/hooks/useNavSections";
@@ -160,6 +161,35 @@ function Tile({
   if (entry.special === "pdf") {
     return <ExportPdfTile clan={clan} onClick={() => onUse(entry.key)} />;
   }
+  if (entry.special === "invite-image") {
+    return (
+      <InviteImageButton
+        clanId={clan.id}
+        clanName={clan.name}
+        trigger={(open, busy) => (
+          <button
+            type="button"
+            className={`${TILE} disabled:cursor-wait disabled:opacity-60`}
+            disabled={busy}
+            onClick={() => {
+              onUse(entry.key);
+              open();
+            }}
+          >
+            <span
+              className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5"
+              aria-hidden="true"
+            >
+              {entry.icon}
+            </span>
+            <span className="line-clamp-2 text-sm font-medium leading-tight">
+              {entry.short}
+            </span>
+          </button>
+        )}
+      />
+    );
+  }
   if (entry.special === "share") {
     return (
       <ShareTreeButton
@@ -174,10 +204,15 @@ function Tile({
               open();
             }}
           >
-            <span className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5" aria-hidden="true">
+            <span
+              className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5"
+              aria-hidden="true"
+            >
               {entry.icon}
             </span>
-            <span className="line-clamp-2 text-sm font-medium leading-tight">{entry.short}</span>
+            <span className="line-clamp-2 text-sm font-medium leading-tight">
+              {entry.short}
+            </span>
           </button>
         )}
       />

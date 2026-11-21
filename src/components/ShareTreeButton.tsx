@@ -2,8 +2,15 @@ import { currentIntlTag } from "@/lib/i18n";
 import { useMutation } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
+import { InviteImageButton } from "@/components/community/InviteImageButton";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconCopy, IconLink, IconShare2 } from "@/components/icons";
+import {
+  IconCheck,
+  IconCopy,
+  IconLink,
+  IconShare2,
+  IconCamera,
+} from "@/components/icons";
 import { ShareSectionsPicker } from "@/components/ShareSectionsCard";
 import { SidePanel } from "@/components/SidePanel";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
@@ -214,6 +221,28 @@ export function ShareTreeButton({ clanId, clanName, compact, trigger }: Props) {
                     }}
                   />
                 </div>
+              </div>
+
+              {/* Ảnh mời góp (QR) để đăng nhóm gia đình — link mời góp riêng, người nhận gửi được câu chuyện / ảnh. */}
+              <div className="space-y-2 border-t pt-4">
+                <p className="text-sm font-medium">{t`Nhờ cả nhà góp chuyện, ảnh cũ:`}</p>
+                <InviteImageButton
+                  clanId={clanId}
+                  clanName={clanName}
+                  trigger={(open, busy) => (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      disabled={busy}
+                      onClick={open}
+                    >
+                      <IconCamera className="mr-1.5 h-4 w-4" />
+                      {busy ? t`Đang tạo link…` : t`Tạo ảnh mời góp (có mã QR)`}
+                    </Button>
+                  )}
+                />
               </div>
 
               {/* Chọn phần nào hiện ở tab Tổng quan của link (cài đặt cả họ, chỉ admin đổi được). */}
