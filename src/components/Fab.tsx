@@ -56,11 +56,11 @@ export function Fab({
 }) {
   // Cuộn xuống thì ẩn, cuộn lên thì hiện (như app điện thoại); đang mở form (active) thì luôn hiện.
   const hidden = useHideOnScroll({ disabled: active });
-  const cls = `${FAB_POSITION} inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${hidden ? FAB_HIDDEN : ""}`;
+  const cls = `${FAB_POSITION} inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${hidden ? FAB_HIDDEN : ""}`;
   const content = active ? (
-    <IconX className="h-6 w-6" />
+    <IconX className="h-5 w-5" />
   ) : (
-    (icon ?? <IconPlus className="h-6 w-6" />)
+    (icon ?? <IconPlus className="h-5 w-5" />)
   );
   if (to && panel && !active) {
     return (

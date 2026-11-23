@@ -407,7 +407,6 @@ export default function Todo() {
             variant="outline"
             size="sm"
             onClick={() => setSelected(new Set())}
-            className="h-9"
           >
             <IconX className="h-4 w-4 mr-1.5" />
             {t`Bỏ chọn`}
@@ -418,7 +417,6 @@ export default function Todo() {
             size="sm"
             onClick={onBulkExclude}
             disabled={bulkExcludeMutation.isPending}
-            className="h-9"
           >
             <IconX className="h-4 w-4 mr-1.5" />
             {bulkExcludeMutation.isPending ? t`Đang loại…` : `Loại khỏi DS`}

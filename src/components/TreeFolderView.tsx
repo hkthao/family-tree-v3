@@ -336,22 +336,20 @@ export function TreeFolderView({
                 rightSlot={
                   !searching && (focus || roots.some((r) => r.hasChildren)) ? (
                     <div className="flex items-center">
-                      <Button
+                      <Button size="icon-sm"
                         type="button"
                         variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 px-0 text-muted-foreground"
+                        className="text-muted-foreground"
                         onClick={() => bump("expand")}
                         aria-label={t`Mở rộng tất cả`}
                         title={t`Mở rộng tất cả (tới ${EXPAND_ALL_DEPTH} đời; sâu hơn thì bấm mũi tên từng người)`}
                       >
                         <IconChevronsDown className="h-4 w-4" />
                       </Button>
-                      <Button
+                      <Button size="icon-sm"
                         type="button"
                         variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 px-0 text-muted-foreground"
+                        className="text-muted-foreground"
                         onClick={() => bump("collapse")}
                         aria-label={t`Thu gọn tất cả`}
                         title={t`Thu gọn tất cả`}

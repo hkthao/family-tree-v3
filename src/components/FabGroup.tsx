@@ -141,12 +141,12 @@ export function FabGroup({
           aria-expanded={open}
           aria-label={open ? t`Đóng` : label}
           title={label}
-          className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {open ? (
-            <IconX className="h-6 w-6" />
+            <IconX className="h-5 w-5" />
           ) : (
-            <IconPlus className="h-6 w-6" />
+            <IconPlus className="h-5 w-5" />
           )}
         </button>
       </div>

@@ -1473,7 +1473,7 @@ export default function Tree() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-10 shrink-0 w-10 sm:w-auto px-0 sm:px-3"
+                className="shrink-0 w-10 sm:w-auto px-0 sm:px-3"
                 onClick={() => {
                   setFocal(defaultFocal);
                 }}
@@ -1587,7 +1587,7 @@ export default function Tree() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-10 gap-1.5 px-3"
+              className="gap-1.5 px-3"
               onClick={() => setShowOpts(true)}
               aria-haspopup="dialog"
               aria-label={t`Tuỳ chọn`}
@@ -2085,7 +2085,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         type="button"
         variant="outline"
         size="sm"
-        className="h-10 px-2.5 sm:px-3"
+        className="px-2.5 sm:px-3"
         onClick={() => setOpen(true)}
         disabled={busy}
         aria-label={t`Xuất sổ PDF`}

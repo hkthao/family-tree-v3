@@ -154,33 +154,30 @@ export function InviteLinkCard({
                   {urlFor(inv.token)}
                 </p>
               </div>
-              <Button
+              <Button size="icon-sm"
                 type="button"
                 variant="outline"
-                size="sm"
-                className="h-9 w-9 p-0 shrink-0"
+                className="shrink-0"
                 aria-label={t`Chép link`}
                 title={t`Chép link`}
                 onClick={() => copy(inv.token)}
               >
                 <IconLink className="h-4 w-4" />
               </Button>
-              <Button
+              <Button size="icon-sm"
                 type="button"
                 variant="outline"
-                size="sm"
-                className="h-9 w-9 p-0 shrink-0"
+                className="shrink-0"
                 aria-label={t`Chia sẻ link`}
                 title={t`Chia sẻ link`}
                 onClick={() => share(inv.token)}
               >
                 <IconShare2 className="h-4 w-4" />
               </Button>
-              <Button
+              <Button size="icon-sm"
                 type="button"
                 variant="destructive-outline"
-                size="sm"
-                className="h-9 w-9 p-0 shrink-0"
+                className="shrink-0"
                 aria-label={t`Thu hồi link`}
                 title={t`Thu hồi link`}
                 disabled={revokeM.isPending}

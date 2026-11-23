@@ -420,10 +420,8 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 <span className="text-sm text-muted-foreground">
                   {publish ? t`Chép link khoe:` : t`Gửi đường dẫn trang:`}
                 </span>
-                <Button
+                <Button size="icon-sm"
                   variant="outline"
-                  size="sm"
-                  className="h-9 w-9 p-0"
                   disabled={busy}
                   aria-label={t`Chép link`}
                   title={t`Chép link để dán vào Zalo/Facebook`}

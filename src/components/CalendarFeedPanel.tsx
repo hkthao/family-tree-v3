@@ -123,14 +123,12 @@ export function CalendarFeedPanel({
               className="h-10 font-mono text-xs"
               onFocus={(e) => e.currentTarget.select()}
               action={
-                <Button
+                <Button size="icon-sm"
                   type="button"
-                  size="icon"
                   variant="ghost"
                   onClick={copy}
                   aria-label={copied ? t`Đã chép` : t`Chép link`}
                   title={copied ? t`Đã chép` : t`Chép link`}
-                  className="h-10 w-10"
                 >
                   {copied ? (
                     <IconCheck className="h-4 w-4" />

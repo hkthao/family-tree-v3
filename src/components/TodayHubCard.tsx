@@ -158,22 +158,18 @@ export function TodayHubCard({
           aria-label={t`Chuyển ngày`}
           className="flex items-center justify-self-start"
         >
-          <Button
+          <Button size="icon-sm"
             type="button"
-            size="icon"
             variant="ghost"
-            className="h-10 w-10"
             onClick={() => setOffset((o) => o - 1)}
             aria-label={t`Xem ngày hôm trước`}
             title={t`Hôm trước`}
           >
             <IconArrowLeft className="h-5 w-5" />
           </Button>
-          <Button
+          <Button size="icon-sm"
             type="button"
-            size="icon"
             variant="ghost"
-            className="h-10 w-10"
             onClick={() => setOffset((o) => o + 1)}
             aria-label={t`Xem ngày hôm sau`}
             title={t`Hôm sau`}
@@ -201,11 +197,9 @@ export function TodayHubCard({
               {t`Về hôm nay`}
             </button>
           )}
-          <Button
+          <Button size="icon-sm"
             type="button"
-            size="icon"
             variant="ghost"
-            className="h-10 w-10"
             onClick={toggleCollapsed}
             aria-label={collapsed ? t`Mở rộng lịch` : t`Thu gọn lịch`}
             title={collapsed ? t`Mở rộng` : t`Thu gọn`}

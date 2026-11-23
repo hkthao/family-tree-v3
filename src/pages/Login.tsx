@@ -141,7 +141,7 @@ export default function Login() {
             type="button"
             onClick={signInGoogle}
             disabled={oauthBusy}
-            className="w-full h-12 text-base"
+            className="w-full text-base"
           >
             {oauthBusy ? (
               t`Đang chuyển tới Google…`

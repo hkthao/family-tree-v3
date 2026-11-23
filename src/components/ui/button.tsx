@@ -40,6 +40,8 @@ const buttonVariants = cva(
         sm: "h-10 px-3",
         lg: "h-14 px-8 text-lg",
         icon: "h-12 w-12",
+        /** Nút vuông CHỈ có icon, cỡ nhỏ (40px) — cùng chiều cao với `sm`. Thay cho mọi `h-8/h-9/h-10 w-…` tự khai. */
+        "icon-sm": "h-10 w-10",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

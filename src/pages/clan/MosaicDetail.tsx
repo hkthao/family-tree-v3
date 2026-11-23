@@ -214,7 +214,6 @@ export default function MosaicDetail() {
           <Button
             size="sm"
             variant={arrange ? "default" : "outline"}
-            className="h-10"
             onClick={() => setArrange((v) => !v)}
           >
             {arrange ? (
@@ -228,7 +227,7 @@ export default function MosaicDetail() {
         <Button
           size="sm"
           variant="outline"
-          className="ml-auto h-10 shrink-0 gap-1.5 px-3"
+          className="ml-auto shrink-0 gap-1.5 px-3"
           onClick={() => setShowOpts(true)}
           aria-haspopup="dialog"
           aria-expanded={showOpts}

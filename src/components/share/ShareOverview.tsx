@@ -52,11 +52,9 @@ function Pager({
   if (pager.pages <= 1) return null;
   return (
     <div className="mt-auto flex items-center justify-end gap-1 pt-2 text-sm">
-      <Button
+      <Button size="icon-sm"
         type="button"
         variant="ghost"
-        size="icon"
-        className="h-8 w-8"
         aria-label={t`Trang trước`}
         disabled={pager.page === 0}
         onClick={pager.prev}
@@ -66,11 +64,9 @@ function Pager({
       <span className="min-w-12 text-center tabular-nums text-muted-foreground">
         {pager.page + 1}/{pager.pages}
       </span>
-      <Button
+      <Button size="icon-sm"
         type="button"
         variant="ghost"
-        size="icon"
-        className="h-8 w-8"
         aria-label={t`Trang sau`}
         disabled={pager.page >= pager.pages - 1}
         onClick={pager.next}
@@ -119,7 +115,7 @@ export function ShareOverview({
           icon={<IconTree />}
           title={info ? t`Dòng họ & cây gia phả` : t`Cây gia phả`}
           footer={
-            <Button size="sm" className="h-9 px-3 text-sm" onClick={onOpenTree}>
+            <Button size="sm" className="px-3 text-sm" onClick={onOpenTree}>
               <IconTree className="mr-1.5 h-4 w-4" />
               {t`Xem cây gia phả`}
             </Button>

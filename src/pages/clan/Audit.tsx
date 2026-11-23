@@ -281,11 +281,10 @@ function AuditItem({
         {/* Action buttons */}
         <div className="flex items-center gap-0.5 shrink-0">
           {canViewDetail && (
-            <Button
+            <Button size="icon-sm"
               asChild
-              size="sm"
               variant="ghost"
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground"
             >
               <Link
                 to={`/clans/${row.clan_id}/people/${row.entity_id}`}
@@ -297,8 +296,7 @@ function AuditItem({
             </Button>
           )}
           {canRestoreEntry && (
-            <Button
-              size="sm"
+            <Button size="icon-sm"
               variant="ghost"
               data-testid="audit-restore-button"
               disabled={restoreM.isPending}
@@ -318,19 +316,18 @@ function AuditItem({
                   ? t`Đang khôi phục…`
                   : t`Khôi phục về trạng thái trước`
               }
-              className="h-8 w-8 p-0 text-primary disabled:opacity-50"
+              className="text-primary disabled:opacity-50"
             >
               <IconUndo className="h-4 w-4" />
             </Button>
           )}
-          <Button
-            size="sm"
+          <Button size="icon-sm"
             variant="ghost"
             onClick={() => setExpanded((x) => !x)}
             aria-label={expanded ? t`Thu gọn` : "Xem JSON diff"}
             title={expanded ? t`Thu gọn` : t`Xem JSON diff trước/sau`}
             aria-expanded={expanded}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground"
           >
             <IconChevronUp
               className={`h-4 w-4 transition-transform ${

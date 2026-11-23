@@ -823,10 +823,9 @@ function LinksPanel({
         {!off && (
           <div className="flex shrink-0 gap-1">
             {l.contrib_paused_at && (
-              <Button
+              <Button size="icon-sm"
                 variant="ghost"
-                size="icon"
-                className="h-10 w-10 text-emerald-600"
+                className="text-emerald-600"
                 aria-label={t`Mở lại nhận đóng góp`}
                 title={t`Mở lại nhận đóng góp (link tự tạm dừng vì nhận quá nhiều trong 24 giờ — xem đóng góp chờ duyệt trước)`}
                 disabled={resume.isPending}
@@ -835,10 +834,8 @@ function LinksPanel({
                 <IconCheck className="h-5 w-5" />
               </Button>
             )}
-            <Button
+            <Button size="icon-sm"
               variant="ghost"
-              size="icon"
-              className="h-10 w-10"
               aria-label={t`Sao chép link`}
               title={t`Sao chép link`}
               onClick={() => {
@@ -849,10 +846,9 @@ function LinksPanel({
             >
               <IconCopy className="h-5 w-5" />
             </Button>
-            <Button
+            <Button size="icon-sm"
               variant="ghost"
-              size="icon"
-              className="h-10 w-10 text-destructive hover:text-destructive"
+              className="text-destructive hover:text-destructive"
               aria-label={t`Thu hồi link`}
               title={t`Thu hồi link`}
               disabled={revoke.isPending}
@@ -1085,10 +1081,8 @@ function QuestionsSection({ onResend }: { onResend: (q: FamilyQuestion) => void 
       </div>
       {q.status !== "closed" && (
         <div className="flex shrink-0 gap-1">
-          <Button
+          <Button size="icon-sm"
             variant="ghost"
-            size="icon"
-            className="h-10 w-10"
             aria-label={t`Gửi link trả lời`}
             title={t`Gửi link trả lời`}
             onClick={() => onResend(q)}
@@ -1096,10 +1090,8 @@ function QuestionsSection({ onResend }: { onResend: (q: FamilyQuestion) => void 
             <IconSend className="h-5 w-5" />
           </Button>
           {(canModerate || q.asked_by === userId) && (
-            <Button
+            <Button size="icon-sm"
               variant="ghost"
-              size="icon"
-              className="h-10 w-10"
               aria-label={t`Đóng câu hỏi`}
               title={t`Đóng câu hỏi`}
               onClick={() => closeQ.mutate(q.id)}

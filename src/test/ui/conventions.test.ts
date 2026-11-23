@@ -94,3 +94,47 @@ describe("ô chọn ngày", () => {
     ).toEqual([]);
   });
 });
+
+describe("cỡ nút <Button> theo thang chính thức (48 / 40px)", () => {
+  /** Các thẻ `<Button …>` đủ cặp ngoặc (thuộc tính JSX có `=>` và `{}` lồng nhau nên không dùng regex đơn giản). */
+  function buttonTags(text: string): string[] {
+    const out: string[] = [];
+    const re = /<Button\b/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text))) {
+      let j = m.index + m[0].length;
+      let depth = 0;
+      let q: string | null = null;
+      for (; j < text.length; j++) {
+        const c = text[j];
+        if (q) {
+          if (c === q && text[j - 1] !== "\\") q = null;
+        } else if (c === '"' || (depth > 0 && (c === "'" || c === "`"))) q = c;
+        else if (c === "{") depth++;
+        else if (c === "}") depth--;
+        else if (c === ">" && depth === 0) break;
+      }
+      out.push(text.slice(m.index, j + 1));
+      re.lastIndex = j;
+    }
+    return out;
+  }
+
+  it("không ép chiều cao lẻ (h-8 / h-9) và không khai lại cỡ có sẵn trên <Button>", () => {
+    // Thang cỡ: mặc định 48 · sm 40 · icon 48 · icon-sm 40. Từng có 49 nút ép h-8/h-9/h-10 tự do nên hàng nút
+    // cao thấp so le. Nút vuông nhỏ → size="icon-sm"; nút chữ nhỏ → size="sm" (không cần khai thêm h-*).
+    const bad: string[] = [];
+    for (const file of FILES) {
+      if (!file.endsWith(".tsx")) continue;
+      for (const tag of buttonTags(readFileSync(file, "utf8"))) {
+        const cls = /className="([^"]*)"/.exec(tag)?.[1] ?? "";
+        const size = /\bsize="([\w-]+)"/.exec(tag)?.[1];
+        const heights = cls.match(/(?<![\w:-])h-(?:8|9)(?![\w-])/g);
+        if (heights) bad.push(`${file}: h-8/h-9 trên Button → "${cls.trim()}"`);
+        if (size === "sm" && /(?<![\w:-])h-10(?![\w-])/.test(cls)) bad.push(`${file}: size="sm" đã là h-10, bỏ h-10 → "${cls.trim()}"`);
+        if (/(?<![\w:-])h-10 w-10(?![\w-])/.test(cls)) bad.push(`${file}: dùng size="icon-sm" thay cho h-10 w-10 → "${cls.trim()}"`);
+      }
+    }
+    expect(bad, bad.join("\n")).toEqual([]);
+  });
+});

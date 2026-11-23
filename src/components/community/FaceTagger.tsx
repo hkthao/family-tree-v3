@@ -233,11 +233,10 @@ export function FaceTagger({
               {(canModerate || f.canDelete) && (
                 <div className="flex shrink-0 gap-1">
                   {canModerate && !f.confirmed && onConfirm && (
-                    <Button
+                    <Button size="icon-sm"
                       type="button"
                       variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 text-emerald-600"
+                      className="text-emerald-600"
                       aria-label={t`Xác nhận`}
                       title={t`Xác nhận`}
                       onClick={() => onConfirm(f.id)}
@@ -246,11 +245,9 @@ export function FaceTagger({
                     </Button>
                   )}
                   {canModerate && !f.confirmed && onReject && (
-                    <Button
+                    <Button size="icon-sm"
                       type="button"
                       variant="ghost"
-                      size="icon"
-                      className="h-9 w-9"
                       aria-label={t`Bác gợi ý`}
                       title={t`Bác gợi ý`}
                       onClick={() => onReject(f.id)}
@@ -259,11 +256,10 @@ export function FaceTagger({
                     </Button>
                   )}
                   {onDelete && (canModerate || f.canDelete) && (
-                    <Button
+                    <Button size="icon-sm"
                       type="button"
                       variant="ghost"
-                      size="icon"
-                      className="h-9 w-9 text-destructive"
+                      className="text-destructive"
                       aria-label={t`Xoá khung`}
                       title={t`Xoá khung`}
                       onClick={() => onDelete(f.id)}

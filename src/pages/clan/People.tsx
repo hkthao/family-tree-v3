@@ -488,7 +488,7 @@ export default function People() {
             type="button"
             variant="ghost"
             size="sm"
-            className="-ml-2 h-9"
+            className="-ml-2"
             onClick={() => patch({ view: null })}
           >
             {t`← Về danh bạ`}
@@ -630,27 +630,24 @@ export default function People() {
               </span>
               {/* Chỉ icon cho gọn — nhãn nằm ở title / aria-label. */}
               <div className="flex items-center gap-1.5">
-                <Button
+                <Button size="icon-sm"
                   variant="outline"
-                  className="h-10 w-10 px-0"
                   onClick={() => setBranchOpen(true)}
                   aria-label={t`Đổi chi / quản lý chi`}
                   title={t`Đổi chi / quản lý chi`}
                 >
                   <IconGrid className="h-4 w-4" />
                 </Button>
-                <Button
+                <Button size="icon-sm"
                   variant="outline"
-                  className="h-10 w-10 px-0"
                   onClick={() => setAddrOpen(true)}
                   aria-label={t`Đặt nơi ở`}
                   title={t`Đặt nơi ở`}
                 >
                   <IconMapPin className="h-4 w-4" />
                 </Button>
-                <Button
+                <Button size="icon-sm"
                   variant="destructive-outline"
-                  className="h-10 w-10 px-0"
                   disabled={bulkDeleteM.isPending}
                   aria-label={t`Xoá`}
                   title={t`Xoá`}
@@ -666,9 +663,8 @@ export default function People() {
                 >
                   <IconTrash className="h-4 w-4" />
                 </Button>
-                <Button
+                <Button size="icon-sm"
                   variant="ghost"
-                  className="h-10 w-10 px-0"
                   onClick={() => setSelected(new Set())}
                   aria-label={t`Bỏ chọn`}
                   title={t`Bỏ chọn`}
@@ -1053,6 +1049,10 @@ function PersonListItem({
 
   return (
     <li className="relative transition-colors hover:bg-muted/40 sm:flex sm:items-center">
+      {/* Số đóng góp (+ chờ duyệt): góc TRÊN BÊN PHẢI của cả mục, một dòng, không đẩy layout. */}
+      <div className="pointer-events-none absolute right-3 top-2 z-10">
+        <CommunityBadges info={community} showPending={showPending} />
+      </div>
       <div className="flex items-start gap-2 sm:min-w-0 sm:flex-1">
         {selectable && (
           <label className="pl-3 pt-4 cursor-pointer">
@@ -1081,7 +1081,7 @@ function PersonListItem({
             {/* Name line: các nút hành động nằm ở hàng riêng dưới đáy, không đè lên tên.
               Các dòng meta + cha/mẹ/vợ phía dưới full width → hiển thị
               được nhiều hơn vì copy button ko còn chiếm 1 cột bên phải. */}
-            <p className="font-medium truncate">
+            <p className={`truncate font-medium ${community && community.total > 0 ? "pr-28" : ""}`}>
               {person.full_name}
               {person.is_root && (
                 <span className="ml-2 text-xs text-accent font-medium">
@@ -1127,7 +1127,6 @@ function PersonListItem({
               person={person}
               className="text-xs text-muted-foreground/80 mt-1 truncate"
             />
-            <CommunityHint info={community} showPending={showPending} />
           </div>
         </PanelLink>
       </div>
@@ -1203,37 +1202,45 @@ function personFacts(p: PersonRow): { label: string; done: boolean }[] {
 }
 
 /**
- * Đóng góp cộng đồng của một người ngay trong dòng Danh bạ: trích đoạn mới nhất + chip số lượng
- * (và số chờ duyệt cho editor+). Bấm dòng mở hồ sơ, nơi có mục "Người thân kể về …".
+ * Chip đóng góp cộng đồng của một người: số đóng góp (+ số chờ duyệt cho editor+). LUÔN một dòng, không xuống
+ * hàng (`whitespace-nowrap`, `shrink-0`) nên nhiều đóng góp cũng không làm vỡ bố cục. Dòng Danh bạ đặt ở góc
+ * trên bên phải; thẻ lưới đặt ở đáy thẻ.
  */
-function CommunityHint({
+function CommunityBadges({
   info,
   showPending,
-  compact = false,
 }: {
   info: PersonCommunityInfo | undefined;
   showPending?: boolean;
-  compact?: boolean;
 }) {
   if (!info || info.total === 0) return null;
   const pending = showPending ? info.pending : 0;
   return (
-    <div className="mt-1.5 space-y-1">
-      {!compact && info.latest?.excerpt && (
-        <p className="line-clamp-1 text-xs italic text-muted-foreground">
-          “{info.latest.excerpt}” — {info.latest.author}
-        </p>
-      )}
-      <div className="flex flex-wrap justify-end gap-1.5">
-        <Chip tone="rose" icon={<IconBook />}>
-          {t`${info.total} đóng góp`}
+    <span className="flex shrink-0 items-center gap-1 whitespace-nowrap">
+      <Chip tone="rose" icon={<IconBook />}>
+        {t`${info.total} đóng góp`}
+      </Chip>
+      {pending > 0 && (
+        <Chip tone="warning" icon={<IconClock />}>
+          {t`${pending} chờ duyệt`}
         </Chip>
-        {pending > 0 && (
-          <Chip tone="warning" icon={<IconClock />}>
-            {t`${pending} chờ duyệt`}
-          </Chip>
-        )}
-      </div>
+      )}
+    </span>
+  );
+}
+
+/** Thẻ lưới: chỉ chip số lượng, căn phải ở đáy thẻ. */
+function CommunityHint({
+  info,
+  showPending,
+}: {
+  info: PersonCommunityInfo | undefined;
+  showPending?: boolean;
+}) {
+  if (!info || info.total === 0) return null;
+  return (
+    <div className="mt-1.5 flex justify-end">
+      <CommunityBadges info={info} showPending={showPending} />
     </div>
   );
 }
@@ -1345,7 +1352,7 @@ function PersonGridCard({
             person={person}
             className="text-[10px] text-muted-foreground/80 mt-1 truncate"
           />
-          <CommunityHint info={community} compact />
+          <CommunityHint info={community} />
         </div>
       </PanelLink>
     </li>

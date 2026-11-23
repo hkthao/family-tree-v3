@@ -109,7 +109,7 @@ export function ShareTreeButton({ clanId, clanName, compact, trigger }: Props) {
           type="button"
           variant="outline"
           size="sm"
-          className="h-10 px-2.5 sm:px-3"
+          className="px-2.5 sm:px-3"
           onClick={openShare}
           aria-label={t`Chia sẻ cây`}
           title={t`Tạo link chia sẻ và gửi qua Zalo / Facebook / Email…`}
@@ -154,7 +154,7 @@ export function ShareTreeButton({ clanId, clanName, compact, trigger }: Props) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-10 shrink-0"
+                  className="shrink-0"
                   onClick={copyLink}
                 >
                   {copied ? (

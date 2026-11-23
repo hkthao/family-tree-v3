@@ -301,14 +301,12 @@ function ShareLinkItem({
           className="h-10 font-mono text-xs flex-1"
           onFocus={(e) => e.currentTarget.select()}
           action={
-            <Button
+            <Button size="icon-sm"
               type="button"
-              size="icon"
               variant="ghost"
               onClick={copyToClipboard}
               aria-label={copied ? t`Đã chép` : t`Chép link`}
               title={copied ? t`Đã chép` : t`Chép link`}
-              className="h-10 w-10"
             >
               {copied ? (
                 <IconCheck className="h-4 w-4" />
@@ -320,38 +318,35 @@ function ShareLinkItem({
         />
         {active && (
           <>
-            <Button
+            <Button size="icon-sm"
               type="button"
-              size="icon"
               variant="outline"
               onClick={() => setQrOpen(true)}
               aria-label={t`Hiện mã QR`}
               title={t`Hiện mã QR`}
-              className="h-10 w-10 shrink-0"
+              className="shrink-0"
             >
               <IconQrCode className="h-4 w-4" />
             </Button>
-            <Button
+            <Button size="icon-sm"
               type="button"
-              size="icon"
               variant="outline"
               onClick={() => revokeM.mutate()}
               disabled={revokeM.isPending}
               aria-label={t`Thu hồi link`}
               title={t`Thu hồi link`}
-              className="h-10 w-10 shrink-0"
+              className="shrink-0"
             >
               <IconUndo className="h-4 w-4" />
             </Button>
           </>
         )}
-        <Button
+        <Button size="icon-sm"
           type="button"
-          size="icon"
           variant="destructive-outline"
           aria-label={t`Xoá link`}
           title={t`Xoá link`}
-          className="h-10 w-10 shrink-0"
+          className="shrink-0"
           onClick={async () => {
             const ok = await confirm({
               title: t`Xoá link này vĩnh viễn?`,

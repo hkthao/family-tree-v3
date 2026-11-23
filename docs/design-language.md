@@ -99,6 +99,19 @@ luôn cùng chiều cao — không cần nhớ gõ `size="sm"` từng nút. `siz
 (vd nút icon). Nút nằm cạnh một ô nhập h-12 (vd "Lấy vị trí hiện tại") nằm ngoài vùng hành động
 nên giữ cỡ mặc định để thẳng hàng với ô.
 
+**Thang cỡ nút CHÍNH THỨC (không tự khai chiều cao khác):**
+
+| Loại | `size` | Cao |
+|---|---|---|
+| Nút chữ cỡ thường (ngoài vùng hành động, cạnh ô nhập h-12) | mặc định | 48px |
+| Nút chữ trong vùng hành động / trang quản trị / hàng dày | `sm` | 40px |
+| Nút CHỈ icon cỡ thường | `icon` | 48px |
+| Nút CHỈ icon nhỏ (trong hàng, thẻ, thanh công cụ) | `icon-sm` | 40px |
+
+Nhỏ nhất là 40px — **không** dùng `h-8` / `h-9` (hay `h-N w-N` bất kỳ) trên `<Button>`: dùng `icon-sm`
+cho nút vuông, `sm` cho nút chữ. Test `conventions.test.ts` chặn các kiểu ép chiều cao đó. Riêng nút
+icon vùng chạm 44px (`h-11 w-11`) và nút nằm TRONG ô nhập (rightSlot, `<button>` thường) là ngoại lệ có chủ đích.
+
 **Trang quản trị dùng `size="sm"` (h-10) cho mọi nút hành động** — màn quản trị dày thông tin, nút cỡ mặc định (h-12) trông quá to.
 
 **Cùng một hàng thì cùng một `size`.** Trộn `size="sm"` (h-10) với mặc định

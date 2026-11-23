@@ -41,14 +41,12 @@ export function HealthTab() {
         <p className="text-xs text-muted-foreground">
           {t`Cập nhật lúc ${new Date(data.generated_at).toLocaleString("vi-VN")}`}
         </p>
-        <Button
-          size="sm"
+        <Button size="icon-sm"
           variant="outline"
           onClick={() => refetch()}
           disabled={isFetching}
           aria-label={t`Làm mới`}
           title={isFetching ? t`Đang tải…` : t`Làm mới`}
-          className="h-9 w-9 p-0"
         >
           <IconRefresh
             className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}

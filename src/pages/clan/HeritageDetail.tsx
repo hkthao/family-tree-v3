@@ -621,14 +621,12 @@ export default function HeritageDetail({
                   icon={<IconLink />}
                   className="h-11"
                   action={
-                    <Button
-                      size="icon"
+                    <Button size="icon-sm"
                       variant="ghost"
                       onClick={() => addExternalM.mutate()}
                       disabled={addExternalM.isPending || !extUrl.trim()}
                       aria-label={t`Thêm link`}
                       title={t`Thêm link`}
-                      className="h-9 w-9"
                     >
                       <IconPlus className="h-4 w-4" />
                     </Button>

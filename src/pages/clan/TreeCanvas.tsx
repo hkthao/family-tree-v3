@@ -556,10 +556,9 @@ function IconBtn({
   children: React.ReactNode;
 }) {
   return (
-    <Button
-      size="sm"
+    <Button size="icon-sm"
       variant={primary || active ? "default" : "outline"}
-      className="h-10 w-10 shrink-0 px-0"
+      className="shrink-0"
       onClick={onClick}
       disabled={disabled}
       title={label}

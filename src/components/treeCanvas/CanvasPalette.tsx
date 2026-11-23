@@ -193,10 +193,9 @@ export function CanvasPalette({
         </p>
         <LinkPresetGallery value={linkPreset} onPick={onPickPreset} />
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
+          <Button size="icon-sm"
             variant={linkMode ? "default" : "outline"}
-            className="h-10 w-10 shrink-0 px-0"
+            className="shrink-0"
             onClick={onToggleLink}
             title={
               linkMode
@@ -355,10 +354,8 @@ export function NodeInspector({
           />
         </label>
       </div>
-      <Button
-        size="sm"
+      <Button size="icon-sm"
         variant="destructive-outline"
-        className="h-10 w-10 px-0"
         onClick={onRemove}
         title={removeLabel}
         aria-label={removeLabel}
@@ -424,10 +421,8 @@ export function LinkInspector({
         {t`Kéo chấm xanh ở hai đầu để nối sang thẻ khác hoặc thả ra khoảng trống/lên một đường. Nhấp chấm nhỏ giữa đoạn để thêm điểm uốn, kéo ô vuông để uốn theo ý, nhấp đúp ô vuông để bỏ.`}
       </p>
       {(link.points?.length ?? 0) > 0 && (
-        <Button
-          size="sm"
+        <Button size="icon-sm"
           variant="outline"
-          className="h-10 w-10 px-0"
           onClick={() => onChange({ points: [] })}
           title={t`Bỏ ${link.points?.length ?? 0} điểm uốn`}
           aria-label={t`Bỏ điểm uốn`}
@@ -457,10 +452,8 @@ export function LinkInspector({
         />
         {t`Nét đứt`}
       </label>
-      <Button
-        size="sm"
+      <Button size="icon-sm"
         variant="destructive-outline"
-        className="h-10 w-10 px-0"
         onClick={onRemove}
         title={t`Xoá đường nối`}
         aria-label={t`Xoá đường nối`}
