@@ -27,6 +27,11 @@ interface Props {
   onOpenEvent?: (eventId: string) => void;
   /** Bấm "Thiệp" để tạo nhanh thiệp chia sẻ cho sự kiện này (lan toả). */
   onCreateCard?: (ev: UpcomingEvent) => void;
+  /**
+   * Chế độ chỉ xem (trang chia sẻ công khai): không link sang người/mộ, không nút Thiệp,
+   * không "Xem ngày →" — vì người xem không ở trong app của dòng họ.
+   */
+  readOnly?: boolean;
 }
 
 /** Lớp màu cho nhãn "Còn N ngày" theo độ gấp. */
@@ -51,9 +56,10 @@ export function UpcomingEventRow({
   variant = "row",
   onOpenEvent,
   onCreateCard,
+  readOnly,
 }: Props) {
   const renderThiep = (full?: boolean) =>
-    onCreateCard ? (
+    onCreateCard && !readOnly ? (
       <button
         type="button"
         onClick={(e) => {
@@ -80,6 +86,7 @@ export function UpcomingEventRow({
   const canChi = getCanChiForSolarDate(event.date);
 
   const wrap = (node: ReactNode, className = "block h-full") => {
+    if (readOnly) return <div className={className}>{node}</div>;
     // Sự kiện của dòng họ (có eventId) → mở chi tiết sự kiện.
     if (event.eventId && onOpenEvent)
       return (
@@ -149,13 +156,15 @@ export function UpcomingEventRow({
           "flex flex-1 flex-col gap-2 text-left",
         )}
         {renderThiep(true)}
-        <Link
-          to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
-          className="text-xs text-primary hover:underline"
-          title={t`Xem ngày tốt/xấu, giờ hoàng đạo của ngày này`}
-        >
-          {t`Xem ngày →`}
-        </Link>
+        {!readOnly && (
+          <Link
+            to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
+            className="text-xs text-primary hover:underline"
+            title={t`Xem ngày tốt/xấu, giờ hoàng đạo của ngày này`}
+          >
+            {t`Xem ngày →`}
+          </Link>
+        )}
       </div>
     );
   }
@@ -214,13 +223,15 @@ export function UpcomingEventRow({
           </span>
         )}
         {renderThiep()}
-        <Link
-          to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
-          className="text-xs text-primary hover:underline whitespace-nowrap"
-          title={t`Xem ngày tốt/xấu, giờ hoàng đạo của ngày này`}
-        >
-          {t`Xem ngày →`}
-        </Link>
+        {!readOnly && (
+          <Link
+            to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
+            className="text-xs text-primary hover:underline whitespace-nowrap"
+            title={t`Xem ngày tốt/xấu, giờ hoàng đạo của ngày này`}
+          >
+            {t`Xem ngày →`}
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ import { downloadClanIcs, type IcsPerson } from "@/lib/icalExport";
 import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { getTreeData } from "@/lib/queries/tree";
-import { UpcomingEventRow } from "@/components/UpcomingEventRow";
+import { UpcomingEventList } from "@/components/UpcomingEventList";
 import {
   LIST_PAGE_SIZE_OPTIONS,
   useClientPaging,
@@ -79,8 +79,7 @@ import { useUrlState } from "@/hooks/useUrlState";
 import { unaccent } from "@/lib/unaccent";
 import { EventDetailDialog } from "@/components/EventDetailDialog";
 import {
-  computeUpcomingAnniversaries,
-  computeUpcomingEvents,
+  computeClanUpcoming,
   type UpcomingEvent,
 } from "@/lib/upcomingEvents";
 
@@ -140,25 +139,14 @@ export default function Events() {
   const effectiveDays = view === "calendar" ? 365 : daysAhead;
 
   const upcoming: UpcomingEvent[] = useMemo(() => {
-    const today = new Date();
-    const fromPersons = tree
-      ? computeUpcomingEvents({
-          today,
-          daysAhead: effectiveDays,
-          persons: tree.persons,
-          events: events ?? [],
-        })
-      : [];
-    const fromAnniv = anniversaries
-      ? computeUpcomingAnniversaries({
-          today,
-          daysAhead: effectiveDays,
-          anniversaries,
-        })
-      : [];
-    return [...fromPersons, ...fromAnniv].sort(
-      (a, b) => a.daysUntil - b.daysUntil,
-    );
+    if (!tree) return [];
+    return computeClanUpcoming({
+      today: new Date(),
+      daysAhead: effectiveDays,
+      persons: tree.persons,
+      events: events ?? [],
+      anniversaries: anniversaries ?? [],
+    });
   }, [tree, events, anniversaries, effectiveDays]);
 
   // Tìm theo tên sự kiện / dòng phụ, không phân biệt dấu.
@@ -371,25 +359,13 @@ export default function Events() {
         />
       ) : (
         <>
-          <ul
-            className={
-              view === "grid"
-                ? "grid grid-cols-2 lg:grid-cols-3 gap-2"
-                : "space-y-2"
-            }
-          >
-            {pagedUpcoming.map((e) => (
-              <li key={e.key}>
-                <UpcomingEventRow
-                  event={e}
-                  clanId={clan.id}
-                  variant={view === "grid" ? "card" : "row"}
-                  onOpenEvent={setDetailEventId}
-                  onCreateCard={setCardEvt}
-                />
-              </li>
-            ))}
-          </ul>
+          <UpcomingEventList
+            events={pagedUpcoming}
+            clanId={clan.id}
+            view={view === "grid" ? "grid" : "list"}
+            onOpenEvent={setDetailEventId}
+            onCreateCard={setCardEvt}
+          />
           <Pagination
             page={paging.page}
             totalPages={paging.totalPages}

@@ -11,7 +11,6 @@ import {
   IconHelp,
   IconHome,
   IconTree,
-  IconFlame,
   IconBook,
   IconLogIn,
   IconSend,
@@ -57,10 +56,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { nameFontFamily as fontFamilyOf } from "@/lib/tree/nameFonts";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
+import { UpcomingEventList } from "@/components/UpcomingEventList";
+import { shareUpcoming } from "@/lib/shareUpcoming";
 import {
   fetchPublicClanView,
   fetchShareView,
-  type ShareViewEvent,
   type ShareViewPayload,
 } from "@/lib/queries/share-view";
 import { HERITAGE_CATEGORY_LABEL, videoEmbedUrl } from "@/lib/queries/heritage";
@@ -976,7 +976,7 @@ export default function Share() {
   if ((publicClan || !!token) && data && data.persons.length > 0) {
     if (token) tabItems.push({ key: "overview", label: t`Tổng quan`, icon: <IconHome />, active: tab === "overview", onClick: () => setTab("overview") });
     tabItems.push({ key: "tree", label: t`Cây gia phả`, short: t`Cây`, icon: <IconTree />, active: tab === "tree", onClick: () => setTab("tree") });
-    if (data.events?.length || hasAnniversaries(data))
+    if (data.events?.length || data.persons.some((p) => !p.is_living && p.death_anniv_lunar_month && p.death_anniv_lunar_day))
       tabItems.push({ key: "events", label: t`Sự kiện & giỗ`, short: t`Giỗ`, icon: <IconCalendar />, active: tab === "events", onClick: () => setTab("events") });
     if (data.heritage?.length) tabItems.push({ key: "heritage", label: t`Di sản`, icon: <IconBook />, active: tab === "heritage", onClick: () => setTab("heritage") });
     if (hasSources) tabItems.push({ key: "details", label: t`Chi tiết & nguồn`, short: t`Chi tiết`, icon: <IconGrid />, active: tab === "details", onClick: () => setTab("details") });
@@ -1477,73 +1477,19 @@ function ShareTab({
   );
 }
 
-function eventWhen(e: ShareViewEvent): string {
-  if (e.date_solar) {
-    const [y, m, d] = e.date_solar.split("-");
-    return e.is_yearly ? `${d}/${m} (DL)` : `${d}/${m}/${y} (DL)`;
-  }
-  if (e.lunar_month) {
-    return `${e.lunar_day}/${e.lunar_month}${e.lunar_is_leap ? t` nhuận` : ""} ÂL`;
-  }
-  return "";
-}
-
-function anniversaries(data: ShareViewPayload) {
-  return data.persons
-    .filter(
-      (p) =>
-        !p.is_living && p.death_anniv_lunar_month && p.death_anniv_lunar_day,
-    )
-    .map((p) => ({
-      name: p.full_name,
-      m: p.death_anniv_lunar_month!,
-      d: p.death_anniv_lunar_day!,
-    }));
-}
-
-function hasAnniversaries(data: ShareViewPayload): boolean {
-  return anniversaries(data).length > 0;
-}
-
-/** Nội dung tab "Sự kiện & giỗ" — cuộn trong vùng nội dung. */
+/** Nội dung tab "Sự kiện & giỗ" — cùng danh sách + cùng kiểu dòng với màn Sự kiện trong app. */
 function EventsGioPanel({ data }: { data: ShareViewPayload }) {
-  const events = data.events ?? [];
-  const gio = anniversaries(data);
+  const upcoming = useMemo(() => shareUpcoming(data), [data]);
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="container max-w-4xl space-y-2 px-4 py-4">
-        {events.length === 0 && gio.length === 0 && (
+        {upcoming.length === 0 ? (
           <p className="p-8 text-center text-muted-foreground">
             {t`Chưa có sự kiện hay ngày giỗ.`}
           </p>
+        ) : (
+          <UpcomingEventList events={upcoming} clanId="" readOnly />
         )}
-        {events.map((e) => (
-          <div key={e.id} className="rounded-xl border bg-card shadow-sm p-3">
-            <span className="font-medium">{e.title}</span>
-            {eventWhen(e) && (
-              <span className="text-sm text-muted-foreground">
-                {" "}
-                · {eventWhen(e)}
-              </span>
-            )}
-            {e.notes && (
-              <p className="text-sm text-muted-foreground">{e.notes}</p>
-            )}
-          </div>
-        ))}
-        {gio.map((g, i) => (
-          <div
-            key={`gio-${i}`}
-            className="rounded-xl border bg-card shadow-sm p-3 text-sm"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <IconFlame className="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-400" />
-              <span>
-                Ngày giỗ <b>{g.name}</b> · {g.d}/{g.m} ÂL
-              </span>
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );

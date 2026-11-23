@@ -286,3 +286,27 @@ export function computeUpcomingAnniversaries({
   }
   return out;
 }
+
+/**
+ * Danh sách "sắp tới" của MỘT dòng họ: sinh nhật + sự kiện tuỳ chỉnh + ngày giỗ, đã gộp và xếp theo
+ * ngày. Màn Sự kiện, Hôm nay và trang Share đều gọi hàm này — thêm nguồn sự kiện mới chỉ sửa ở đây.
+ */
+export function computeClanUpcoming(input: {
+  today: Date;
+  daysAhead: number;
+  persons: PersonForTree[];
+  events: EventRow[];
+  anniversaries: PersonAnniversary[];
+  generationOffset?: number;
+}): UpcomingEvent[] {
+  const { today, daysAhead, persons, events, anniversaries } = input;
+  return [
+    ...computeUpcomingEvents({ today, daysAhead, persons, events }),
+    ...computeUpcomingAnniversaries({
+      today,
+      daysAhead,
+      anniversaries,
+      generationOffset: input.generationOffset,
+    }),
+  ].sort((a, b) => a.daysUntil - b.daysUntil);
+}
