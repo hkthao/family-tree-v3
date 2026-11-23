@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { EXTRA_SPECS, RESOURCES, resourceSpecs } from "../../../mcp-server/src/resourceDefs";
+import { TIMELINE_ICON_KEYS } from "@/components/timeline/TimelineIcon";
+import { EXTRA_SPECS, RESOURCES, resourceSpecs, TIMELINE_ICONS } from "../../../mcp-server/src/resourceDefs";
 import { RESOURCE_OPS, RESOURCE_TOOL_NAMES } from "../../../mcp-server/src/resources";
 import { MCP_TOOLS, scopeAllows, toolsForScope, withClanId } from "../../../mcp-server/src/specs";
 
@@ -81,5 +82,27 @@ describe("tool CRUD cho Bảng tin / Phòng ký ức / Ảnh ghép / Di sản / 
     const mosaic = RESOURCES.find((r) => r.key === "mosaic")!.fields;
     expect(mosaic.cols).toMatchObject({ min: 2, max: 12 });
     expect(mosaic.slots).toMatchObject({ min: 4, max: 150 });
+  });
+
+  it("bộ icon của mốc dòng thời gian trong MCP trùng bộ icon của app (không lệch khi thêm icon mới)", () => {
+    expect([...TIMELINE_ICONS].sort()).toEqual([...TIMELINE_ICON_KEYS].sort());
+  });
+
+  it("có đủ công cụ cho dòng thời gian và liên kết dòng họ", () => {
+    const names = new Set(NEW.map((t) => t.name));
+    for (const n of [
+      "list_timeline_milestones",
+      "create_timeline_milestone",
+      "update_timeline_milestone",
+      "delete_timeline_milestone",
+      "get_person_timeline",
+      "set_person_timeline",
+      "list_clan_links",
+      "get_clan_link",
+      "create_clan_link",
+      "create_clan_link_from_token",
+      "set_clan_link_status",
+      "delete_clan_link",
+    ]) expect(names.has(n), n).toBe(true);
   });
 });

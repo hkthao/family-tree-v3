@@ -27,6 +27,8 @@ describe("MCP resources: phân quyền với phiên thật", () => {
       return { ok: false, text: (e as Error).message };
     }
   };
+  /** RLS chặn ghi trả về 0 dòng → tool trả thông báo "Không ... được" (không ném lỗi). */
+  const refused = (r: { ok: boolean; text: string }) => !r.ok || /^Không (ghi|thực hiện) được/.test(r.text);
   const idOf = (t: string) => t.match(/id ([0-9a-f-]{36})/)?.[1] ?? "";
 
   beforeAll(async () => {
@@ -136,7 +138,78 @@ describe("MCP resources: phân quyền với phiên thật", () => {
     expect((await tl(outsider, { entries: [{ year: 1999, body: "người ngoài" }] })).ok).toBe(false);
     expect((await run(editor, "set_person_timeline", { person_id: personB, entries: [{ year: 1999, body: "khác họ" }] })).ok).toBe(false);
     expect((await run(admin, "set_person_timeline", { person_id: personA, entries: [{ year: 1999, body: "chéo" }] }, B)).ok).toBe(false);
-    expect((await svc.from("person_timeline").select("id").eq("person_id", personA)).data).toHaveLength(1);
+    expect((await (svc as unknown as import("@supabase/supabase-js").SupabaseClient).from("clan_timeline_milestones").select("id").eq("person_id", personA)).data).toHaveLength(1);
+  });
+
+  it("dòng thời gian dùng chung: mốc theo người (title/body/on_clan) và CRUD mốc; biên tập ghi được, người xem chỉ đọc", async () => {
+    // set_person_timeline nhận title; chỉ body dài thì tiêu đề được suy ra và body giữ nguyên văn
+    const long = "x".repeat(300);
+    expect((await run(editor, "set_person_timeline", { person_id: personA, mode: "replace", confirm: true, entries: [{ year: 2001, title: "Tiêu đề riêng", body: "chi tiết" }, { year: 2002, body: long }] })).ok).toBe(true);
+    const rows = JSON.parse((await run(viewer, "get_person_timeline", { person_id: personA })).text);
+    expect(rows[0]).toMatchObject({ year: 2001, title: "Tiêu đề riêng", body: "chi tiết", on_clan: false });
+    expect(rows[1].title.length).toBeLessThanOrEqual(120);
+    expect(rows[1].body).toBe(long);
+
+    // CRUD tổng quát
+    const created = await run(editor, "create_timeline_milestone", { year: 1975, title: "Thống nhất đất nước" });
+    expect(created.ok).toBe(true);
+    const mid = idOf(created.text);
+    expect((await run(editor, "create_timeline_milestone", { year: 1980, title: "Của người", person_id: personA, on_clan: false })).ok).toBe(true);
+    expect((await run(editor, "create_timeline_milestone", { year: 1980, title: "Sai họ", person_id: personB })).ok).toBe(false); // người họ khác
+    expect((await run(editor, "create_timeline_milestone", { year: 1980, title: "Sai icon", icon_key: "khong-co" })).ok).toBe(false);
+    expect((await run(viewer, "create_timeline_milestone", { year: 1980, title: "Người xem" })).ok).toBe(false);
+    expect((await run(outsider, "list_timeline_milestones", {})).text).not.toContain("Thống nhất");
+
+    const clanOnly = JSON.parse((await run(viewer, "list_timeline_milestones", { on_clan: true })).text);
+    expect(clanOnly.rows.map((r: { title: string }) => r.title)).toContain("Thống nhất đất nước");
+    expect(clanOnly.rows.map((r: { title: string }) => r.title)).not.toContain("Của người");
+    const ofPerson = JSON.parse((await run(viewer, "list_timeline_milestones", { person_id: personA })).text);
+    expect(ofPerson.rows.every((r: { person_id: string }) => r.person_id === personA)).toBe(true);
+
+    expect((await run(editor, "update_timeline_milestone", { timeline_milestone_id: mid, title: "Đã sửa", sort_order: 5 })).ok).toBe(true);
+    expect(refused(await run(viewer, "update_timeline_milestone", { timeline_milestone_id: mid, title: "Người xem sửa" }))).toBe(true);
+    expect((await run(editor, "delete_timeline_milestone", { timeline_milestone_id: mid })).ok).toBe(false); // thiếu confirm
+    expect((await run(editor, "delete_timeline_milestone", { timeline_milestone_id: mid, confirm: true })).ok).toBe(true);
+  });
+
+  it("liên kết dòng họ: quản trị đề nghị + bên kia xác nhận bằng mã; biên tập/người xem không ghi được; không lái sang họ khác", async () => {
+    // chỉ quản trị đề nghị được (RLS plinks_insert); người gắn phải thuộc họ này
+    expect((await run(editor, "create_clan_link", { person_id: personA })).ok).toBe(false);
+    expect((await run(admin, "create_clan_link", { person_id: personB })).ok).toBe(false); // người của họ B, token đang ở họ A
+    const made = await run(admin, "create_clan_link", { person_id: personA, link_type: "related", note: "Cùng gốc" });
+    expect(made.ok, made.text).toBe(true);
+    const tok = made.text.match(/: ([A-Za-z0-9_-]{16,})\./)?.[1] ?? "";
+    expect(tok.length).toBeGreaterThan(15);
+    const linkId = idOf(made.text);
+
+    // thành viên đọc được danh sách (không thấy mã mời trong list); người ngoài không thấy gì
+    const list = await run(viewer, "list_clan_links", {});
+    expect(list.ok).toBe(true);
+    expect(list.text).toContain(linkId);
+    expect(list.text).not.toContain(tok);
+    expect((await run(outsider, "list_clan_links", {})).text).toContain("chưa có liên kết");
+    expect((await run(viewer, "list_clan_links", { status: "bad" })).ok).toBe(false);
+
+    // mã mời chỉ hiện cho quản trị bên đề nghị khi xem chi tiết
+    expect(JSON.parse((await run(admin, "get_clan_link", { link_id: linkId })).text).invite_token).toBe(tok);
+
+    // họ B (admin cũng quản trị B) xác nhận bằng mã; người B phải thuộc B
+    expect((await run(admin, "create_clan_link_from_token", { token: tok, person_id: personA }, B)).ok).toBe(false);
+    const ok = await run(admin, "create_clan_link_from_token", { token: tok, person_id: personB }, B);
+    expect(ok.ok, ok.text).toBe(true);
+
+    const confirmed = JSON.parse((await run(admin, "get_clan_link", { link_id: linkId })).text);
+    expect(confirmed.status).toBe("confirmed");
+    expect(confirmed.invite_token).toBeUndefined();
+    expect((await run(viewer, "list_clan_links", { status: "confirmed" })).text).toContain(linkId);
+
+    // gỡ: cần confirm; người xem không gỡ được; sau gỡ là revoked (không xoá)
+    expect((await run(admin, "delete_clan_link", { link_id: linkId })).ok).toBe(false);
+    expect(refused(await run(viewer, "delete_clan_link", { link_id: linkId, confirm: true }))).toBe(true);
+    expect((await run(admin, "delete_clan_link", { link_id: linkId, confirm: true })).ok).toBe(true);
+    expect((await svc.from("person_links").select("status").eq("id", linkId).single()).data?.status).toBe("revoked");
+    // họ khác (không thuộc liên kết) không thao tác được
+    expect((await run(admin, "get_clan_link", { link_id: linkId }, A)).ok).toBe(true);
   });
 
   it("phòng ký ức: chỉ link https, đúng một nguồn ảnh, người phải cùng họ", async () => {

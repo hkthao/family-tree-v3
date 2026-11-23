@@ -1,5 +1,5 @@
 /**
- * Thao tác CRUD cho Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng, Dòng thời gian một người và thống kê Bản đồ.
+ * Thao tác CRUD cho Bảng tin, Phòng ký ức, Ảnh ghép, Di sản, Mộ phần, Quỹ họ, Bảng vàng, Dòng thời gian (dòng họ + từng người), Liên kết dòng họ và thống kê Bản đồ.
  * Khai báo trường nằm ở resourceDefs.ts; file này là phần thực thi.
  *
  * Quyền (hai lớp, giống ops.ts):
@@ -17,6 +17,7 @@
 
 import { EXTRA_SPECS, RESOURCES, type FieldDef, type ResourceDef } from "./resourceDefs.ts";
 import { UserError, UUID_RE } from "./fields.ts";
+import { LINK_OPS } from "./links.ts";
 import type { Ctx } from "./ops.ts";
 
 type Args = Record<string, unknown>;
@@ -434,13 +435,30 @@ async function deleteTile(c: Ctx, a: Args): Promise<string> {
 }
 
 // ─── Dòng thời gian một người ──────────────────────────────────────────
+// Cùng kho `clan_timeline_milestones` với poster dòng họ (mốc có person_id). CRUD tổng quát của kho nằm ở
+// list/create/update/delete_timeline_milestone (RESOURCES); hai tool dưới đây là lối tắt theo từng người.
 
 const MAX_TIMELINE = 100;
+/** Tiêu đề tối đa khi suy từ nội dung (khớp migration gộp person_timeline). */
+const DERIVE_TITLE = 120;
+
+/** Chỉ có nội dung: ≤120 ký tự thì làm tiêu đề, dài hơn thì cắt làm tiêu đề và giữ nguyên văn ở `body`. */
+function titleBody(title: string | null, body: string | null): { title: string; body: string | null } {
+  if (title) return { title, body };
+  const b = body ?? "";
+  return b.length <= DERIVE_TITLE ? { title: b, body: null } : { title: `${b.slice(0, DERIVE_TITLE - 3)}…`, body: b };
+}
 
 async function getTimeline(c: Ctx, a: Args): Promise<string> {
   only(a, ["person_id"]);
   const person = await personInClan(c, a.person_id);
-  const { data, error } = await c.db.from("person_timeline").select("id, year, era, body").eq("clan_id", c.clanId).eq("person_id", person).order("year").order("sort");
+  const { data, error } = await c.db
+    .from("clan_timeline_milestones")
+    .select("id, year, era, title, body, on_clan, sort_order")
+    .eq("clan_id", c.clanId)
+    .eq("person_id", person)
+    .order("year")
+    .order("sort_order");
   if (error) throw new Error(error.message);
   return data?.length ? JSON.stringify(data, null, 1) : "Người này chưa có mốc nào trong dòng thời gian.";
 }
@@ -449,37 +467,52 @@ async function setTimeline(c: Ctx, a: Args): Promise<string> {
   only(a, ["person_id", "entries", "mode", "confirm"]);
   const person = await personInClan(c, a.person_id);
   const mode = a.mode === undefined ? "append" : await check(c, "mode", { k: "enum", v: ["append", "replace"], req: true }, a.mode);
-  if (!Array.isArray(a.entries)) throw new UserError("entries phải là mảng các mốc {year, era?, body}.");
+  if (!Array.isArray(a.entries)) throw new UserError("entries phải là mảng các mốc {year, title?, body?, era?, on_clan?}.");
   if (a.entries.length > MAX_TIMELINE) throw new UserError(`Tối đa ${MAX_TIMELINE} mốc mỗi lần.`);
-  const rows: { year: number; era: string | null; body: string }[] = [];
+  const rows: { year: number; era: string | null; title: string; body: string | null; on_clan: boolean }[] = [];
   for (const [i, e] of a.entries.entries()) {
-    if (!e || typeof e !== "object" || Array.isArray(e)) throw new UserError(`entries[${i}] phải là object {year, era?, body}.`);
+    if (!e || typeof e !== "object" || Array.isArray(e)) throw new UserError(`entries[${i}] phải là object {year, title?, body?, era?, on_clan?}.`);
     const en = e as Args;
-    for (const k of Object.keys(en)) if (!["year", "era", "body"].includes(k)) throw new UserError(`entries[${i}].${k} không hợp lệ. Cho phép: year, era, body.`);
-    const year = (await check(c, `entries[${i}].year`, { k: "int", min: -3000, max: 3000, req: true }, en.year)) as number;
-    const body = (await check(c, `entries[${i}].body`, { k: "str", max: 1000, req: true }, en.body)) as string;
+    for (const k of Object.keys(en)) if (!["year", "era", "title", "body", "on_clan"].includes(k)) throw new UserError(`entries[${i}].${k} không hợp lệ. Cho phép: year, era, title, body, on_clan.`);
+    const year = (await check(c, `entries[${i}].year`, { k: "int", min: -3000, max: 9999, req: true }, en.year)) as number;
+    const title = en.title === undefined ? null : ((await shortText(c, `entries[${i}].title`, en.title, 200)) as string | null);
+    const body = en.body === undefined ? null : ((await shortText(c, `entries[${i}].body`, en.body, 2000)) as string | null);
+    if (!title && !body) throw new UserError(`entries[${i}] cần title hoặc body.`);
     const era = en.era === undefined ? null : ((await shortText(c, `entries[${i}].era`, en.era, 40)) as string | null);
-    rows.push({ year, era, body });
+    const on_clan = en.on_clan === undefined ? false : ((await check(c, `entries[${i}].on_clan`, { k: "bool" }, en.on_clan)) as boolean);
+    rows.push({ year, era, on_clan, ...titleBody(title, body) });
   }
 
-  const { data: old, error: e0 } = await c.db.from("person_timeline").select("id, sort").eq("clan_id", c.clanId).eq("person_id", person);
+  // "Mốc riêng" của người = mốc KHÔNG hiện trên poster dòng họ; thay thế chỉ đụng nhóm này.
+  const { data: old, error: e0 } = await c.db.from("clan_timeline_milestones").select("id, sort_order, on_clan").eq("clan_id", c.clanId).eq("person_id", person);
   if (e0) throw new Error(e0.message);
-  if (mode === "replace" && old?.length) needConfirm(a);
+  const own = (old ?? []).filter((o) => o.on_clan === false);
+  if (mode === "replace" && own.length) needConfirm(a);
   if (mode === "append" && !rows.length) throw new UserError("entries rỗng — không có gì để thêm.");
 
-  const base = mode === "append" ? Math.max(-1, ...(old ?? []).map((o) => o.sort as number)) + 1 : 0;
+  const base = mode === "append" ? Math.max(-1, ...(old ?? []).map((o) => o.sort_order as number)) + 1 : 0;
   if (rows.length) {
-    const { error } = await c.db.from("person_timeline").insert(rows.map((r, i) => ({ ...r, clan_id: c.clanId, person_id: person, sort: base + i })));
+    const { error } = await c.db.from("clan_timeline_milestones").insert(
+      rows.map((r, i) => ({
+        ...r,
+        clan_id: c.clanId,
+        person_id: person,
+        sort_order: Math.min(999, base + i),
+        // Mốc cuộc đời ẩn thẻ bối cảnh; mốc đưa lên poster dòng họ dùng bối cảnh mặc định theo năm.
+        context_title: r.on_clan ? null : "",
+        context_body: r.on_clan ? null : "",
+      })),
+    );
     if (error) throw new UserError(error.message);
   }
   // Thay thế: chèn bản mới trước rồi mới xoá bản cũ (giống app) — lỗi giữa chừng không làm mất mốc đã có.
-  if (mode === "replace" && old?.length) {
-    const { error } = await c.db.from("person_timeline").delete().eq("clan_id", c.clanId).in("id", old.map((o) => o.id as string));
+  if (mode === "replace" && own.length) {
+    const { error } = await c.db.from("clan_timeline_milestones").delete().eq("clan_id", c.clanId).in("id", own.map((o) => o.id as string));
     if (error) throw new UserError(error.message);
   }
   return mode === "append"
     ? `Đã thêm ${rows.length} mốc vào dòng thời gian (tổng ${(old?.length ?? 0) + rows.length}).`
-    : `Đã thay dòng thời gian: ${rows.length} mốc (bỏ ${old?.length ?? 0} mốc cũ).`;
+    : `Đã thay dòng thời gian: ${rows.length} mốc (bỏ ${own.length} mốc cũ).`;
 }
 
 // ─── Bản đồ ────────────────────────────────────────────────────────────
@@ -516,6 +549,7 @@ export const RESOURCE_OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> 
   get_person_timeline: getTimeline,
   set_person_timeline: setTimeline,
   map_stats: mapStats,
+  ...LINK_OPS,
 };
 
 for (const r of RESOURCES) {

@@ -56,6 +56,25 @@ const LAT = { k: "num", min: -90, max: 90, d: "Latitude" } as const;
 const LNG = { k: "num", min: -180, max: 180, d: "Longitude" } as const;
 const YEAR = { k: "int", min: 1, max: 2100, d: "Year built" } as const;
 
+/** Hình minh hoạ của mốc dòng thời gian — PHẢI trùng bộ icon của app (src/components/timeline/TimelineIcon.tsx; có test đối chiếu). */
+export const TIMELINE_ICONS = [
+  "tree",
+  "cradle",
+  "family",
+  "candle",
+  "citadel",
+  "scroll",
+  "sword",
+  "boat",
+  "banner",
+  "book",
+  "rice",
+  "bicycle",
+  "radio",
+  "phone",
+  "ring",
+] as const;
+
 export const RESOURCES: ResourceDef[] = [
   {
     key: "honor_entry",
@@ -202,6 +221,31 @@ export const RESOURCES: ResourceDef[] = [
       max_per_member: { k: "int", min: 1, max: 50 },
       cols: { k: "int", min: 2, max: 12, d: "Grid columns" },
       slots: { k: "int", min: 4, max: 150, d: "Total tiles" },
+    },
+  },
+  {
+    key: "timeline_milestone",
+    plural: "timeline_milestones",
+    table: "clan_timeline_milestones",
+    label:
+      "Timeline milestone (Dòng thời gian): one dated event on the clan poster and/or a person's life timeline. Same structure either way — person_id attaches it to a person; on_clan says whether it also appears on the clan poster",
+    soft: false,
+    order: [["year", true], ["sort_order", true]],
+    searchCol: "title",
+    filters: ["person_id", "on_clan"],
+    extraCols: ["source_key"],
+    createHint:
+      "Clan-level overview milestone: leave person_id unset (on_clan defaults true). Detailed life event of a person: pass person_id and on_clan=false (it then shows only on that person's page unless the user wants it on the clan poster).",
+    fields: {
+      year: { k: "int", min: -3000, max: 9999, req: true, d: "Year (negative = BC)" },
+      title: { k: "str", max: 200, req: true, d: "Short headline shown on the poster" },
+      body: { k: "str", max: 2000, d: "Longer description (plain text)" },
+      era: { k: "str", max: 40, d: 'Can chi of the year, e.g. "Nhâm Thìn" (optional)' },
+      sort_order: { k: "int", min: 0, max: 999, d: "Order within the same year (smaller first)" },
+      icon_key: { k: "enum", v: TIMELINE_ICONS, d: "Illustration icon" },
+      person_id: { k: "person", d: "Person this milestone is about (optional)" },
+      on_clan: { k: "bool", d: "Show on the clan timeline poster (default true; use false for a person's detailed events)" },
+      image_url: { k: "url", max: 500, d: "https image link for the milestone picture (optional)" },
     },
   },
 ];
@@ -436,19 +480,19 @@ export const EXTRA_SPECS: McpToolSpec[] = [
     description: "Delete a mosaic tile. confirm=true only after the user explicitly asked.",
     inputSchema: obj({ tile_id: id("Id from list_mosaic_tiles"), confirm: { type: "boolean" } }, ["tile_id", "confirm"]),
   },
-  // Dòng thời gian một người
+  // Dòng thời gian một người (cùng kho với dòng thời gian dòng họ — xem thêm list_timeline_milestones)
   {
     name: "get_person_timeline",
     needs: "read",
     description:
-      "A person's life timeline (Dòng thời gian): dated milestones shown on their profile, oldest first. Empty means none saved yet (the app then shows lines parsed from the biography).",
+      "A person's life timeline (Dòng thời gian): dated milestones shown on their profile, oldest first (id, year, era, title, body, on_clan). Same store as the clan timeline (list_timeline_milestones). Empty means none saved yet (the app then shows lines parsed from the biography). Note: the app also shows automatic READ-ONLY life events on a person page (birth, children born, parents\' deaths, death) computed from the profile — they are not stored and do not appear here.",
     inputSchema: obj({ person_id: id("Person id from search_person") }, ["person_id"]),
   },
   {
     name: "set_person_timeline",
     needs: "write",
     description:
-      "Write a person's life timeline. mode=append (default) adds entries after the existing ones; mode=replace swaps the whole timeline for `entries` (pass [] to clear) and needs confirm=true when entries already exist — only after the user explicitly asked. Entries are shown sorted by year; same-year entries keep the order given.",
+      "Write a person's life timeline. mode=append (default) adds entries after the existing ones; mode=replace swaps the person's own entries (those NOT shown on the clan poster) for `entries` (pass [] to clear) and needs confirm=true when such entries already exist — only after the user explicitly asked. Each entry needs `title` and/or `body` (if only body is given, the app derives the headline from it). Entries are shown sorted by year; same-year entries keep the order given.",
     inputSchema: obj(
       {
         person_id: id("Person id from search_person"),
@@ -457,11 +501,13 @@ export const EXTRA_SPECS: McpToolSpec[] = [
           maxItems: 100,
           items: obj(
             {
-              year: { type: "integer", minimum: -3000, maximum: 3000, description: "Year (negative = BC)" },
+              year: { type: "integer", minimum: -3000, maximum: 9999, description: "Year (negative = BC)" },
               era: { type: "string", maxLength: 40, description: "Can chi of the year, e.g. \"Nhâm Thìn\" (optional)" },
-              body: { type: "string", minLength: 1, maxLength: 1000, description: "What happened" },
+              title: { type: "string", maxLength: 200, description: "Short headline (optional if body is given)" },
+              body: { type: "string", maxLength: 2000, description: "What happened" },
+              on_clan: { type: "boolean", description: "Also show on the clan timeline poster (default false)" },
             },
-            ["year", "body"],
+            ["year"],
           ),
         },
         mode: { type: "string", enum: ["append", "replace"] },
@@ -469,6 +515,63 @@ export const EXTRA_SPECS: McpToolSpec[] = [
       },
       ["person_id", "entries"],
     ),
+  },
+  // Liên kết dòng họ (person_links): nối một người của họ này với dòng họ khác (thông gia / tổ tiên – hậu duệ / họ hàng)
+  {
+    name: "list_clan_links",
+    needs: "read",
+    description:
+      "Links between THIS clan and other clans (Liên kết dòng họ): in-law (same_person), ancestor_of / descendant_of, or related. Each row: id, direction (outgoing = this clan proposed, incoming = another clan proposed), type, status (pending/confirmed/revoked), this clan's person, the other clan id, note. Names of other clans are only given for confirmed links (see get_clan_link).",
+    inputSchema: obj({
+      status: { type: "string", enum: ["pending", "confirmed", "revoked"], description: "Filter by status" },
+      limit: { type: "integer", minimum: 1, maximum: 50 },
+    }),
+  },
+  {
+    name: "get_clan_link",
+    needs: "read",
+    description:
+      "One link in full. For a CONFIRMED link also returns who is on the other side (clan name and person; living people of a clan that hides them are masked). Pending links created by this clan show the invite token to give to the other clan's admin.",
+    inputSchema: obj({ link_id: id("Id from list_clan_links") }, ["link_id"]),
+  },
+  {
+    name: "create_clan_link",
+    needs: "write",
+    description:
+      "PROPOSE a link from one of this clan's people to another clan (clan admin only). Creates a pending link and returns an invite token: give it to the OTHER clan's admin, who confirms it in the app (Liên kết dòng họ → nhập mã) or with create_clan_link_from_token. Nothing is linked until they confirm. link_type: same_person (in-law: the same person also exists in the other clan), ancestor_of / descendant_of (the other side is an ancestor / descendant of this person), related (relatives, see note).",
+    inputSchema: obj(
+      {
+        person_id: id("This clan's person (from search_person)"),
+        link_type: { type: "string", enum: ["same_person", "ancestor_of", "descendant_of", "related"] },
+        person_b_name_hint: { type: "string", maxLength: 200, description: "Who the person is on the other side (hint for their admin)" },
+        note: { type: "string", maxLength: 1000 },
+      },
+      ["person_id"],
+    ),
+  },
+  {
+    name: "create_clan_link_from_token",
+    needs: "write",
+    description:
+      "CONFIRM an invite token that another clan's admin gave you, linking one of THIS clan's people to it (clan admin only). Use when this clan is the receiving side.",
+    inputSchema: obj(
+      { token: { type: "string", minLength: 8, maxLength: 200, description: "Invite token from the other clan" }, person_id: id("This clan's person to link (from search_person)") },
+      ["token", "person_id"],
+    ),
+  },
+  {
+    name: "set_clan_link_status",
+    needs: "write",
+    description:
+      "Accept an INCOMING pending link that another clan proposed directly to this clan (clan admin only): status=confirmed.",
+    inputSchema: obj({ link_id: id("Id from list_clan_links (direction incoming, status pending)"), status: { type: "string", enum: ["confirmed"] } }, ["link_id", "status"]),
+  },
+  {
+    name: "delete_clan_link",
+    needs: "write",
+    description:
+      "Remove a link: a still-pending link this clan proposed is deleted; a confirmed link is marked revoked (kept for the audit trail). Clan admin only. confirm=true only after the user explicitly asked.",
+    inputSchema: obj({ link_id: id("Id from list_clan_links"), confirm: { type: "boolean" } }, ["link_id", "confirm"]),
   },
   // Bản đồ
   {
