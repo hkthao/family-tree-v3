@@ -15,9 +15,10 @@
  * Ngoài ra: chỉ nhận trường đã khai báo (không có mass-assignment), link ảnh/mô hình chỉ https, mọi lệnh xoá đòi confirm.
  */
 
-import { EXTRA_SPECS, RESOURCES, type FieldDef, type ResourceDef } from "./resourceDefs.ts";
+import { EXTRA_SPECS, RESOURCES, TIMELINE_ICONS, type FieldDef, type ResourceDef } from "./resourceDefs.ts";
 import { UserError, UUID_RE } from "./fields.ts";
 import { LINK_OPS } from "./links.ts";
+import { eraOfYear, SCENE_IDS, TIMELINE_ERAS, TIMELINE_SCENES, TIMELINE_TEMPLATES } from "./timelineData.ts";
 import type { Ctx } from "./ops.ts";
 
 type Args = Record<string, unknown>;
@@ -78,6 +79,18 @@ async function check(c: Ctx, name: string, f: FieldDef, v: unknown): Promise<unk
       if (t.length > f.max || !/^https:\/\/[^\s]+$/i.test(t)) throw new UserError(`${name} phải là liên kết https hợp lệ.`);
       return t;
     }
+    case "image": {
+      if (typeof v !== "string") throw new UserError(`${name} phải là chuỗi.`);
+      const t = v.trim();
+      if (!t) return null;
+      if (t.length > f.max) throw new UserError(`${name} quá dài (tối đa ${f.max}).`);
+      if (t.startsWith("lib:")) {
+        if (!SCENE_IDS.includes(t.slice(4))) throw new UserError(`${name}: cảnh "${t.slice(4)}" không có trong thư viện. Xem list_timeline_library (scenes).`);
+        return t;
+      }
+      if (!/^https:\/\/[^\s]+$/i.test(t)) throw new UserError(`${name} phải là liên kết https hoặc lib:<id cảnh>.`);
+      return t;
+    }
     case "enum":
       if (typeof v !== "string" || !f.v.includes(v)) throw new UserError(`${name} phải là một trong: ${f.v.join(", ")}.`);
       return v;
@@ -107,7 +120,7 @@ async function check(c: Ctx, name: string, f: FieldDef, v: unknown): Promise<unk
 }
 
 /** Đọc các trường của tài nguyên từ đầu vào; từ chối khoá lạ (không cho ghi cột ngoài danh sách). */
-async function parseFields(c: Ctx, r: ResourceDef, a: Args, creating: boolean, metaKeys: string[]): Promise<Record<string, unknown>> {
+async function parseFields(c: Ctx, r: ResourceDef, a: Args, creating: boolean, metaKeys: string[], allowEmpty = false): Promise<Record<string, unknown>> {
   for (const k of Object.keys(a)) {
     if (!(k in r.fields) && !metaKeys.includes(k)) throw new UserError(`Trường "${k}" không được phép. Cho phép: ${Object.keys(r.fields).join(", ")}.`);
   }
@@ -119,7 +132,7 @@ async function parseFields(c: Ctx, r: ResourceDef, a: Args, creating: boolean, m
     }
     out[k] = await check(c, k, f, a[k]);
   }
-  if (Object.keys(out).length === 0) throw new UserError("Không có trường nào để ghi.");
+  if (Object.keys(out).length === 0 && !allowEmpty) throw new UserError("Không có trường nào để ghi.");
   return out;
 }
 
@@ -158,9 +171,46 @@ async function listOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
   return JSON.stringify({ total: count ?? rows.length, shown: rows.length, offset, rows: out }, null, 1);
 }
 
+/** Chuẩn hoá nội dung bối cảnh tự viết: mỗi dòng một ý (≤6 ý, ≤160 ký tự/ý) — khớp textToBullets của app. */
+function normContext(title: unknown, body: unknown): { context_title: string; context_body: string } {
+  const t = typeof title === "string" ? title.trim() : "";
+  const bullets = (typeof body === "string" ? body : "")
+    .split("\n")
+    .map((l) => l.trim().replace(/^[-•*]\s*/, ""))
+    .filter(Boolean);
+  if (!t || bullets.length === 0) throw new UserError("Bối cảnh tự viết cần context_title và ít nhất một dòng ở context_body (muốn ẩn thẻ: hide_context=true; muốn theo thời đại mặc định: bỏ trống cả hai).");
+  if (bullets.length > 6) throw new UserError("context_body tối đa 6 dòng (mỗi dòng một ý).");
+  if (bullets.some((l) => l.length > 160)) throw new UserError("Mỗi ý trong context_body tối đa 160 ký tự.");
+  return { context_title: t.slice(0, 200), context_body: bullets.join("\n") };
+}
+
+/**
+ * Bối cảnh thời đại của mốc dòng thời gian — ba cách, chỉ chọn MỘT:
+ *  - fill_context=true: chép bối cảnh của thời đại CHỨA năm của mốc (xem list_timeline_library);
+ *  - hide_context=true: ẩn thẻ bối cảnh;
+ *  - context_title + context_body: tự viết.
+ * Không chọn cách nào = giữ nguyên (mốc mới: app tự lấy bối cảnh mặc định theo năm).
+ */
+function contextPatch(a: Args, patch: Record<string, unknown>, year: number | null): Record<string, unknown> {
+  for (const k of ["fill_context", "hide_context"]) if (a[k] !== undefined && typeof a[k] !== "boolean") throw new UserError(`${k} phải là true/false.`);
+  const fill = a.fill_context === true;
+  const hide = a.hide_context === true;
+  const custom = patch.context_title != null || patch.context_body != null;
+  if ([fill, hide, custom].filter(Boolean).length > 1) throw new UserError("Chỉ chọn MỘT cách đặt bối cảnh: fill_context, hide_context, hoặc context_title + context_body.");
+  if (fill) {
+    const era = year === null ? null : eraOfYear(year);
+    if (!era) throw new UserError(`Không có thời đại nào trong thư viện chứa năm ${year ?? "?"} (thư viện bắt đầu từ năm 1009). Hãy tự viết context_title + context_body hoặc hide_context.`);
+    return { context_title: era.title, context_body: era.bullets.join("\n") };
+  }
+  if (hide) return { context_title: "", context_body: "" };
+  if (custom) return normContext(patch.context_title, patch.context_body);
+  return {};
+}
+
 async function createOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
-  const patch = await parseFields(c, r, a, true, []);
-  const { data, error } = await c.db.from(r.table).insert({ ...patch, clan_id: c.clanId }).select("id").single();
+  const patch = await parseFields(c, r, a, true, r.metaKeys ?? []);
+  const extra = r.key === "timeline_milestone" ? contextPatch(a, patch, typeof patch.year === "number" ? patch.year : null) : {};
+  const { data, error } = await c.db.from(r.table).insert({ ...patch, ...extra, clan_id: c.clanId }).select("id").single();
   if (error) throw new UserError(error.message);
   return `Đã tạo ${r.key.replace(/_/g, " ")} (id ${data.id}).`;
 }
@@ -168,8 +218,20 @@ async function createOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
 async function updateOf(r: ResourceDef, c: Ctx, a: Args): Promise<string> {
   const idKey = `${r.key}_id`;
   const id = uuid(a[idKey], idKey);
-  const patch = await parseFields(c, r, a, false, [idKey]);
-  let q = c.db.from(r.table).update(patch).eq("clan_id", c.clanId).eq("id", id);
+  const metaKeys = r.metaKeys ?? [];
+  const patch = await parseFields(c, r, a, false, [idKey, ...metaKeys], metaKeys.some((k) => a[k] !== undefined));
+  let extra: Record<string, unknown> = {};
+  if (r.key === "timeline_milestone") {
+    let year = typeof patch.year === "number" ? patch.year : null;
+    if (year === null && a.fill_context === true) {
+      const { data: cur } = await c.db.from(r.table).select("year").eq("clan_id", c.clanId).eq("id", id).maybeSingle();
+      year = (cur?.year as number | undefined) ?? null;
+    }
+    extra = contextPatch(a, patch, year);
+  }
+  const all = { ...patch, ...extra };
+  if (Object.keys(all).length === 0) throw new UserError("Không có trường nào để ghi.");
+  let q = c.db.from(r.table).update(all).eq("clan_id", c.clanId).eq("id", id);
   if (r.soft) q = q.is("deleted_at", null);
   const { data, error } = await q.select("id");
   if (error) throw new UserError(error.message);
@@ -439,6 +501,7 @@ async function deleteTile(c: Ctx, a: Args): Promise<string> {
 // list/create/update/delete_timeline_milestone (RESOURCES); hai tool dưới đây là lối tắt theo từng người.
 
 const MAX_TIMELINE = 100;
+const TIMELINE_ICON_FIELD: FieldDef = { k: "enum", v: TIMELINE_ICONS };
 /** Tiêu đề tối đa khi suy từ nội dung (khớp migration gộp person_timeline). */
 const DERIVE_TITLE = 120;
 
@@ -469,18 +532,26 @@ async function setTimeline(c: Ctx, a: Args): Promise<string> {
   const mode = a.mode === undefined ? "append" : await check(c, "mode", { k: "enum", v: ["append", "replace"], req: true }, a.mode);
   if (!Array.isArray(a.entries)) throw new UserError("entries phải là mảng các mốc {year, title?, body?, era?, on_clan?}.");
   if (a.entries.length > MAX_TIMELINE) throw new UserError(`Tối đa ${MAX_TIMELINE} mốc mỗi lần.`);
-  const rows: { year: number; era: string | null; title: string; body: string | null; on_clan: boolean }[] = [];
+  const rows: { year: number; era: string | null; title: string; body: string | null; on_clan: boolean; icon_key: string | null; image_url: string | null; context_title: string | null; context_body: string | null }[] = [];
   for (const [i, e] of a.entries.entries()) {
     if (!e || typeof e !== "object" || Array.isArray(e)) throw new UserError(`entries[${i}] phải là object {year, title?, body?, era?, on_clan?}.`);
     const en = e as Args;
-    for (const k of Object.keys(en)) if (!["year", "era", "title", "body", "on_clan"].includes(k)) throw new UserError(`entries[${i}].${k} không hợp lệ. Cho phép: year, era, title, body, on_clan.`);
+    const ENTRY_KEYS = ["year", "era", "title", "body", "on_clan", "icon_key", "image_url", "context_title", "context_body", "hide_context"];
+    for (const k of Object.keys(en)) if (!ENTRY_KEYS.includes(k)) throw new UserError(`entries[${i}].${k} không hợp lệ. Cho phép: ${ENTRY_KEYS.join(", ")}.`);
     const year = (await check(c, `entries[${i}].year`, { k: "int", min: -3000, max: 9999, req: true }, en.year)) as number;
     const title = en.title === undefined ? null : ((await shortText(c, `entries[${i}].title`, en.title, 200)) as string | null);
     const body = en.body === undefined ? null : ((await shortText(c, `entries[${i}].body`, en.body, 2000)) as string | null);
     if (!title && !body) throw new UserError(`entries[${i}] cần title hoặc body.`);
     const era = en.era === undefined ? null : ((await shortText(c, `entries[${i}].era`, en.era, 40)) as string | null);
     const on_clan = en.on_clan === undefined ? false : ((await check(c, `entries[${i}].on_clan`, { k: "bool" }, en.on_clan)) as boolean);
-    rows.push({ year, era, on_clan, ...titleBody(title, body) });
+    const icon_key = en.icon_key === undefined ? null : ((await check(c, `entries[${i}].icon_key`, TIMELINE_ICON_FIELD, en.icon_key)) as string | null);
+    const image_url = en.image_url === undefined ? null : ((await check(c, `entries[${i}].image_url`, { k: "image", max: 500 }, en.image_url)) as string | null);
+    const ctx = contextPatch(
+      { hide_context: en.hide_context },
+      { context_title: en.context_title === undefined ? null : await shortText(c, `entries[${i}].context_title`, en.context_title, 200), context_body: en.context_body === undefined ? null : await shortText(c, `entries[${i}].context_body`, en.context_body, 1000) },
+      year,
+    );
+    rows.push({ year, era, on_clan, icon_key, image_url, context_title: (ctx.context_title as string | undefined) ?? null, context_body: (ctx.context_body as string | undefined) ?? null, ...titleBody(title, body) });
   }
 
   // "Mốc riêng" của người = mốc KHÔNG hiện trên poster dòng họ; thay thế chỉ đụng nhóm này.
@@ -498,9 +569,7 @@ async function setTimeline(c: Ctx, a: Args): Promise<string> {
         clan_id: c.clanId,
         person_id: person,
         sort_order: Math.min(999, base + i),
-        // Bối cảnh thời đại mặc định theo năm (null) — poster của người hiển thị đủ layout như poster dòng họ.
-        context_title: null,
-        context_body: null,
+        // Không chọn bối cảnh riêng thì context = null → app tự lấy bối cảnh mặc định theo năm (poster hiển thị đủ layout).
       })),
     );
     if (error) throw new UserError(error.message);
@@ -513,6 +582,29 @@ async function setTimeline(c: Ctx, a: Args): Promise<string> {
   return mode === "append"
     ? `Đã thêm ${rows.length} mốc vào dòng thời gian (tổng ${(old?.length ?? 0) + rows.length}).`
     : `Đã thay dòng thời gian: ${rows.length} mốc (bỏ ${own.length} mốc cũ).`;
+}
+
+// ─── Thư viện dòng thời gian ───────────────────────────────────────────
+
+async function timelineLibrary(_c: Ctx, a: Args): Promise<string> {
+  only(a, ["year"]);
+  let eras = TIMELINE_ERAS;
+  if (a.year !== undefined) {
+    const y = (await check(_c, "year", { k: "int", min: -3000, max: 9999 }, a.year)) as number;
+    const e = eraOfYear(y);
+    eras = e ? [e] : [];
+  }
+  return JSON.stringify(
+    {
+      note: "context: fill_context=true copies the era covering the milestone's year; image_url `lib:<scene id>`; icon_key from icons.",
+      icons: TIMELINE_ICONS,
+      eras: eras.map((e) => ({ id: e.id, years: `${e.from}–${e.to}`, title: e.title, bullets: e.bullets })),
+      scenes: TIMELINE_SCENES,
+      templates: TIMELINE_TEMPLATES,
+    },
+    null,
+    1,
+  );
 }
 
 // ─── Bản đồ ────────────────────────────────────────────────────────────
@@ -549,6 +641,7 @@ export const RESOURCE_OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> 
   get_person_timeline: getTimeline,
   set_person_timeline: setTimeline,
   map_stats: mapStats,
+  list_timeline_library: timelineLibrary,
   ...LINK_OPS,
 };
 

@@ -20,7 +20,9 @@ export type FieldDef =
   | { k: "date"; d?: string }
   | { k: "person"; d?: string }
   | { k: "uuid"; d?: string }
-  | { k: "url"; max: number; d?: string };
+  | { k: "url"; max: number; d?: string }
+  /** Hình của mốc dòng thời gian: link https HOẶC `lib:<id>` (cảnh minh hoạ trong thư viện của app). */
+  | { k: "image"; max: number; d?: string };
 
 export interface ResourceDef {
   /** Tên số ít trong tên tool: create_<key>, update_<key>, delete_<key>. */
@@ -46,6 +48,9 @@ export interface ResourceDef {
   customDelete?: boolean;
   /** Mô tả thêm cho tool tạo. */
   createHint?: string;
+  /** Tham số THÊM (không phải cột) cho create_/update_ — vd. fill_context của mốc dòng thời gian. Khoá phải có trong `metaKeys`. */
+  extraProps?: Record<string, unknown>;
+  metaKeys?: string[];
   /** Cột chỉ ghi qua tool riêng, không có trong update chung (vd show_on_dashboard). */
   needs?: "write";
 }
@@ -234,6 +239,11 @@ export const RESOURCES: ResourceDef[] = [
     searchCol: "title",
     filters: ["person_id", "on_clan"],
     extraCols: ["source_key"],
+    metaKeys: ["fill_context", "hide_context"],
+    extraProps: {
+      fill_context: { type: "boolean", description: "true = copy the era note of the year's historical period (title + points) into the milestone. Use list_timeline_library to see eras" },
+      hide_context: { type: "boolean", description: "true = hide the era note card for this milestone" },
+    },
     createHint:
       "Clan-level overview milestone: leave person_id unset (on_clan defaults true). Detailed life event of a person: pass person_id and on_clan=false (it then shows only on that person's page unless the user wants it on the clan poster).",
     fields: {
@@ -245,7 +255,9 @@ export const RESOURCES: ResourceDef[] = [
       icon_key: { k: "enum", v: TIMELINE_ICONS, d: "Illustration icon" },
       person_id: { k: "person", d: "Person this milestone is about (optional)" },
       on_clan: { k: "bool", d: "Show on the clan timeline poster (default true; use false for a person's detailed events)" },
-      image_url: { k: "url", max: 500, d: "https image link for the milestone picture (optional)" },
+      image_url: { k: "image", max: 500, d: "Picture: an https link, or `lib:<scene-id>` for a ready-made illustration (ids from list_timeline_library). Overrides the person's photo on the poster" },
+      context_title: { k: "str", max: 200, d: "Era note title shown beside the milestone (custom). Leave both context fields unset for the default era of the year" },
+      context_body: { k: "str", max: 1000, d: "Era note points, ONE POINT PER LINE (max 6 lines, 160 chars each)" },
     },
   },
 ];
@@ -262,6 +274,7 @@ function jsonType(f: FieldDef): Record<string, unknown> {
   switch (f.k) {
     case "str":
     case "url":
+    case "image":
       return { type: "string", maxLength: f.max, ...d };
     case "enum":
       return { type: "string", enum: [...f.v], ...d };
@@ -311,7 +324,7 @@ export function resourceSpecs(): McpToolSpec[] {
         needs: "write",
         description: `Create a ${cap(r.key)}. ${r.createHint ?? ""}`.trim(),
         inputSchema: obj(
-          Object.fromEntries(Object.entries(r.fields).map(([k, f]) => [k, jsonType(f)])),
+          { ...Object.fromEntries(Object.entries(r.fields).map(([k, f]) => [k, jsonType(f)])), ...(r.extraProps ?? {}) },
           Object.entries(r.fields).filter(([, f]) => "req" in f && f.req).map(([k]) => k),
         ),
       });
@@ -324,6 +337,7 @@ export function resourceSpecs(): McpToolSpec[] {
         {
           [`${r.key}_id`]: { type: "string", description: `Id from list_${r.plural}` },
           ...Object.fromEntries(Object.entries(r.fields).map(([k, f]) => [k, "req" in f && f.req ? jsonType(f) : nullable(jsonType(f))])),
+          ...(r.extraProps ?? {}),
         },
         [`${r.key}_id`],
       ),
@@ -506,6 +520,11 @@ export const EXTRA_SPECS: McpToolSpec[] = [
               title: { type: "string", maxLength: 200, description: "Short headline (optional if body is given)" },
               body: { type: "string", maxLength: 2000, description: "What happened" },
               on_clan: { type: "boolean", description: "Also show on the clan timeline poster (default false)" },
+              icon_key: { type: "string", enum: [...TIMELINE_ICONS], description: "Illustration icon (default: scroll)" },
+              image_url: { type: "string", maxLength: 500, description: "https image link or `lib:<scene-id>` (see list_timeline_library); optional — the app picks an illustration when unset" },
+              context_title: { type: "string", maxLength: 200, description: "Custom era note title (optional; unset = default era of the year)" },
+              context_body: { type: "string", maxLength: 1000, description: "Era note points, one per line (optional)" },
+              hide_context: { type: "boolean", description: "Hide the era note card" },
             },
             ["year"],
           ),
@@ -515,6 +534,13 @@ export const EXTRA_SPECS: McpToolSpec[] = [
       },
       ["person_id", "entries"],
     ),
+  },
+  {
+    name: "list_timeline_library",
+    needs: "read",
+    description:
+      "Options for timeline milestones: the HISTORICAL ERAS (id, years, title, bullet points — the 'bối cảnh' note shown beside a milestone; fill_context copies the one covering the milestone's year), the ready-made ILLUSTRATION scenes usable as image_url `lib:<id>` (with their icon), and ready-made milestone TEMPLATES (title/body/icon) for common family events. Call before choosing context / image.",
+    inputSchema: obj({ year: { type: "integer", minimum: -3000, maximum: 9999, description: "Optional: only the era covering this year" } }),
   },
   // Liên kết dòng họ (person_links): nối một người của họ này với dòng họ khác (thông gia / tổ tiên – hậu duệ / họ hàng)
   {

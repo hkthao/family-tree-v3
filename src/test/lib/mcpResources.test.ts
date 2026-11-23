@@ -91,6 +91,7 @@ describe("tool CRUD cho Bảng tin / Phòng ký ức / Ảnh ghép / Di sản / 
   it("có đủ công cụ cho dòng thời gian và liên kết dòng họ", () => {
     const names = new Set(NEW.map((t) => t.name));
     for (const n of [
+      "list_timeline_library",
       "list_timeline_milestones",
       "create_timeline_milestone",
       "update_timeline_milestone",

@@ -172,6 +172,95 @@ describe("MCP resources: phân quyền với phiên thật", () => {
     expect((await run(editor, "delete_timeline_milestone", { timeline_milestone_id: mid, confirm: true })).ok).toBe(true);
   });
 
+  it("dòng thời gian qua MCP: bối cảnh (tự điền / tự viết / ẩn), hình (cảnh thư viện / link https), thư viện lựa chọn", async () => {
+    const lib = JSON.parse((await run(viewer, "list_timeline_library", {})).text);
+    expect(lib.eras.length).toBeGreaterThan(10);
+    expect(lib.scenes.map((x: { id: string }) => x.id)).toContain("con-dau-long");
+    expect(JSON.parse((await run(viewer, "list_timeline_library", { year: 1230 })).text).eras.map((e: { title: string }) => e.title)).toEqual(["Nhà Trần"]);
+    expect((await run(viewer, "list_timeline_library", { year: "x" })).ok).toBe(false);
+
+    const get = async (id: string) =>
+      (JSON.parse((await run(editor, "list_timeline_milestones", { id })).text).rows[0]) as Record<string, string | null>;
+
+    // fill_context: chép bối cảnh của thời đại chứa năm; image_url = cảnh thư viện
+    const made = await run(editor, "create_timeline_milestone", { year: 1975, title: "Thống nhất", fill_context: true, image_url: "lib:con-dau-long", icon_key: "banner" });
+    expect(made.ok, made.text).toBe(true);
+    const id1 = idOf(made.text);
+    let row = await get(id1);
+    expect(row.context_title).toBe("Đất nước chia hai miền");
+    expect(row.context_body).toContain("Thống nhất ngày 30/4/1975");
+    expect(row.image_url).toBe("lib:con-dau-long");
+    expect(row.icon_key).toBe("banner");
+
+    // hình: cảnh không tồn tại / http / dấu cách đều bị từ chối
+    for (const bad of ["lib:khong-co", "http://x.com/a.jpg", "https://x.com/a b.jpg", "javascript:alert(1)"]) {
+      expect((await run(editor, "create_timeline_milestone", { year: 1980, title: "Sai hình", image_url: bad })).ok, bad).toBe(false);
+    }
+    expect((await run(editor, "update_timeline_milestone", { timeline_milestone_id: id1, image_url: "https://upload.wikimedia.org/a.jpg" })).ok).toBe(true);
+    expect((await get(id1)).image_url).toBe("https://upload.wikimedia.org/a.jpg");
+
+    // chỉ MỘT cách đặt bối cảnh; năm ngoài thư viện không tự điền được
+    expect((await run(editor, "create_timeline_milestone", { year: 1975, title: "x", fill_context: true, hide_context: true })).ok).toBe(false);
+    expect((await run(editor, "create_timeline_milestone", { year: 1975, title: "x", fill_context: true, context_title: "A", context_body: "b" })).ok).toBe(false);
+    const early = await run(editor, "create_timeline_milestone", { year: 900, title: "Sớm", fill_context: true });
+    expect(early.ok).toBe(false);
+    expect(early.text).toMatch(/1009|thời đại/);
+
+    // tự viết: cần cả tiêu đề lẫn ít nhất một ý; tối đa 6 ý
+    expect((await run(editor, "create_timeline_milestone", { year: 1975, title: "x", context_title: "Chỉ tiêu đề" })).ok).toBe(false);
+    expect((await run(editor, "create_timeline_milestone", { year: 1975, title: "x", context_title: "T", context_body: "1\n2\n3\n4\n5\n6\n7" })).ok).toBe(false);
+    const custom = await run(editor, "create_timeline_milestone", { year: 1975, title: "Tự viết", context_title: "Năm cả nhà về quê", context_body: "- Đường xa\n\nMưa nhiều" });
+    expect(custom.ok, custom.text).toBe(true);
+    row = await get(idOf(custom.text));
+    expect([row.context_title, row.context_body]).toEqual(["Năm cả nhà về quê", "Đường xa\nMưa nhiều"]);
+
+    // update chỉ với fill_context (không trường nào khác) lấy năm của mốc đang lưu; hide ẩn thẻ; null trả về mặc định
+    expect((await run(editor, "update_timeline_milestone", { timeline_milestone_id: idOf(custom.text), fill_context: true })).ok).toBe(true);
+    expect((await get(idOf(custom.text))).context_title).toBe("Đất nước chia hai miền");
+    expect((await run(editor, "update_timeline_milestone", { timeline_milestone_id: idOf(custom.text), hide_context: true })).ok).toBe(true);
+    row = await get(idOf(custom.text));
+    expect([row.context_title, row.context_body]).toEqual(["", ""]);
+    expect((await run(editor, "update_timeline_milestone", { timeline_milestone_id: idOf(custom.text), context_title: null, context_body: null })).ok).toBe(true);
+    row = await get(idOf(custom.text));
+    expect([row.context_title, row.context_body]).toEqual([null, null]);
+
+    // người xem không ghi được
+    expect(refused(await run(viewer, "update_timeline_milestone", { timeline_milestone_id: id1, fill_context: true }))).toBe(true);
+
+    // set_person_timeline nhận icon / hình / bối cảnh
+    const ok = await run(editor, "set_person_timeline", {
+      person_id: personA,
+      mode: "replace",
+      confirm: true,
+      entries: [
+        { year: 1950, title: "Sinh", icon_key: "cradle", image_url: "lib:con-dau-long" },
+        { year: 1975, title: "Có bối cảnh riêng", context_title: "Thời bao cấp", context_body: "Tem phiếu" },
+        { year: 1980, title: "Ẩn bối cảnh", hide_context: true },
+        { year: 1985, title: "Sai hình", image_url: "lib:khong-co" },
+      ],
+    });
+    expect(ok.ok).toBe(false); // một mục sai hình → từ chối cả lô (không ghi nửa chừng)
+    const ok2 = await run(editor, "set_person_timeline", {
+      person_id: personA,
+      mode: "replace",
+      confirm: true,
+      entries: [
+        { year: 1950, title: "Sinh", icon_key: "cradle", image_url: "lib:con-dau-long" },
+        { year: 1975, title: "Có bối cảnh riêng", context_title: "Thời bao cấp", context_body: "Tem phiếu" },
+        { year: 1980, title: "Ẩn bối cảnh", hide_context: true },
+      ],
+    });
+    expect(ok2.ok, ok2.text).toBe(true);
+    const rows = (await (svc as unknown as import("@supabase/supabase-js").SupabaseClient)
+      .from("clan_timeline_milestones")
+      .select("year, icon_key, image_url, context_title, context_body")
+      .eq("person_id", personA)
+      .order("year")).data as Record<string, unknown>[];
+    expect(rows[0]).toMatchObject({ icon_key: "cradle", image_url: "lib:con-dau-long", context_title: null });
+    expect(rows[1]).toMatchObject({ context_title: "Thời bao cấp", context_body: "Tem phiếu" });
+    expect(rows[2]).toMatchObject({ context_title: "", context_body: "" });
+  });
+
   it("liên kết dòng họ: quản trị đề nghị + bên kia xác nhận bằng mã; biên tập/người xem không ghi được; không lái sang họ khác", async () => {
     // chỉ quản trị đề nghị được (RLS plinks_insert); người gắn phải thuộc họ này
     expect((await run(editor, "create_clan_link", { person_id: personA })).ok).toBe(false);
