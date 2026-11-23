@@ -26,6 +26,7 @@ export const HOME_CARD_KEYS = [
   "nextstep",
   "stats",
   "map",
+  "timeline",
   "quick",
   "profile",
   "photos",

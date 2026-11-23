@@ -11,12 +11,15 @@ import { t } from "@lingui/core/macro";
 export function CollapsibleCard({
   title,
   header,
+  footer,
   titleClassName,
   contentClassName,
   defaultOpen = true,
   children,
 }: {
   title: ReactNode;
+  /** Nút / liên kết HÀNH ĐỘNG của thẻ (vd. "Thêm…") — thanh dưới cùng, cùng kiểu footer của SectionCard. Chỉ hiện khi thẻ mở. */
+  footer?: ReactNode;
   /** Phần mô tả dưới tiêu đề, luôn hiện kể cả khi thu gọn. */
   header?: ReactNode;
   titleClassName?: string;
@@ -51,6 +54,11 @@ export function CollapsibleCard({
       </CardHeader>
       {open && (
         <CardContent className={contentClassName}>{children}</CardContent>
+      )}
+      {open && footer && (
+        <footer className="flex flex-wrap items-center justify-end gap-2 border-t bg-muted/20 px-3 py-2 sm:px-4">
+          {footer}
+        </footer>
       )}
     </Card>
   );

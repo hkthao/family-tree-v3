@@ -24,6 +24,13 @@ export const queryKeys = {
     ["person-relationships", personId, userId] as const,
   treeData: (clanId: string, userId: string, source: string = "persons") =>
     ["tree-data", clanId, userId, source] as const,
+  /** `personId` rỗng = poster dòng họ. Làm mới theo tiền tố ["timeline-rows", clanId, userId] là đủ cho cả hai. */
+  timelineRows: (clanId: string, userId: string, personId?: string | null) =>
+    personId
+      ? (["timeline-rows", clanId, userId, personId] as const)
+      : (["timeline-rows", clanId, userId] as const),
+  timelineSources: (clanId: string, userId: string) =>
+    ["timeline-sources", clanId, userId] as const,
   clanMembers: (clanId: string, userId: string) =>
     ["clan-members", clanId, userId] as const,
   clanStats: (clanId: string, userId: string) =>

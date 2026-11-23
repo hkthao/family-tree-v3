@@ -2,28 +2,16 @@ import { CollapsibleCard } from "@/components/CollapsibleCard";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
-import { IconClock, IconScroll } from "@/components/icons";
+import { IconScroll } from "@/components/icons";
 import {
   REIGN_ROLE_LABEL,
   getPersonHistorical,
   type PersonHistorical,
 } from "@/lib/queries/historical";
-import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
-import {
-  getPersonTimeline,
-  type TimelineRow,
-} from "@/lib/queries/person-timeline";
+import { PersonTimelineCard } from "@/components/timeline/PersonTimelineCard";
 
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-/** Viết hoa chữ cái đầu mỗi dòng ("định luật lệnh…" → "Định luật lệnh…"). */
-function capFirst(t: string): string {
-  return t
-    .split("\n")
-    .map((l) => (l ? l.charAt(0).toLocaleUpperCase("vi") + l.slice(1) : l))
-    .join("\n");
-}
-
 function years(
   from: number | null | undefined,
   to: number | null | undefined,
@@ -47,6 +35,7 @@ export function HistoricalPersonSections({
   userId,
   onPersonClick,
   only,
+  canEdit,
 }: {
   personId: string;
   /** Tiểu sử có mục "Sự nghiệp theo năm" → dòng thời gian. */
@@ -61,6 +50,8 @@ export function HistoricalPersonSections({
   onPersonClick?: (personId: string) => void;
   /** Chỉ vẽ một phần (để đặt dòng thời gian xuống cuối trang); bỏ trống = cả hai. */
   only?: "reign" | "timeline";
+  /** Người xem sửa được dòng thời gian (editor/admin). Trang xem thử công khai: false. */
+  canEdit?: boolean;
 }) {
   const { data } = useQuery({
     queryKey: ["person-historical", personId, userId ?? ""],
@@ -74,11 +65,14 @@ export function HistoricalPersonSections({
         <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />
       )}
       {only !== "reign" && (
-        <TimelineCard
+        <PersonTimelineCard
           personId={personId}
+          clanId={clanId}
+          userId={userId}
+          canEdit={!!canEdit}
           bio={bio ?? null}
-          birthYear={yearOf(birthDate)}
-          deathYear={yearOf(deathDate)}
+          birthDate={birthDate}
+          deathDate={deathDate}
         />
       )}
     </>
@@ -192,124 +186,6 @@ function ReignCard({
           </ul>
         </div>
       )}
-    </CollapsibleCard>
-  );
-}
-
-interface TimelineEntry {
-  year: number;
-  /** Can chi của năm ("Bính Tuất"), nếu có ghi. */
-  era: string | null;
-  text: string;
-}
-
-/** Gộp các mốc cùng năm, thêm mốc Sinh / Mất từ hồ sơ nếu chưa có mốc cùng năm. */
-function buildTimeline(
-  rows: TimelineRow[],
-  birthYear: number | null,
-  deathYear: number | null,
-): TimelineEntry[] {
-  const entries = new Map<number, TimelineEntry>();
-  for (const r of rows) {
-    const prev = entries.get(r.year);
-    if (prev) {
-      prev.text = `${prev.text}\n${r.body}`;
-      prev.era ??= r.era;
-    } else entries.set(r.year, { year: r.year, era: r.era, text: r.body });
-  }
-  if (birthYear != null && !entries.has(birthYear)) {
-    entries.set(birthYear, { year: birthYear, era: null, text: "Sinh." });
-  }
-  if (deathYear != null && !entries.has(deathYear)) {
-    const age = birthYear != null ? t`, thọ ${deathYear - birthYear} tuổi` : "";
-    entries.set(deathYear, { year: deathYear, era: null, text: t`Mất${age}.` });
-  }
-  return [...entries.values()].sort((a, b) => a.year - b.year);
-}
-
-function TimelineCard({
-  personId,
-  bio,
-  birthYear,
-  deathYear,
-}: {
-  personId: string;
-  bio: string | null;
-  birthYear: number | null;
-  deathYear: number | null;
-}) {
-  const { data: saved } = useQuery({
-    queryKey: ["person-timeline", personId],
-    queryFn: () => getPersonTimeline(personId),
-    enabled: !!personId,
-  });
-  // Đã có mốc lưu trong DB (sửa ở form "Sửa thông tin") thì dùng; chưa có thì dựng tạm từ tiểu sử.
-  const rows =
-    saved && saved.length > 0
-      ? saved
-      : bioTimelineRows(bio, birthYear, deathYear);
-  // Chỉ có mốc Sinh / Mất tự thêm thì chưa thành "dòng thời gian".
-  if (rows.length === 0) return null;
-  const entries = buildTimeline(rows, birthYear, deathYear);
-  return (
-    <CollapsibleCard
-      title={
-        <>
-          <IconClock className="h-5 w-5" />
-          {t`Dòng thời gian`}
-        </>
-      }
-      titleClassName="inline-flex items-center gap-2"
-      contentClassName="space-y-5"
-    >
-      <ol className="pt-1">
-        {entries.map((e, i) => {
-          const last = i === entries.length - 1;
-          return (
-            <li
-              key={e.year}
-              className="grid grid-cols-[4.75rem_1.5rem_1fr] gap-x-3"
-            >
-              <div className="pt-px text-right">
-                <p className="text-xl font-bold leading-none text-primary">
-                  {e.year}
-                </p>
-                {e.era && (
-                  <p className="mt-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                    {e.era}
-                  </p>
-                )}
-              </div>
-              <div className="relative">
-                {/* Đoạn trục nối mốc này với mốc kế */}
-                <span
-                  aria-hidden
-                  className={`absolute left-1/2 top-2 w-[3px] -translate-x-1/2 rounded-full ${
-                    last
-                      ? "bottom-[-0.25rem] bg-primary"
-                      : "bottom-[-0.5rem] bg-gradient-to-b from-primary to-primary/30"
-                  }`}
-                />
-                <span
-                  aria-hidden
-                  className="absolute left-1/2 top-0 box-border h-4 w-4 -translate-x-1/2 rounded-full border-[3px] border-primary bg-card"
-                />
-                {last && (
-                  <span
-                    aria-hidden
-                    className="absolute bottom-[-0.75rem] left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-primary"
-                  />
-                )}
-              </div>
-              <div className={`min-w-0 ${last ? "pb-3" : "pb-7"}`}>
-                <p className="whitespace-pre-line leading-relaxed">
-                  {capFirst(e.text)}
-                </p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
     </CollapsibleCard>
   );
 }

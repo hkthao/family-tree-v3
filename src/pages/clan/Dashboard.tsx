@@ -34,6 +34,7 @@ import { SectionCard } from "@/components/SectionCard";
 import { PageHeader } from "@/components/PageHeader";
 import { EnablePushPrompt } from "@/components/EnablePushPrompt";
 import { MapOverviewCard } from "@/components/MapOverviewCard";
+import { TimelineOverviewCard } from "@/components/TimelineOverviewCard";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { TodayHubCard } from "@/components/TodayHubCard";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -499,6 +500,11 @@ export default function Dashboard() {
 
           {/* Bản đồ dòng họ: nơi ở của con cháu, mộ phần, di sản theo tỉnh — ngay dưới số liệu. */}
           {isMember && show("map") && <MapOverviewCard clanId={clan.id} />}
+
+          {/* Dòng thời gian: số mốc, khoảng năm và vài mốc đầu; bấm vào poster đầy đủ. */}
+          {isMember && show("timeline") && (
+            <TimelineOverviewCard clanId={clan.id} />
+          )}
 
           {/* Thao tác nhanh — tối đa 12 ô, người dùng tự ghim / tự học theo lượt bấm (xem QuickActionsCard). */}
           {show("quick") && (

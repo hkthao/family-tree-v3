@@ -8,12 +8,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import {
-  TimelineFields,
-  draftsToRows,
-  rowsToDrafts,
-  type TimelineDraft,
-} from "@/components/TimelineFields";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -44,7 +38,6 @@ import { useFormDraft } from "@/hooks/useFormDraft";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import { queryKeys } from "@/lib/queries/keys";
-import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
 import { EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
 import {
@@ -52,10 +45,6 @@ import {
   savePersonAddress,
   type PersonAddressInput,
 } from "@/lib/queries/personAddresses";
-import {
-  getPersonTimeline,
-  replacePersonTimeline,
-} from "@/lib/queries/person-timeline";
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
@@ -97,15 +86,6 @@ export function EditPersonForm({
     queryFn: () => getPerson(personId, undefined, personSource),
     enabled: !!personId,
   });
-
-  // Dòng thời gian chỉ có ở dòng họ lịch sử; lưu cùng nút "Lưu" của form.
-  const isHistorical = clan.kind === "historical";
-  const { data: savedTimeline } = useQuery({
-    queryKey: ["person-timeline", personId],
-    queryFn: () => getPersonTimeline(personId),
-    enabled: !!personId && isHistorical,
-  });
-  const [timeline, setTimeline] = useState<TimelineDraft[] | null>(null);
 
   // Nơi ở hiện tại (tuỳ chọn, chỉ thành viên dòng họ xem được) — bảng riêng person_addresses.
   const { data: savedAddress, isSuccess: addressLoaded } = useQuery({
@@ -171,31 +151,8 @@ export function EditPersonForm({
     if (personHasDetails(person)) setShowOptional(true);
   }, [person]);
 
-  // Nạp dòng thời gian một lần: mốc đã lưu, không có thì dựng tạm từ tiểu sử.
-  useEffect(() => {
-    if (
-      !person ||
-      !isHistorical ||
-      savedTimeline === undefined ||
-      timeline !== null
-    )
-      return;
-    const rows =
-      savedTimeline.length > 0
-        ? savedTimeline
-        : bioTimelineRows(
-            person.bio,
-            yearOf(person.birth_date),
-            yearOf(person.death_date),
-          );
-    setTimeline(rowsToDrafts(rows));
-  }, [person, isHistorical, savedTimeline, timeline]);
-
   const mutation = useMutation({
     mutationFn: async () => {
-      // Kiểm tra dòng thời gian trước khi ghi bất cứ gì.
-      const timelineRows =
-        isHistorical && timeline !== null ? draftsToRows(timeline) : null;
       return updatePerson(personId, {
         ...personFormToColumns(values),
         todo_excluded: values.todoExcluded,
@@ -203,12 +160,6 @@ export function EditPersonForm({
           ? Math.max(1, Math.floor(Number(values.birthOrder)))
           : null,
       }).then(async (res) => {
-        if (timelineRows) {
-          await replacePersonTimeline(personId, clanId, timelineRows);
-          await queryClient.invalidateQueries({
-            queryKey: ["person-timeline", personId],
-          });
-        }
         // Chỉ ghi khi người dùng đã đụng vào thẻ "Nơi ở hiện tại".
         if (addressTouched) {
           await savePersonAddress(personId, address);
@@ -308,18 +259,6 @@ export function EditPersonForm({
                 photoPath={person.photo_path ?? null}
               />
             </div>
-          }
-          timelineSlot={
-            isHistorical && timeline !== null ? (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  {t`Các mốc trong đời người, từ lúc sinh đến lúc mất. Mốc “Sinh” và “Mất” tự thêm từ ngày sinh, ngày mất.`}
-                </p>
-                <div className={readOnly ? "[&_button]:hidden" : ""}>
-                  <TimelineFields drafts={timeline} onChange={setTimeline} />
-                </div>
-              </div>
-            ) : undefined
           }
           address={
             effectiveRole(clan) !== null && addressLoaded ? address : undefined

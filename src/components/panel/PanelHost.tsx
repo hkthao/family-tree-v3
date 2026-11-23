@@ -34,6 +34,11 @@ const RestingPlaceDetail = lazy(
 const HeritageDetail = lazy(() => import("@/pages/clan/HeritageDetail"));
 const BoardPostDetail = lazy(() => import("@/pages/clan/BoardPostDetail"));
 const HeritageForm = lazy(() => import("@/pages/clan/HeritageForm"));
+const TimelineMilestoneForm = lazy(() =>
+  import("@/components/timeline/TimelineMilestoneForm").then((m) => ({
+    default: m.TimelineMilestoneForm,
+  })),
+);
 const BoardPostForm = lazy(() =>
   import("@/components/BoardPostForm").then((m) => ({
     default: m.BoardPostForm,
@@ -201,6 +206,29 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
       >
         <Suspense fallback={<Loading />}>
           <HeritageForm
+            embedded={{
+              id: isEdit ? pid : undefined,
+              onDone: close,
+              onCancel: close,
+            }}
+          />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
+  if (current === "timeline-new" || (current === "timeline-edit" && pid)) {
+    const isEdit = current === "timeline-edit";
+    return (
+      <SidePanel
+        open
+        title={isEdit ? t`Sửa mốc dòng thời gian` : t`Thêm mốc dòng thời gian`}
+        onClose={close}
+        size="lg"
+      >
+        <Suspense fallback={<Loading />}>
+          <TimelineMilestoneForm
+            personId={params.pfrom}
             embedded={{
               id: isEdit ? pid : undefined,
               onDone: close,

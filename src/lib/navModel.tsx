@@ -451,6 +451,15 @@ export function buildSections(
         icon: <IconMapPin className={ic} />,
       });
     }
+    if (isMember) {
+      communityItems.push({
+        to: `/clans/${clanId}/timeline`,
+        label: t`Dòng thời gian`,
+        hint: t`Câu chuyện dòng họ qua các thế hệ, xuất thành poster.`,
+        icon: <IconCalendar className={ic} />,
+        end: true,
+      });
+    }
     if (isMember && feat("memory_room")) {
       communityItems.push({
         to: `/clans/${clanId}/memory-room`,

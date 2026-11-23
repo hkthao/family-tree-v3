@@ -19,6 +19,8 @@ function cardLabel(k: HomeCardKey): string {
       return t`Số liệu dòng họ`;
     case "map":
       return t`Bản đồ dòng họ`;
+    case "timeline":
+      return t`Dòng thời gian`;
     case "quick":
       return t`Thao tác nhanh`;
     case "profile":

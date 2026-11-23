@@ -171,7 +171,6 @@ msgstr " on {0}"
 #: src/components/TodayHubCard.tsx
 #: src/lib/eventWhen.ts
 #: src/pages/clan/GoodDays.tsx
-#: src/pages/Share.tsx
 msgid " nhuận"
 msgstr " leap"
 
@@ -215,11 +214,6 @@ msgstr ", {0} missing gender"
 #: src/pages/CustomsForm.tsx
 msgid ", {metaCount} thông tin"
 msgstr ", {metaCount} details"
-
-#. placeholder {0}: deathYear - birthYear
-#: src/components/HistoricalPersonSections.tsx
-msgid ", thọ {0} tuổi"
-msgstr ", lived {0} years"
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid ": tải ảnh lên, bấm \"Chia sẻ\" → \"Bất kỳ ai có liên kết\", rồi copy link. (Hoặc dùng dịch vụ ảnh có link trực tiếp như imgur.com.)"
@@ -349,6 +343,7 @@ msgstr "(the person on the other side)"
 
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/TimelineList.tsx
 msgid "(người đã xoá)"
 msgstr "(person deleted)"
 
@@ -434,6 +429,12 @@ msgstr "{0} mosaics"
 msgid "{0} câu trả lời"
 msgstr "{0} answers"
 
+#. placeholder {0}: x.p.full_name
+#. placeholder {1}: x.year
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "{0} chào đời năm {1}."
+msgstr "{0} was born in {1}."
+
 #. placeholder {0}: pending + pendingContrib + pendingFaces
 #: src/components/community/CommunityCard.tsx
 msgid "{0} chờ duyệt"
@@ -487,6 +488,22 @@ msgstr "{0} visits"
 #: src/pages/clan/Memories.tsx
 msgid "{0} lượt góp"
 msgstr "{0} contributions"
+
+#. placeholder {0}: i.count
+#: src/pages/clan/TimelineList.tsx
+msgid "{0} mốc"
+msgstr "{0} milestones"
+
+#. placeholder {0}: i.count - i.onClanCount
+#. placeholder {1}: i.onClanCount
+#: src/pages/clan/TimelineList.tsx
+msgid "{0} mốc chỉ có ở trang người này sẽ bị xoá. {1} mốc đang hiện trên poster dòng họ được giữ lại cho dòng họ."
+msgstr "{0} milestones that exist only on this person's page will be deleted. The {1} milestones shown on the clan poster stay with the clan."
+
+#. placeholder {0}: i.onClanCount
+#: src/pages/clan/TimelineList.tsx
+msgid "{0} mốc trên poster dòng họ"
+msgstr "{0} on the clan poster"
 
 #. placeholder {0}: -offset
 #: src/components/TodayHubCard.tsx
@@ -565,6 +582,11 @@ msgstr "{0} members"
 msgid "{0} thành viên • "
 msgstr "{0} members • "
 
+#. placeholder {0}: ps.length
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "{0} thành viên chào đời"
+msgstr "{0} members were born"
+
 #. placeholder {0}: res.sent
 #. placeholder {1}: res.failed > 0 ? t` · ${res.failed} thất bại` : ""
 #: src/pages/Account.tsx
@@ -575,6 +597,11 @@ msgstr "{0} devices received it{1}."
 #: src/pages/clan/Relations.tsx
 msgid "{0} tuổi"
 msgstr "{0} years old"
+
+#. placeholder {0}: shown.join(", ")
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "{0} và {more} người khác"
+msgstr "{0} and {more} others"
 
 #. placeholder {0}: rel.full_name
 #: src/pages/clan/PersonDetail.tsx
@@ -1110,6 +1137,10 @@ msgstr "Warm (cream)"
 msgid "Ấm áp"
 msgstr "Warm"
 
+#: src/lib/timeline/themes.ts
+msgid "Ấm áp, truyền thống — mặc định"
+msgstr "Warm and traditional — default"
+
 #: src/components/CalendarDateInput.tsx
 #: src/components/EventDetailDialog.tsx
 #: src/components/TodayHubCard.tsx
@@ -1179,6 +1210,10 @@ msgstr "Hide menu"
 #: src/pages/clan/ClanFund.tsx
 msgid "Ẩn nhật ký thay đổi"
 msgstr "Hide the change log"
+
+#: src/lib/personTimeline.ts
+msgid "An táng tại {burial}"
+msgstr "Buried at {burial}"
 
 #: src/pages/clan/PersonDetail.tsx
 msgid "ảnh"
@@ -1335,6 +1370,10 @@ msgstr "Photo on the card"
 msgid "Ảnh trước"
 msgstr "Previous photo"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Ảnh tư liệu theo thời kỳ"
+msgstr "Archive photos by period"
+
 #: src/components/community/MemoryForm.tsx
 msgid "Ảnh vẫn nằm ở Google Photos / Drive — nhớ để chế độ \"ai có link đều xem được\"."
 msgstr "The photo stays on Google Photos / Drive — make sure sharing is set to \"anyone with the link\"."
@@ -1342,6 +1381,10 @@ msgstr "The photo stays on Google Photos / Drive — make sure sharing is set to
 #: src/pages/clan/Tree.tsx
 msgid "Ảnh vector (SVG)"
 msgstr "Vector image (SVG)"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Ảnh:"
+msgstr "Photo:"
 
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Ảnh: Ẩn"
@@ -1408,6 +1451,10 @@ msgstr "Avatar: Classic"
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Avatar: Hoàng gia"
 msgstr "Avatar: Royal"
+
+#: src/lib/timeline/eras.ts
+msgid "Ba lần kháng chiến chống quân Nguyên Mông"
+msgstr "Three resistance wars against the Mongol–Yuan invaders"
 
 #: src/components/ClanBadges.tsx
 msgid "Bạc"
@@ -1579,6 +1626,10 @@ msgstr "Tap the \"+\" button to add a province / city."
 msgid "Bấm nút + để đóng góp về một người, hoặc \"Mời người thân góp\" để gửi link cho người thân chưa có tài khoản."
 msgstr "Tap + to contribute about a person, or \"Invite relatives\" to send a link to relatives without an account."
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Bấm nút + để thêm mốc đầu tiên, hoặc chọn từ dữ liệu dòng họ trong form thêm mốc."
+msgstr "Tap + to add the first milestone, or pick from the clan's data in the add form."
+
 #: src/components/InstallAppButton.tsx
 msgid "Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn \"Thêm vào Màn hình Chính\". App sẽ mở như ứng dụng riêng, không có thanh URL."
 msgstr "Tap the Share button at the bottom of Safari (the ☐ icon with an arrow pointing up), then scroll down and choose \"Add to Home Screen\". The app will open like a standalone app, without the URL bar."
@@ -1586,6 +1637,10 @@ msgstr "Tap the Share button at the bottom of Safari (the ☐ icon with an arrow
 #: src/components/EnablePushPrompt.tsx
 msgid "Bấm nút Chia sẻ trong Safari → \"Thêm vào Màn hình chính\", rồi mở app từ biểu tượng để bật nhắc giỗ, sinh nhật."
 msgstr "Tap the Share button in Safari → \"Add to Home Screen\", then open the app from its icon to turn on death-anniversary and birthday reminders."
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Bấm vào một mốc để sửa, hoặc dùng nút + để thêm mốc."
+msgstr "Tap a milestone to edit it, or use + to add one."
 
 #: src/pages/clan/Todo.tsx
 msgid "Bấm vào một người để đề xuất bổ sung."
@@ -1947,6 +2002,10 @@ msgstr "Paternal side"
 msgid "Bị khoá"
 msgstr "Locked"
 
+#: src/lib/timeline/templates.ts
+msgid "Biên soạn gia phả"
+msgstr "Compiling the family book"
+
 #: src/components/InviteLinkCard.tsx
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
@@ -1955,14 +2014,18 @@ msgstr "Locked"
 msgid "Biên tập"
 msgstr "Editor"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Biểu tượng"
+msgstr "Icon"
+
 #: src/components/PodcastViewer.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Bình luận"
 msgstr "Comments"
 
-#: src/components/TimelineFields.tsx
-msgid "Bính Tuất"
-msgstr "Bính Tuất"
+#: src/lib/timeline/eras.ts
+msgid "Bình thường hoá quan hệ với Mỹ (1995)"
+msgstr "Relations with the US normalised (1995)"
 
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -2036,6 +2099,10 @@ msgstr "Filters & options"
 msgid "Bộ lọc danh mục"
 msgstr "Catalogue filters"
 
+#: src/lib/timeline/eras.ts
+msgid "Bộ luật Hồng Đức"
+msgstr "The Hồng Đức legal code"
+
 #: src/pages/CustomsDetail.tsx
 msgid "Bỏ lưu"
 msgstr "Unsave"
@@ -2070,6 +2137,10 @@ msgstr "Discard changes"
 msgid "Bỏ thay đổi chưa lưu?"
 msgstr "Discard unsaved changes?"
 
+#: src/lib/timeline/eras.ts
+msgid "Bỏ thi chữ Hán (1919)"
+msgstr "Chinese-script examinations abolished (1919)"
+
 #: src/components/BirthOrderPicker.tsx
 msgid "Bỏ trống nếu không rõ — app xếp theo năm sinh."
 msgstr "Leave blank if unsure — the app orders siblings by year of birth."
@@ -2078,6 +2149,10 @@ msgstr "Leave blank if unsure — the app orders siblings by year of birth."
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Bỏ trống sẽ dùng tên: {0}"
 msgstr "Leave blank to use the name: {0}"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Bối cảnh thời đại"
+msgstr "Historical background"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "bức"
@@ -2120,6 +2195,15 @@ msgstr "Whole tree — large print, zooms without blurring"
 msgid "cả dòng họ"
 msgstr "whole clan"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Cả dòng họ"
+msgstr "Whole clan"
+
+#. placeholder {0}: i.title
+#: src/pages/clan/TimelineList.tsx
+msgid "Cả dòng họ {0}"
+msgstr "Whole {0} clan"
+
 #: src/pages/clan/Tree.tsx
 msgid "Cả dòng họ liền một cột trên một trang; trang dài ra theo số người (họ lớn thì dài hơn A4)."
 msgstr "The whole clan in one column on a single page; the page grows with the number of people (a large clan is longer than A4)."
@@ -2139,6 +2223,10 @@ msgstr "The whole clan gets reminded"
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Cả họ theo dõi sẽ được nhắc trước (xem ở Sự kiện)."
 msgstr "The whole clan that follows it will be reminded in advance (see Events)."
+
+#: src/lib/timeline/templates.ts
+msgid "Cả họ tiễn đưa một người đã có công vun đắp cho gia đình."
+msgstr "The whole clan bids farewell to someone who did much for the family."
 
 #: src/pages/clan/Events.tsx
 msgid "Cả năm"
@@ -2166,6 +2254,10 @@ msgstr ""
 "Hi everyone, this week let's {who} one question: “{0}”. Anyone who knows, tap the link below to write the answer (on a phone, tap 🎤 on the keyboard to speak), no sign-up needed.\n"
 "{1}"
 
+#: src/lib/timeline/templates.ts
+msgid "Cả nhà trở về quê hương sau nhiều năm xa cách."
+msgstr "The family returns to their home village after many years away."
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Cả phả đồ được co vừa một trang giấy khổ bạn chọn."
 msgstr "The whole pedigree is scaled to fit one page of the paper size you choose."
@@ -2177,6 +2269,10 @@ msgstr "The whole diagram on one page, with a paper size calculated from the tre
 #: src/pages/clan/ClanFund.tsx
 msgid "Cả thu và chi"
 msgstr "Income and expenses"
+
+#: src/lib/timeline/templates.ts
+msgid "Cả xóm kéo đến xem chung chiếc ti vi đầu tiên của nhà."
+msgstr "The whole neighbourhood gathers to watch the family's first television."
 
 #: src/components/ShareSectionsCard.tsx
 msgid "Các bài đã đăng mới nhất (tin vui, thông báo)."
@@ -2218,10 +2314,6 @@ msgstr "Main ritual offerings and prayers; the clan ancestral hall and family co
 msgid "Các mộ đang gắn cơ sở này sẽ bị gỡ liên kết (không xoá mộ)."
 msgstr "Graves linked to this site will be unlinked (the graves are not deleted)."
 
-#: src/pages/clan/EditPerson.tsx
-msgid "Các mốc trong đời người, từ lúc sinh đến lúc mất. Mốc “Sinh” và “Mất” tự thêm từ ngày sinh, ngày mất."
-msgstr "Milestones in a person's life, from birth to death. The \"Birth\" and \"Death\" milestones are added automatically from the birth and death dates."
-
 #: src/components/BranchesSection.tsx
 #: src/pages/clan/Branches.tsx
 msgid "Các người đang thuộc chi này sẽ không còn chi."
@@ -2242,6 +2334,10 @@ msgstr "Episodes pulled from a Facebook Page. Hide unsuitable episodes, edit tit
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Các trường đã đổi sẽ ghi đè dữ liệu hiện tại. Tiếp tục?"
 msgstr "The changed fields will overwrite the current data. Continue?"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Các ý của bối cảnh"
+msgstr "Background points"
 
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -2312,6 +2408,10 @@ msgstr "Install app"
 msgid "Cài app lên màn hình chính"
 msgstr "Install the app on your home screen"
 
+#: src/lib/timeline/eras.ts
+msgid "Cải cách của Hồ Quý Ly"
+msgstr "Hồ Quý Ly's reforms"
+
 #: src/lib/tipCatalogue.ts
 msgid "Cài đặt"
 msgstr "Settings"
@@ -2354,10 +2454,6 @@ msgstr "Thank you. Your feedback has been recorded. If you left contact details,
 #: src/components/community/InviteCardDialog.tsx
 msgid "Cảm ơn cả nhà"
 msgstr "Thank everyone"
-
-#: src/components/TimelineFields.tsx
-msgid "Can chi (tự tính theo năm)"
-msgstr "Can Chi — Stem–Branch (calculated from the year)"
 
 #. placeholder {0}: info.canChi.day
 #: src/components/TodayHubCard.tsx
@@ -2496,6 +2592,18 @@ msgstr "auspicious star"
 msgid "Câu chuyện"
 msgstr "Story"
 
+#: src/lib/navModel.tsx
+msgid "Câu chuyện dòng họ qua các thế hệ, xuất thành poster."
+msgstr "The clan's story across generations, exported as a poster."
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Câu chuyện dòng họ qua các thế hệ."
+msgstr "The clan's story across generations."
+
+#: src/components/timeline/TimelinePoster.tsx
+msgid "Câu chuyện qua các thế hệ"
+msgstr "A story across the generations"
+
 #: src/pages/clan/Memories.tsx
 msgid "Câu chuyện, ảnh cũ, ghi âm về người thân — {pendingCount} mục đang chờ duyệt."
 msgstr "Stories, old photos and recordings about relatives — {pendingCount} awaiting review."
@@ -2567,6 +2675,7 @@ msgid "cây"
 msgstr "trees"
 
 #: src/components/ClanLayout.tsx
+#: src/components/timeline/TimelineIcon.tsx
 #: src/pages/Share.tsx
 msgid "Cây"
 msgstr "Tree"
@@ -2641,6 +2750,10 @@ msgstr "Father (already added)"
 #: src/components/QuickAddSheet.tsx
 msgid "Cha / mẹ"
 msgstr "Father / mother"
+
+#: src/lib/personTimeline.ts
+msgid "Cha mất"
+msgstr "Father died"
 
 #: src/components/InlawFamilyCard.tsx
 #: src/components/PersonRelationsQuick.tsx
@@ -2757,15 +2870,6 @@ msgstr "Add-spouse mode"
 #: src/components/tree/TreeOptionsPanel.tsx
 msgid "Chế độ xem"
 msgstr "View mode"
-
-#: src/components/TimelineFields.tsx
-msgid "Chèn mốc mới bên dưới"
-msgstr "Insert a new milestone below"
-
-#. placeholder {0}: d.year || t`này`
-#: src/components/TimelineFields.tsx
-msgid "Chèn mốc mới bên dưới mốc năm {0}"
-msgstr "Insert a new milestone below the milestone of year {0}"
 
 #: src/components/McpGuidePanel.tsx
 #: src/components/ShareTreeButton.tsx
@@ -2897,6 +3001,10 @@ msgstr "Showing the first {LIMIT} people — type more letters to narrow down."
 msgid "Chỉ hiện 50 người đầu — gõ tên để thu hẹp."
 msgstr "Only the first 50 people are shown — type a name to narrow down."
 
+#: src/pages/clan/TimelineList.tsx
+msgid "Chỉ hiện những thành viên chưa có dòng thời gian riêng."
+msgstr "Only members without their own timeline are listed."
+
 #: src/components/PersonAddressCard.tsx
 msgid "Chỉ hiện ở hồ sơ người này, không vẽ lên bản đồ."
 msgstr "Shown only on this person's profile, not drawn on the map."
@@ -2916,6 +3024,10 @@ msgstr "Income only"
 #: src/pages/clan/QrExport.tsx
 msgid "Chỉ người đã mất"
 msgstr "Deceased only"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chỉ người quản trị hoặc biên tập viên mới sửa được dòng thời gian."
+msgstr "Only admins or editors can change the timeline."
 
 #: src/components/PersonFormFields.tsx
 msgid "Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu tài liệu hoặc bia mộ ghi ngày âm."
@@ -2993,6 +3105,10 @@ msgstr "Can only be deleted when the province has no communes / wards and nobody
 msgid "Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ. Tỉnh bị chặn sẽ được giữ lại."
 msgstr "Only provinces with no communes / wards and not used as an address can be deleted. Blocked provinces are kept."
 
+#: src/lib/timeline/eras.ts
+msgid "Chia cắt ở vĩ tuyến 17"
+msgstr "Partition at the 17th parallel"
+
 #: src/components/community/InviteCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
@@ -3042,6 +3158,18 @@ msgstr "Share via QR code"
 #: src/components/ShareTreeButton.tsx
 msgid "Chia sẻ qua ứng dụng…"
 msgstr "Share via an app…"
+
+#: src/lib/timeline/eras.ts
+msgid "Chiến thắng Bạch Đằng (1288)"
+msgstr "Victory at Bạch Đằng (1288)"
+
+#: src/lib/timeline/eras.ts
+msgid "Chiến thắng Điện Biên Phủ (1954)"
+msgstr "Victory at Điện Biên Phủ (1954)"
+
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Chiến trận"
+msgstr "Battle"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Chỉnh hiện vật 3D"
@@ -3209,6 +3337,10 @@ msgstr "Choose .md files (you can choose several)…"
 msgid "Chọn file .md…"
 msgstr "Choose a .md file…"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn gia phả, sự kiện, mộ phần hoặc di sản (không bắt buộc)"
+msgstr "Choose from the family tree, events, graves or heritage (optional)"
+
 #: src/components/McpGuidePanel.tsx
 msgid "Chọn gói quyền nhỏ nhất đủ dùng; AI không bao giờ vượt quá vai trò hiện tại của người tạo token."
 msgstr "Pick the smallest permission plan that works; the AI never exceeds the token creator's current role."
@@ -3220,6 +3352,10 @@ msgstr "Choose two people in the clan to see how they address each other in the 
 #: src/pages/clan/Kinship.tsx
 msgid "Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền thống Việt — anh/em, chú/bác/cô/cậu/dì, anh em họ…"
 msgstr "Choose two people in the clan, and the app works out how they address each other in the Vietnamese tradition — anh/em, chú/bác/cô/cậu/dì, cousins…"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn hình từ thư viện, dán link ảnh hoặc dùng biểu tượng."
+msgstr "Pick an image from the library, paste an image link, or use an icon."
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Chọn khổ giấy"
@@ -3260,6 +3396,14 @@ msgstr "Choose a template ({0})"
 msgid "Chọn màu bất kỳ"
 msgstr "Choose any color"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Chọn mẫu nền"
+msgstr "Choose a background"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn mẫu rồi chỉ cần nhập năm. Bạn vẫn sửa được chữ và hình bên dưới."
+msgstr "Pick a template, then just enter the year. You can still edit the text and picture below."
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Chọn một ảnh"
 msgstr "Choose a photo"
@@ -3271,6 +3415,14 @@ msgstr "Choose a question above, then tap \"Answer\"."
 #: src/components/McpGuidePanel.tsx
 msgid "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
 msgstr "Choose one or more clans and the AI's permissions, then click \"Allow\""
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn một mẫu có sẵn hoặc tự nhập. Chỉ cần năm và tiêu đề là đủ."
+msgstr "Pick a ready-made template or type your own. A year and a title are enough."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn một mẫu để điền sẵn (không bắt buộc)"
+msgstr "Pick a template to pre-fill (optional)"
 
 #: src/components/FeaturesButton.tsx
 msgid "Chọn một mục để mở"
@@ -3337,6 +3489,14 @@ msgstr "Choose the relationship to this person:"
 msgid "Chọn tất cả {0} dòng họ"
 msgstr "Select all {0} clans"
 
+#: src/pages/clan/TimelineList.tsx
+msgid "Chọn thành viên"
+msgstr "Choose a member"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn thời kỳ"
+msgstr "Choose a period"
+
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
 msgid "Chọn thuỷ tổ làm trung tâm"
@@ -3353,6 +3513,18 @@ msgstr "Choose province"
 #: src/pages/admin/PodcastPage.tsx
 msgid "Chọn Trang để lấy podcast:"
 msgstr "Choose the Page to pull the podcast from:"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn từ dữ liệu dòng họ"
+msgstr "Choose from the clan's data"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn từ mẫu có sẵn"
+msgstr "Choose a ready-made template"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chọn từ mẫu thời đại để điền sẵn"
+msgstr "Pick an era template to pre-fill"
 
 #: src/components/McpGuidePanel.tsx
 msgid "Chọn ứng dụng AI bạn đang dùng"
@@ -3385,6 +3557,18 @@ msgstr "Topic"
 #: src/pages/CustomsImport.tsx
 msgid "Chủ đề (áp dụng cho tất cả)"
 msgstr "Topic (applies to all)"
+
+#: src/lib/timeline/eras.ts
+msgid "Chữ Nôm phát triển"
+msgstr "Chữ Nôm develops"
+
+#: src/lib/timeline/eras.ts
+msgid "Chữ Quốc ngữ dần phổ biến"
+msgstr "Quốc ngữ script gradually spreads"
+
+#: src/lib/timeline/eras.ts
+msgid "Chữ Quốc ngữ hình thành"
+msgstr "Quốc ngữ script takes shape"
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Chú thích (tuỳ chọn)"
@@ -3444,6 +3628,10 @@ msgstr "No one else yet"
 #: src/pages/clan/Relations.tsx
 msgid "Chưa có ai trong dòng họ"
 msgstr "No one in the clan yet"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Chưa có ảnh tư liệu cho thời kỳ này. Hãy dán link ảnh, chọn thời kỳ khác hoặc dùng thư viện hình."
+msgstr "No archive photos for this period yet. Paste an image link, choose another period, or use the picture library."
 
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/RestingPlacePhotosSection.tsx
@@ -3585,9 +3773,17 @@ msgstr "No invite links yet"
 msgid "Chưa có mộ phần / tro cốt"
 msgstr "No graves / ashes yet"
 
-#: src/components/TimelineFields.tsx
-msgid "Chưa có mốc nào."
-msgstr "No milestones yet."
+#: src/components/timeline/PersonTimelineCard.tsx
+msgid "Chưa có mốc nào cho người này."
+msgstr "No milestones for this person yet."
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Chưa có mốc nào được thêm."
+msgstr "No milestones have been added yet."
+
+#: src/components/TimelineOverviewCard.tsx
+msgid "Chưa có mốc nào. Kể câu chuyện dòng họ qua các thế hệ bằng một poster có sẵn mẫu, chọn là xong."
+msgstr "No milestones yet. Tell the clan's story across generations with a ready-made poster — just pick and go."
 
 #: src/pages/clan/Heritage.tsx
 msgid "Chưa có mục di sản nào"
@@ -3597,7 +3793,6 @@ msgstr "No heritage entries yet"
 msgid "Chưa có mục lịch sử"
 msgstr "No historical entries yet"
 
-#: src/components/TimelineFields.tsx
 #: src/pages/Customs.tsx
 msgid "Chưa có nội dung"
 msgstr "No content yet"
@@ -3870,6 +4065,10 @@ msgstr "Sun"
 msgid "Có"
 msgstr "Yes"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Cờ"
+msgstr "Flag"
+
 #: src/pages/clan/Memories.tsx
 msgid "Có (nếu người được nhắc đã mất)"
 msgstr "Yes (if the person has passed away)"
@@ -3894,6 +4093,10 @@ msgstr "There is an unsaved draft"
 #: src/components/ClanBadges.tsx
 msgid "Có cập nhật trong 7 ngày qua"
 msgstr "Updated in the last 7 days"
+
+#: src/lib/timeline/templates.ts
+msgid "Có chiếc radio, ti vi đầu tiên"
+msgstr "The first radio and television"
 
 #. placeholder {0}: style.size ?? 14
 #: src/components/treeCanvas/CanvasPalette.tsx
@@ -4031,9 +4234,25 @@ msgstr "Eldest"
 msgid "Con cái"
 msgstr "Children"
 
+#: src/lib/personTimeline.ts
+msgid "Con chào đời"
+msgstr "Child born"
+
 #: src/pages/clan/Relations.tsx
 msgid "Con cháu"
 msgstr "Descendants"
+
+#: src/lib/timeline/templates.ts
+msgid "Con cháu góp công góp của dựng lại từ đường của dòng họ."
+msgstr "Descendants pool their labour and means to rebuild the clan's ancestral hall."
+
+#: src/lib/timeline/templates.ts
+msgid "Con cháu học hành, đỗ đạt"
+msgstr "Descendants study and pass exams"
+
+#: src/lib/timeline/templates.ts
+msgid "Con cháu khắp nơi về họp mặt, cùng tưởng nhớ tổ tiên."
+msgstr "Descendants from far and wide gather to honour their ancestors together."
 
 #: src/components/MapOverviewCard.tsx
 #: src/components/share/ShareOverview.tsx
@@ -4043,6 +4262,10 @@ msgstr "Most descendants live in"
 #: src/lib/nextSteps.ts
 msgid "Con cháu ở tỉnh nào"
 msgstr "Which provinces descendants live in"
+
+#: src/lib/timeline/templates.ts
+msgid "Con cháu trong nhà tốt nghiệp, đỗ đạt, làm rạng danh dòng họ."
+msgstr "Descendants graduate and succeed, bringing honour to the clan."
 
 #: src/lib/navModel.tsx
 msgid "Con cháu, mộ phần theo tỉnh/thành."
@@ -4060,6 +4283,10 @@ msgstr "Child of which couple"
 #: src/components/TreeFolderView.tsx
 msgid "con của {0}"
 msgstr "children of {0}"
+
+#: src/lib/personTimeline.ts
+msgid "Con đầu lòng chào đời"
+msgstr "First child born"
 
 #: src/components/Tree3DView.tsx
 msgid "con gái"
@@ -4205,6 +4432,22 @@ msgstr "Year-end offering and welcoming New Year's Eve."
 #: src/components/QuickAddSheet.tsx
 msgid "Cùng với"
 msgstr "Together with"
+
+#: src/lib/timeline/templates.ts
+msgid "Cuộc sống hiện đại"
+msgstr "Modern life"
+
+#: src/lib/timeline/eras.ts
+msgid "Cuộc sống nhiều khó khăn"
+msgstr "Life was hard"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Cuộn dọc"
+msgstr "Vertical scroll"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Cuộn ngang"
+msgstr "Horizontal scroll"
 
 #. placeholder {0}: Math.floor(staleDays)
 #: src/pages/admin/PodcastPage.tsx
@@ -4609,15 +4852,6 @@ msgstr "Unfollowed"
 msgid "Đã huỷ theo dõi dòng họ này"
 msgstr "Unfollowed this clan"
 
-#. placeholder {0}: inlaws.length
-#: src/pages/clan/Dashboard.tsx
-msgid "Đã kết thông gia với {0} dòng họ"
-msgstr "In-law connections with {0} clans"
-
-#: src/pages/Clans.tsx
-msgid "Đã kết thông gia với: {names}"
-msgstr "In-law connection with: {names}"
-
 #: src/pages/admin/Users.tsx
 #: src/pages/admin/Users.tsx
 msgid "Đã khoá"
@@ -4653,6 +4887,7 @@ msgstr "Removed from the list"
 #: src/components/community/MemoryFaces.tsx
 #: src/components/QuickDateFixSheet.tsx
 #: src/components/ShareSectionsCard.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -4815,6 +5050,10 @@ msgstr "Message copied"
 msgid "Đã sửa tay"
 msgstr "Edited by hand"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Đã tải {name}"
+msgstr "Downloaded {name}"
+
 #: src/components/ShareCardDialog.tsx
 msgid "Đã tải ảnh — mở Zalo/Facebook để đăng."
 msgstr "Image downloaded — open Zalo/Facebook to post it."
@@ -4936,6 +5175,14 @@ msgstr "Photo added"
 msgid "Đã thêm ảnh từ liên kết"
 msgstr "Photo added from link"
 
+#: src/hooks/useTimelineActions.ts
+msgid "Đã thêm các mốc nổi bật"
+msgstr "Highlight milestones added"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Đã thêm các mốc từ tiểu sử"
+msgstr "Milestones added from the biography"
+
 #: src/components/QuickAddSheet.tsx
 msgid "Đã thêm cha"
 msgstr "Father added"
@@ -4977,6 +5224,10 @@ msgstr "Piece added to the mosaic"
 #: src/components/QuickAddSheet.tsx
 msgid "Đã thêm mẹ"
 msgstr "Mother added"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Đã thêm mốc"
+msgstr "Milestone added"
 
 #: src/pages/clan/NewPerson.tsx
 msgid "Đã thêm người"
@@ -5120,6 +5371,10 @@ msgstr "Branch \"{0}\" deleted"
 msgid "Đã xoá cơ sở"
 msgstr "Site deleted"
 
+#: src/pages/clan/TimelineList.tsx
+msgid "Đã xoá dòng thời gian"
+msgstr "Timeline deleted"
+
 #: src/pages/MyFeedback.tsx
 msgid "Đã xoá góp ý"
 msgstr "Feedback deleted"
@@ -5131,6 +5386,10 @@ msgstr "Link deleted"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Đã xoá mảnh"
 msgstr "Piece deleted"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Đã xoá mốc"
+msgstr "Milestone deleted"
 
 #: src/pages/clan/People.tsx
 msgid "Đã xoá nơi ở của {n} người"
@@ -5213,9 +5472,17 @@ msgstr "PDF exported"
 msgid "Đặc khu"
 msgstr "Special zone"
 
+#: src/lib/timeline/eras.ts
+msgid "Đại dịch Covid-19 (2020)"
+msgstr "The Covid-19 pandemic (2020)"
+
 #: src/pages/CustomsForm.tsx
 msgid "Dán <0>thân Markdown</0>: <1>#</1> Tiêu đề · đoạn mở đầu là mô tả ngắn · mỗi <2>##</2> là một đoạn · <3>![chú thích](https://…)</3> làm ảnh minh hoạ · đoạn <4>## Câu hỏi thường gặp</4> với các <5>###</5> thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới."
 msgstr "Paste <0>Markdown body</0>: <1>#</1> Title · the opening paragraph is the short description · each <2>##</2> is a section · <3>![caption](https://…)</3> is an illustration · a section <4>## Frequently asked questions</4> with <5>###</5> entries becomes the FAQ. Topic / region / origin are chosen in the form below."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Dán đường dẫn ảnh (bắt đầu bằng https://). Ảnh đặt ở trang khác có thể bị ẩn đi nếu họ xoá hoặc không cho dùng — nên chọn ảnh bạn có quyền dùng."
+msgstr "Paste an image link (starting with https://). An image hosted elsewhere may stop showing if the owner removes it or blocks use — choose one you have the right to use."
 
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ."
@@ -5347,6 +5614,10 @@ msgstr "Redirecting to Google…"
 #: src/pages/clan/AddChild.tsx
 msgid "Đang có bố/mẹ khác — sẽ ghi đè khi gắn."
 msgstr "Already has other parents — they will be overwritten when linked."
+
+#: src/lib/timeline/eras.ts
+msgid "Đảng Cộng sản Việt Nam ra đời (1930)"
+msgstr "The Communist Party of Vietnam is founded (1930)"
 
 #: src/lib/pdf/exportStageLabel.ts
 msgid "Đang dàn trang…"
@@ -5488,6 +5759,7 @@ msgstr "Excluding…"
 #: src/components/ShareSectionsCard.tsx
 #: src/components/SubscribeToggle.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/components/ui/view-edit-actions.tsx
 #: src/pages/Account.tsx
 #: src/pages/admin/Config.tsx
@@ -5543,6 +5815,10 @@ msgstr "Publish now"
 #: src/pages/clan/Memories.tsx
 msgid "Đăng ngay, ẩn sau nếu cần"
 msgstr "Publish right away, hide later if needed"
+
+#: src/lib/timeline/eras.ts
+msgid "Đàng Ngoài, Đàng Trong chia cắt"
+msgstr "Đàng Ngoài and Đàng Trong divided"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Đang nhận mảnh"
@@ -5697,6 +5973,8 @@ msgstr "loading…"
 #: src/components/RequireAuth.tsx
 #: src/components/RestingPlacePhotosSection.tsx
 #: src/components/ShareLinksSection.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
+#: src/components/TimelineOverviewCard.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/TreeFolderView.tsx
 #: src/components/TreeFolderView.tsx
@@ -5752,6 +6030,8 @@ msgstr "loading…"
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/RestingPlaces.tsx
+#: src/pages/clan/TimelineDetail.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/Todo.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/TreeCanvas.tsx
@@ -5766,6 +6046,10 @@ msgstr "loading…"
 msgid "Đang tải…"
 msgstr "Loading…"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Đang tạo ảnh…"
+msgstr "Creating image…"
+
 #: src/components/ShareTreeButton.tsx
 #: src/components/ShareTreeButton.tsx
 msgid "Đang tạo link…"
@@ -5777,6 +6061,7 @@ msgstr "Creating QR code…"
 
 #: src/components/QrCodeModal.tsx
 #: src/pages/clan/QrExport.tsx
+#: src/pages/clan/TimelineDetail.tsx
 msgid "Đang tạo PDF…"
 msgstr "Creating PDF…"
 
@@ -6027,6 +6312,10 @@ msgstr "Set reminder"
 msgid "Đặt nơi ở"
 msgstr "Set residence"
 
+#: src/lib/timeline/eras.ts
+msgid "Đất nước chia hai miền"
+msgstr "A divided country"
+
 #: src/pages/NewClan.tsx
 msgid "Đặt tên và vài thông tin cơ bản — tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
 msgstr "Give it a name and a few basic details — once created the clan is empty, ready for you to add the founding ancestor."
@@ -6190,10 +6479,15 @@ msgstr "Variant version"
 msgid "Di chuyển"
 msgstr "Move"
 
+#: src/lib/timeline/templates.ts
+msgid "Di cư, lập nghiệp nơi mới"
+msgstr "Migrating and starting anew"
+
 #: src/components/ShareSectionsCard.tsx
 #: src/lib/queries/global-search.ts
 #: src/lib/queries/mapStats.ts
 #: src/lib/quickCatalog.tsx
+#: src/lib/timeline/suggestions.ts
 #: src/pages/Share.tsx
 msgid "Di sản"
 msgstr "Heritage"
@@ -6275,6 +6569,18 @@ msgstr "Place line under the book title"
 msgid "Diễn đàn/bảng tin nội bộ dòng họ."
 msgstr "The clan's internal forum / news feed."
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Điện thoại"
+msgstr "Phone"
+
+#: src/lib/timeline/eras.ts
+msgid "Điện thoại di động, mạng xã hội phổ biến"
+msgstr "Mobile phones and social media spread"
+
+#: src/lib/timeline/templates.ts
+msgid "Điện thoại, mạng xã hội giúp con cháu xa nhà vẫn gần nhau."
+msgstr "Phones and social media keep far-away descendants close."
+
 #: src/components/ShareCardDialog.tsx
 msgid "Điện thoại:"
 msgstr "Phone:"
@@ -6298,6 +6604,10 @@ msgstr "Terms"
 #: src/pages/clan/Import.tsx
 msgid "Định dạng .xlsx hoặc .csv. Các cột:"
 msgstr ".xlsx or .csv format. Columns:"
+
+#: src/lib/timeline/themes.ts
+msgid "Đỏ – vàng"
+msgstr "Red and gold"
 
 #. placeholder {0}: q.asked_by_name
 #: src/pages/clan/Memories.tsx
@@ -6392,6 +6702,10 @@ msgstr "Read the risk warning, choose \"I understand and want to continue\", the
 msgid "Đọc danh sách Trang"
 msgstr "Read the list of Pages"
 
+#: src/lib/timeline/eras.ts
+msgid "Độc lập và kháng chiến chống Pháp"
+msgstr "Independence and the war against the French"
+
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -6412,6 +6726,7 @@ msgstr "Gen."
 #. placeholder {0}: g.gen
 #. placeholder {0}: gen - (data?.generation_offset ?? 0)
 #: src/components/InlawFamilyCard.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/TreeFolderView.tsx
@@ -6421,6 +6736,7 @@ msgstr "Gen."
 #: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/Todo.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
@@ -6433,6 +6749,10 @@ msgstr "Generation {0}"
 #: src/pages/clan/People.tsx
 msgid "Đời {dispGen}"
 msgstr "Generation {dispGen}"
+
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "Đời {gen} bắt đầu"
+msgstr "Generation {gen} begins"
 
 #: src/components/PhotoUploadField.tsx
 msgid "Đổi ảnh"
@@ -6457,6 +6777,10 @@ msgstr "Change branch for {0} people"
 msgid "Đời đến"
 msgstr "Generation to"
 
+#: src/lib/timeline/eras.ts
+msgid "Dời đô ra Thăng Long (1010)"
+msgstr "Capital moved to Thăng Long (1010)"
+
 #: src/pages/clan/InlawsNew.tsx
 msgid "Đổi dòng họ"
 msgstr "Change clan"
@@ -6473,6 +6797,10 @@ msgstr "Change email"
 #: src/pages/ResetPassword.tsx
 msgid "Đổi mật khẩu"
 msgstr "Change password"
+
+#: src/lib/timeline/eras.ts
+msgid "Đổi Mới (1986), kinh tế khởi sắc"
+msgstr "Đổi Mới (1986) and a growing economy"
 
 #: src/pages/clan/MyLineage.tsx
 msgid "Đổi người"
@@ -6519,6 +6847,10 @@ msgstr "Change the keyword or the filters in Options."
 #: src/pages/CustomsForm.tsx
 msgid "Đối tượng áp dụng"
 msgstr "Applies to"
+
+#: src/lib/timeline/templates.ts
+msgid "Đón con đầu lòng"
+msgstr "Welcoming the first child"
 
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
@@ -6704,6 +7036,10 @@ msgstr "clans"
 msgid "Dòng họ"
 msgstr "Clans"
 
+#: src/components/timeline/TimelinePoster.tsx
+msgid "Dòng họ {shortName}"
+msgstr "The {shortName} clan"
+
 #: src/components/share/ShareOverview.tsx
 msgid "Dòng họ & cây gia phả"
 msgstr "Clan & family tree"
@@ -6716,6 +7052,10 @@ msgstr "Clans you have joined or follow."
 msgid "Dòng họ cần xoá danh bạ"
 msgstr "Clan whose People list is to be deleted"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Dòng họ chỉ cần tổng quan nên mốc chi tiết của một người mặc định chỉ hiện ở trang người đó."
+msgstr "The clan only needs an overview, so a person's detailed milestones show only on that person's page by default."
+
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "Dòng họ cho phép AI làm việc"
 msgstr "Clan the AI may work in"
@@ -6723,6 +7063,10 @@ msgstr "Clan the AI may work in"
 #: src/components/TreeFolderView.tsx
 msgid "Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu."
 msgstr "The clan has no one yet. Add the founding ancestor to begin."
+
+#: src/components/TimelineOverviewCard.tsx
+msgid "Dòng họ chưa có mốc nào trên dòng thời gian."
+msgstr "The clan has no milestones on its timeline yet."
 
 #: src/pages/Clans.tsx
 msgid "Dòng họ công khai bạn chưa tham gia — chỉ xem cây, người còn sống được ẩn."
@@ -6761,6 +7105,10 @@ msgstr "Demo clan"
 msgid "Dòng họ đích"
 msgstr "Target clan"
 
+#: src/lib/timeline/templates.ts
+msgid "Dòng họ ghi chép lại cội nguồn và các đời để con cháu nhớ."
+msgstr "The clan records its origins and generations so descendants remember."
+
 #: src/lib/bookTemplates.ts
 msgid "Dòng họ khoa bảng, hiếu học"
 msgstr "Scholarly clan with a tradition of learning"
@@ -6780,6 +7128,10 @@ msgstr "New clans (7d)"
 #: src/pages/clan/Tree.tsx
 msgid "Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để thẻ to, nhiều đời vẫn đẹp trên một trang. Họ đông chọn mức cao để gói nhiều người/trang."
 msgstr "For a small clan (few people per generation) choose “Compact” so the cards are large and many generations still look good on one page. For a large clan choose a higher value to fit more people per page."
+
+#: src/lib/timeline/templates.ts
+msgid "Dòng họ tổ chức lễ lớn, con cháu về dự đông đủ."
+msgstr "The clan holds a grand ceremony and descendants come in numbers."
 
 #: src/components/AppDrawer.tsx
 #: src/components/AppHeader.tsx
@@ -6808,18 +7160,35 @@ msgstr "Small top line"
 msgid "Dòng phụ (năm sinh–mất…)"
 msgstr "Secondary line (birth–death years…)"
 
-#: src/components/HistoricalPersonSections.tsx
+#: src/pages/clan/TimelineList.tsx
+msgid "dòng thời gian"
+msgstr "timelines"
+
+#: src/components/HomeCustomizeDrawer.tsx
+#: src/components/timeline/PersonTimelineCard.tsx
+#: src/components/TimelineOverviewCard.tsx
+#: src/lib/navModel.tsx
+#: src/pages/clan/TimelineDetail.tsx
+#: src/pages/clan/TimelineList.tsx
+#: src/pages/clan/TimelineList.tsx
 msgid "Dòng thời gian"
 msgstr "Timeline"
 
-#. placeholder {0}: d.year
-#: src/components/TimelineFields.tsx
-msgid "Dòng thời gian: năm “{0}” chưa hợp lệ."
-msgstr "Timeline: year “{0}” is not valid."
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Dòng thời gian chưa có mốc nào"
+msgstr "The timeline has no milestones yet"
 
-#: src/components/TimelineFields.tsx
-msgid "Dòng thời gian: năm {year} chưa có nội dung."
-msgstr "Timeline: year {year} has no content yet."
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Dòng thời gian của {subject}"
+msgstr "Timeline of {subject}"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Dòng thời gian cuộc đời"
+msgstr "A life timeline"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Dòng thời gian dòng họ"
+msgstr "Clan timeline"
 
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
@@ -6905,6 +7274,10 @@ msgstr "Use the arrows to set the order (the first wife goes on top)."
 #: src/components/SubscriptionSettings.tsx
 msgid "Đúng ngày"
 msgstr "On the day"
+
+#: src/lib/timeline/templates.ts
+msgid "Dựng nhà mới"
+msgstr "Building a new house"
 
 #: src/pages/clan/Members.tsx
 msgid "Dùng ô email phía trên để mời thành viên — họ cần đăng ký tài khoản trước."
@@ -6996,6 +7369,10 @@ msgstr "Review pending contributions →"
 msgid "Duyệt đóng góp?"
 msgstr "Approve the contribution?"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Em bé"
+msgstr "Baby"
+
 #: src/pages/Contact.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Email / số điện thoại / Zalo — để trống cũng được"
@@ -7059,6 +7436,10 @@ msgstr "Link people"
 msgid "Gắn nơi an nghỉ (tuỳ chọn)"
 msgstr "Link a resting place (optional)"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Gắn với người"
+msgstr "Link to a person"
+
 #: src/lib/tree/canvasModel.ts
 msgid "Gấp khúc"
 msgstr "Zigzag"
@@ -7066,6 +7447,10 @@ msgstr "Zigzag"
 #: src/lib/tipCatalogue.ts
 msgid "Gặp lỗi? Nói cho biết."
 msgstr "Found a problem? Tell us."
+
+#: src/lib/timeline/templates.ts
+msgid "Gây dựng cơ nghiệp, làm ăn"
+msgstr "Building a livelihood"
 
 #: src/components/GedcomButtons.tsx
 msgid "GEDCOM 5.5.1 là chuẩn trao đổi dữ liệu phả hệ. Nhập sẽ tạo người mới — không hợp nhất với dữ liệu hiện có."
@@ -7183,6 +7568,7 @@ msgid "Ghim"
 msgstr "Pin"
 
 #: src/components/RecentActivityPanel.tsx
+#: src/components/timeline/TimelineIcon.tsx
 #: src/lib/queries/customs.ts
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
@@ -7193,9 +7579,45 @@ msgstr "Family"
 msgid "Gia đình / chi họ nhỏ – giản dị"
 msgstr "Small family / small branch — simple"
 
+#: src/lib/timeline/templates.ts
+msgid "Gia đình bắt đầu làm ăn, từng bước gây dựng cơ nghiệp."
+msgstr "The family starts a business and builds its livelihood step by step."
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Gia đình bên đó"
 msgstr "The family on that side"
+
+#: src/lib/timeline/templates.ts
+msgid "Gia đình đón thành viên mới chào đời."
+msgstr "The family welcomes a new member."
+
+#: src/lib/timeline/templates.ts
+msgid "Gia đình dựng được căn nhà riêng sau bao năm cần cù."
+msgstr "After years of hard work, the family builds a home of its own."
+
+#: src/lib/timeline/templates.ts
+msgid "Gia đình rời quê cũ để tìm cuộc sống mới ở nơi khác."
+msgstr "The family leaves its old village to seek a new life elsewhere."
+
+#: src/lib/timeline/templates.ts
+msgid "Gia đình sắm được chiếc xe đầu tiên, đi lại đỡ vất vả."
+msgstr "The family buys its first vehicle, making travel easier."
+
+#: src/lib/timeline/templates.ts
+msgid "Gia đình trải qua mất mát, phải rời nhà lánh nạn."
+msgstr "The family suffers loss and must leave home to flee danger."
+
+#: src/lib/timeline/eras.ts
+msgid "Gia Long lên ngôi, đóng đô ở Huế (1802)"
+msgstr "Gia Long takes the throne, capital at Huế (1802)"
+
+#: src/lib/timeline/eras.ts
+msgid "Gia nhập WTO (2007)"
+msgstr "Joining the WTO (2007)"
+
+#: src/lib/timeline/suggestions.ts
+msgid "Gia phả"
+msgstr "Family tree"
 
 #. placeholder {0}: data.clan_name
 #: src/pages/Share.tsx
@@ -7230,6 +7652,10 @@ msgstr "A large family tree can take several minutes. You can pause and resume l
 msgid "Giai thoại / công trạng"
 msgstr "Anecdotes / merit"
 
+#: src/lib/timeline/eras.ts
+msgid "Giành lại độc lập (1427)"
+msgstr "Independence regained (1427)"
+
 #: src/pages/clan/ClanFund.tsx
 msgid "giao dịch"
 msgstr "transactions"
@@ -7253,9 +7679,17 @@ msgstr "Light mode"
 msgid "Giao diện tối"
 msgstr "Dark mode"
 
+#: src/lib/timeline/themes.ts
+msgid "Giấy cổ"
+msgstr "Aged paper"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Giấy kẻ ô"
 msgstr "Grid paper"
+
+#: src/lib/timeline/themes.ts
+msgid "Giấy kem"
+msgstr "Cream paper"
 
 #: src/components/community/MemoryForm.tsx
 msgid "Giấy khai sinh · bia mộ · gia phả cũ · nghe bố mẹ kể…"
@@ -7416,6 +7850,18 @@ msgstr "Type to filter wards / communes (no accents needed)"
 msgid "Gõ để tìm (không cần dấu)"
 msgstr "Type to search (accents not required)"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Gõ để tìm mẫu"
+msgstr "Type to find a template"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Gõ để tìm thời đại"
+msgstr "Type to find an era"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Gõ để tìm thời kỳ"
+msgstr "Type to find a period"
+
 #. placeholder {0}: wipeClan.name
 #. placeholder {1}: wipeClan.person_count
 #: src/pages/admin/GiaPha.tsx
@@ -7452,6 +7898,10 @@ msgstr "Unlink from {0}"
 msgid "Gõ năm"
 msgstr "Type a year"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Gõ năm, tên hoặc nguồn (sự kiện, mộ, di sản…) để tìm"
+msgstr "Type a year, name or source (events, graves, heritage…) to search"
+
 #: src/pages/CustomsForm.tsx
 msgid "Gõ tên bài để tìm & thêm liên kết…"
 msgstr "Type an article name to find it and add a link…"
@@ -7474,10 +7924,12 @@ msgstr "Type a name to filter (no accents needed)"
 #: src/components/community/FaceTagger.tsx
 #: src/components/community/QuestionPanel.tsx
 #: src/components/community/QuestionPanel.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/Memories.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
 msgid "Gõ tên để tìm (không cần dấu)"
@@ -7490,6 +7942,10 @@ msgstr "Type a name to find a member…"
 #: src/components/ClanPicker.tsx
 msgid "Gõ tên dòng họ…"
 msgstr "Type a clan name…"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Gõ tên mẫu để tìm"
+msgstr "Type a template name to find it"
 
 #: src/components/ui/date-picker.tsx
 msgid "Gõ tháng"
@@ -7712,6 +8168,10 @@ msgstr "Both ends"
 msgid "Hai dòng họ là họ hàng / cùng nguồn gốc — xem ghi chú của bên gửi."
 msgstr "The two clans are relatives / share an origin — see the sender's note."
 
+#: src/lib/timeline/templates.ts
+msgid "Hai người nên duyên vợ chồng, bắt đầu một mái ấm mới."
+msgstr "Two people marry and start a new home together."
+
 #: src/components/ApiTokenPanels.tsx
 msgid "Hạn dùng"
 msgstr "Expires after"
@@ -7758,13 +8218,25 @@ msgstr "Please give the new tree a name"
 msgid "Hãy là người đầu tiên đăng tin cho cả họ — bấm nút '+'."
 msgstr "Be the first to post news for the whole clan — tap the '+' button."
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Hãy nhập bối cảnh thời đại (tiêu đề và ít nhất một ý) — chọn một mẫu thời đại cho nhanh."
+msgstr "Enter the historical background (a title and at least one point) — picking an era template is the quickest way."
+
 #: src/components/QuickDateFixSheet.tsx
 msgid "Hãy nhập ít nhất một năm — hoặc đóng nếu chưa rõ."
 msgstr "Enter at least one year — or close if you're not sure."
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Hãy nhập năm hợp lệ, ví dụ 1975."
+msgstr "Enter a valid year, for example 1975."
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "Hãy nhập tên / tiêu đề cho mục này."
 msgstr "Please enter a name / title for this entry."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Hãy nhập tiêu đề cho mốc."
+msgstr "Enter a title for the milestone."
 
 #: src/components/ThemeToggle.tsx
 #: src/lib/adminScreens.tsx
@@ -7893,6 +8365,10 @@ msgstr "Show on the Overview screen"
 msgid "Hiển thị trên trang chủ"
 msgstr "Shown on the home page"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Hiện trên dòng thời gian dòng họ"
+msgstr "Show on the clan timeline"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Hiện trên trang Podcast"
 msgstr "Shown on the Podcast page"
@@ -7908,6 +8384,10 @@ msgstr "Valid for (days)"
 #: src/pages/Share.tsx
 msgid "Hình ảnh"
 msgstr "Photos"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Hình minh hoạ"
+msgstr "Illustration"
 
 #: src/pages/Account.tsx
 msgid "Hình nền"
@@ -8102,6 +8582,10 @@ msgstr "Active"
 msgid "Hoạt động gần đây"
 msgstr "Recent activity"
 
+#: src/lib/timeline/eras.ts
+msgid "Học, làm việc và kết nối trực tuyến"
+msgstr "Studying, working and connecting online"
+
 #. placeholder {0}: opts.askName
 #: src/components/community/QuestionPanel.tsx
 msgid "hỏi {0}"
@@ -8129,6 +8613,10 @@ msgstr "Ask how to use something, or about your data…"
 #: src/pages/Share.tsx
 msgid "Hỏi đáp"
 msgstr "Q&A"
+
+#: src/lib/timeline/eras.ts
+msgid "Hội nhập"
+msgstr "Integration"
 
 #: src/components/community/InviteCardDialog.tsx
 #: src/components/community/QuestionPanel.tsx
@@ -8178,6 +8666,10 @@ msgstr "Next day"
 msgid "Hôm trước"
 msgstr "Previous day"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Hôn lễ"
+msgstr "Wedding"
+
 #. placeholder {0}: active.last_check_error ?? "?"
 #: src/pages/admin/PodcastPage.tsx
 msgid "hỏng ({0})"
@@ -8191,6 +8683,10 @@ msgstr "Box"
 #: src/pages/clan/Events.tsx
 msgid "Họp họ"
 msgstr "Clan meeting"
+
+#: src/lib/timeline/templates.ts
+msgid "Họp họ, giỗ Tổ"
+msgstr "Clan gathering, ancestor anniversary"
 
 #: src/pages/clan/Events.tsx
 msgid "Họp họ, ngày kỷ niệm dòng họ — thêm theo dương lịch hoặc âm lịch."
@@ -8315,6 +8811,7 @@ msgstr "Cancel"
 #: src/components/ApiTokenPanels.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/QuickAddSheet.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/components/ui/view-edit-actions.tsx
 #: src/pages/Account.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -8329,6 +8826,7 @@ msgstr "Cancel"
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/CustomsForm.tsx
 #: src/pages/CustomsImport.tsx
 #: src/pages/NewClan.tsx
@@ -8366,6 +8864,10 @@ msgstr "Import a large family tree from an .xlsx or .csv file."
 msgid "In lên bia mộ, danh thiếp"
 msgstr "Print on gravestones, business cards"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "In mã QR xem dòng thời gian ở chân poster"
+msgstr "Print a QR code to view the timeline at the foot of the poster"
+
 #. placeholder {0}: new Date().toLocaleDateString(currentIntlTag())
 #: src/pages/clan/Tree.tsx
 msgid "In ngày {0}"
@@ -8378,6 +8880,10 @@ msgstr "Printed on the cover and pages of the PDF book; pick a template to get a
 #: src/lib/nextSteps.ts
 msgid "In thành cuốn sổ có bìa"
 msgstr "Printed as a book with a cover"
+
+#: src/lib/timeline/eras.ts
+msgid "Internet vào Việt Nam (1997)"
+msgstr "The internet arrives in Vietnam (1997)"
 
 #: src/components/HistoricalClansSection.tsx
 msgid "Ít người nhất"
@@ -8507,6 +9013,10 @@ msgstr "Guests contributing via a link are always reviewed until they have been 
 msgid "Khách qua link"
 msgstr "Guests via link"
 
+#: src/lib/timeline/eras.ts
+msgid "Kháng chiến chống Mỹ"
+msgstr "The war against the US"
+
 #: src/pages/Account.tsx
 msgid "Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào."
 msgstr "When turned on, the app will ask for permission to show notifications. Every morning on a death anniversary / birthday a reminder will appear on your phone — even when the app is closed. You can turn it off at any time."
@@ -8537,6 +9047,10 @@ msgstr "Paper size"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
 msgstr "Paper size: {0} × {1} cm (at most 500 cm per side)."
+
+#: src/lib/timeline/eras.ts
+msgid "Khoa cử, bia tiến sĩ"
+msgstr "Imperial exams and doctoral stelae"
 
 #: src/pages/clan/Tree.tsx
 msgid "Khoá để cuộn trang"
@@ -8758,6 +9272,10 @@ msgstr "No clans match \"{debounced}\""
 msgid "Không có dòng họ nào khớp."
 msgstr "No clan matches."
 
+#: src/pages/clan/TimelineList.tsx
+msgid "Không có dòng thời gian nào khớp"
+msgstr "No matching timelines"
+
 #: src/pages/clan/HonorBook.tsx
 msgid "Không có ghi nhận nào khớp"
 msgstr "No matching records"
@@ -8974,6 +9492,10 @@ msgstr "Could not approve"
 msgid "Không gắn người cụ thể"
 msgstr "Not about a specific person"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Không gắn với ai (mốc chung của dòng họ)"
+msgstr "Not linked to anyone (a clan-wide milestone)"
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Không gỡ được"
 msgstr "Could not unlink"
@@ -9045,6 +9567,8 @@ msgstr "Could not get the location (permission needed)"
 #: src/components/QuickDateFixSheet.tsx
 #: src/components/ShareSectionsCard.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
+#: src/hooks/useTimelineActions.ts
 #: src/pages/Account.tsx
 #: src/pages/Account.tsx
 #: src/pages/Account.tsx
@@ -9221,6 +9745,7 @@ msgstr "No matching date or event."
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/clan/TimelineDetail.tsx
 msgid "Không thêm được"
 msgstr "Could not add"
 
@@ -9297,6 +9822,10 @@ msgstr "This clan was not found, or you don't have permission to view it."
 msgid "Không tìm thấy dữ liệu — có thể đã bị xoá hoặc đổi liên kết."
 msgstr "Data not found — it may have been deleted or the link changed."
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Không tìm thấy mốc này (có thể đã bị xoá)."
+msgstr "This milestone was not found (it may have been deleted)."
+
 #: src/pages/clan/GoodDays.tsx
 msgid "Không tìm thấy ngày đẹp phù hợp trong khoảng này."
 msgstr "No suitable good days were found in this range."
@@ -9366,6 +9895,7 @@ msgstr "Could not confirm"
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/CustomsDetail.tsx
@@ -9403,6 +9933,10 @@ msgstr "Could not export the image. Try again or use Print."
 #: src/pages/Share.tsx
 msgid "Không xuất được ảnh. Thử lại sau."
 msgstr "Could not export the image. Please try again later."
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Không xuất được file"
+msgstr "Could not export the file"
 
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/QrExport.tsx
@@ -9496,6 +10030,11 @@ msgstr "Tree display style"
 msgid "Kiểu thẻ"
 msgstr "Card style"
 
+#: src/pages/clan/TimelineDetail.tsx
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Kiểu xem"
+msgstr "View style"
+
 #: src/components/ClanBadges.tsx
 msgid "Kim cương"
 msgstr "Diamond"
@@ -9579,6 +10118,10 @@ msgstr "Founded / built in"
 msgid "Lập / xây năm (tuỳ chọn)"
 msgstr "Founded / built in (optional)"
 
+#: src/lib/timeline/templates.ts
+msgid "Lập gia đình"
+msgstr "Getting married"
+
 #: src/pages/clan/Events.tsx
 msgid "Lặp lại hằng năm"
 msgstr "Repeats every year"
@@ -9592,6 +10135,10 @@ msgstr "Built in {0}"
 msgid "Lập phả lần đầu (từ ký ức, điền dã)"
 msgstr "Compiling for the first time (from memory, field research)"
 
+#: src/lib/timeline/eras.ts
+msgid "Lập Văn Miếu (1070), Quốc Tử Giám (1076)"
+msgstr "Temple of Literature (1070) and Imperial Academy (1076) founded"
+
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Lấy ảnh từ danh sách thành viên (chỉ người có ảnh)."
 msgstr "Take photos from the member list (only people who have a photo)."
@@ -9600,6 +10147,10 @@ msgstr "Take photos from the member list (only people who have a photo)."
 #: src/pages/admin/PodcastPage.tsx
 msgid "Lấy ở <0>developers.facebook.com</0>: App ID và App Secret trong Cài đặt › Cơ bản; token người dùng sinh{0} <1>pages_show_list</1>, <2>pages_read_engagement</2>, <3>pages_read_user_content</3>. Token ngắn hạn cũng được — máy chủ sẽ tự đổi sang loại dài hạn."
 msgstr "Get these at <0>developers.facebook.com</0>: the App ID and App Secret under Settings › Basic; a user token generated{0} <1>pages_show_list</1>, <2>pages_read_engagement</2>, <3>pages_read_user_content</3>. A short-lived token is fine — the server will swap it for a long-lived one."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Lấy từ gia phả, sự kiện, mộ phần, di sản của dòng họ. Chọn xong thì sao chép vào đây — sau đó bạn sửa tự do, dữ liệu gốc đổi cũng không ảnh hưởng."
+msgstr "Taken from the clan's family tree, events, graves and heritage. Once chosen it is copied here — you can then edit it freely, and changes to the original won't affect it."
 
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/HeritageForm.tsx
@@ -9618,6 +10169,14 @@ msgstr "Death-anniversary rules, family rules, prayers, village covenants, kinsh
 #: src/lib/queries/customs.ts
 msgid "Lễ hội cộng đồng"
 msgstr "Community festivals"
+
+#: src/lib/timeline/templates.ts
+msgid "Lễ kỷ niệm của dòng họ"
+msgstr "Clan anniversary ceremony"
+
+#: src/lib/timeline/eras.ts
+msgid "Lê Lợi dấy nghĩa Lam Sơn (1418)"
+msgstr "Lê Lợi raises the Lam Sơn uprising (1418)"
 
 #: src/lib/festivals.ts
 msgid "Lễ Phật Đản"
@@ -9734,6 +10293,14 @@ msgstr "Contact"
 msgid "Liên hệ / phản hồi"
 msgstr "Contact / feedback"
 
+#: src/pages/clan/Tree.tsx
+msgid "Liên kết"
+msgstr "Links"
+
+#: src/pages/clan/Tree.tsx
+msgid "Liên kết — bấm để xem"
+msgstr "Link — tap to view"
+
 #: src/lib/clanFeatures.ts
 msgid "Liên kết chéo giữa các dòng họ (thông gia, họ tổ, họ hậu duệ, họ hàng)."
 msgstr "Cross-links between clans (in-laws, ancestral clan, descendant clan, relatives)."
@@ -9771,18 +10338,13 @@ msgid "Liên kết ngoài"
 msgstr "External link"
 
 #: src/pages/clan/PersonDetail.tsx
-#: src/pages/clan/Tree.tsx
 msgid "Liên kết thông gia"
 msgstr "In-law link"
 
-#: src/pages/clan/Tree.tsx
-msgid "Liên kết thông gia — bấm để xem"
-msgstr "In-law link — tap to view"
-
-#. placeholder {0}: linked.length
+#. placeholder {0}: inlaws.length + linked.length
 #: src/pages/clan/Dashboard.tsx
-msgid "Liên kết với {0} dòng họ khác"
-msgstr "Linked with {0} other clans"
+msgid "Liên kết với {0} dòng họ"
+msgstr "Linked with {0} clans"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Liên lạc"
@@ -9803,6 +10365,7 @@ msgid "Linh vật, dòng họ demo."
 msgstr "Mascot, demo clan."
 
 #: src/components/community/MemoryForm.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Link ảnh"
 msgstr "Photo link"
 
@@ -9817,6 +10380,10 @@ msgstr "Cover image link (https)"
 #: src/pages/CustomsForm.tsx
 msgid "Link ảnh bìa phải là https://…"
 msgstr "The cover image link must be https://…"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Link ảnh chưa đúng: cần bắt đầu bằng https:// và không có dấu cách."
+msgstr "The image link isn't valid: it must start with https:// and contain no spaces."
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Link ảnh phải bắt đầu bằng https://"
@@ -10209,6 +10776,10 @@ msgstr "Map layer"
 msgid "Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt + (trên iOS) đã cài app vào màn hình chính."
 msgstr "An extra layer of reminders — works even when the app is closed. Requires a browser + (on iOS) the app added to the home screen."
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Lúa"
+msgstr "Rice"
+
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/Clans.tsx
@@ -10223,6 +10794,7 @@ msgstr "Visits this week"
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/components/ui/view-edit-actions.tsx
 #: src/pages/Account.tsx
 #: src/pages/admin/Announcements.tsx
@@ -10367,6 +10939,7 @@ msgstr "The invite code will no longer work. You can create a new one."
 
 #: src/components/QrCodeModal.tsx
 #: src/components/QrCodeModal.tsx
+#: src/pages/clan/TimelineDetail.tsx
 msgid "Mã QR"
 msgstr "QR code"
 
@@ -10385,6 +10958,10 @@ msgstr "This QR code does not belong to Dòng Họ Việt. Ignored to protect yo
 #: src/lib/navModel.tsx
 msgid "Mã QR từng người để in/khắc — quét ra trang cá nhân."
 msgstr "A QR code per person to print or engrave — scans to their profile."
+
+#: src/components/timeline/TimelinePoster.tsx
+msgid "Mã QR xem dòng thời gian"
+msgstr "QR code to view the timeline"
 
 #: src/components/community/InviteCardDialog.tsx
 msgid "Mặc định (theo lựa chọn ở trên)"
@@ -10414,6 +10991,7 @@ msgstr "Mosaic piece"
 msgid "Mảnh này đang bị ẩn với người khác."
 msgstr "This piece is currently hidden from others."
 
+#: src/lib/personTimeline.ts
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
@@ -10454,10 +11032,6 @@ msgstr "The passwords do not match."
 msgid "Mật khẩu tối thiểu 8 ký tự."
 msgstr "The password must be at least 8 characters."
 
-#: src/components/HistoricalPersonSections.tsx
-msgid "Mất{age}."
-msgstr "Died{age}."
-
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Màu"
@@ -10474,6 +11048,10 @@ msgstr "Text color"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Mẫu chữ trên ảnh"
 msgstr "Text style on the image"
+
+#: src/lib/timeline/themes.ts
+msgid "Màu da bò sẫm, như gia phả xưa"
+msgstr "Deep tan, like an old family book"
 
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
@@ -10510,6 +11088,10 @@ msgstr "Mother"
 #: src/components/QuickAddSheet.tsx
 msgid "Mẹ (đã có)"
 msgstr "Mother (already added)"
+
+#: src/lib/personTimeline.ts
+msgid "Mẹ mất"
+msgstr "Mother died"
 
 #: src/components/HistoricalPersonSections.tsx
 msgid "Mẹ nuôi: "
@@ -10640,6 +11222,7 @@ msgstr "Open Graves & ashes → edit each place and choose the Province / Commun
 #: src/lib/queries/global-search.ts
 #: src/lib/queries/mapStats.ts
 #: src/lib/quickCatalog.tsx
+#: src/lib/timeline/suggestions.ts
 msgid "Mộ phần"
 msgstr "Graves"
 
@@ -10722,6 +11305,7 @@ msgstr "Description (optional)"
 msgid "Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
 msgstr "The more specific the better — what you were doing, how the app responded, how you'd like it to behave…"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/CustomsForm.tsx
 msgid "Mô tả ngắn"
 msgstr "Short description"
@@ -10762,6 +11346,18 @@ msgstr "Open on Facebook →"
 #: src/components/HelpButton.tsx
 msgid "Mở trong trang Hướng dẫn đầy đủ →"
 msgstr "Open in the full Guide →"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Mốc của"
+msgstr "Milestones of"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Mốc gắn với người sẽ hiện thêm ở trang của người đó trong Danh bạ."
+msgstr "A milestone linked to a person also shows on that person's page in People."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Mốc này được chọn từ gia phả nên sẽ hiện lại trong phần gợi ý."
+msgstr "This milestone was picked from the family tree, so it will reappear in the suggestions."
 
 #: src/components/NewBadge.tsx
 #: src/pages/admin/Feedback.tsx
@@ -10828,6 +11424,14 @@ msgstr "Each clan can create several mosaics."
 #: src/pages/Clans.tsx
 msgid "Mọi dòng họ trên nền tảng."
 msgstr "Every clan on the platform."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Mỗi dòng một ý, tối đa {MAX_BULLETS} ý (cần ít nhất 1). vd: Chia cắt ở vĩ tuyến 17"
+msgstr "One point per line, up to {MAX_BULLETS} (at least 1). e.g. Partition at the 17th parallel"
+
+#: src/pages/clan/TimelineList.tsx
+msgid "Mỗi dòng thời gian là một poster: của cả dòng họ hoặc của từng thành viên. Bấm vào một dòng để xem poster."
+msgstr "Each timeline is a poster: for the whole clan or for a single member. Tap one to see its poster."
 
 #: src/components/community/PersonMemoriesSection.tsx
 msgid "Mời góp"
@@ -10961,6 +11565,10 @@ msgstr "Newest"
 msgid "Mời thành viên"
 msgstr "Invite members"
 
+#: src/pages/clan/TimelineList.tsx
+msgid "Mọi thành viên đều đã có dòng thời gian."
+msgstr "Every member already has a timeline."
+
 #: src/pages/clan/Mosaics.tsx
 msgid "Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ."
 msgstr "Each member contributes one photo — together they form one shared picture of the clan."
@@ -10968,6 +11576,10 @@ msgstr "Each member contributes one photo — together they form one shared pict
 #: src/components/mosaic/FamilyPhotoCard.tsx
 msgid "Mỗi thành viên góp một tấm ảnh, ghép thành bức tranh chung của dòng họ. Tạo bức đầu tiên để cả nhà cùng góp."
 msgstr "Each member contributes a photo, together forming one shared picture of the clan. Create the first one so the whole family can add to it."
+
+#: src/components/timeline/TimelinePoster.tsx
+msgid "Mỗi thế hệ một hành trình — chung một cội nguồn."
+msgstr "Every generation its own journey — one shared root."
 
 #: src/pages/Contact.tsx
 msgid "Mọi thứ khác."
@@ -11016,6 +11628,10 @@ msgstr "One question; the person asked answers via a link"
 #: src/pages/clan/HeritageForm.tsx
 msgid "Một câu tóm tắt, hiện ở danh sách"
 msgstr "A one-sentence summary, shown in the list"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Một đời người, những dấu mốc còn lại."
+msgstr "A lifetime, and the milestones it leaves behind."
 
 #: src/pages/admin/Config.tsx
 msgid "một hoặc nhiều"
@@ -11144,10 +11760,15 @@ msgid "Nam"
 msgstr "Male"
 
 #: src/components/CalendarDateInput.tsx
-#: src/components/TimelineFields.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/components/ui/date-picker.tsx
 msgid "Năm"
 msgstr "Year"
+
+#: src/lib/timeline/eras.ts
+msgid "Nam – Bắc triều đối đầu"
+msgstr "Southern and Northern courts in conflict"
 
 #. placeholder {0}: day.canChi.year
 #. placeholder {0}: info.canChi.year
@@ -11156,6 +11777,11 @@ msgstr "Year"
 #: src/pages/clan/GoodDays.tsx
 msgid "Năm {0}"
 msgstr "Year {0}"
+
+#. placeholder {0}: sameYear.length
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Năm {yearNum} đã có {0} mốc khác. Số nhỏ hiện trước, đổi số để sắp xếp lại."
+msgstr "{yearNum} already has {0} other milestones. Lower numbers come first; change the number to reorder."
 
 #: src/components/BookMetaFields.tsx
 msgid "Năm biên soạn"
@@ -11225,6 +11851,10 @@ msgstr "Year built"
 msgid "Năm xây (tuỳ chọn)"
 msgstr "Year built (optional)"
 
+#: src/lib/timeline/eras.ts
+msgid "Nạn đói năm Ất Dậu (1945)"
+msgstr "The great famine of 1945"
+
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Nạp sẵn ảnh thành viên"
 msgstr "Preload member photos"
@@ -11233,15 +11863,14 @@ msgstr "Preload member photos"
 msgid "Nạp sẵn avatar thành viên"
 msgstr "Preload member avatars"
 
-#: src/components/TimelineFields.tsx
-#: src/components/TimelineFields.tsx
-msgid "này"
-msgstr "this"
-
 #: src/components/gallery/GalleryScene.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Nền"
 msgstr "Background"
+
+#: src/lib/timeline/themes.ts
+msgid "Nền đỏ son, chữ vàng — ngày Tết, lễ lớn"
+msgstr "Vermilion background, gold text — Tết and grand occasions"
 
 #: src/components/ThemeToggle.tsx
 msgid "Nền giấy ấm, mực đậm."
@@ -11250,6 +11879,10 @@ msgstr "Warm paper background, dark ink."
 #: src/components/ThemeToggle.tsx
 msgid "Nền mực, tiết kiệm mắt trong điều kiện thiếu sáng."
 msgstr "Ink-dark background, easy on the eyes in low light."
+
+#: src/lib/timeline/themes.ts
+msgid "Nền xanh than, nét vàng nhạt — sang trọng"
+msgstr "Navy background, pale gold lines — elegant"
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Nền, khung, đường nối và công cụ căn chỉnh."
@@ -11275,6 +11908,10 @@ msgstr "If you already have a list in Excel, you can import it in bulk instead o
 #: src/pages/ForgotPassword.tsx
 msgid "Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm vào liên kết để đặt mật khẩu mới."
 msgstr "If that email is in our system, we've sent a password reset link. Check your inbox (and your spam folder) and click the link to set a new password."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Nếu một năm có nhiều mốc, số nhỏ hiện trước."
+msgstr "If a year has several milestones, lower numbers come first."
 
 #: src/components/McpGuidePanel.tsx
 msgid "Nếu ứng dụng hỗ trợ đăng nhập OAuth, chỉ cần nhập địa chỉ kết nối rồi làm theo màn hình \"Cho phép\"."
@@ -11653,6 +12290,10 @@ msgstr "People with no photo, or who have a solar date but no lunar conversion y
 msgid "Người chưa có bố/mẹ trong cây — bổ sung để gắn vào đúng đời và nhánh."
 msgstr "People with no parents in the tree — add them to attach them to the right generation and branch."
 
+#: src/lib/timeline/templates.ts
+msgid "Người con của gia đình lên đường làm nghĩa vụ với đất nước."
+msgstr "A son of the family sets out to serve his country."
+
 #: src/components/InlawFamilyCard.tsx
 #: src/components/InlawFamilyCard.tsx
 #: src/components/InlawMiniTree.tsx
@@ -11667,6 +12308,11 @@ msgstr "people missing info"
 #: src/components/ClanFormFields.tsx
 msgid "Người đã mất: hiện ngày giỗ và tuổi thọ"
 msgstr "Deceased people: show death anniversary and lifespan"
+
+#. placeholder {0}: root.year
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "Người đầu dòng, sinh năm {0}."
+msgstr "Head of the line, born in {0}."
 
 #: src/components/community/InviteCardDialog.tsx
 msgid "Người đọc"
@@ -11827,6 +12473,10 @@ msgstr "Young people"
 msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
 msgstr "People who enter through the link see only the default avatar (male / female). Signed-in members still see the real photo."
 
+#: src/lib/timeline/eras.ts
+msgid "Người Việt mở đất về phương Nam"
+msgstr "The Vietnamese expand southward"
+
 #: src/components/ClanFormFields.tsx
 msgid "Người xem công khai được xem"
 msgstr "Public viewers can see"
@@ -11861,6 +12511,10 @@ msgstr "Origin, generation the branch split off…"
 msgid "Nguồn gốc: {0}"
 msgstr "Origin: {0}"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Nguồn hình"
+msgstr "Image source"
+
 #: src/pages/CustomsForm.tsx
 msgid "Nguồn tham khảo"
 msgstr "Reference sources"
@@ -11889,15 +12543,39 @@ msgstr "Nguyễn Văn A"
 msgid "Nguyễn Văn B"
 msgstr "Nguyễn Văn B"
 
+#: src/lib/timeline/eras.ts
+msgid "Nhà Hồ"
+msgstr "Hồ dynasty"
+
+#: src/lib/timeline/eras.ts
+msgid "Nhà Lê sơ"
+msgstr "Early Lê dynasty"
+
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/lib/queries/restingPlaces.ts
 msgid "Nhà lưu tro / tháp cốt"
 msgstr "Ashes house / columbarium tower"
 
+#: src/lib/timeline/eras.ts
+msgid "Nhà Lý"
+msgstr "Lý dynasty"
+
+#: src/lib/timeline/eras.ts
+msgid "Nhà Mạc và Lê Trung hưng"
+msgstr "Mạc dynasty and the Restored Lê"
+
 #: src/pages/CustomsForm.tsx
 msgid "nhà mới, chuyển nhà, tân gia"
 msgstr "new house, moving house, housewarming"
+
+#: src/lib/timeline/eras.ts
+msgid "Nhà Nguyễn độc lập"
+msgstr "Independent Nguyễn dynasty"
+
+#: src/lib/timeline/eras.ts
+msgid "Nhà Tây Sơn"
+msgstr "Tây Sơn dynasty"
 
 #: src/pages/clan/Branches.tsx
 msgid "Nhà thờ chi (tuỳ chọn)"
@@ -11910,6 +12588,10 @@ msgstr "Clan ancestral hall (nhà thờ họ)"
 #: src/components/BookTextsSection.tsx
 msgid "Nhà thờ họ, hội đồng gia tộc; các lễ cúng chính và văn khấn; ruộng hương hỏa, quỹ họ; mộ phần…"
 msgstr "Clan ancestral hall and family council; main ritual offerings and prayers; ancestral worship fields, clan fund; graves…"
+
+#: src/lib/timeline/eras.ts
+msgid "Nhà Trần"
+msgstr "Trần dynasty"
 
 #: src/pages/Account.tsx
 msgid "Nhắc mùng 1 / rằm âm lịch"
@@ -12154,6 +12836,10 @@ msgstr "The latest updates and new features."
 msgid "Những câu chuyện ngắn để nghe lúc rảnh — mỗi tập một câu hỏi đáng nghĩ."
 msgstr "Short stories to listen to in your spare time — each episode asks a question worth thinking about."
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Những dấu mốc trong cuộc đời."
+msgstr "Milestones from a lifetime."
+
 #: src/components/SidePanel.tsx
 msgid "Những gì bạn vừa nhập sẽ mất."
 msgstr "What you just entered will be lost."
@@ -12161,6 +12847,10 @@ msgstr "What you just entered will be lost."
 #: src/lib/navModel.tsx
 msgid "Những mục dùng hằng ngày."
 msgstr "The items you use every day."
+
+#: src/lib/timeline/eras.ts
+msgid "Những năm đấu tranh giành độc lập"
+msgstr "Years of the struggle for independence"
 
 #: src/components/TreeFolderView.tsx
 msgid "Những người này chưa có cha/mẹ trong gia phả nên chưa nối được vào nhánh nào."
@@ -12419,6 +13109,10 @@ msgstr "In the {0} person"
 msgid "Ông"
 msgstr "Grandfather (Ông)"
 
+#: src/lib/timeline/templates.ts
+msgid "Ông bà, cha mẹ, con cháu cùng quây quần một nhà."
+msgstr "Grandparents, parents and children gather under one roof."
+
 #: src/lib/festivals.ts
 msgid "Ông Công Ông Táo"
 msgstr "Kitchen Gods Day (Ông Công Ông Táo)"
@@ -12457,9 +13151,21 @@ msgstr "Reply to the sender (the sender will see it)"
 msgid "Phân loại"
 msgstr "Category"
 
+#: src/lib/timeline/eras.ts
+msgid "Pháp đánh Đà Nẵng (1858)"
+msgstr "France attacks Đà Nẵng (1858)"
+
+#: src/lib/timeline/eras.ts
+msgid "Pháp xâm lược và đô hộ"
+msgstr "French invasion and colonial rule"
+
 #: src/lib/queries/customs.ts
 msgid "Phật giáo"
 msgstr "Buddhism"
+
+#: src/lib/timeline/eras.ts
+msgid "Phật giáo hưng thịnh"
+msgstr "Buddhism flourishes"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Phiên bản"
@@ -12525,6 +13231,10 @@ msgstr "Zoom the tree in / out"
 #: src/components/Tree3DView.tsx
 msgid "phóng to·nhỏ"
 msgstr "zoom in / out"
+
+#: src/lib/timeline/eras.ts
+msgid "Phong trào Cần Vương"
+msgstr "The Cần Vương movement"
 
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Phòng trưng bày ảnh 3D của dòng họ."
@@ -12718,6 +13428,10 @@ msgstr "An admin / editor will add members first."
 msgid "Quan trọng"
 msgstr "Important"
 
+#: src/lib/timeline/eras.ts
+msgid "Quang Trung đại phá quân Thanh (1789)"
+msgstr "Quang Trung routs the Qing army (1789)"
+
 #: src/components/AppHeader.tsx
 #: src/components/AppHeader.tsx
 #: src/components/BackLink.tsx
@@ -12779,6 +13493,14 @@ msgstr "Scan to open the personal page (read-only). Can be printed on tombstones
 msgid "Quét để xem cây gia phả"
 msgstr "Scan to view the family tree"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Quét mã để mở dòng thời gian của dòng họ trên điện thoại. Mã cũng có trong file PDF / ảnh xuất ra."
+msgstr "Scan the code to open the clan timeline on a phone. The code is also included in exported PDFs and images."
+
+#: src/components/timeline/TimelinePoster.tsx
+msgid "Quét mã để xem dòng thời gian của dòng họ trên điện thoại"
+msgstr "Scan to view the clan timeline on your phone"
+
 #: src/components/QrScannerModal.tsx
 #: src/pages/Login.tsx
 msgid "Quét mã QR"
@@ -12791,6 +13513,10 @@ msgstr "Scanning the QR code on the card opens this page. When the link expires 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Quét QR để xem mục di sản này — chia sẻ với con cháu trong họ."
 msgstr "Scan the QR code to view this heritage entry — share it with the clan's descendants."
+
+#: src/lib/timeline/eras.ts
+msgid "Quốc hiệu Việt Nam (1804)"
+msgstr "The name Việt Nam adopted (1804)"
 
 #: src/lib/festivals.ts
 msgid "Quốc khánh"
@@ -12838,6 +13564,10 @@ msgstr "AI permissions"
 msgid "Quyền khi tham gia"
 msgstr "Permission when joining"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Radio"
+msgstr "Radio"
+
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/lib/queries/restingPlaces.ts
@@ -12877,9 +13607,17 @@ msgstr "Width (cm)"
 msgid "Sắc phong, hoành phi, câu đối, gia phả cũ, kỷ vật quý của họ…"
 msgstr "Royal decrees, horizontal boards, couplets, old genealogies, precious keepsakes of the clan…"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Sách"
+msgstr "Book"
+
 #: src/pages/clan/Todo.tsx
 msgid "Sạch sẽ ở nhóm này"
 msgstr "All clear in this group"
+
+#: src/lib/timeline/templates.ts
+msgid "Sắm chiếc xe đầu tiên"
+msgstr "Buying the first vehicle"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Sàn"
@@ -12986,6 +13724,7 @@ msgstr "Active share links"
 
 #: src/components/BoardPostForm.tsx
 #: src/components/ClanPostCard.tsx
+#: src/lib/personTimeline.ts
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/Import.tsx
@@ -13001,10 +13740,12 @@ msgstr "Birth"
 #. placeholder {0}: peek.birth_year
 #: src/components/InlawFamilyCard.tsx
 #: src/components/InlawMiniTree.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/InlawsConfirm.tsx
 #: src/pages/Share.tsx
@@ -13039,6 +13780,10 @@ msgstr "Birthday"
 #: src/pages/clan/Events.tsx
 msgid "Sinh nhật, giỗ, lễ tết hoặc sự kiện riêng của dòng họ."
 msgstr "Birthdays, death anniversaries, festivals or the clan's own events."
+
+#: src/lib/personTimeline.ts
+msgid "Sinh tại {place}"
+msgstr "Born in {place}"
 
 #: src/components/SubscriptionSettings.tsx
 msgid "SMS (sắp có)"
@@ -13214,12 +13959,12 @@ msgstr "events"
 #: src/components/EventDetailDialog.tsx
 #: src/components/EventDetailDialog.tsx
 #: src/components/EventsCalendar.tsx
-#: src/components/TimelineFields.tsx
 #: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/queries/global-search.ts
+#: src/lib/timeline/suggestions.ts
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/Events.tsx
@@ -13332,6 +14077,15 @@ msgstr "Edit the clan's quotas"
 msgid "Sửa mộ phần"
 msgstr "Edit grave"
 
+#. placeholder {0}: c.title
+#: src/components/timeline/TimelinePoster.tsx
+msgid "Sửa mốc {0}"
+msgstr "Edit milestone {0}"
+
+#: src/components/panel/PanelHost.tsx
+msgid "Sửa mốc dòng thời gian"
+msgstr "Edit timeline milestone"
+
 #: src/components/panel/PanelHost.tsx
 #: src/pages/clan/HeritageForm.tsx
 msgid "Sửa mục di sản"
@@ -13407,6 +14161,10 @@ msgstr "The subscription is missing a key — try again"
 msgid "Sức khoẻ database, cron, thông báo gửi hỏng."
 msgstr "Database health, cron jobs, failed notifications."
 
+#: src/lib/timeline/templates.ts
+msgid "Sum họp nhiều thế hệ"
+msgstr "Several generations together"
+
 #: src/components/ui/date-picker.tsx
 msgid "T2"
 msgstr "Mon"
@@ -13456,6 +14214,10 @@ msgstr "Upload photo"
 msgid "Tải ảnh lên thay vì dán link"
 msgstr "Upload a photo instead of pasting a link"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Tải ảnh PNG"
+msgstr "Download PNG image"
+
 #: src/components/PhotoUploadField.tsx
 msgid "Tải ảnh thất bại"
 msgstr "Photo upload failed"
@@ -13472,6 +14234,10 @@ msgstr "Download the error file ({0})"
 #: src/pages/clan/Import.tsx
 msgid "Tải file mẫu (.xlsx)"
 msgstr "Download the template (.xlsx)"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Tải file PDF"
+msgstr "Download PDF file"
 
 #: src/pages/admin/Users.tsx
 msgid "tài khoản"
@@ -13649,6 +14415,14 @@ msgstr "Create your first clan — you'll be the admin and can invite relatives 
 msgid "Tạo dòng họ mới"
 msgstr "Create a new clan"
 
+#: src/components/TimelineOverviewCard.tsx
+msgid "Tạo dòng thời gian"
+msgstr "Create timeline"
+
+#: src/pages/clan/TimelineList.tsx
+msgid "Tạo dòng thời gian riêng cho một thành viên. Sau đó thêm các mốc trong đời người đó."
+msgstr "Create a timeline for one member, then add milestones from that person's life."
+
 #: src/pages/KhoeCard.tsx
 msgid "Tạo gia phả dòng họ của bạn"
 msgstr "Create your own clan's family tree"
@@ -13755,6 +14529,10 @@ msgstr "Create a share card"
 #: src/components/ApiTokenPanels.tsx
 msgid "Tạo token"
 msgstr "Create token"
+
+#: src/pages/clan/TimelineList.tsx
+msgid "Tạo và mở poster"
+msgstr "Create and open poster"
 
 #: src/components/panel/GlobalPanelHost.tsx
 msgid "Tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
@@ -13869,6 +14647,10 @@ msgstr "No background"
 #: src/lib/festivals.ts
 msgid "Tất niên · Giao thừa"
 msgstr "Year-end · New Year's Eve (Giao thừa)"
+
+#: src/lib/timeline/eras.ts
+msgid "Tem phiếu, sổ gạo"
+msgstr "Ration coupons and rice books"
 
 #: src/components/ApiTokenPanels.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -14198,6 +14980,10 @@ msgstr "Month of birth (lunar)"
 msgid "Tháng trước"
 msgstr "Previous month"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Thành"
+msgstr "Citadel"
+
 #: src/pages/admin/Health.tsx
 msgid "Thành công"
 msgstr "Succeeded"
@@ -14219,6 +15005,7 @@ msgstr "members"
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Memories.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/JoinClan.tsx
 msgid "Thành viên"
 msgstr "Members"
@@ -14275,9 +15062,17 @@ msgstr "See something wrong or missing in the family tree? Fix the fields that n
 msgid "Thẻ"
 msgstr "Cards"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Thẻ ghi chú bên cạnh mốc trên poster. Chọn một thời đại để điền sẵn, rồi sửa tự do."
+msgstr "The note card beside a milestone on the poster. Pick an era to pre-fill it, then edit freely."
+
 #: src/lib/relations.ts
 msgid "thế hệ thứ {level}"
 msgstr "generation {level}"
+
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "Thế kỷ {c}"
+msgstr "Century {c}"
 
 #: src/components/ClanFormFields.tsx
 msgid "Thẻ người đã mất trên cây và trong sách PDF hiện thêm ngày giỗ (âm lịch) và tuổi thọ."
@@ -14326,6 +15121,11 @@ msgstr "Cards: Horizontal"
 msgid "Thêm"
 msgstr "Add"
 
+#. placeholder {0}: bioRows.length
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Thêm {0} mốc từ tiểu sử"
+msgstr "Add {0} milestones from the biography"
+
 #: src/components/ClanBadges.tsx
 msgid "Thêm {grow} người trong 30 ngày qua"
 msgstr "{grow} more people in the last 30 days"
@@ -14359,6 +15159,10 @@ msgstr "Add a custom article"
 #: src/lib/pageTitle.ts
 msgid "Thêm bài Sổ tay"
 msgstr "Add a Handbook article"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Thêm các mốc nổi bật từ gia phả"
+msgstr "Add highlight milestones from the family tree"
 
 #: src/pages/CustomsForm.tsx
 msgid "Thêm câu hỏi"
@@ -14428,6 +15232,11 @@ msgstr "Add row"
 msgid "Thêm Dòng Họ Việt vào màn hình chính"
 msgstr "Add Dòng Họ Việt to your home screen"
 
+#: src/pages/clan/TimelineList.tsx
+#: src/pages/clan/TimelineList.tsx
+msgid "Thêm dòng thời gian"
+msgstr "Add timeline"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Thêm hiện vật 3D"
 msgstr "Add a 3D object"
@@ -14458,9 +15267,13 @@ msgstr "Add my piece"
 msgid "Thêm mộ phần"
 msgstr "Add grave"
 
-#: src/components/TimelineFields.tsx
+#: src/pages/clan/TimelineDetail.tsx
 msgid "Thêm mốc"
 msgstr "Add milestone"
+
+#: src/components/panel/PanelHost.tsx
+msgid "Thêm mốc dòng thời gian"
+msgstr "Add timeline milestone"
 
 #: src/components/RecentActivityPanel.tsx
 #: src/pages/clan/Audit.tsx
@@ -14701,6 +15514,10 @@ msgstr "Missing a title."
 msgid "Thiếu token chia sẻ"
 msgstr "Missing share token"
 
+#: src/lib/personTimeline.ts
+msgid "Thọ {age} tuổi"
+msgstr "Aged {age}"
+
 #: src/lib/queries/customs.ts
 msgid "Thờ cúng & tín ngưỡng"
 msgstr "Worship & beliefs"
@@ -14720,6 +15537,18 @@ msgstr "Exit full screen"
 msgid "Thoát toàn màn hình (Esc)"
 msgstr "Exit full screen (Esc)"
 
+#: src/lib/timeline/eras.ts
+msgid "Thời bao cấp"
+msgstr "The subsidy era"
+
+#: src/lib/timeline/templates.ts
+msgid "Thời chiến loạn, tản cư"
+msgstr "Wartime and evacuation"
+
+#: src/lib/timeline/eras.ts
+msgid "Thời chuyển đổi số"
+msgstr "The digital transformation era"
+
 #: src/pages/CustomsDetail.tsx
 msgid "Thời điểm"
 msgstr "When"
@@ -14727,6 +15556,10 @@ msgstr "When"
 #: src/pages/CustomsForm.tsx
 msgid "Thời điểm (mô tả)"
 msgstr "When (description)"
+
+#: src/lib/timeline/eras.ts
+msgid "Thời Đổi Mới"
+msgstr "The Đổi Mới era"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Thời gian"
@@ -14739,6 +15572,10 @@ msgstr "Period: oldest → newest"
 #: src/components/HistoricalClansSection.tsx
 msgid "Thời kỳ: mới → cũ"
 msgstr "Period: newest → oldest"
+
+#: src/lib/timeline/eras.ts
+msgid "Thời Lê Thánh Tông cực thịnh"
+msgstr "The height of Lê Thánh Tông's reign"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Thời lượng"
@@ -14785,12 +15622,22 @@ msgstr "This announcement will expire on"
 #: src/components/RecentActivityPanel.tsx
 #: src/lib/queries/global-search.ts
 #: src/lib/queries/person-links.ts
+#: src/pages/clan/Dashboard.tsx
 msgid "Thông gia"
 msgstr "In-laws"
 
+#. placeholder {0}: inlaws.map((c) => c.clan_name).join(", ")
 #: src/pages/Clans.tsx
-msgid "Thông gia: {names}"
-msgstr "In-laws: {names}"
+msgid "Thông gia: {0}"
+msgstr "In-laws: {0}"
+
+#: src/lib/timeline/eras.ts
+msgid "Thống nhất đất nước"
+msgstr "Reunification"
+
+#: src/lib/timeline/eras.ts
+msgid "Thống nhất ngày 30/4/1975"
+msgstr "Reunification on 30 April 1975"
 
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/BoardPostDetail.tsx
@@ -14831,6 +15678,10 @@ msgstr "Clan details"
 #: src/components/ContributeDialog.tsx
 msgid "Thông tin liên hệ — admin có thể cần xác nhận với bạn."
 msgstr "Contact details — the admin may need to confirm with you."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Thông tin mốc"
+msgstr "Milestone details"
 
 #: src/components/panel/PanelHost.tsx
 msgid "Thông tin người"
@@ -14906,6 +15757,7 @@ msgstr "Try removing some keywords, or change the branch or generation to widen 
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/Mosaics.tsx
+#: src/pages/clan/TimelineList.tsx
 msgid "Thử bỏ bớt từ khoá."
 msgstr "Try removing some keywords."
 
@@ -15025,9 +15877,25 @@ msgstr "Try another keyword."
 msgid "Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi thứ tự."
 msgstr "Entry order = birth order. Press Enter to add a new row. Use ↑ ↓ to reorder."
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Thứ tự trong năm"
+msgstr "Order within the year"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Thư viện hình (tranh minh hoạ)"
+msgstr "Picture library (illustrations)"
+
 #: src/pages/admin/Users.tsx
 msgid "Thuộc dòng họ"
 msgstr "Belongs to clans"
+
+#: src/lib/timeline/eras.ts
+msgid "Thuộc Minh và khởi nghĩa Lam Sơn"
+msgstr "Ming rule and the Lam Sơn uprising"
+
+#: src/lib/timeline/themes.ts
+msgid "Thuỷ mặc"
+msgstr "Ink wash"
 
 #: src/components/share/ShareOverview.tsx
 msgid "thuỷ tổ"
@@ -15041,6 +15909,11 @@ msgstr "founding ancestor"
 msgid "Thuỷ tổ"
 msgstr "Founding ancestor"
 
+#. placeholder {0}: root.p.full_name
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "Thuỷ tổ {0}"
+msgstr "Founding ancestor {0}"
+
 #: src/components/ClanFormFields.tsx
 msgid "Thủy tổ là Đời 0"
 msgstr "Founding ancestor is Generation 0"
@@ -15049,12 +15922,20 @@ msgstr "Founding ancestor is Generation 0"
 msgid "Thuỷ tổ và tổ quán; các chi, các đời; truyền thống lao động, văn hoá, học tập, yêu nước; đặc điểm và phương hướng của dòng họ…"
 msgstr "The founding ancestor and ancestral home; branches and generations; traditions of labor, culture, study and patriotism; the clan's character and plans…"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Thuyền"
+msgstr "Boat"
+
 #. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { useToast } from "@/components/Toast"; import { IconCheck, } from "@/components/icons"; import { getDemoClanIds, setDemoClanIds, } from "@/lib/queries/platformSettings"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { listAllClans, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { isMascotEnabled, setMascotEnabled } from "@/lib/queries/platformSettings"; import { t } from "@lingui/core/macro"; import { Trans } from "@lingui/react/macro"; export function ConfigTab() { const qc = useQueryClient(); const toast = useToast(); // ─── Linh vật ──────────────────────────────────────────────────── const mascotQ = useQuery({ queryKey: ["mascot-enabled"], queryFn: () => isMascotEnabled(), retry: false, }); const mascotM = useMutation({ mutationFn: (on: boolean) => setMascotEnabled(on), onSuccess: (_d, on) => { qc.invalidateQueries({ queryKey: ["mascot-enabled"] }); toast.success(on ? t`Đã bật linh vật` : t`Đã tắt linh vật`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); const { data: clans } = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), staleTime: 0, }); const { data: current } = useQuery({ queryKey: ["demo-clan-ids"], queryFn: () => getDemoClanIds(), }); const publicClans = useMemo( () => (clans ?? []).filter((c) => c.visibility === "public"), [clans], ); // Tập id đang chọn — khởi tạo/đồng bộ theo giá trị đã lưu. const [selected, setSelected] = useState<Set<string> | null>(null); const chosen = selected ?? new Set(current ?? []); const toggle = (id: string) => { const next = new Set(chosen); next.has(id) ? next.delete(id) : next.add(id); setSelected(next); }; const savedSet = new Set(current ?? []); const dirty = chosen.size !== savedSet.size || [...chosen].some((id) => !savedSet.has(id)); const saveM = useMutation({ mutationFn: (ids: string[]) => setDemoClanIds(ids), onSuccess: () => { qc.invalidateQueries({ queryKey: ["demo-clan-ids"] }); setSelected(null); toast.success(t`Đã lưu dòng họ demo.`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <div className="space-y-4"> <div className="space-y-3 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Linh vật`}</h2> <p className="text-sm text-muted-foreground"> <Trans> {t`Nhân vật nổi ở góc màn hình, hiện mẹo dùng app. Tắt thì ẩn với`}{" "} <b>{t`mọi người dùng`}</b> — dùng khi cần màn hình gọn để chụp ảnh, khi demo, hoặc khi mẹo đang gây phiền. </Trans> </p> </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {mascotQ.data === false ? t`Đang tắt với mọi người` : t`Đang bật`} </span> <Button size="sm" variant={mascotQ.data === false ? "default" : "outline"} disabled={mascotQ.isLoading || mascotM.isPending} onClick={() => mascotM.mutate(mascotQ.data === false)} > {mascotQ.data === false ? t`Bật linh vật` : t`Tắt linh vật`} </Button> </div> </div> <div className="space-y-4 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Dòng họ demo`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Tick <b>{t`một hoặc nhiều`}</b> dòng họ <b>{t`công khai`}</b> để dùng cho nút{" "} <b>{t`“Xem thử gia phả mẫu”`}</b> ở trang Đăng nhập — giúp khách mới xem sản phẩm trước khi đăng nhập. </Trans> </p> </div> {publicClans.length === 0 ? ( <Alert> <AlertDescription> Chưa có dòng họ công khai nào. Vào một dòng họ → Cài đặt → đặt quyền xem <b>{t`Công khai`}</b>, rồi quay lại đây chọn. </AlertDescription> </Alert> ) : ( <> {/* Danh sách checkbox — mọi hàng cùng chiều cao, đồng nhất. */} <div className="divide-y rounded-md border"> {publicClans.map((c) => ( <label key={c.id} className="flex h-12 cursor-pointer items-center gap-3 px-3 hover:bg-muted/50" > <input type="checkbox" checked={chosen.has(c.id)} onChange={() => toggle(c.id)} className="h-4 w-4 shrink-0 accent-primary" /> <span className="min-w-0 flex-1 truncate"> {c.name}{" "} <span className="text-sm text-muted-foreground"> {t`(${c.person_count} người)`} </span> </span> <a href={`/xem/clans/${c.id}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="shrink-0 text-xs text-primary hover:underline" > xem → </a> </label> ))} </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {t`Đã chọn ${chosen.size} dòng họ`} </span> <Button size="sm" onClick={() => saveM.mutate([...chosen])} disabled={saveM.isPending || !dirty} > <IconCheck className="h-4 w-4 mr-1.5" /> {saveM.isPending ? t`Đang lưu…` : t`Lưu`} </Button> </div> </> )} </div> </div> ); } 
 #. placeholder {1}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { useToast } from "@/components/Toast"; import { IconCheck, } from "@/components/icons"; import { getDemoClanIds, setDemoClanIds, } from "@/lib/queries/platformSettings"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { listAllClans, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { isMascotEnabled, setMascotEnabled } from "@/lib/queries/platformSettings"; import { t } from "@lingui/core/macro"; import { Trans } from "@lingui/react/macro"; export function ConfigTab() { const qc = useQueryClient(); const toast = useToast(); // ─── Linh vật ──────────────────────────────────────────────────── const mascotQ = useQuery({ queryKey: ["mascot-enabled"], queryFn: () => isMascotEnabled(), retry: false, }); const mascotM = useMutation({ mutationFn: (on: boolean) => setMascotEnabled(on), onSuccess: (_d, on) => { qc.invalidateQueries({ queryKey: ["mascot-enabled"] }); toast.success(on ? t`Đã bật linh vật` : t`Đã tắt linh vật`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); const { data: clans } = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), staleTime: 0, }); const { data: current } = useQuery({ queryKey: ["demo-clan-ids"], queryFn: () => getDemoClanIds(), }); const publicClans = useMemo( () => (clans ?? []).filter((c) => c.visibility === "public"), [clans], ); // Tập id đang chọn — khởi tạo/đồng bộ theo giá trị đã lưu. const [selected, setSelected] = useState<Set<string> | null>(null); const chosen = selected ?? new Set(current ?? []); const toggle = (id: string) => { const next = new Set(chosen); next.has(id) ? next.delete(id) : next.add(id); setSelected(next); }; const savedSet = new Set(current ?? []); const dirty = chosen.size !== savedSet.size || [...chosen].some((id) => !savedSet.has(id)); const saveM = useMutation({ mutationFn: (ids: string[]) => setDemoClanIds(ids), onSuccess: () => { qc.invalidateQueries({ queryKey: ["demo-clan-ids"] }); setSelected(null); toast.success(t`Đã lưu dòng họ demo.`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <div className="space-y-4"> <div className="space-y-3 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Linh vật`}</h2> <p className="text-sm text-muted-foreground"> <Trans> {t`Nhân vật nổi ở góc màn hình, hiện mẹo dùng app. Tắt thì ẩn với`}{" "} <b>{t`mọi người dùng`}</b> — dùng khi cần màn hình gọn để chụp ảnh, khi demo, hoặc khi mẹo đang gây phiền. </Trans> </p> </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {mascotQ.data === false ? t`Đang tắt với mọi người` : t`Đang bật`} </span> <Button size="sm" variant={mascotQ.data === false ? "default" : "outline"} disabled={mascotQ.isLoading || mascotM.isPending} onClick={() => mascotM.mutate(mascotQ.data === false)} > {mascotQ.data === false ? t`Bật linh vật` : t`Tắt linh vật`} </Button> </div> </div> <div className="space-y-4 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Dòng họ demo`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Tick <b>{t`một hoặc nhiều`}</b> dòng họ <b>{t`công khai`}</b> để dùng cho nút{" "} <b>{t`“Xem thử gia phả mẫu”`}</b> ở trang Đăng nhập — giúp khách mới xem sản phẩm trước khi đăng nhập. </Trans> </p> </div> {publicClans.length === 0 ? ( <Alert> <AlertDescription> Chưa có dòng họ công khai nào. Vào một dòng họ → Cài đặt → đặt quyền xem <b>{t`Công khai`}</b>, rồi quay lại đây chọn. </AlertDescription> </Alert> ) : ( <> {/* Danh sách checkbox — mọi hàng cùng chiều cao, đồng nhất. */} <div className="divide-y rounded-md border"> {publicClans.map((c) => ( <label key={c.id} className="flex h-12 cursor-pointer items-center gap-3 px-3 hover:bg-muted/50" > <input type="checkbox" checked={chosen.has(c.id)} onChange={() => toggle(c.id)} className="h-4 w-4 shrink-0 accent-primary" /> <span className="min-w-0 flex-1 truncate"> {c.name}{" "} <span className="text-sm text-muted-foreground"> {t`(${c.person_count} người)`} </span> </span> <a href={`/xem/clans/${c.id}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="shrink-0 text-xs text-primary hover:underline" > xem → </a> </label> ))} </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {t`Đã chọn ${chosen.size} dòng họ`} </span> <Button size="sm" onClick={() => saveM.mutate([...chosen])} disabled={saveM.isPending || !dirty} > <IconCheck className="h-4 w-4 mr-1.5" /> {saveM.isPending ? t`Đang lưu…` : t`Lưu`} </Button> </div> </> )} </div> </div> ); } 
 #. placeholder {2}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { useToast } from "@/components/Toast"; import { IconCheck, } from "@/components/icons"; import { getDemoClanIds, setDemoClanIds, } from "@/lib/queries/platformSettings"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { listAllClans, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { isMascotEnabled, setMascotEnabled } from "@/lib/queries/platformSettings"; import { t } from "@lingui/core/macro"; import { Trans } from "@lingui/react/macro"; export function ConfigTab() { const qc = useQueryClient(); const toast = useToast(); // ─── Linh vật ──────────────────────────────────────────────────── const mascotQ = useQuery({ queryKey: ["mascot-enabled"], queryFn: () => isMascotEnabled(), retry: false, }); const mascotM = useMutation({ mutationFn: (on: boolean) => setMascotEnabled(on), onSuccess: (_d, on) => { qc.invalidateQueries({ queryKey: ["mascot-enabled"] }); toast.success(on ? t`Đã bật linh vật` : t`Đã tắt linh vật`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); const { data: clans } = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), staleTime: 0, }); const { data: current } = useQuery({ queryKey: ["demo-clan-ids"], queryFn: () => getDemoClanIds(), }); const publicClans = useMemo( () => (clans ?? []).filter((c) => c.visibility === "public"), [clans], ); // Tập id đang chọn — khởi tạo/đồng bộ theo giá trị đã lưu. const [selected, setSelected] = useState<Set<string> | null>(null); const chosen = selected ?? new Set(current ?? []); const toggle = (id: string) => { const next = new Set(chosen); next.has(id) ? next.delete(id) : next.add(id); setSelected(next); }; const savedSet = new Set(current ?? []); const dirty = chosen.size !== savedSet.size || [...chosen].some((id) => !savedSet.has(id)); const saveM = useMutation({ mutationFn: (ids: string[]) => setDemoClanIds(ids), onSuccess: () => { qc.invalidateQueries({ queryKey: ["demo-clan-ids"] }); setSelected(null); toast.success(t`Đã lưu dòng họ demo.`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <div className="space-y-4"> <div className="space-y-3 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Linh vật`}</h2> <p className="text-sm text-muted-foreground"> <Trans> {t`Nhân vật nổi ở góc màn hình, hiện mẹo dùng app. Tắt thì ẩn với`}{" "} <b>{t`mọi người dùng`}</b> — dùng khi cần màn hình gọn để chụp ảnh, khi demo, hoặc khi mẹo đang gây phiền. </Trans> </p> </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {mascotQ.data === false ? t`Đang tắt với mọi người` : t`Đang bật`} </span> <Button size="sm" variant={mascotQ.data === false ? "default" : "outline"} disabled={mascotQ.isLoading || mascotM.isPending} onClick={() => mascotM.mutate(mascotQ.data === false)} > {mascotQ.data === false ? t`Bật linh vật` : t`Tắt linh vật`} </Button> </div> </div> <div className="space-y-4 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Dòng họ demo`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Tick <b>{t`một hoặc nhiều`}</b> dòng họ <b>{t`công khai`}</b> để dùng cho nút{" "} <b>{t`“Xem thử gia phả mẫu”`}</b> ở trang Đăng nhập — giúp khách mới xem sản phẩm trước khi đăng nhập. </Trans> </p> </div> {publicClans.length === 0 ? ( <Alert> <AlertDescription> Chưa có dòng họ công khai nào. Vào một dòng họ → Cài đặt → đặt quyền xem <b>{t`Công khai`}</b>, rồi quay lại đây chọn. </AlertDescription> </Alert> ) : ( <> {/* Danh sách checkbox — mọi hàng cùng chiều cao, đồng nhất. */} <div className="divide-y rounded-md border"> {publicClans.map((c) => ( <label key={c.id} className="flex h-12 cursor-pointer items-center gap-3 px-3 hover:bg-muted/50" > <input type="checkbox" checked={chosen.has(c.id)} onChange={() => toggle(c.id)} className="h-4 w-4 shrink-0 accent-primary" /> <span className="min-w-0 flex-1 truncate"> {c.name}{" "} <span className="text-sm text-muted-foreground"> {t`(${c.person_count} người)`} </span> </span> <a href={`/xem/clans/${c.id}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="shrink-0 text-xs text-primary hover:underline" > xem → </a> </label> ))} </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {t`Đã chọn ${chosen.size} dòng họ`} </span> <Button size="sm" onClick={() => saveM.mutate([...chosen])} disabled={saveM.isPending || !dirty} > <IconCheck className="h-4 w-4 mr-1.5" /> {saveM.isPending ? t`Đang lưu…` : t`Lưu`} </Button> </div> </> )} </div> </div> ); } 
 #: src/pages/admin/Config.tsx
 msgid "Tick <0>{0}</0> dòng họ <1>{1}</1> để dùng cho nút <2>{2}</2> ở trang Đăng nhập — giúp khách mới xem sản phẩm trước khi đăng nhập."
 msgstr "Tick <0>{0}</0> <1>{1}</1> clans to use for the <2>{2}</2> button on the Sign-in page — helping new visitors see the product before signing in."
+
+#: src/lib/timeline/templates.ts
+msgid "Tiễn biệt người đáng kính"
+msgstr "Farewell to a respected elder"
 
 #: src/components/HomeCustomizeDrawer.tsx
 #: src/pages/clan/Dashboard.tsx
@@ -15100,6 +15981,7 @@ msgid "Tiết khí"
 msgstr "Solar terms (Tiết khí)"
 
 #: src/components/ShareCardDialog.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/CustomsForm.tsx
 msgid "Tiêu đề"
@@ -15216,6 +16098,10 @@ msgstr "Find clans by name"
 msgid "Tìm dòng họ theo tên — gõ không dấu cũng được"
 msgstr "Find clans by name — accents not required"
 
+#: src/pages/clan/TimelineList.tsx
+msgid "Tìm dòng thời gian"
+msgstr "Find a timeline"
+
 #: src/pages/clan/ClanFund.tsx
 msgid "Tìm giao dịch"
 msgstr "Find transactions"
@@ -15238,6 +16124,18 @@ msgstr "Search (Ctrl/⌘ + K)"
 #: src/pages/clan/ClanMenu.tsx
 msgid "Tìm kiếm, ngôn ngữ, giao diện sáng/tối."
 msgstr "Search, language, light / dark mode."
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Tìm mẫu bối cảnh thời đại"
+msgstr "Find an era template"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Tìm mẫu mốc"
+msgstr "Find a milestone template"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Tìm mẫu nền poster"
+msgstr "Find a poster background"
 
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Tìm mộ phần"
@@ -15281,6 +16179,10 @@ msgstr "Find an existing person (opposite gender to {0})"
 #: src/components/ExistingPersonPicker.tsx
 msgid "Tìm người đã có trong dòng họ"
 msgstr "Find an existing person in the clan"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Tìm người để gắn mốc"
+msgstr "Find a person to link"
 
 #: src/pages/admin/Users.tsx
 msgid "Tìm người dùng theo tên hoặc email"
@@ -15346,6 +16248,7 @@ msgid "Tìm tên…"
 msgstr "Search names…"
 
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/TimelineList.tsx
 msgid "Tìm thành viên"
 msgstr "Find members"
 
@@ -15430,6 +16333,10 @@ msgstr "Search by room name…"
 msgid "Tìm theo tên tập, nội dung…"
 msgstr "Search by episode title or content…"
 
+#: src/pages/clan/TimelineList.tsx
+msgid "Tìm theo tên thành viên…"
+msgstr "Search by member name…"
+
 #: src/components/admin/ApiTokensAdminTab.tsx
 msgid "Tìm theo tên token, người tạo, dòng họ…"
 msgstr "Search by token name, creator, clan…"
@@ -15467,6 +16374,10 @@ msgstr "Search by episode title…"
 msgid "Tìm theo từ khoá…"
 msgstr "Search by keyword…"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Tìm thời kỳ của ảnh"
+msgstr "Find the photo's period"
+
 #: src/pages/admin/Announcements.tsx
 #: src/pages/Announcements.tsx
 msgid "Tìm thông báo"
@@ -15498,6 +16409,10 @@ msgstr "Search help"
 #: src/components/TreeFolderView.tsx
 msgid "Tìm trong danh sách này…"
 msgstr "Search this list…"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Tìm trong dữ liệu dòng họ"
+msgstr "Search the clan's data"
 
 #: src/components/AppDrawer.tsx
 msgid "Tìm trong menu"
@@ -15667,6 +16582,11 @@ msgstr "Ancestors and descendants of anyone."
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Toạ độ GPS (tuỳ chọn)"
 msgstr "GPS coordinates (optional)"
+
+#. placeholder {0}: i.count
+#: src/pages/clan/TimelineList.tsx
+msgid "Toàn bộ {0} mốc của người này sẽ bị xoá."
+msgstr "All {0} milestones of this person will be deleted."
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Toàn bộ mảnh trong bức sẽ bị xoá."
@@ -15857,6 +16777,10 @@ msgstr "Overview"
 msgid "Tổng quan dòng họ"
 msgstr "Clan overview"
 
+#: src/lib/timeline/templates.ts
+msgid "Tòng quân, lên đường nhập ngũ"
+msgstr "Enlisting and heading off to serve"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "tốt"
 msgstr "good"
@@ -15979,9 +16903,17 @@ msgstr "A completely blank page"
 msgid "Trang trước"
 msgstr "Previous page"
 
+#: src/lib/timeline/themes.ts
+msgid "Trắng xám, nét mực đen — trang nhã"
+msgstr "Grey-white with black ink strokes — refined"
+
 #: src/pages/Account.tsx
 msgid "Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này."
 msgstr "An ink-wash painting as the app background, on this device only."
+
+#: src/lib/timeline/themes.ts
+msgid "Tre xanh"
+msgstr "Green bamboo"
 
 #: src/lib/tipCatalogue.ts
 msgid "Trên cây gia phả, người đầu tiên cần thêm là Thuỷ tổ (đời 1)."
@@ -16015,6 +16947,14 @@ msgstr "Dark exhibition"
 msgid "Triều đình"
 msgstr "Imperial court"
 
+#: src/lib/timeline/eras.ts
+msgid "Triều Mạc cát cứ phía Bắc"
+msgstr "The Mạc hold the north"
+
+#: src/lib/timeline/eras.ts
+msgid "Trịnh – Nguyễn phân tranh"
+msgstr "Trịnh–Nguyễn conflict"
+
 #: src/pages/Account.tsx
 msgid "Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây. Hoặc dùng Xuất lịch (.ics) làm thay thế."
 msgstr "Your browser is blocking notifications for this app. Go to the browser Settings → Permissions → Notifications → allow, then come back here. Or use Export calendar (.ics) instead."
@@ -16038,6 +16978,10 @@ msgstr "This browser doesn't support push notifications. Use Export calendar (.i
 #: src/pages/Videos.tsx
 msgid "Trợ giúp"
 msgstr "Help"
+
+#: src/lib/timeline/templates.ts
+msgid "Trở về quê cũ"
+msgstr "Returning to the home village"
 
 #: src/components/TreeFolderView.tsx
 msgid "trở xuống"
@@ -16091,6 +17035,10 @@ msgstr "Duplicate title in the pasted list"
 #: src/pages/clan/Audit.tsx
 msgid "Trước"
 msgstr "Previous"
+
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "Trước Công nguyên"
+msgstr "Before the Common Era"
 
 #: src/pages/admin/GiaPha.tsx
 msgid "trước khi"
@@ -16225,6 +17173,14 @@ msgstr "Age at death"
 msgid "Tường"
 msgstr "Wall"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Tưởng nhớ"
+msgstr "Remembrance"
+
+#: src/lib/timeline/computeClanTimeline.ts
+msgid "Tưởng nhớ những người đã khuất"
+msgstr "Remembering those who have passed"
+
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Tuỳ chỉnh"
@@ -16252,6 +17208,8 @@ msgstr "Customize the home page"
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
+#: src/pages/clan/TimelineDetail.tsx
+#: src/pages/clan/TimelineDetail.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
@@ -16284,6 +17242,10 @@ msgstr "Tree options"
 msgid "Tuỳ chọn chi"
 msgstr "Branch options"
 
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Tuỳ chọn dòng thời gian"
+msgstr "Timeline options"
+
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Tuỳ chọn hiển thị"
@@ -16308,6 +17270,10 @@ msgstr "Optional. The admin on the other side sees it when entering the invite c
 #: src/pages/clan/InlawsNew.tsx
 msgid "Tuỳ chọn. Ghi chú thêm về quan hệ."
 msgstr "Optional. An extra note about the relationship."
+
+#: src/lib/timeline/eras.ts
+msgid "Tuyên ngôn Độc lập 2/9/1945"
+msgstr "Declaration of Independence, 2 Sept 1945"
 
 #: src/components/McpGuidePanel.tsx
 msgid "Ứng dụng AI"
@@ -16381,6 +17347,10 @@ msgstr "Parent role"
 msgid "Văn khấn & văn tế"
 msgstr "Prayers & funeral eulogies (văn khấn & văn tế)"
 
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Văn thư"
+msgstr "Document"
+
 #: src/components/ClanBadges.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Vàng"
@@ -16414,6 +17384,10 @@ msgstr "E.g. the 10th of the 3rd lunar month"
 msgid "vd: 15"
 msgstr "e.g. 15"
 
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "vd: 1975"
+msgstr "e.g. 1975"
+
 #: src/pages/CustomsForm.tsx
 msgid "vd: 23 tháng Chạp"
 msgstr "e.g. 23rd of the 12th lunar month"
@@ -16446,6 +17420,10 @@ msgstr "e.g. reburial, who officiated…"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "VD: Cả nhà ngày Tết 2026"
 msgstr "E.g. The whole family at Tết 2026"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "vd: Cả nhà về quê dựng từ đường"
+msgstr "e.g. The whole family returns to rebuild the ancestral hall"
 
 #: src/pages/admin/Feedback.tsx
 msgid "Vd: Cảm ơn bạn, lỗi này đã được sửa ở bản mới nhất."
@@ -16487,6 +17465,10 @@ msgstr "e.g. granite, cement"
 #: src/pages/clan/Mosaics.tsx
 msgid "VD: Đại gia đình Tết 2027"
 msgstr "E.g. Extended family at Tết 2027"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "vd: Đất nước chia hai miền"
+msgstr "e.g. A divided country"
 
 #: src/pages/clan/InlawsNew.tsx
 msgid "Vd: Đỗ Thị B, sinh 1975, quê Hà Nội"
@@ -16535,6 +17517,10 @@ msgstr "e.g. Plot B, row 3, number 12"
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "vd: Mộ cụ Tổ, Tháp họ Cao"
 msgstr "e.g. The founding ancestor's grave, the Cao clan tower"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "vd: Năm ấy cả nhà góp công góp của dựng lại từ đường, con cháu khắp nơi về dự lễ."
+msgstr "e.g. That year the whole family pooled their effort and means to rebuild the ancestral hall, and descendants came from far and wide for the ceremony."
 
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…"
@@ -16779,10 +17765,6 @@ msgstr "To-do, look-ups, data import & clean-up, clan management."
 msgid "Việc làm"
 msgstr "Tasks"
 
-#: src/components/TimelineFields.tsx
-msgid "Việc xảy ra trong năm này"
-msgstr "What happened this year"
-
 #: src/components/AvatarFramePicker.tsx
 #: src/components/AvatarFramePicker.tsx
 msgid "Viền avatar"
@@ -16987,9 +17969,37 @@ msgstr "Confirm this link?"
 msgid "Xác nhận mật khẩu mới"
 msgstr "Confirm the new password"
 
+#: src/lib/timeline/themes.ts
+msgid "Xanh đêm"
+msgstr "Night blue"
+
+#: src/lib/timeline/themes.ts
+msgid "Xanh lá dịu, thanh bình"
+msgstr "Soft green, peaceful"
+
 #: src/components/gallery/palettes.ts
 msgid "Xanh rêu"
 msgstr "Moss green"
+
+#: src/lib/timeline/suggestions.ts
+msgid "Xây dựng {label}"
+msgstr "Building {label}"
+
+#: src/lib/timeline/templates.ts
+msgid "Xây dựng, tu bổ từ đường"
+msgstr "Building or restoring the ancestral hall"
+
+#: src/lib/timeline/eras.ts
+msgid "Xây thành nhà Hồ"
+msgstr "The Hồ Citadel is built"
+
+#: src/components/timeline/TimelineIcon.tsx
+msgid "Xe đạp"
+msgstr "Bicycle"
+
+#: src/lib/timeline/eras.ts
+msgid "Xe đạp là phương tiện chính"
+msgstr "Bicycles are the main transport"
 
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
@@ -17085,6 +18095,10 @@ msgstr "Browse the community"
 msgid "Xem danh bạ"
 msgstr "View the People list"
 
+#: src/components/TimelineOverviewCard.tsx
+msgid "Xem dòng thời gian"
+msgstr "View timeline"
+
 #: src/components/ShareTreeButton.tsx
 msgid "Xem gia phả họ {clanName} (link chỉ-đọc):"
 msgstr "View the family tree of the {clanName} clan (read-only link):"
@@ -17132,6 +18146,10 @@ msgstr "Good days & lunar calendar"
 #: src/components/UpcomingEventRow.tsx
 msgid "Xem ngày tốt/xấu, giờ hoàng đạo của ngày này"
 msgstr "See auspicious / inauspicious days and auspicious hours for this day"
+
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Xem nguồn"
+msgstr "View source"
 
 #: src/components/RecentActivityPanel.tsx
 msgid "Xem nhật ký →"
@@ -17245,6 +18263,7 @@ msgstr "View tasks"
 #: src/components/PhotoUploadField.tsx
 #: src/components/RecentActivityPanel.tsx
 #: src/components/ShareLinksSection.tsx
+#: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/components/ui/view-edit-actions.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
@@ -17282,6 +18301,8 @@ msgstr "View tasks"
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/clan/TimelineList.tsx
+#: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/clan/TreeCanvases.tsx
@@ -17406,6 +18427,11 @@ msgstr "Delete row"
 msgid "Xoá đóng góp này?"
 msgstr "Delete this contribution?"
 
+#. placeholder {0}: i.title
+#: src/pages/clan/TimelineList.tsx
+msgid "Xoá dòng thời gian của {0}?"
+msgstr "Delete the timeline of {0}?"
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Xoá đường nối"
@@ -17459,10 +18485,14 @@ msgstr "Delete this log entry?"
 msgid "Xoá mảnh này?"
 msgstr "Delete this piece?"
 
-#. placeholder {0}: d.year || t`này`
-#: src/components/TimelineFields.tsx
-msgid "Xoá mốc năm {0}"
-msgstr "Delete the milestone of year {0}"
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Xoá mốc"
+msgstr "Delete milestone"
+
+#. placeholder {0}: m?.title ?? ""
+#: src/components/timeline/TimelineMilestoneForm.tsx
+msgid "Xoá mốc \"{0}\"?"
+msgstr "Delete the milestone \"{0}\"?"
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Xoá mục di sản này?"
@@ -17578,6 +18608,14 @@ msgstr "Export the family tree image"
 #: src/pages/clan/Settings.tsx
 msgid "Xuất CSV"
 msgstr "Export CSV"
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Xuất đúng poster đang xem (cùng mẫu nền và kiểu xem), đủ cả phần cuộn ngang."
+msgstr "Exports exactly the poster you are viewing (same background and view style), including the horizontally scrolling part."
+
+#: src/pages/clan/TimelineDetail.tsx
+msgid "Xuất file"
+msgstr "Export file"
 
 #: src/components/GedcomButtons.tsx
 msgid "Xuất GEDCOM"

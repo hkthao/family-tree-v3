@@ -35,6 +35,7 @@ import {
   IconUsers,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PersonTimelineCard } from "@/components/timeline/PersonTimelineCard";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ContributeDialog } from "@/components/ContributeDialog";
@@ -643,18 +644,20 @@ export default function PersonDetail({
               </CollapsibleCard>
             )}
 
-            {/* Dòng thời gian: ngay dưới thẻ Quan hệ. */}
-            {clan.kind === "historical" && (
-              <HistoricalPersonSections
-                personId={person.id}
-                bio={person.bio}
-                birthDate={person.birth_date}
-                deathDate={person.death_date}
-                clanId={clanId!}
-                userId={userId}
-                only="timeline"
-              />
-            )}
+            {/* Dòng thời gian của người: CÙNG kho dữ liệu, poster và form với dòng thời gian dòng họ. */}
+            <PersonTimelineCard
+              personId={person.id}
+              clanId={clanId!}
+              userId={userId}
+              canEdit={canEdit}
+              bio={clan.kind === "historical" ? person.bio : null}
+              birthDate={person.birth_date}
+              deathDate={person.death_date}
+              birthPlace={person.birth_place}
+              burialPlace={person.burial_place}
+              kids={relationships?.children}
+              parents={relationships?.parents}
+            />
 
             <InLawLinksSection
               personId={personId!}

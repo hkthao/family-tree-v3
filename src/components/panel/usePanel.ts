@@ -23,6 +23,8 @@ export type PanelId =
   | "board-view"
   | "board-new"
   | "board-edit"
+  | "timeline-new"
+  | "timeline-edit"
   | "clan-new"
   | "inlaw-new"
   | "custom-view"
@@ -35,7 +37,7 @@ export interface PanelParams {
   pid?: string;
   /** Quan hệ mở thẳng (bỏ qua bước chọn). */
   prel?: "child" | "spouse" | "parent";
-  /** Sao chép từ người này. */
+  /** Sao chép từ người này (person-add) / người mà mốc dòng thời gian thuộc về (timeline-new, timeline-edit). */
   pfrom?: string;
 }
 

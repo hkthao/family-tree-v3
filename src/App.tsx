@@ -84,6 +84,8 @@ const MemoryRooms = lazy(() => import("@/pages/clan/MemoryRooms"));
 const Mosaics = lazy(() => import("@/pages/clan/Mosaics"));
 const MosaicDetail = lazy(() => import("@/pages/clan/MosaicDetail"));
 const MapStats = lazy(() => import("@/pages/clan/MapStats"));
+const Timeline = lazy(() => import("@/pages/clan/TimelineList"));
+const TimelineDetail = lazy(() => import("@/pages/clan/TimelineDetail"));
 const Merge = lazy(() => import("@/pages/clan/Merge"));
 const RestingPlaces = lazy(() => import("@/pages/clan/RestingPlaces"));
 const RestingPlaceDetail = lazy(
@@ -299,6 +301,9 @@ export default function App() {
                 <Route path="members" element={<Members />} />
                 <Route path="tree" element={<Tree />} />
                 <Route path="map" element={<MapStats />} />
+                <Route path="timeline" element={<Timeline />} />
+                <Route path="timeline/clan" element={<TimelineDetail />} />
+                <Route path="timeline/p/:personId" element={<TimelineDetail />} />
                 <Route
                   path="memory-room"
                   element={
