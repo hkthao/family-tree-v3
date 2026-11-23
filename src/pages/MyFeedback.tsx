@@ -18,7 +18,6 @@ import {
   IconSearch,
   IconTag,
 } from "@/components/icons";
-import { IconTile } from "@/components/IconTile";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
@@ -349,9 +348,8 @@ function FeedbackRowItem({
       <button
         type="button"
         onClick={onOpen}
-        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+        className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
       >
-        <IconTile icon={cat.icon} tone={cat.tone} />
         <div className="min-w-0 flex-1">
           <p className="line-clamp-2 whitespace-pre-wrap break-words font-semibold">
             {row.message}

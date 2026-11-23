@@ -6,7 +6,6 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { IconTile } from "@/components/IconTile";
 import {
   IconCheck,
   IconClock,
@@ -259,9 +258,8 @@ function ContributionRowItem({
     <li>
       <Link
         to={`/clans/${clanId}/contributions/${c.id}`}
-        className="flex items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
+        className="block p-3 transition-colors hover:bg-muted/40"
       >
-        <IconTile icon={TypeIcon} tone={st.tone} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{submitterDisplay}</p>
           {c.submitter_relation && (

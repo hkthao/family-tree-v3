@@ -68,8 +68,10 @@ export function CollapsibleFilters({
       ) : (
         <div className="flex items-center gap-2">{toggle}</div>
       )}
+      {/* `empty:hidden`: nút hành động có thể tự trả về null (vd. không đủ quyền) — khung rỗng vẫn
+          chiếm một khoảng cách `space-y` của trang, làm hở thêm giữa ô tìm kiếm và danh sách. */}
       {actions && (
-        <div className="flex flex-wrap items-center justify-end gap-1.5">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 empty:hidden">
           {actions}
         </div>
       )}

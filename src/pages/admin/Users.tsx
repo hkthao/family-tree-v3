@@ -6,7 +6,6 @@ import { Chip } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
-import { IconTile } from "@/components/IconTile";
 import {
   IconBuildings,
   IconCalendar,
@@ -228,12 +227,8 @@ function UserRow({
       <button
         type="button"
         onClick={onOpen}
-        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+        className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
       >
-        <IconTile
-          icon={profile.is_suspended ? IconLock : profile.is_platform_admin ? IconShield : IconUser}
-          tone={profile.is_suspended ? "danger" : profile.is_platform_admin ? "primary" : "neutral"}
-        />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">
             {profile.display_name ?? profile.email ?? profile.id}

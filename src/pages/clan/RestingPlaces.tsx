@@ -32,7 +32,6 @@ import {
   useClientPaging,
 } from "@/hooks/useClientPaging";
 import { useUrlState } from "@/hooks/useUrlState";
-import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { listCemeteries } from "@/lib/queries/cemeteries";
 import {
   directionsUrl,
@@ -86,21 +85,6 @@ export default function RestingPlaces() {
     // mặc định + cache lưu trình duyệt khiến "Mọi hình thức" dính danh sách RỖNG cũ trong khi lọc theo loại (khoá mới) lại ra.
     staleTime: 0,
     refetchOnMount: "always",
-  });
-
-  const { data: photoUrls } = useQuery({
-    queryKey: [
-      "resting-place-thumbs",
-      (places ?? []).map((p) => p.first_photo_path).join(","),
-    ],
-    queryFn: () =>
-      getSignedPhotoUrlMap(
-        (places ?? [])
-          .map((p) => p.first_photo_path)
-          .filter((p): p is string => !!p),
-      ),
-    enabled: !!places && places.some((p) => p.first_photo_path),
-    staleTime: PHOTO_URL_STALE_MS,
   });
 
   const {
@@ -235,9 +219,6 @@ export default function RestingPlaces() {
       {places && places.length > 0 && (
         <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
           {paged.map((p) => {
-            const thumb = p.first_photo_path
-              ? photoUrls?.get(p.first_photo_path)
-              : null;
             const dir = directionsUrl(p.latitude, p.longitude);
             return (
               <li key={p.id}>
@@ -247,18 +228,6 @@ export default function RestingPlaces() {
                   panelParams={{ pid: p.id }}
                   className="flex min-w-0 items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
                 >
-                  {/* Chỉ hiện ảnh khi có — không có ảnh thì không đặt ô icon thay. Điện thoại bỏ cột ảnh cho chữ được cả bề ngang. */}
-                  {thumb && (
-                    <div className="min-h-14 w-14 shrink-0 self-stretch overflow-hidden rounded-lg border bg-muted max-sm:hidden">
-                      <img
-                        src={thumb}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  )}
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">
                       {p.name ||

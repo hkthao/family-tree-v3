@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { SectionCard } from "@/components/SectionCard";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip } from "@/components/Chip";
@@ -12,10 +11,8 @@ import {
 } from "@/components/heritageCategoryStyle";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { HeritageThumb } from "@/components/HeritageThumb";
 import {
   IconCamera,
-  IconChart,
   IconMapPin,
   IconMicrophone,
   IconPlay,
@@ -46,12 +43,8 @@ import {
 } from "@/hooks/useClientPaging";
 import { unaccent } from "@/lib/unaccent";
 import { useUrlState } from "@/hooks/useUrlState";
-import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import {
-  clanHeritageStorageBytes,
-  formatBytes,
   HERITAGE_CATEGORY_LABEL,
-  HERITAGE_CLAN_QUOTA_BYTES,
   listHeritageItems,
   type HeritageCategory,
 } from "@/lib/queries/heritage";
@@ -98,28 +91,6 @@ export default function Heritage() {
     // lần đổi tab lọc / mở trang đều gọi lại, không hiển thị cache rỗng cũ.
     staleTime: 0,
     refetchOnMount: "always",
-  });
-
-  const { data: storageBytes } = useQuery({
-    queryKey: ["heritage-storage", clan.id, userId],
-    queryFn: () => clanHeritageStorageBytes(clan.id),
-    enabled: !!userId,
-  });
-
-  const { data: photoUrls } = useQuery({
-    queryKey: [
-      "heritage-thumbs",
-      (items ?? []).map((i) => i.cover_media_path).join(","),
-    ],
-    queryFn: () =>
-      // URL ký hạn dài (mặc định 7 ngày) → trình duyệt cache ảnh, giảm tải.
-      getSignedPhotoUrlMap(
-        (items ?? [])
-          .map((i) => i.cover_media_path)
-          .filter((p): p is string => !!p),
-      ),
-    enabled: !!items && items.some((i) => i.cover_media_path),
-    staleTime: PHOTO_URL_STALE_MS,
   });
 
   const {
@@ -237,45 +208,6 @@ export default function Heritage() {
 
       {tab === "clan" && (
         <>
-          {/* Thanh dung lượng media của họ */}
-          {storageBytes != null &&
-            (() => {
-              const pct = Math.min(
-                100,
-                Math.round((storageBytes / HERITAGE_CLAN_QUOTA_BYTES) * 100),
-              );
-              const near = pct >= 90;
-              return (
-                <SectionCard
-                  id="heritage-storage"
-                  icon={<IconChart />}
-                  title={t`Dung lượng ảnh & ghi âm`}
-                  action={
-                    <span
-                      className={`shrink-0 text-sm ${near ? "font-medium text-red-600" : "text-muted-foreground"}`}
-                    >
-                      {formatBytes(storageBytes)} /{" "}
-                      {formatBytes(HERITAGE_CLAN_QUOTA_BYTES)}
-                    </span>
-                  }
-                >
-                  <div>
-                    <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className={`h-full rounded-full ${near ? "bg-red-600" : "bg-primary"}`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    {near && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {t`Sắp đầy. Hãy xoá bớt ảnh/ghi âm cũ trước khi thêm mới.`}
-                      </p>
-                    )}
-                  </div>
-                </SectionCard>
-              );
-            })()}
-
           {isLoading && (
             <div className="rounded-xl border bg-card p-4 shadow-sm">
               <p className="text-muted-foreground">{t`Đang tải…`}</p>
@@ -313,11 +245,6 @@ export default function Heritage() {
           {items && items.length > 0 && (
             <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
               {paged.map((i) => {
-                const thumb =
-                  i.cover_external_url ??
-                  (i.cover_media_path
-                    ? photoUrls?.get(i.cover_media_path)
-                    : null);
                 return (
                   <li key={i.id}>
                     <PanelLink
@@ -326,7 +253,6 @@ export default function Heritage() {
                       panelParams={{ pid: i.id }}
                       className="flex min-w-0 items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
                     >
-                      <HeritageThumb category={i.category} src={thumb} flush />
                       <div className="min-w-0 flex-1">
                         <p className="font-medium truncate">{i.title}</p>
                         {i.summary && (

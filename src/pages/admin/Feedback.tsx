@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { IconTile } from "@/components/IconTile";
 import {
   IconBell,
   IconBellOff,
@@ -289,9 +288,8 @@ function FeedbackRowItem({
       <button
         type="button"
         onClick={onOpen}
-        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+        className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
       >
-        <IconTile icon={CatIcon} tone={cat.tone} />
         <div className="min-w-0 flex-1">
           <p className="line-clamp-2 whitespace-pre-line font-medium">{row.message}</p>
           <p className="mt-0.5 truncate text-sm text-muted-foreground">{who}</p>

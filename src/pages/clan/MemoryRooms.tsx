@@ -8,7 +8,6 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
 import { GALLERY_PRESETS } from "@/components/gallery/palettes";
-import { IconTile } from "@/components/IconTile";
 import {
   IconArrowRight,
   IconCube,
@@ -264,15 +263,14 @@ function RoomRow({ room, onOpen }: { room: MemoryRoom; onOpen: () => void }) {
         onClick={onOpen}
         className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
       >
-        {room.cover_image_url ? (
+        {/* Có ảnh bìa mới hiện ảnh — không có thì không đặt ô icon thay. */}
+        {room.cover_image_url && (
           <img
             src={room.cover_image_url}
             alt=""
             loading="lazy"
             className="min-h-14 w-14 shrink-0 self-stretch rounded-lg border object-cover"
           />
-        ) : (
-          <IconTile icon={IconCube} tone="violet" />
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{room.name}</p>

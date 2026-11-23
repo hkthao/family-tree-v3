@@ -7,7 +7,6 @@ import { Chip } from "@/components/Chip";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
-import { IconTile } from "@/components/IconTile";
 import {
   IconBuildings,
   IconCompass,
@@ -154,9 +153,8 @@ export default function Cemeteries() {
               <button
                 type="button"
                 onClick={() => setPanel({ mode: "view", item: c })}
-                className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+                className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
               >
-                <IconTile icon={IconBuildings} tone="teal" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{c.name}</p>
                   {c.address && (

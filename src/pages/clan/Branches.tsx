@@ -9,7 +9,6 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
 import { FilterableSelect } from "@/components/FilterableSelect";
-import { IconTile } from "@/components/IconTile";
 import {
   IconBuildings,
   IconList,
@@ -231,9 +230,8 @@ export default function Branches() {
               <button
                 type="button"
                 onClick={() => setPanel({ mode: "view", branch: b })}
-                className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+                className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
               >
-                <IconTile icon={IconTree} tone="primary" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{b.name}</span>
                   {b.ancestral_house && (
