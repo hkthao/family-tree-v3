@@ -113,3 +113,24 @@ export function TimelineScene({ id, className }: { id: string; className?: strin
     </svg>
   );
 }
+
+/** Băm chuỗi → số nguyên không âm (ổn định giữa các lần dựng: cùng mốc luôn ra cùng một hình). */
+function hash(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/**
+ * Chọn một cảnh minh hoạ cho mốc CHƯA có hình: ưu tiên các cảnh cùng biểu tượng với mốc (sinh → em bé, mất → nến…),
+ * không có thì lấy bất kỳ; trong số đó chọn "ngẫu nhiên" nhưng ỔN ĐỊNH theo `seed` (khoá mốc) — các mốc cạnh nhau nhìn
+ * đa dạng mà tải lại trang không đổi hình.
+ */
+export function pickScene(seed: string, icon: TimelineIconKey): string {
+  const same = SCENE_IDS.filter((id) => SCENES[id].icon === icon);
+  const pool = same.length > 0 ? same : SCENE_IDS;
+  return pool[hash(seed) % pool.length];
+}

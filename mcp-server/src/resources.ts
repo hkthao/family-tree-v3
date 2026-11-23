@@ -498,9 +498,9 @@ async function setTimeline(c: Ctx, a: Args): Promise<string> {
         clan_id: c.clanId,
         person_id: person,
         sort_order: Math.min(999, base + i),
-        // Mốc cuộc đời ẩn thẻ bối cảnh; mốc đưa lên poster dòng họ dùng bối cảnh mặc định theo năm.
-        context_title: r.on_clan ? null : "",
-        context_body: r.on_clan ? null : "",
+        // Bối cảnh thời đại mặc định theo năm (null) — poster của người hiển thị đủ layout như poster dòng họ.
+        context_title: null,
+        context_body: null,
       })),
     );
     if (error) throw new UserError(error.message);

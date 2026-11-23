@@ -31,3 +31,22 @@ describe("bioTimelineRows → mốc", () => {
     expect(rows[0]).toMatchObject({ era: "Bính Tuất", body: "Lên ngôi vua" });
   });
 });
+
+import { suggestIcon } from "@/lib/timeline/titleBody";
+
+describe("suggestIcon — hình minh hoạ theo nội dung", () => {
+  it.each([
+    ["Sinh.", "cradle"],
+    ["Sinh ngày 16 tháng 6.", "cradle"],
+    ["Mất.", "candle"],
+    ["Băng hà, thọ 59 tuổi", "candle"],
+    ["Lên ngôi, ở ngôi đến năm 1258.", "citadel"],
+    ["Đổi niên hiệu Kiến Trung.", "citadel"],
+    ["Chống quân Nguyên Mông lần thứ nhất", "sword"],
+    ["Kết hôn với bà Lê Thị A", "ring"],
+    ["Mở khoa thi tiến sĩ", "book"],
+    ["Việc gì đó không rõ", "scroll"],
+  ])("%s → %s", (text, icon) => {
+    expect(suggestIcon(text)).toBe(icon);
+  });
+});

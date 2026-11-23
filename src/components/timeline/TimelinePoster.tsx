@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 import { AppLogo } from "@/components/AppLogo";
 import { TimelineIcon } from "@/components/timeline/TimelineIcon";
-import { TimelineScene } from "@/components/timeline/TimelineScene";
+import { pickScene, TimelineScene } from "@/components/timeline/TimelineScene";
 import { parseImageRef } from "@/lib/timeline/images";
 import { creditText, findLibraryPhotoByUrl } from "@/lib/timeline/photoLibrary";
 import type { MilestoneContext } from "@/lib/timeline/context";
@@ -255,12 +255,15 @@ export function PhotoContent({
   c,
   photoUrl,
 }: {
-  c: Pick<PosterEntry, "imageUrl" | "iconKey">;
+  c: Pick<PosterEntry, "imageUrl" | "iconKey"> & { key?: string };
   photoUrl?: string | null;
 }) {
   const ref = parseImageRef(c.imageUrl);
   const [broken, setBroken] = useState(false);
-  const icon = (
+  // Mốc chưa có hình: tự chọn một cảnh minh hoạ trong thư viện (ổn định theo khoá mốc) thay vì chỉ một biểu tượng trơ.
+  const icon = c.key ? (
+    <TimelineScene id={pickScene(c.key, c.iconKey)} className="absolute inset-0 h-full w-full" />
+  ) : (
     <TimelineIcon name={c.iconKey} className="h-14 w-14 opacity-80" />
   );
   if (ref?.kind === "lib") {
@@ -290,11 +293,11 @@ export function PhotoContent({
   );
 }
 
-function Text({ c, align }: { c: PosterEntry; align: Align }) {
+function Text({ c, align, tight }: { c: PosterEntry; align: Align; tight?: boolean }) {
   const th = useTheme();
   return (
     <div className={ALIGN_CLASS[align]}>
-      <p className="mt-3 text-sm font-semibold leading-snug" style={{ color: th.ink }}>
+      <p className={`${tight ? "" : "mt-3 "}text-sm font-semibold leading-snug`} style={{ color: th.ink }}>
         {c.title}
       </p>
       <p className="mt-1 text-xs leading-relaxed">{c.body}</p>
@@ -343,11 +346,10 @@ function Seal({ year, era, tilt = 0 }: { year: number; era?: string | null; tilt
         boxShadow: `0 0 0 4px ${th.solid}`,
         transform: `rotate(${tilt}deg)`,
         filter: "url(#seal-rough)",
-        opacity: 0.95,
       }}
     >
       <span className="text-lg tracking-wide">{year}</span>
-      {era && <span className="mt-0.5 whitespace-nowrap text-[10px] font-semibold leading-none">{era}</span>}
+      {era && <span className="mt-0.5 whitespace-nowrap text-[11px] font-bold leading-none">{era}</span>}
     </span>
   );
 }
@@ -359,7 +361,7 @@ function SealFilter() {
       <defs>
         <filter id="seal-rough" x="-5%" y="-5%" width="110%" height="110%">
           <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="7" result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" xChannelSelector="R" yChannelSelector="G" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8" xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </defs>
     </svg>
@@ -379,54 +381,54 @@ function Horizontal({
   iconFrames?: boolean;
 }) {
   const th = useTheme();
-  // Mỗi cột rộng 11.5rem → 20rem: ít mốc thì cột giãn ra và cả dải căn giữa (không dồn về một bên);
-  // nhiều mốc thì cộng dồn bề rộng tối thiểu và cuộn ngang.
+  // Không mốc nào có thẻ bối cảnh (dòng thời gian một người): so le trên / dưới chỉ để lại những khoảng trống lớn và
+  // chữ trôi lơ lửng → xếp MỘT phía (dưới trục), mỗi mốc là một thẻ nối với dấu triện, cột cố định xếp từ trái.
+  const oneSide = items.every((it) => !it.c.context);
+  // Poster dòng họ: mỗi cột 11.5rem → 20rem, dải căn giữa (ít mốc không dồn về một bên); nhiều mốc thì cuộn ngang.
   const n = Math.max(items.length, 1);
-  const cols = `repeat(${n}, minmax(11.5rem, 20rem))`;
+  const cols = oneSide ? `repeat(${n}, 13rem)` : `repeat(${n}, minmax(11.5rem, 20rem))`;
   return (
     <div className="overflow-x-auto">
-      <div className="px-8 pb-6 pt-5">
+      <div className={`px-8 pb-6 ${oneSide ? "pt-6" : "pt-5"}`}>
         <div
-          className="grid justify-center gap-x-4"
+          className={`grid gap-x-4 ${oneSide ? "" : "justify-center"}`}
           style={{
             gridTemplateColumns: cols,
-            minWidth: `calc(${n} * 11.5rem + ${n - 1} * 1rem)`,
+            minWidth: oneSide ? undefined : `calc(${n} * 11.5rem + ${n - 1} * 1rem)`,
           }}
         >
-          {/* Hàng 1 (trên trục): mốc lẻ = thẻ bối cảnh, mốc chẵn = ảnh + mô tả */}
-          {items.map(({ c, photoUrl }, i) => {
-            const flip = i % 2 === 1; // flip: ảnh + mô tả ở TRÊN, bối cảnh ở DƯỚI
-            return flip ? (
-              <Clickable
-                key={`top-${c.key}`}
-                c={c}
-                onSelect={onSelect}
-                className="flex flex-col items-stretch self-end rounded-xl p-3"
-                style={{ gridRow: 1, gridColumn: i + 1 }}
-              >
-                {(iconFrames || c.imageUrl || photoUrl) && (
-                  <div className="w-full">
-                    <Photo c={c} photoUrl={photoUrl} tilt={i % 2 ? 1.2 : -1.2} />
-                  </div>
-                )}
-                <Text c={c} align="left" />
-              </Clickable>
-            ) : (
-              <div
-                key={`top-${c.key}`}
-                className="self-end"
-                style={{ gridRow: 1, gridColumn: i + 1 }}
-              >
-                <EraNote era={c.context} i={i} />
-              </div>
-            );
-          })}
+          {/* Hàng 1 (trên trục): mốc lẻ = thẻ bối cảnh, mốc chẵn = ảnh + mô tả — chỉ khi xếp so le */}
+          {!oneSide &&
+            items.map(({ c, photoUrl }, i) => {
+              const flip = i % 2 === 1; // flip: ảnh + mô tả ở TRÊN, bối cảnh ở DƯỚI
+              return flip ? (
+                <Clickable
+                  key={`top-${c.key}`}
+                  c={c}
+                  onSelect={onSelect}
+                  className="flex flex-col items-stretch self-end rounded-xl p-3"
+                  style={{ gridRow: 1, gridColumn: i + 1 }}
+                >
+                  {(iconFrames || c.imageUrl || photoUrl) && (
+                    <div className="w-full">
+                      <Photo c={c} photoUrl={photoUrl} tilt={i % 2 ? 1.2 : -1.2} />
+                    </div>
+                  )}
+                  <Text c={c} align="left" tight={!(iconFrames || c.imageUrl || photoUrl)} />
+                </Clickable>
+              ) : (
+                <div
+                  key={`top-${c.key}`}
+                  className="self-end"
+                  style={{ gridRow: 1, gridColumn: i + 1 }}
+                >
+                  <EraNote era={c.context} i={i} />
+                </div>
+              );
+            })}
 
-          {/* Hàng 2: trục thời gian + dấu triện năm */}
-          <div
-            className="relative my-4 h-9"
-            style={{ gridColumn: "1 / -1", gridRow: 2 }}
-          >
+          {/* Hàng 2: trục thời gian + con triện năm */}
+          <div className="relative my-4 h-11" style={{ gridColumn: "1 / -1", gridRow: 2 }}>
             <div
               className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full"
               style={{ background: th.line }}
@@ -435,16 +437,23 @@ function Horizontal({
           {items.map(({ c }, i) => (
             <div
               key={`d-${c.key}`}
-              className="relative z-10 my-4 flex h-9 items-center justify-center"
+              className={`relative z-10 my-4 flex h-11 items-center ${oneSide ? "justify-start" : "justify-center"}`}
               style={{ gridRow: 2, gridColumn: i + 1 }}
             >
               <Seal year={c.year} era={c.era} tilt={i % 2 ? 1.5 : -1.5} />
+              {oneSide && (
+                // nét nối con triện → thẻ nội dung bên dưới
+                <span
+                  className="absolute left-[2.375rem] top-full h-4 w-0.5 -translate-x-1/2"
+                  style={{ background: th.line }}
+                />
+              )}
             </div>
           ))}
 
-          {/* Hàng 3 (dưới trục): ngược với hàng 1 */}
+          {/* Hàng 3 (dưới trục): so le thì ngược với hàng 1; một phía thì mọi mốc đều ở đây, trong thẻ */}
           {items.map(({ c, photoUrl }, i) => {
-            const flip = i % 2 === 1;
+            const flip = !oneSide && i % 2 === 1;
             return flip ? (
               <div
                 key={`bot-${c.key}`}
@@ -458,15 +467,21 @@ function Horizontal({
                 key={`bot-${c.key}`}
                 c={c}
                 onSelect={onSelect}
-                className="flex flex-col items-stretch self-start rounded-xl p-3"
-                style={{ gridRow: 3, gridColumn: i + 1 }}
+                className={`flex flex-col items-stretch self-start rounded-xl p-3 ${
+                  oneSide ? "border" : ""
+                }`}
+                style={{
+                  gridRow: 3,
+                  gridColumn: i + 1,
+                  ...(oneSide ? { borderColor: th.border, background: "rgba(255,255,255,.35)" } : {}),
+                }}
               >
                 {(iconFrames || c.imageUrl || photoUrl) && (
                   <div className="w-full">
                     <Photo c={c} photoUrl={photoUrl} tilt={i % 2 ? 1.2 : -1.2} />
                   </div>
                 )}
-                <Text c={c} align="left" />
+                <Text c={c} align="left" tight={!(iconFrames || c.imageUrl || photoUrl)} />
               </Clickable>
             );
           })}

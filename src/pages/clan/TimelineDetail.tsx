@@ -16,7 +16,7 @@ import { useTimelineActions } from "@/hooks/useTimelineActions";
 import { getPerson } from "@/lib/queries/persons";
 import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
 import { createMilestones } from "@/lib/queries/timeline";
-import { splitTitleBody } from "@/lib/timeline/titleBody";
+import { splitTitleBody, suggestIcon } from "@/lib/timeline/titleBody";
 import { queryKeys } from "@/lib/queries/keys";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { IconCalendar, IconDownload, IconSliders, IconSparkles } from "@/components/icons";
@@ -68,9 +68,10 @@ export default function TimelineDetail() {
           year: r.year,
           sort_order: Math.min(999, i),
           ...splitTitleBody(r.body),
-          icon_key: null,
-          context_title: "",
-          context_body: "",
+          icon_key: suggestIcon(r.body),
+          // Bối cảnh thời đại mặc định theo năm (null = tự lấy) để poster của người hiển thị đủ layout như poster dòng họ.
+          context_title: null,
+          context_body: null,
           source_key: `bio:${personId}:${i}`,
         })),
       ),

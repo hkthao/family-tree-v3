@@ -37,6 +37,8 @@ export interface LifeEvent {
   body: string | null;
   /** Thứ tự trong cùng một năm: Sinh đứng đầu, Mất đứng cuối. */
   sort: number;
+  /** Hình minh hoạ trên poster (khoá icon của dòng thời gian). */
+  iconKey: "cradle" | "family" | "candle";
 }
 
 /**
@@ -62,7 +64,7 @@ export function lifeEvents(i: {
 
   if (birthYear != null) {
     const place = i.birthPlace?.trim();
-    out.push({ year: birthYear, title: t`Sinh`, body: place ? t`Sinh tại ${place}` : null, sort: 0 });
+    out.push({ year: birthYear, title: t`Sinh`, body: place ? t`Sinh tại ${place}` : null, sort: 0, iconKey: "cradle" });
   }
 
   const kids = (i.children ?? [])
@@ -75,6 +77,7 @@ export function lifeEvents(i: {
       title: idx === 0 ? t`Con đầu lòng chào đời` : t`Con chào đời`,
       body: c.name,
       sort: 100 + idx,
+      iconKey: "family",
     }),
   );
 
@@ -86,6 +89,7 @@ export function lifeEvents(i: {
       title: p.gender === "M" ? t`Cha mất` : t`Mẹ mất`,
       body: p.full_name,
       sort: 200 + idx,
+      iconKey: "candle",
     });
   });
 
@@ -97,7 +101,7 @@ export function lifeEvents(i: {
     }
     const burial = i.burialPlace?.trim();
     if (burial) bits.push(t`An táng tại ${burial}`);
-    out.push({ year: deathYear, title: t`Mất`, body: bits.length ? bits.join(". ") : null, sort: 999 });
+    out.push({ year: deathYear, title: t`Mất`, body: bits.length ? bits.join(". ") : null, sort: 999, iconKey: "candle" });
   }
   return out;
 }

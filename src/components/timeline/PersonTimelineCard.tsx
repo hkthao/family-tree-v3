@@ -6,6 +6,7 @@ import { IconClock } from "@/components/icons";
 import { TIMELINE_ICON_KEYS } from "@/components/timeline/TimelineIcon";
 import { TimelinePoster } from "@/components/timeline/TimelinePoster";
 import { yearToCanChi } from "@/lib/canChi";
+import { suggestIcon } from "@/lib/timeline/titleBody";
 import { bioTimelineRows, lifeEvents, yearOf } from "@/lib/personTimeline";
 import { queryKeys } from "@/lib/queries/keys";
 import { listTimelineRows } from "@/lib/queries/timeline";
@@ -73,6 +74,7 @@ export function PersonTimelineCard({
       era: string | null,
       sort: number,
       body: string | null = null,
+      icon: string | null = null,
     ): TimelineRow => ({
       id: `${VIRT}${i}`,
       clan_id: clanId,
@@ -83,25 +85,26 @@ export function PersonTimelineCard({
       sort_order: sort,
       title,
       body,
-      icon_key: null,
+      icon_key: icon,
       photo_person_id: null,
       image_url: null,
-      context_title: "",
-      context_body: "",
+      // Bối cảnh thời đại MẶC ĐỊNH theo năm (như poster dòng họ) — năm ngoài thư viện thời đại thì tự không có thẻ.
+      context_title: null,
+      context_body: null,
       source_key: null,
     });
     const base: TimelineRow[] =
       rows.length > 0
         ? rows
         : bioTimelineRows(bio, birthYear, deathYear).map((r, i) =>
-            virt(100 + i, r.year, r.body, r.era, 500),
+            virt(100 + i, r.year, r.body, r.era, 500, null, suggestIcon(r.body)),
           );
     const years = new Set(base.map((r) => r.year));
     // Mốc đời người tự dựng từ hồ sơ (sinh → con chào đời → cha mẹ mất → mất): chỉ xem, không lưu. Sinh / Mất bỏ qua
     // nếu đã có mốc thật cùng năm để khỏi trùng.
     const extra: TimelineRow[] = lifeEvents({ birthYear, deathYear, birthPlace, burialPlace, children: kids, parents })
       .filter((e) => !((e.sort === 0 || e.sort === 999) && years.has(e.year)))
-      .map((e, i) => virt(10 + i, e.year, e.title, yearToCanChi(e.year), e.sort, e.body));
+      .map((e, i) => virt(10 + i, e.year, e.title, yearToCanChi(e.year), e.sort, e.body, e.iconKey));
     return buildMilestones([...base, ...extra], TIMELINE_ICON_KEYS);
   }, [rows, bio, birthYear, deathYear, birthPlace, burialPlace, kids, parents, clanId, personId]);
 

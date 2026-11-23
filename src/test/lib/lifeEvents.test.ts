@@ -26,6 +26,20 @@ describe("lifeEvents — mốc đời người từ lúc sinh đến lúc mất"
     expect(ev[3].body).toBe("Thọ 55 tuổi. An táng tại Nghĩa trang họ");
   });
 
+  it("mỗi mốc có hình minh hoạ riêng: sinh → em bé, con → gia đình, mất / cha mẹ mất → nến", () => {
+    const ev = lifeEvents({
+      birthYear: 1887,
+      deathYear: 1942,
+      children: [{ full_name: "A", birth_date: "1910-01-01" }],
+      parents: [{ full_name: "Cha", gender: "M", death_date: "1900-01-01" }],
+    });
+    const icon = (title: string) => ev.find((e) => e.title === title)?.iconKey;
+    expect(icon("Sinh")).toBe("cradle");
+    expect(icon("Con đầu lòng chào đời")).toBe("family");
+    expect(icon("Cha mất")).toBe("candle");
+    expect(icon("Mất")).toBe("candle");
+  });
+
   it("người còn sống: có Sinh, không có Mất", () => {
     const ev = lifeEvents({ birthYear: 1990, deathYear: null });
     expect(ev.map((e) => e.title)).toEqual(["Sinh"]);

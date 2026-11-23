@@ -173,8 +173,8 @@ function Inner({
   // Bối cảnh thời đại: null = chưa chạm → hiện mặc định theo năm đang nhập; có giá trị = bản người dùng đã sửa
   // (kể cả rỗng = ẩn thẻ). Mốc đã lưu khởi tạo từ bối cảnh đang hiển thị của nó.
   const [ctx, setCtx] = useState<{ title: string; text: string } | null>(() => {
-    // Mốc mới tạo từ trang người: thẻ bối cảnh ẩn mặc định (mốc cuộc đời không cần thẻ thời đại cho từng dòng).
-    if (!m) return scopePersonId ? { title: "", text: "" } : null;
+    // Mốc mới: bối cảnh mặc định theo năm (cả mốc của người) để poster hiển thị đủ layout; xoá trống để ẩn thẻ.
+    if (!m) return null;
     const def = defaultContext(m.year);
     const cur = m.context;
     const sameAsDefault =
