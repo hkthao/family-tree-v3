@@ -75,6 +75,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import {
   getInlawGhostSpouses,
   listLinksForClan,
+  linkTypeFromSide,
   listLinksForPerson,
 } from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
@@ -398,7 +399,7 @@ export default function Tree() {
   // peek itself is fetched on badge click.
   const { data: clanLinks } = useQuery({
     queryKey: queryKeys.personLinksForClan(clan.id, userId),
-    queryFn: () => listLinksForClan(clan.id),
+    queryFn: () => listLinksForClan(clan.id, undefined, "all"),
     enabled: !!userId,
   });
   const linkedPersonIds = useMemo(() => {
@@ -1067,7 +1068,7 @@ export default function Tree() {
                         stroke="#FBF7F0" stroke-width="1" />
                 <text x="${ix}" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="12" font-weight="700">↔</text>
-                <title>${t`Liên kết thông gia — bấm để xem`}</title>`;
+                <title>${t`Liên kết — bấm để xem`}</title>`;
               inlaw.style.cursor = "pointer";
               inlaw.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -1968,7 +1969,7 @@ function InlawBadgeDialog({
         <header className="border-b px-5 py-3 flex items-center justify-between">
           <h2 className="font-semibold inline-flex items-center gap-2">
             <span aria-hidden="true">↔</span>
-            {t`Liên kết thông gia`}
+            {t`Liên kết`}
           </h2>
           <button
             type="button"
@@ -2007,7 +2008,7 @@ function InlawBadgeBody({
   // every state change.
   const { data: links, isLoading } = useQuery({
     queryKey: queryKeys.personLinksForPerson(personId, userId),
-    queryFn: () => listLinksForPerson(personId),
+    queryFn: () => listLinksForPerson(personId, undefined, "all"),
     enabled: !!userId,
   });
   if (isLoading)
@@ -2021,6 +2022,9 @@ function InlawBadgeBody({
       {links.map((l, idx) => (
         <div key={l.id}>
           {idx > 0 && <hr className="my-5 border-t" />}
+          <p className="mb-2 text-xs font-medium text-primary">
+            {linkTypeFromSide(l.link_type, l.clan_a_id === viewingClanId)}
+          </p>
           <InlawFamilyCard linkId={l.id} viewingClanId={viewingClanId} />
         </div>
       ))}

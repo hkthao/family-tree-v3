@@ -337,33 +337,25 @@ export default function Dashboard() {
 
       {clan.description && <ClanDescription text={clan.description} />}
 
-      {inlaws.length > 0 && (
+      {(inlaws.length > 0 || linked.length > 0) && (
         <section className="rounded-xl border bg-card shadow-sm p-4">
           <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
             <IconLink className="h-4 w-4 text-primary" />
-            {t`Đã kết thông gia với ${inlaws.length} dòng họ`}
+            {t`Liên kết với ${inlaws.length + linked.length} dòng họ`}
           </h2>
           <div className="flex flex-wrap gap-2">
             {inlaws.map((c) => (
               <Link
-                key={c.clan_id}
+                key={`inlaw-${c.clan_id}`}
                 to={`/clans/${c.clan_id}`}
-                className="inline-flex items-center rounded-full border bg-muted/40 px-3 py-1 text-sm hover:border-primary transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1 text-sm hover:border-primary transition-colors"
               >
+                <span className="text-xs text-muted-foreground">
+                  {t`Thông gia`}
+                </span>
                 {c.clan_name}
               </Link>
             ))}
-          </div>
-        </section>
-      )}
-
-      {linked.length > 0 && (
-        <section className="rounded-xl border bg-card shadow-sm p-4">
-          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
-            <IconLink className="h-4 w-4 text-primary" />
-            {t`Liên kết với ${linked.length} dòng họ khác`}
-          </h2>
-          <div className="flex flex-wrap gap-2">
             {linked.map((c) => (
               <Link
                 key={`${c.linked_clan_id}-${c.relation}`}
