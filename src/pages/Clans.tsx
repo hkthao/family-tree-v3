@@ -532,52 +532,38 @@ function TabButton({
   );
 }
 
-/** Dòng "Thông gia: X, Y" — ẩn khi chưa kết thông gia với ai. */
-function InlawLine({
+/** MỘT dòng liên kết: "Thông gia: X · Họ tổ: Y · Họ hàng: Z" — ẩn khi chưa liên kết với ai. */
+function ClanLinksLine({
   inlaws,
-  className,
-}: {
-  inlaws?: InlawLinkedClan[];
-  className: string;
-}) {
-  if (!inlaws || inlaws.length === 0) return null;
-  const names = inlaws.map((c) => c.clan_name).join(", ");
-  return (
-    <p className={className} title={t`Đã kết thông gia với: ${names}`}>
-      <IconLink className="inline h-3 w-3 mr-1 -mt-0.5" />
-      {t`Thông gia: ${names}`}
-    </p>
-  );
-}
-
-/** Dòng "Họ tổ: X · Họ hậu duệ: Y · Họ hàng: Z" — ẩn khi không có. */
-function LinkedLine({
   linked,
   className,
 }: {
+  inlaws?: InlawLinkedClan[];
   linked?: LinkedClan[];
   className: string;
 }) {
-  if (!linked || linked.length === 0) return null;
+  const parts: string[] = [];
+  if (inlaws && inlaws.length > 0) {
+    parts.push(t`Thông gia: ${inlaws.map((c) => c.clan_name).join(", ")}`);
+  }
   const order: LinkedClan["relation"][] = [
     "descendant_of",
     "ancestor_of",
     "related",
   ];
-  const parts = order
-    .map((rel) => {
-      const names = linked
-        .filter((l) => l.relation === rel)
-        .map((l) => l.linked_clan_name);
-      return names.length
-        ? `${LINKED_CLAN_RELATION_LABEL[rel]}: ${names.join(", ")}`
-        : null;
-    })
-    .filter(Boolean);
+  for (const rel of order) {
+    const names = (linked ?? [])
+      .filter((l) => l.relation === rel)
+      .map((l) => l.linked_clan_name);
+    if (names.length)
+      parts.push(`${LINKED_CLAN_RELATION_LABEL[rel]}: ${names.join(", ")}`);
+  }
+  if (parts.length === 0) return null;
+  const text = parts.join(" · ");
   return (
-    <p className={className} title={parts.join(" · ")}>
+    <p className={className} title={text}>
       <IconLink className="inline h-3 w-3 mr-1 -mt-0.5" />
-      {parts.join(" · ")}
+      {text}
     </p>
   );
 }
@@ -634,11 +620,8 @@ function ClanRow({
           clan={clan}
           className="hidden sm:block text-xs text-muted-foreground/80 mt-0.5"
         />
-        <InlawLine
+        <ClanLinksLine
           inlaws={inlaws}
-          className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
-        />
-        <LinkedLine
           linked={linked}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
         />
@@ -694,11 +677,8 @@ function ClanCard({
           clan={clan}
           className="hidden sm:block mt-1 text-xs text-muted-foreground/80"
         />
-        <InlawLine
+        <ClanLinksLine
           inlaws={inlaws}
-          className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
-        />
-        <LinkedLine
           linked={linked}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
         />

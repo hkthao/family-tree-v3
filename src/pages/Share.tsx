@@ -1482,7 +1482,7 @@ function EventsGioPanel({ data }: { data: ShareViewPayload }) {
   const upcoming = useMemo(() => shareUpcoming(data), [data]);
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="container max-w-4xl space-y-2 px-4 py-4">
+      <div className="container max-w-6xl space-y-2 py-4">
         {upcoming.length === 0 ? (
           <p className="p-8 text-center text-muted-foreground">
             {t`Chưa có sự kiện hay ngày giỗ.`}
@@ -1500,7 +1500,7 @@ function HeritagePanel({ data }: { data: ShareViewPayload }) {
   const heritage = data.heritage ?? [];
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="container max-w-4xl space-y-2 px-4 py-4">
+      <div className="container max-w-6xl space-y-2 py-4">
         {heritage.length === 0 && (
           <p className="p-8 text-center text-muted-foreground">
             {t`Chưa có di sản.`}
