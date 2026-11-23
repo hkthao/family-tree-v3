@@ -1,6 +1,7 @@
 import { t } from "@lingui/core/macro";
 import { useEffect, useRef, useState } from "react";
 
+import { FeaturesButton } from "@/components/FeaturesButton";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import {
   IconGlobe,
@@ -21,8 +22,8 @@ import { useChangeLocale } from "@/lib/i18n/useLocale";
 
 /**
  * Cụm nút bên phải thanh đầu app.
- *  - Màn rộng (≥sm): ba nút riêng — Tìm kiếm, Thông báo, Sáng/Tối.
- *  - Điện thoại: chỉ giữ MỘT nút Thông báo (cần thấy dấu chấm đỏ) + menu ba chấm dọc chứa
+ *  - Màn rộng (≥sm): các nút riêng — Tính năng, Tìm kiếm, Thông báo, Ngôn ngữ, Sáng/Tối.
+ *  - Điện thoại: giữ nút Tính năng + nút Thông báo (cần thấy dấu chấm đỏ) + menu ba chấm dọc chứa
  *    phần còn lại, như các app điện thoại.
  */
 export function HeaderActions() {
@@ -30,6 +31,7 @@ export function HeaderActions() {
   if (wide) {
     return (
       <div className="flex items-center gap-1">
+        <FeaturesButton />
         <GlobalSearch />
         <NotificationBell />
         <LanguageButton />
@@ -67,6 +69,7 @@ function MobileActions() {
 
   return (
     <div className="flex items-center gap-1">
+      <FeaturesButton />
       <NotificationBell />
       <div ref={wrapRef} className="relative">
         <button

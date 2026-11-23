@@ -3272,6 +3272,10 @@ msgstr "Chọn một câu hỏi ở trên rồi bấm \"Trả lời\"."
 msgid "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
 msgstr "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
 
+#: src/components/FeaturesButton.tsx
+msgid "Chọn một mục để mở"
+msgstr "Chọn một mục để mở"
+
 #: src/pages/clan/ClanMenu.tsx
 msgid "Chọn một mục để mở."
 msgstr "Chọn một mục để mở."
@@ -8804,7 +8808,7 @@ msgstr "Không có mục nào khớp"
 msgid "Không có mục nào khớp \"{menuQuery}\"."
 msgstr "Không có mục nào khớp \"{menuQuery}\"."
 
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Không có mục nào khớp."
 msgstr "Không có mục nào khớp."
 
@@ -13832,6 +13836,8 @@ msgstr "tất cả người và quan hệ gia đình"
 msgid "Tất cả quy mô"
 msgstr "Tất cả quy mô"
 
+#: src/components/FeaturesButton.tsx
+#: src/components/FeaturesButton.tsx
 #: src/components/QuickActionsCard.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
@@ -15466,11 +15472,11 @@ msgstr "Tìm theo từ khoá…"
 msgid "Tìm thông báo"
 msgstr "Tìm thông báo"
 
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Tìm tính năng"
 msgstr "Tìm tính năng"
 
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Tìm tính năng…"
 msgstr "Tìm tính năng…"
 
@@ -15598,6 +15604,7 @@ msgid "Tỉnh còn xã/phường hoặc đang được dùng trong địa chỉ 
 msgstr "Tỉnh còn xã/phường hoặc đang được dùng trong địa chỉ thành viên."
 
 #: src/components/ClanLayout.tsx
+#: src/components/FeaturesButton.tsx
 msgid "Tính năng"
 msgstr "Tính năng"
 
@@ -17510,7 +17517,7 @@ msgid "Xoá toàn bộ danh bạ (nguy hiểm)"
 msgstr "Xoá toàn bộ danh bạ (nguy hiểm)"
 
 #: src/components/AppDrawer.tsx
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Xoá từ khoá"
 msgstr "Xoá từ khoá"
 

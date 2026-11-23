@@ -13,6 +13,7 @@ export type PanelId =
   | "person-edit"
   | "person-add"
   | "notifications"
+  | "features"
   | "grave-view"
   | "grave-new"
   | "grave-edit"

@@ -678,6 +678,19 @@ Mọi ghi chú, cảnh báo, kết quả, lỗi nằm trong trang/form dùng **m
 Dùng `DatePicker` / `DateTimePicker` (`ui/date-picker.tsx`): gõ `ngày/tháng/năm` hoặc bấm vào ô để
 mở lịch tiếng Việt; giá trị vẫn là `yyyy-mm-dd`. Ngày sinh/mất của người dùng `CalendarDateInput`.
 
+## Hub "Tất cả tính năng": một nguồn dữ liệu, một chỗ vẽ
+
+Hub có HAI nơi hiện: trang `/clans/:id/menu` (`ClanMenu`) và ngăn kéo "Tính năng" mở từ nút lưới ở
+thanh đầu trang (`FeaturesButton`, `?panel=features`) để chuyển tính năng mà không rời trang. Hai nơi
+**không** tự vẽ gì cả:
+
+- **Mục nào hiện / badge / quyền**: `navModel` → `useNavSections` → `useHubGroups`. Thêm một tính năng
+  = thêm vào `navModel`, cả hai nơi tự có.
+- **Cách vẽ** (ô lọc, tiêu đề nhóm, lưới ô, tô sáng trang đang mở): `HubView` (`variant="page"` lưới 2/3/4
+  cột, `variant="panel"` 3 cột ô gọn, chừa đệm dưới). Đổi kiểu ô = sửa `HubView`.
+- Nơi dùng chỉ thêm phần riêng: trang hub thêm nhóm Hệ thống (`extraGroups`), ngăn kéo truyền
+  `onSelect` để THAY history entry khi chuyển trang.
+
 ## Lối tắt quản trị: ở hub, không ở Cài đặt
 
 Lối tắt tới trang khác (Sổ gia phả, Thành viên, Nhật ký, Xuất QR, Xuất/nhập dữ liệu) là mục của

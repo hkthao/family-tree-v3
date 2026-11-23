@@ -3272,6 +3272,10 @@ msgstr "Choose a question above, then tap \"Answer\"."
 msgid "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
 msgstr "Choose one or more clans and the AI's permissions, then click \"Allow\""
 
+#: src/components/FeaturesButton.tsx
+msgid "Chọn một mục để mở"
+msgstr "Choose an item to open"
+
 #: src/pages/clan/ClanMenu.tsx
 msgid "Chọn một mục để mở."
 msgstr "Choose an item to open."
@@ -8804,7 +8808,7 @@ msgstr "No matching entries"
 msgid "Không có mục nào khớp \"{menuQuery}\"."
 msgstr "No menu item matches \"{menuQuery}\"."
 
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Không có mục nào khớp."
 msgstr "No matching items."
 
@@ -13832,6 +13836,8 @@ msgstr "all people and family relationships"
 msgid "Tất cả quy mô"
 msgstr "All sizes"
 
+#: src/components/FeaturesButton.tsx
+#: src/components/FeaturesButton.tsx
 #: src/components/QuickActionsCard.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
@@ -15466,11 +15472,11 @@ msgstr "Search by keyword…"
 msgid "Tìm thông báo"
 msgstr "Find announcements"
 
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Tìm tính năng"
 msgstr "Find a feature"
 
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Tìm tính năng…"
 msgstr "Find a feature…"
 
@@ -15598,6 +15604,7 @@ msgid "Tỉnh còn xã/phường hoặc đang được dùng trong địa chỉ 
 msgstr "The province still has communes / wards, or is used in member addresses."
 
 #: src/components/ClanLayout.tsx
+#: src/components/FeaturesButton.tsx
 msgid "Tính năng"
 msgstr "Features"
 
@@ -17510,7 +17517,7 @@ msgid "Xoá toàn bộ danh bạ (nguy hiểm)"
 msgstr "Delete the whole People list (dangerous)"
 
 #: src/components/AppDrawer.tsx
-#: src/pages/clan/ClanMenu.tsx
+#: src/components/HubView.tsx
 msgid "Xoá từ khoá"
 msgstr "Clear search"
 
