@@ -904,6 +904,112 @@ export type Database = {
           },
         ]
       }
+      clan_timeline_milestones: {
+        Row: {
+          body: string | null
+          clan_id: string
+          context_body: string | null
+          context_title: string | null
+          created_at: string
+          created_by: string | null
+          era: string | null
+          icon_key: string | null
+          id: string
+          image_url: string | null
+          on_clan: boolean
+          person_id: string | null
+          photo_person_id: string | null
+          sort_order: number
+          source_key: string | null
+          title: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          body?: string | null
+          clan_id: string
+          context_body?: string | null
+          context_title?: string | null
+          created_at?: string
+          created_by?: string | null
+          era?: string | null
+          icon_key?: string | null
+          id?: string
+          image_url?: string | null
+          on_clan?: boolean
+          person_id?: string | null
+          photo_person_id?: string | null
+          sort_order?: number
+          source_key?: string | null
+          title: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          body?: string | null
+          clan_id?: string
+          context_body?: string | null
+          context_title?: string | null
+          created_at?: string
+          created_by?: string | null
+          era?: string | null
+          icon_key?: string | null
+          id?: string
+          image_url?: string | null
+          on_clan?: boolean
+          person_id?: string | null
+          photo_person_id?: string | null
+          sort_order?: number
+          source_key?: string | null
+          title?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_timeline_milestones_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_timeline_milestones_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_timeline_milestones_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_timeline_milestones_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_timeline_milestones_photo_person_id_fkey"
+            columns: ["photo_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_timeline_milestones_photo_person_id_fkey"
+            columns: ["photo_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clan_visit_daily: {
         Row: {
           clan_id: string
@@ -935,6 +1041,8 @@ export type Database = {
       }
       clans: {
         Row: {
+          ai_daily_limit: number | null
+          ai_monthly_limit: number | null
           avatar_frame: string | null
           created_at: string
           data_version: number
@@ -966,6 +1074,8 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          ai_daily_limit?: number | null
+          ai_monthly_limit?: number | null
           avatar_frame?: string | null
           created_at?: string
           data_version?: number
@@ -997,6 +1107,8 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          ai_daily_limit?: number | null
+          ai_monthly_limit?: number | null
           avatar_frame?: string | null
           created_at?: string
           data_version?: number
