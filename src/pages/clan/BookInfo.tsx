@@ -2,28 +2,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
-import { BookMetaFields } from "@/components/BookMetaFields";
+import { ClanBookGroup, ClanMainGroup } from "@/components/ClanFormGroups";
 import {
-  ClanBasicFields,
   clanFormFromClan,
   clanFormToColumns,
   type ClanFormValues,
 } from "@/components/ClanFormFields";
-import { BookTextsSection } from "@/components/BookTextsSection";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { friendlyError } from "@/components/ErrorState";
 import { IconBook, IconCheck } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { FormActions } from "@/components/ui/form-actions";
 import { useAuth } from "@/hooks/useAuth";
 import {
   canEditClan,
@@ -40,7 +31,6 @@ import {
 import { updateClan } from "@/lib/queries/clan-update";
 import { queryKeys } from "@/lib/queries/keys";
 
-import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 /**
  * Trang "Thông tin & Sổ gia phả": sửa thông tin dòng họ (tên, mô tả, viền
@@ -84,19 +74,7 @@ export default function BookInfo() {
           description: description ?? null,
         });
       }
-      await saveClanBookTexts(
-        clan.id,
-        cleanBookTexts({
-          place_line: meta.place_line,
-          origin_place: meta.origin_place,
-          ancestral_hall: meta.ancestral_hall,
-          ancestor_anniversary: meta.ancestor_anniversary,
-          chief_name: meta.chief_name,
-          compilers: meta.compilers,
-          compiled_year: meta.compiled_year,
-          contact: meta.contact,
-        }),
-      );
+      await saveClanBookTexts(clan.id, cleanBookTexts(meta));
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -123,7 +101,7 @@ export default function BookInfo() {
   const saveButton = (
     <Button
       type="submit"
-      variant="outline"
+      variant="default"
       disabled={mutation.isPending || (admin && !values.name.trim())}
     >
       {mutation.isPending ? (
@@ -151,73 +129,34 @@ export default function BookInfo() {
         description={t`Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF. Chi (nhánh) ở mục riêng trong Tính năng.`}
       />
 
-      {/* Hai thẻ riêng (cơ bản / cho sổ) thay vì một thẻ dài — tuỳ chọn hiển thị ở Cài đặt dòng họ (trùng ô); mỗi thẻ thu gọn được — Card chỉ thu gọn
-          khi CardContent là con TRỰC TIẾP, nên <form> bọc NGOÀI các thẻ. Nút Lưu ở thẻ nào cũng lưu cả form. */}
+      {/* Cùng bộ card với form Tạo dòng họ (ClanFormGroups); tuỳ chọn hiển thị + viền avatar ở Cài đặt dòng họ. */}
       <form
-        className="space-y-3"
+        className="space-y-5"
         onSubmit={(e) => {
           e.preventDefault();
           if (!admin || values.name.trim()) mutation.mutate();
         }}
       >
-        <Card>
-          <CardHeader>
-            <CardTitle>{t`Thông tin dòng họ`}</CardTitle>
-            <CardDescription>
-              {admin
-                ? t`Tên, mô tả — cùng bộ ô với lúc tạo dòng họ.`
-                : t`Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ.`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <ClanBasicFields
-              value={values}
-              onChange={setValues}
-              disabled={!admin}
-              idPrefix="edit"
-              showFrame={false}
-            />
-          </CardContent>
-          <CardFooter className="justify-end">{saveButton}</CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t`Thông tin cho sổ gia phả`}</CardTitle>
-            <CardDescription>
-              {t`In ở bìa và trang đầu của sổ gia phả PDF.`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <BookMetaFields value={meta} onChange={setMeta} idPrefix="edit" />
-          </CardContent>
-          <CardFooter className="justify-end">{saveButton}</CardFooter>
-        </Card>
+        <ClanMainGroup
+          value={values}
+          onChange={setValues}
+          disabled={!admin}
+          idPrefix="edit"
+          desc={
+            admin
+              ? t`Tên và mô tả dòng họ.`
+              : t`Chỉ quản trị dòng họ sửa được tên và mô tả; bạn sửa được phần sổ gia phả bên dưới.`
+          }
+        />
+        <ClanBookGroup
+          meta={meta}
+          onChange={setMeta}
+          clanName={clan.name}
+          idPrefix="edit"
+          defaultOpen
+        />
+        <FormActions>{saveButton}</FormActions>
       </form>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t`Nội dung Sổ gia phả`}</CardTitle>
-          <CardDescription>
-            <Trans>
-              <Trans>
-                <Trans>
-                  Lời nói đầu, phả ký, ngoại phả, phụ khảo trong sổ gia phả PDF.
-                  Phần để trống sẽ không in. Phả hệ, phả đồ, ngày giỗ, cưới gả
-                  tự dựng từ dữ liệu.
-                </Trans>
-              </Trans>
-            </Trans>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BookTextsSection
-            clanId={clan.id}
-            clanName={clan.name}
-            canEdit={canEditClan(clan)}
-          />
-        </CardContent>
-      </Card>
     </div>
   );
 }

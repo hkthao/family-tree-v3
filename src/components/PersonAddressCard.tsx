@@ -24,17 +24,22 @@ export const EMPTY_PERSON_ADDRESS: PersonAddressInput = {
 export function PersonAddressCard({
   value,
   onChange,
+  bare,
 }: {
   value: PersonAddressInput;
   onChange: (next: PersonAddressInput) => void;
+  /** Chỉ phần ô nhập, không khung/tiêu đề — để đặt trong một `FormGroup`. */
+  bare?: boolean;
 }) {
   // Trong ngăn kéo: không khung thẻ (ngăn kéo đã có nền + tiêu đề); trên trang: giữ thẻ.
   const inPanel = useContext(InSidePanelContext);
   return (
     <section
-      className={`space-y-3 ${inPanel ? "" : "rounded-xl border bg-card p-4 shadow-sm"}`}
+      className={`space-y-3 ${bare || inPanel ? "" : "rounded-xl border bg-card p-4 shadow-sm"}`}
     >
-      <div className="flex items-center justify-between gap-2">
+      <div
+        className={`flex items-center justify-between gap-2 ${bare ? "hidden" : ""}`}
+      >
         <h3 className="inline-flex items-center gap-2 text-base font-semibold">
           <IconMapPin className="h-5 w-5" />
           {t`Nơi ở hiện tại`}

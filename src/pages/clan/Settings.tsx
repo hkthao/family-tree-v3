@@ -6,7 +6,6 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { ShareSectionsCard } from "@/components/ShareSectionsCard";
 import { PageHeader } from "@/components/PageHeader";
 import { CsvExportButton } from "@/components/CsvExportButton";
-import { AvatarFramePicker } from "@/components/AvatarFramePicker";
 import { GedcomButtons } from "@/components/GedcomButtons";
 import { friendlyError } from "@/components/ErrorState";
 import { useToast } from "@/components/Toast";
@@ -23,14 +22,14 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import { ClanDisplayGroup } from "@/components/ClanFormGroups";
+import { FormActions } from "@/components/ui/form-actions";
 import {
-  ClanDisplayFields,
   clanFormFromClan,
   type ClanFormValues,
 } from "@/components/ClanFormFields";
@@ -125,67 +124,44 @@ export default function Settings() {
       <ShareSectionsCard clanId={clan.id} />
 
       <form
+        className="space-y-5"
         onSubmit={(e) => {
           e.preventDefault();
           mutation.mutate();
         }}
       >
-        <Card>
-          <CardHeader>
-            <CardTitle>{t`Hiển thị & quyền xem`}</CardTitle>
-            <CardDescription>
-              <Trans>
-                <Trans>
-                  <Trans>
-                    Bật/tắt thông tin hiển thị, phần người ngoài được xem và
-                    viền avatar. Tên, mô tả và nội dung sổ gia phả sửa ở trang
-                    “Thông tin &amp; Sổ gia phả”; chi ở mục “Chi (nhánh)”.
-                  </Trans>
-                </Trans>
-              </Trans>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <ClanDisplayFields value={values} onChange={setValues} />
-            <AvatarFramePicker
-              value={values.avatar_frame}
-              onChange={(f) => setValues({ ...values, avatar_frame: f })}
-              gender="M"
-              label={t`Viền avatar cả dòng họ`}
-              hint={t`Áp cho avatar của mọi thành viên trong họ.`}
-            />
+        <ClanDisplayGroup
+          value={values}
+          onChange={setValues}
+          withVisibility
+          defaultOpen
+          desc={t`Riêng tư / công khai, phần người ngoài được xem, viền avatar. Tên, mô tả và sổ gia phả sửa ở trang “Thông tin & Sổ gia phả”.`}
+        />
 
-            {mutation.error && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {(mutation.error as Error).message}
-                </AlertDescription>
-              </Alert>
+        {mutation.error && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {(mutation.error as Error).message}
+            </AlertDescription>
+          </Alert>
+        )}
+        {mutation.isSuccess && (
+          <Alert>
+            <AlertDescription>{t`Đã lưu.`}</AlertDescription>
+          </Alert>
+        )}
+        <FormActions>
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? (
+              t`Đang lưu…`
+            ) : (
+              <>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                {t`Lưu thay đổi`}
+              </>
             )}
-            {mutation.isSuccess && (
-              <Alert>
-                <AlertDescription>{t`Đã lưu.`}</AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-          <CardFooter className="justify-end border-t pt-4">
-            <Button
-              size="sm"
-              type="submit"
-              variant="outline"
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? (
-                t`Đang lưu…`
-              ) : (
-                <>
-                  <IconCheck className="h-4 w-4 mr-1.5" />
-                  {t`Lưu thay đổi`}
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
+          </Button>
+        </FormActions>
       </form>
 
       {/* Lối tắt Sổ gia phả / Thành viên / Nhật ký / Xuất QR đã ra trang hub "Tính năng" và tìm kiếm toàn cục;

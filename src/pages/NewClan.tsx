@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 import { useAuth } from "@/hooks/useAuth";
 import { createClan } from "@/lib/queries/clans";
-import { BookMetaFields } from "@/components/BookMetaFields";
-import { BookTextsSection } from "@/components/BookTextsSection";
 import {
-  ClanBasicFields,
-  ClanDisplayFields,
+  ClanBookGroup,
+  ClanDisplayGroup,
+  ClanMainGroup,
+} from "@/components/ClanFormGroups";
+import {
   DEFAULT_CLAN_FORM,
   clanFormToColumns,
   type ClanFormValues,
@@ -82,30 +83,25 @@ export function NewClanForm({ onDone, onCancel }: NewClanFormProps) {
       }}
       className="space-y-5"
     >
-      <ClanBasicFields value={values} onChange={setValues} idPrefix="new" />
-
-      <fieldset className="space-y-3">
-        <legend className="text-base font-medium mb-1">{t`Thông tin cho sổ gia phả`}</legend>
-        <p className="text-sm text-muted-foreground">
-          {t`Tuỳ chọn, in ở bìa và trang giới thiệu của sổ; điền sau cũng được.`}
-        </p>
-        <BookMetaFields value={meta} onChange={setMeta} idPrefix="new" />
-      </fieldset>
-
-      <fieldset className="space-y-3">
-        <legend className="text-base font-medium mb-1">{t`Nội dung Sổ gia phả`}</legend>
-        <p className="text-sm text-muted-foreground">
-          {t`Chọn mẫu để có sẵn bài hoàn chỉnh rồi sửa lại; AI soạn theo mô tả dùng được sau khi tạo.`}
-        </p>
-        <BookTextsSection
-          clanName={values.name}
-          canEdit
-          value={meta}
-          onChange={setMeta}
-        />
-      </fieldset>
-
-      <ClanDisplayFields value={values} onChange={setValues} />
+      <ClanMainGroup
+        value={values}
+        onChange={setValues}
+        idPrefix="new"
+        withVisibility
+        desc={t`Chỉ cần tên dòng họ là tạo được; các nhóm bên dưới điền sau cũng được.`}
+      />
+      <ClanBookGroup
+        meta={meta}
+        onChange={setMeta}
+        clanName={values.name}
+        idPrefix="new"
+      />
+      <ClanDisplayGroup
+        step={3}
+        value={values}
+        onChange={setValues}
+        desc={t`Có giá trị mặc định, đổi sau ở Cài đặt dòng họ.`}
+      />
 
       {mutation.error && (
         <Alert variant="destructive">

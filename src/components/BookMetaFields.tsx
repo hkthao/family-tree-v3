@@ -103,10 +103,13 @@ export function BookMetaFields({
   idPrefix?: string;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {FIELDS.map((f) => (
         <div key={f.key} className="space-y-1.5">
           <Label htmlFor={`${idPrefix}-${f.key}`}>{f.label}</Label>
+          {f.hint ? (
+            <p className="text-xs text-muted-foreground">{f.hint}</p>
+          ) : null}
           <Input
             id={`${idPrefix}-${f.key}`}
             icon={FIELD_ICON[f.key]}
@@ -117,9 +120,6 @@ export function BookMetaFields({
             value={value[f.key] ?? ""}
             onChange={(e) => onChange({ ...value, [f.key]: e.target.value })}
           />
-          {f.hint ? (
-            <p className="text-xs text-muted-foreground">{f.hint}</p>
-          ) : null}
         </div>
       ))}
     </div>

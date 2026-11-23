@@ -195,7 +195,7 @@ export function BookTextsSection({
   const Root = controlled ? "div" : "form";
   return (
     <Root
-      className="space-y-4"
+      className="space-y-6"
       {...(controlled
         ? {}
         : {
@@ -208,6 +208,7 @@ export function BookTextsSection({
       {FIELDS.map((f) => (
         <div key={f.key} className="space-y-1.5">
           <Label htmlFor={`book-${f.key}`}>{f.label}</Label>
+          <p className="text-xs text-muted-foreground">{f.hint}</p>
           <Textarea
             id={`book-${f.key}`}
             icon={FIELD_ICON[f.key]}
@@ -217,7 +218,6 @@ export function BookTextsSection({
             disabled={!canEdit}
             onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
           />
-          <p className="text-xs text-muted-foreground">{f.hint}</p>
           {templatePicker(f.key)}
         </div>
       ))}

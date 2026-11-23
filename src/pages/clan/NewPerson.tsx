@@ -4,50 +4,32 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
-import { CalendarDateInput } from "@/components/CalendarDateInput";
 import {
-  IconCalendar,
-  IconCheck,
-  IconChevronUp,
-  IconCopy,
-  IconGrave,
-  IconMapPin,
-  IconPlus,
-  IconScroll,
-  IconUser,
-  IconX,
-} from "@/components/icons";
+  EMPTY_PERSON_FORM,
+  PersonFormFields,
+  personFormFromPerson,
+  personFormToColumns,
+  personHasDetails,
+  validatePersonForm,
+  type PersonFormValues,
+} from "@/components/PersonFormFields";
+import { IconCheck, IconCopy, IconPlus, IconX } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { FormActions } from "@/components/ui/form-actions";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
-import {
-  buildDeathAnniversary,
-  buildPersonDateColumns,
-  EMPTY_CALENDAR_DATE,
-  EMPTY_LUNAR_CALENDAR_DATE,
-  loadCalendarDateValue,
-  type CalendarDateValue,
-} from "@/lib/personDates";
 import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { createPerson, getPerson } from "@/lib/queries/persons";
-import {
-  PersonAddressCard,
-  EMPTY_PERSON_ADDRESS,
-} from "@/components/PersonAddressCard";
+import { EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
 import {
   savePersonAddress,
   type PersonAddressInput,
 } from "@/lib/queries/personAddresses";
 
-import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 interface NewPersonFormProps {
   clanId: string;
@@ -85,21 +67,9 @@ export function NewPersonForm({
   });
   const isCopy = !!fromId;
 
-  const [fullName, setFullName] = useState("");
-  const [gender, setGender] = useState<"M" | "F">("M");
-  const [isLiving, setIsLiving] = useState(true);
-  const [isRoot, setIsRoot] = useState(false);
-  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
-  const [death, setDeath] = useState<CalendarDateValue>(
-    EMPTY_LUNAR_CALENDAR_DATE,
-  );
-  const [birthPlace, setBirthPlace] = useState("");
-  const [burialPlace, setBurialPlace] = useState("");
-  const [courtesyName, setCourtesyName] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [posthumousName, setPosthumousName] = useState("");
-  const [bio, setBio] = useState("");
-  const [lifespanYears, setLifespanYears] = useState<string>("");
+  const [values, setValues] = useState<PersonFormValues>(EMPTY_PERSON_FORM);
+  const patch = (p: Partial<PersonFormValues>) =>
+    setValues((v) => ({ ...v, ...p }));
   const [formError, setFormError] = useState<string | null>(null);
   // Track whether prefill ran once so re-renders don't clobber user edits
   // if the source query refetches.
@@ -117,91 +87,24 @@ export function NewPersonForm({
 
   useEffect(() => {
     if (!source || prefilled) return;
-    setFullName(source.full_name);
-    setGender(source.gender);
-    setIsLiving(source.is_living);
-    // Don't auto-mark a copy as Thuỷ tổ even if the source is — usually
-    // a duplicate root is unintended. User can re-tick if needed.
-    setIsRoot(false);
-    setBirth(
-      loadCalendarDateValue({
-        solarDate: source.birth_date,
-        solarPrecision: source.birth_date_precision,
-        lunarYear: source.birth_lunar_year,
-        lunarMonth: source.birth_lunar_month,
-        lunarDay: source.birth_lunar_day,
-      }),
-    );
-    setDeath(
-      loadCalendarDateValue(
-        {
-          solarDate: source.death_date,
-          solarPrecision: source.death_date_precision,
-          lunarYear: source.death_lunar_year,
-          lunarMonth: source.death_lunar_month,
-          lunarDay: source.death_lunar_day,
-        },
-        true,
-      ),
-    );
-    setBirthPlace(source.birth_place ?? "");
-    setBurialPlace(source.burial_place ?? "");
-    setCourtesyName(source.courtesy_name ?? "");
-    setNickname(source.nickname ?? "");
-    setPosthumousName(source.posthumous_name ?? "");
-    setBio(source.bio ?? "");
-    // Reveal optional fields if the source had any of them set —
-    // hiding prefilled data behind a collapsed section would be
-    // misleading.
-    if (
-      source.courtesy_name ||
-      source.nickname ||
-      source.posthumous_name ||
-      source.birth_place ||
-      source.burial_place ||
-      source.bio ||
-      source.death_date
-    ) {
-      setShowOptional(true);
-    }
+    // Không tự đánh dấu bản sao là Thuỷ tổ (thường là ngoài ý muốn); hai ô chỉ có
+    // ở form Sửa cũng không sao chép.
+    setValues({
+      ...personFormFromPerson(source),
+      isRoot: false,
+      todoExcluded: false,
+      birthOrder: "",
+    });
+    // Nguồn đã có dữ liệu ở card "Chi tiết bổ sung" thì mở sẵn — giấu dữ liệu đã điền là gây hiểu lầm.
+    if (personHasDetails(source)) setShowOptional(true);
     setPrefilled(true);
   }, [source, prefilled]);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const birthCols = buildPersonDateColumns(birth);
-      const deathCols = buildPersonDateColumns(death);
-      const anniv = buildDeathAnniversary(death);
       const created = await createPerson({
         clan_id: clanId,
-        full_name: fullName.trim(),
-        gender,
-        is_living: isLiving,
-        is_root: isRoot,
-        birth_date: birthCols.solar_date,
-        birth_date_precision: birthCols.solar_precision,
-        death_date: deathCols.solar_date,
-        death_date_precision: deathCols.solar_precision,
-        birth_lunar_year: birthCols.lunar_year,
-        birth_lunar_month: birthCols.lunar_month,
-        birth_lunar_day: birthCols.lunar_day,
-        birth_lunar_is_leap: birthCols.lunar_is_leap,
-        death_lunar_year: deathCols.lunar_year,
-        death_lunar_month: deathCols.lunar_month,
-        death_lunar_day: deathCols.lunar_day,
-        death_lunar_is_leap: deathCols.lunar_is_leap,
-        death_anniv_lunar_month: anniv.death_anniv_lunar_month,
-        death_anniv_lunar_day: anniv.death_anniv_lunar_day,
-        death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
-        birth_place: birthPlace.trim() || null,
-        burial_place: burialPlace.trim() || null,
-        courtesy_name: courtesyName.trim() || null,
-        nickname: nickname.trim() || null,
-        posthumous_name: posthumousName.trim() || null,
-        bio: bio.trim() || null,
-        lifespan_years: lifespanYears.trim()
-          ? Math.max(0, Math.min(150, Math.floor(Number(lifespanYears))))
-          : null,
+        ...personFormToColumns(values),
       });
       // Nơi ở (tuỳ chọn): lỗi ở đây không được làm mất người vừa tạo.
       try {
@@ -216,23 +119,14 @@ export function NewPersonForm({
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId);
       track("person_added", { copy: isCopy });
-      const savedName = fullName.trim();
+      const savedName = values.fullName.trim();
       if (andContinueRef.current) {
         andContinueRef.current = false;
         // Reset the form for the next entry. Keep `isRoot` cleared and
         // gender at the previous choice — a user batch-entering
         // siblings usually keeps gender steady.
-        setFullName("");
-        setCourtesyName("");
-        setNickname("");
-        setPosthumousName("");
-        setBirth(EMPTY_CALENDAR_DATE);
-        setDeath(EMPTY_LUNAR_CALENDAR_DATE);
-        setIsLiving(true);
-        setIsRoot(false);
-        setBirthPlace("");
-        setBurialPlace("");
-        setBio("");
+        // Giữ giới tính vừa chọn: nhập hàng loạt anh chị em thường cùng giới.
+        setValues((v) => ({ ...EMPTY_PERSON_FORM, gender: v.gender }));
         setAddress(EMPTY_PERSON_ADDRESS);
         setFormError(null);
         toast.success(t`Đã thêm. Tiếp tục…`, { description: savedName });
@@ -254,11 +148,10 @@ export function NewPersonForm({
   function handleSubmit(e: React.FormEvent, andContinue: boolean) {
     e.preventDefault();
     setFormError(null);
-    if (!fullName.trim()) return;
+    if (!values.fullName.trim()) return;
     try {
       // Pre-validate so the user sees a clear message before we round-trip
-      buildPersonDateColumns(birth);
-      buildPersonDateColumns(death);
+      validatePersonForm(values);
     } catch (err) {
       setFormError((err as Error).message);
       return;
@@ -279,250 +172,14 @@ export function NewPersonForm({
       )}
 
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="full_name" required>
-            {t`Họ và tên`}
-          </Label>
-          <Input
-            icon={<IconUser />}
-            id="full_name"
-            data-testid="person-name-input"
-            required
-            autoFocus
-            maxLength={200}
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder={t`Vd: Nguyễn Văn A`}
-          />
-        </div>
-
-        <fieldset className="space-y-3">
-          <legend className="text-base font-medium mb-2">{t`Giới tính`}</legend>
-          <div className="flex gap-6">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                name="gender"
-                value="M"
-                checked={gender === "M"}
-                onChange={() => setGender("M")}
-                className="h-4 w-4 accent-primary"
-              />
-              <span>{t`Nam`}</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                name="gender"
-                value="F"
-                checked={gender === "F"}
-                onChange={() => setGender("F")}
-                className="h-4 w-4 accent-primary"
-              />
-              <span>{t`Nữ`}</span>
-            </label>
-          </div>
-        </fieldset>
-
-        <CalendarDateInput
-          label={t`Ngày sinh`}
-          idPrefix="birth"
-          value={birth}
-          onChange={setBirth}
-          helperText={t`Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
+        <PersonFormFields
+          mode="create"
+          values={values}
+          onChange={patch}
+          detailsOpen={showOptional}
+          address={address}
+          onAddressChange={setAddress}
         />
-
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={!isLiving}
-            onChange={(e) => setIsLiving(!e.target.checked)}
-            className="h-5 w-5 accent-primary shrink-0"
-          />
-          <span>{t`Đã mất`}</span>
-        </label>
-
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            data-testid="person-is-root-checkbox"
-            checked={isRoot}
-            onChange={(e) => setIsRoot(e.target.checked)}
-            className="mt-1 h-5 w-5 accent-primary shrink-0"
-          />
-          <span>
-            <span className="font-medium">{t`Thuỷ tổ`}</span>
-            <span className="block text-sm text-muted-foreground">
-              <Trans>
-                <Trans>
-                  <Trans>
-                    Đánh dấu khi đây là gốc của dòng họ (đời 1). Có thể có nhiều
-                    Thuỷ tổ nếu nhiều chi tách lập.
-                  </Trans>
-                </Trans>
-              </Trans>
-            </span>
-          </span>
-        </label>
-
-        {!showOptional ? (
-          <button
-            type="button"
-            data-testid="show-optional-fields"
-            onClick={() => setShowOptional(true)}
-            className="w-full text-left rounded-md border border-dashed bg-muted/30 px-4 py-3 hover:bg-muted/60 hover:border-primary transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <IconPlus className="h-5 w-5 mt-0.5 text-primary shrink-0" />
-              <div className="min-w-0">
-                <div className="font-medium text-foreground">
-                  {t`Thêm chi tiết khác`}
-                </div>
-                <div className="text-sm text-muted-foreground mt-0.5">
-                  <Trans>
-                    <Trans>
-                      <Trans>
-                        Bấm để nhập các thông tin tuỳ chọn nếu bạn có: tên tự,
-                        tên húy, tên thụy, ngày mất, nơi sinh, nơi an táng, tiểu
-                        sử. Bỏ qua nếu chưa cần — vẫn lưu được người mới.
-                      </Trans>
-                    </Trans>
-                  </Trans>
-                </div>
-              </div>
-            </div>
-          </button>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b pb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                {t`Chi tiết bổ sung`}
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowOptional(false)}
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <IconChevronUp className="h-3.5 w-3.5" />
-                {t`Thu gọn`}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="courtesy_name">{t`Tên tự`}</Label>
-                <Input
-                  icon={<IconScroll />}
-                  id="courtesy_name"
-                  maxLength={100}
-                  value={courtesyName}
-                  onChange={(e) => setCourtesyName(e.target.value)}
-                  placeholder={t`(tuỳ chọn)`}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="nickname">{t`Tên húy / biệt hiệu`}</Label>
-                <Input
-                  icon={<IconScroll />}
-                  id="nickname"
-                  maxLength={100}
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder={t`(tuỳ chọn)`}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="posthumous_name">{t`Tên thụy`}</Label>
-                <Input
-                  icon={<IconScroll />}
-                  id="posthumous_name"
-                  maxLength={100}
-                  value={posthumousName}
-                  onChange={(e) => setPosthumousName(e.target.value)}
-                  placeholder={t`(tuỳ chọn)`}
-                />
-              </div>
-            </div>
-
-            <CalendarDateInput
-              label={t`Ngày mất (nếu đã mất)`}
-              idPrefix="death"
-              value={death}
-              onChange={(next) => {
-                setDeath(next);
-                if (next.parts.year || next.parts.month || next.parts.day)
-                  setIsLiving(false);
-              }}
-              helperText={t`Để trống nếu còn sống. Ưu tiên ghi ngày âm — chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
-            />
-
-            <div className="space-y-2">
-              <Label htmlFor="birth_place">{t`Nơi sinh`}</Label>
-              <Input
-                icon={<IconMapPin />}
-                id="birth_place"
-                maxLength={200}
-                value={birthPlace}
-                onChange={(e) => setBirthPlace(e.target.value)}
-                placeholder={t`(tuỳ chọn)`}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="burial_place">{t`Nơi an táng`}</Label>
-              <Input
-                icon={<IconGrave />}
-                id="burial_place"
-                maxLength={200}
-                value={burialPlace}
-                onChange={(e) => setBurialPlace(e.target.value)}
-                placeholder={t`(tuỳ chọn)`}
-              />
-            </div>
-
-            {!isLiving && (
-              <div className="space-y-2">
-                <Label htmlFor="lifespan_years">{t`Tuổi thọ`}</Label>
-                <Input
-                  icon={<IconCalendar />}
-                  id="lifespan_years"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={150}
-                  value={lifespanYears}
-                  onChange={(e) => setLifespanYears(e.target.value)}
-                  placeholder="VD: 82"
-                  className="max-w-[10rem]"
-                />
-                <p className="text-sm text-muted-foreground">
-                  <Trans>
-                    <Trans>
-                      <Trans>
-                        Để trống thì hệ thống tự tính từ năm sinh – năm mất. Từ
-                        60 tuổi hiển thị "hưởng thọ", dưới 60 là "hưởng dương".
-                      </Trans>
-                    </Trans>
-                  </Trans>
-                </p>
-              </div>
-            )}
-
-            <Textarea
-              id="bio"
-              label={t`Tiểu sử`}
-              icon={<IconScroll />}
-              rows={4}
-              maxLength={5000}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder={t`(tuỳ chọn)`}
-              className="text-sm"
-            />
-          </div>
-        )}
-
-        <PersonAddressCard value={address} onChange={setAddress} />
 
         {(formError || mutation.error) && (
           <Alert variant="destructive">
@@ -541,7 +198,7 @@ export function NewPersonForm({
             <Button
               type="button"
               variant="outline"
-              disabled={mutation.isPending || !fullName.trim()}
+              disabled={mutation.isPending || !values.fullName.trim()}
               onClick={(e) => handleSubmit(e, true)}
               title={t`Lưu rồi tiếp tục thêm người khác (giữ giới tính)`}
             >
@@ -559,7 +216,7 @@ export function NewPersonForm({
             type="submit"
             variant="default"
             data-testid="person-submit-button"
-            disabled={mutation.isPending || !fullName.trim()}
+            disabled={mutation.isPending || !values.fullName.trim()}
           >
             {mutation.isPending && !andContinueRef.current ? (
               t`Đang lưu…`

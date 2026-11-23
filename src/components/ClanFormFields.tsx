@@ -191,66 +191,44 @@ const DISPLAY_OPTIONS = lazyMessages([
 ]);
 
 /** Chế độ hiển thị, phần người ngoài được xem, đánh số đời, tuỳ chọn hiển thị. */
-export function ClanDisplayFields({ value, onChange, disabled }: FieldsProps) {
+export function ClanDisplayFields({
+  value,
+  onChange,
+  disabled,
+  part = "all",
+}: FieldsProps & {
+  /** `visibility`: chỉ Riêng tư/Công khai (form tạo đặt lên nhóm chính); `rest`: phần còn lại. */
+  part?: "all" | "visibility" | "rest";
+}) {
   const set = (patch: Partial<ClanFormValues>) =>
     onChange({ ...value, ...patch });
   const isPrivate = value.visibility === "private";
   return (
     <div className="space-y-5">
-      <fieldset className="space-y-3" disabled={disabled}>
-        <legend className="text-base font-medium mb-2">{t`Chế độ hiển thị`}</legend>
-        {(
-          [
-            {
-              v: "private",
-              label: t`Riêng tư`,
-              desc: t`Chỉ thành viên được mời xem được.`,
-            },
-            {
-              v: "public",
-              label: t`Công khai`,
-              desc: t`Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn thông tin nhạy cảm.`,
-            },
-          ] as const
-        ).map((o) => (
-          <label key={o.v} className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="radio"
-              name="visibility"
-              checked={value.visibility === o.v}
-              onChange={() => set({ visibility: o.v })}
-              className="mt-1.5 h-4 w-4 accent-primary"
-            />
-            <div>
-              <p className="font-medium">{o.label}</p>
-              <p className="text-sm text-muted-foreground">{o.desc}</p>
-            </div>
-          </label>
-        ))}
-      </fieldset>
-
-      <fieldset className="space-y-3" disabled={disabled}>
-        <legend className="text-base font-medium mb-1">{t`Người xem công khai được xem`}</legend>
-        <p className="text-sm text-muted-foreground">
-          {t`Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem được.`}
-          {isPrivate ? t` Cần chọn chế độ Công khai ở trên trước.` : ""}
-        </p>
-        <div
-          className={
-            isPrivate ? "space-y-3 opacity-50 pointer-events-none" : "space-y-3"
-          }
-        >
-          {PUBLIC_OPTIONS.map((o) => (
-            <label
-              key={o.key}
-              className="flex items-start gap-3 cursor-pointer"
-            >
+      {part !== "rest" && (
+        <fieldset className="space-y-3" disabled={disabled}>
+          <legend className="text-base font-medium mb-2">{t`Chế độ hiển thị`}</legend>
+          {(
+            [
+              {
+                v: "private",
+                label: t`Riêng tư`,
+                desc: t`Chỉ thành viên được mời xem được.`,
+              },
+              {
+                v: "public",
+                label: t`Công khai`,
+                desc: t`Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn thông tin nhạy cảm.`,
+              },
+            ] as const
+          ).map((o) => (
+            <label key={o.v} className="flex items-start gap-3 cursor-pointer">
               <input
-                type="checkbox"
-                checked={value[o.key]}
-                disabled={isPrivate}
-                onChange={(e) => set({ [o.key]: e.target.checked })}
-                className="mt-1 h-5 w-5 accent-primary shrink-0"
+                type="radio"
+                name="visibility"
+                checked={value.visibility === o.v}
+                onChange={() => set({ visibility: o.v })}
+                className="mt-1.5 h-4 w-4 accent-primary"
               />
               <div>
                 <p className="font-medium">{o.label}</p>
@@ -258,26 +236,67 @@ export function ClanDisplayFields({ value, onChange, disabled }: FieldsProps) {
               </div>
             </label>
           ))}
-        </div>
-      </fieldset>
+        </fieldset>
+      )}
 
-      <fieldset className="space-y-3" disabled={disabled}>
-        <legend className="text-base font-medium mb-1">{t`Cách hiển thị`}</legend>
-        {DISPLAY_OPTIONS.map((o) => (
-          <label key={o.key} className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={value[o.key]}
-              onChange={(e) => set({ [o.key]: e.target.checked })}
-              className="mt-1 h-5 w-5 accent-primary shrink-0"
-            />
-            <div>
-              <p className="font-medium">{o.label}</p>
-              <p className="text-sm text-muted-foreground">{o.desc}</p>
+      {part !== "visibility" && (
+        <>
+          <fieldset className="space-y-3" disabled={disabled}>
+            <legend className="text-base font-medium mb-1">{t`Người xem công khai được xem`}</legend>
+            <p className="text-sm text-muted-foreground">
+              {t`Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem được.`}
+              {isPrivate ? t` Cần chọn chế độ Công khai ở trên trước.` : ""}
+            </p>
+            <div
+              className={
+                isPrivate
+                  ? "space-y-3 opacity-50 pointer-events-none"
+                  : "space-y-3"
+              }
+            >
+              {PUBLIC_OPTIONS.map((o) => (
+                <label
+                  key={o.key}
+                  className="flex items-start gap-3 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={value[o.key]}
+                    disabled={isPrivate}
+                    onChange={(e) => set({ [o.key]: e.target.checked })}
+                    className="mt-1 h-5 w-5 accent-primary shrink-0"
+                  />
+                  <div>
+                    <p className="font-medium">{o.label}</p>
+                    <p className="text-sm text-muted-foreground">{o.desc}</p>
+                  </div>
+                </label>
+              ))}
             </div>
-          </label>
-        ))}
-      </fieldset>
+          </fieldset>
+
+          <fieldset className="space-y-3" disabled={disabled}>
+            <legend className="text-base font-medium mb-1">{t`Cách hiển thị`}</legend>
+            {DISPLAY_OPTIONS.map((o) => (
+              <label
+                key={o.key}
+                className="flex items-start gap-3 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={value[o.key]}
+                  onChange={(e) => set({ [o.key]: e.target.checked })}
+                  className="mt-1 h-5 w-5 accent-primary shrink-0"
+                />
+                <div>
+                  <p className="font-medium">{o.label}</p>
+                  <p className="text-sm text-muted-foreground">{o.desc}</p>
+                </div>
+              </label>
+            ))}
+          </fieldset>
+        </>
+      )}
     </div>
   );
 }

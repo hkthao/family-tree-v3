@@ -7,7 +7,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import {
   TimelineFields,
   draftsToRows,
@@ -16,21 +15,16 @@ import {
 } from "@/components/TimelineFields";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
-import { CalendarDateInput } from "@/components/CalendarDateInput";
 import {
-  IconCalendar,
-  IconCheck,
-  IconChevronUp,
-  IconClock,
-  IconGrave,
-  IconMapPin,
-  IconPencil,
-  IconPlus,
-  IconScroll,
-  IconUndo,
-  IconUser,
-  IconX,
-} from "@/components/icons";
+  EMPTY_PERSON_FORM,
+  PersonFormFields,
+  personFormFromPerson,
+  personFormToColumns,
+  personHasDetails,
+  validatePersonForm,
+  type PersonFormValues,
+} from "@/components/PersonFormFields";
+import { IconCheck, IconPencil, IconUndo, IconX } from "@/components/icons";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,9 +32,7 @@ import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 import { PersonRelationsQuick } from "@/components/PersonRelationsQuick";
 import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import {
   canEditClan,
@@ -50,20 +42,10 @@ import {
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
-import {
-  buildDeathAnniversary,
-  buildPersonDateColumns,
-  EMPTY_CALENDAR_DATE,
-  loadCalendarDateValue,
-  type CalendarDateValue,
-} from "@/lib/personDates";
 import { queryKeys } from "@/lib/queries/keys";
 import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
-import {
-  PersonAddressCard,
-  EMPTY_PERSON_ADDRESS,
-} from "@/components/PersonAddressCard";
+import { EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
 import {
   getPersonAddress,
   savePersonAddress,
@@ -147,21 +129,9 @@ export function EditPersonForm({
     setAddressTouched(false);
   }, [addressLoaded, savedAddress]);
 
-  const [fullName, setFullName] = useState("");
-  const [gender, setGender] = useState<"M" | "F">("M");
-  const [isLiving, setIsLiving] = useState(true);
-  const [isRoot, setIsRoot] = useState(false);
-  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
-  const [death, setDeath] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
-  const [birthPlace, setBirthPlace] = useState("");
-  const [burialPlace, setBurialPlace] = useState("");
-  const [courtesyName, setCourtesyName] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [posthumousName, setPosthumousName] = useState("");
-  const [bio, setBio] = useState("");
-  const [todoExcluded, setTodoExcluded] = useState(false);
-  const [birthOrder, setBirthOrder] = useState<string>("");
-  const [lifespanYears, setLifespanYears] = useState<string>("");
+  const [values, setValues] = useState<PersonFormValues>(EMPTY_PERSON_FORM);
+  const patch = (p: Partial<PersonFormValues>) =>
+    setValues((v) => ({ ...v, ...p }));
   const [formError, setFormError] = useState<string | null>(null);
   // Progressive disclosure for the optional fields. Auto-opens when
   // any of them is already filled so existing data isn't hidden after
@@ -172,23 +142,7 @@ export function EditPersonForm({
   // so a network drop / accidental tab close doesn't nuke half an
   // hour of work. Restoration is opt-in via the banner so the user
   // isn't surprised by stale values.
-  const formState = {
-    fullName,
-    gender,
-    isLiving,
-    isRoot,
-    birth,
-    death,
-    birthPlace,
-    burialPlace,
-    courtesyName,
-    nickname,
-    posthumousName,
-    bio,
-    todoExcluded,
-    birthOrder,
-    lifespanYears,
-  };
+  const formState = values;
   const { existing: existingDraft, clearDraft } = useFormDraft({
     key: `edit-person:${personId}`,
     current: formState,
@@ -200,21 +154,7 @@ export function EditPersonForm({
   function restoreDraft() {
     if (!existingDraft) return;
     const d = existingDraft.data;
-    setFullName(d.fullName);
-    setGender(d.gender);
-    setIsLiving(d.isLiving);
-    setIsRoot(d.isRoot);
-    setBirth(d.birth);
-    setDeath(d.death);
-    setBirthPlace(d.birthPlace);
-    setBurialPlace(d.burialPlace);
-    setCourtesyName(d.courtesyName);
-    setNickname(d.nickname);
-    setPosthumousName(d.posthumousName);
-    setBio(d.bio);
-    setTodoExcluded(d.todoExcluded);
-    setBirthOrder(d.birthOrder);
-    setLifespanYears(d.lifespanYears ?? "");
+    setValues({ ...EMPTY_PERSON_FORM, ...d });
     setDraftDismissed(true);
     clearDraft();
   }
@@ -226,62 +166,8 @@ export function EditPersonForm({
 
   useEffect(() => {
     if (!person) return;
-    setFullName(person.full_name);
-    setGender(person.gender);
-    setIsLiving(person.is_living);
-    setIsRoot(person.is_root);
-    setBirth(
-      loadCalendarDateValue({
-        solarDate: person.birth_date,
-        solarPrecision: person.birth_date_precision,
-        lunarYear: person.birth_lunar_year,
-        lunarMonth: person.birth_lunar_month,
-        lunarDay: person.birth_lunar_day,
-      }),
-    );
-    setDeath(
-      loadCalendarDateValue(
-        {
-          solarDate: person.death_date,
-          solarPrecision: person.death_date_precision,
-          lunarYear: person.death_lunar_year,
-          lunarMonth: person.death_lunar_month,
-          lunarDay: person.death_lunar_day,
-        },
-        // Ưu tiên nhập âm lịch cho ngày mất (giỗ thường chỉ có
-        // tháng/ngày âm, không có năm).
-        true,
-      ),
-    );
-    setBirthPlace(person.birth_place ?? "");
-    setBurialPlace(person.burial_place ?? "");
-    setCourtesyName(person.courtesy_name ?? "");
-    setNickname(person.nickname ?? "");
-    setPosthumousName(person.posthumous_name ?? "");
-    setBio(person.bio ?? "");
-    setTodoExcluded(person.todo_excluded ?? false);
-    setBirthOrder(person.birth_order != null ? String(person.birth_order) : "");
-    setLifespanYears(
-      person.lifespan_years != null ? String(person.lifespan_years) : "",
-    );
-    if (
-      person.courtesy_name ||
-      person.nickname ||
-      person.posthumous_name ||
-      person.birth_place ||
-      person.burial_place ||
-      person.bio ||
-      person.death_date ||
-      // Người chỉ có giỗ âm (tháng/ngày, không năm) → death_date NULL
-      // nhưng vẫn có ngày mất đã ghi.
-      person.death_lunar_month != null ||
-      person.death_anniv_lunar_month != null ||
-      person.birth_order != null ||
-      person.lifespan_years != null ||
-      person.todo_excluded
-    ) {
-      setShowOptional(true);
-    }
+    setValues(personFormFromPerson(person));
+    if (personHasDetails(person)) setShowOptional(true);
   }, [person]);
 
   // Nạp dòng thời gian một lần: mốc đã lưu, không có thì dựng tạm từ tiểu sử.
@@ -309,42 +195,12 @@ export function EditPersonForm({
       // Kiểm tra dòng thời gian trước khi ghi bất cứ gì.
       const timelineRows =
         isHistorical && timeline !== null ? draftsToRows(timeline) : null;
-      const birthCols = buildPersonDateColumns(birth);
-      const deathCols = buildPersonDateColumns(death);
-      const anniv = buildDeathAnniversary(death);
       return updatePerson(personId, {
-        full_name: fullName.trim(),
-        gender,
-        is_living: isLiving,
-        is_root: isRoot,
-        todo_excluded: todoExcluded,
-        birth_order: birthOrder.trim()
-          ? Math.max(1, Math.floor(Number(birthOrder)))
+        ...personFormToColumns(values),
+        todo_excluded: values.todoExcluded,
+        birth_order: values.birthOrder.trim()
+          ? Math.max(1, Math.floor(Number(values.birthOrder)))
           : null,
-        lifespan_years: lifespanYears.trim()
-          ? Math.max(0, Math.min(150, Math.floor(Number(lifespanYears))))
-          : null,
-        birth_date: birthCols.solar_date,
-        birth_date_precision: birthCols.solar_precision,
-        death_date: deathCols.solar_date,
-        death_date_precision: deathCols.solar_precision,
-        birth_lunar_year: birthCols.lunar_year,
-        birth_lunar_month: birthCols.lunar_month,
-        birth_lunar_day: birthCols.lunar_day,
-        birth_lunar_is_leap: birthCols.lunar_is_leap,
-        death_lunar_year: deathCols.lunar_year,
-        death_lunar_month: deathCols.lunar_month,
-        death_lunar_day: deathCols.lunar_day,
-        death_lunar_is_leap: deathCols.lunar_is_leap,
-        death_anniv_lunar_month: anniv.death_anniv_lunar_month,
-        death_anniv_lunar_day: anniv.death_anniv_lunar_day,
-        death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
-        birth_place: birthPlace || null,
-        burial_place: burialPlace || null,
-        courtesy_name: courtesyName.trim() || null,
-        nickname: nickname.trim() || null,
-        posthumous_name: posthumousName.trim() || null,
-        bio: bio || null,
       }).then(async (res) => {
         if (timelineRows) {
           await replacePersonTimeline(personId, clanId, timelineRows);
@@ -386,10 +242,9 @@ export function EditPersonForm({
       onSubmit={(e) => {
         e.preventDefault();
         setFormError(null);
-        if (!fullName.trim()) return;
+        if (!values.fullName.trim()) return;
         try {
-          buildPersonDateColumns(birth);
-          buildPersonDateColumns(death);
+          validatePersonForm(values);
         } catch (err) {
           setFormError((err as Error).message);
           return;
@@ -405,8 +260,8 @@ export function EditPersonForm({
               <p className="text-sm font-medium">{t`Có bản nháp chưa lưu`}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 <Trans>
-                {formatDraftAge(existingDraft.savedAt)} · Bạn đã sửa hồ sơ này
-                nhưng chưa bấm Lưu lần trước.
+                  {formatDraftAge(existingDraft.savedAt)} · Bạn đã sửa hồ sơ này
+                  nhưng chưa bấm Lưu lần trước.
                 </Trans>
               </p>
             </div>
@@ -434,294 +289,45 @@ export function EditPersonForm({
           </div>
         )}
 
-        <div
-          className={`space-y-2 ${readOnly ? "[&_button]:hidden [&_p]:hidden" : ""}`}
-        >
-          <Label>{t`Ảnh đại diện`}</Label>
-          <PhotoUploadField
-            clanId={clanId}
-            personId={personId}
-            gender={gender}
-            photoPath={person.photo_path ?? null}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="full_name" required>
-            {t`Họ và tên`}
-          </Label>
-          <Input
-            icon={<IconUser />}
-            id="full_name"
-            data-testid="edit-person-name-input"
-            required
-            maxLength={200}
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-        </div>
-
-        <fieldset className="space-y-3">
-          <legend className="text-base font-medium mb-2">{t`Giới tính`}</legend>
-          <div className="flex gap-6">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                checked={gender === "M"}
-                onChange={() => setGender("M")}
-                className="h-4 w-4 accent-primary"
-              />
-              <span>{t`Nam`}</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                checked={gender === "F"}
-                onChange={() => setGender("F")}
-                className="h-4 w-4 accent-primary"
-              />
-              <span>{t`Nữ`}</span>
-            </label>
-          </div>
-        </fieldset>
-
-        <CalendarDateInput
-          label={t`Ngày sinh`}
-          idPrefix="birth"
-          hideHelp={readOnly}
-          value={birth}
-          onChange={setBirth}
-          helperText={t`Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu bia mộ ghi ngày âm.`}
-        />
-
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={!isLiving}
-            onChange={(e) => setIsLiving(!e.target.checked)}
-            className="h-5 w-5 accent-primary shrink-0"
-          />
-          <span>{t`Đã mất`}</span>
-        </label>
-
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isRoot}
-            onChange={(e) => setIsRoot(e.target.checked)}
-            className="mt-1 h-5 w-5 accent-primary shrink-0"
-          />
-          <span>
-            <span className="font-medium">{t`Thuỷ tổ`}</span>
-            <span className="block text-sm text-muted-foreground">
-              <Trans>
-              Khi bật, đời = 1; trigger tự cập nhật đời cho con cháu.
-              </Trans>
-            </span>
-          </span>
-        </label>
-
-        {!showOptional ? (
-          <button
-            type="button"
-            onClick={() => setShowOptional(true)}
-            className="w-full text-left rounded-md border border-dashed bg-muted/30 px-4 py-3 hover:bg-muted/60 hover:border-primary transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <IconPlus className="h-5 w-5 mt-0.5 text-primary shrink-0" />
-              <div className="min-w-0">
-                <div className="font-medium text-foreground">
-                  {t`Sửa chi tiết khác`}
-                </div>
-                <div className="text-sm text-muted-foreground mt-0.5">
-                  <Trans>
-                    <Trans>
-                      <Trans>
-                        Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy, nơi
-                        sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần.
-                      </Trans>
-                    </Trans>
-                  </Trans>
-                </div>
-              </div>
-            </div>
-          </button>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b pb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                {t`Chi tiết bổ sung`}
-              </span>
-              <button
-                type="button"
-                data-edit-only
-                onClick={() => setShowOptional(false)}
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <IconChevronUp className="h-3.5 w-3.5" />
-                {t`Thu gọn`}
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="courtesy_name">{t`Tên tự`}</Label>
-              <Input
-                icon={<IconScroll />}
-                id="courtesy_name"
-                maxLength={100}
-                value={courtesyName}
-                onChange={(e) => setCourtesyName(e.target.value)}
-                placeholder={t`Tên đặt khi trưởng thành, dùng nơi trang trọng`}
+        <PersonFormFields
+          mode="edit"
+          values={values}
+          onChange={patch}
+          readOnly={readOnly}
+          detailsOpen={showOptional}
+          photoSlot={
+            <div
+              className={`space-y-2 ${readOnly ? "[&_button]:hidden [&_p]:hidden" : ""}`}
+            >
+              <Label>{t`Ảnh đại diện`}</Label>
+              <PhotoUploadField
+                clanId={clanId}
+                personId={personId}
+                gender={values.gender}
+                photoPath={person.photo_path ?? null}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="nickname">{t`Tên húy`}</Label>
-              <Input
-                icon={<IconScroll />}
-                id="nickname"
-                maxLength={100}
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder={t`Tên khai sinh, kiêng gọi sau khi mất`}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="posthumous_name">{t`Tên thụy`}</Label>
-              <Input
-                icon={<IconScroll />}
-                id="posthumous_name"
-                maxLength={100}
-                value={posthumousName}
-                onChange={(e) => setPosthumousName(e.target.value)}
-                placeholder={t`Tên đặt khi mất, dùng trong văn cúng`}
-              />
-            </div>
-
-            <CalendarDateInput
-              label={t`Ngày mất (nếu đã mất)`}
-              idPrefix="death"
-              hideHelp={readOnly}
-              value={death}
-              onChange={(next) => {
-                setDeath(next);
-                if (next.parts.year || next.parts.month || next.parts.day)
-                  setIsLiving(false);
-              }}
-              helperText={t`Ưu tiên ghi ngày âm. Chỉ cần nhớ ngày giỗ là đủ — điền tháng/ngày âm, bỏ trống năm cũng được.`}
-              referenceYear={
-                birth.parts.year && /^\d+$/.test(birth.parts.year)
-                  ? Number(birth.parts.year) + 70
-                  : undefined
-              }
-            />
-
-            {!isLiving && (
-              <div className="space-y-2">
-                <Label htmlFor="lifespan_years">{t`Tuổi thọ`}</Label>
-                <Input
-                  icon={<IconCalendar />}
-                  id="lifespan_years"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  max={150}
-                  placeholder="VD: 82"
-                  value={lifespanYears}
-                  onChange={(e) => setLifespanYears(e.target.value)}
-                  className="max-w-[10rem]"
-                />
+          }
+          timelineSlot={
+            isHistorical && timeline !== null ? (
+              <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  <Trans>
-                    <Trans>
-                      <Trans>
-                        Tự ghi tuổi thọ cho người đã mất. Để trống thì hệ thống
-                        tự tính từ năm sinh – năm mất (nếu có đủ). Từ 60 tuổi
-                        hiển thị "hưởng thọ", dưới 60 là "hưởng dương".
-                      </Trans>
-                    </Trans>
-                  </Trans>
+                  {t`Các mốc trong đời người, từ lúc sinh đến lúc mất. Mốc “Sinh” và “Mất” tự thêm từ ngày sinh, ngày mất.`}
                 </p>
+                <div className={readOnly ? "[&_button]:hidden" : ""}>
+                  <TimelineFields drafts={timeline} onChange={setTimeline} />
+                </div>
               </div>
-            )}
-
-            <BirthOrderPicker value={birthOrder} onChange={setBirthOrder} />
-
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={todoExcluded}
-                onChange={(e) => setTodoExcluded(e.target.checked)}
-                className="mt-1 h-5 w-5 accent-primary shrink-0"
-              />
-              <span>
-                <span className="font-medium">
-                  {t`Loại khỏi "Việc cần làm"`}
-                </span>
-                <span className="block text-sm text-muted-foreground">
-                  <Trans>
-                  Bật khi thông tin thiếu là <em>cố ý</em> hoặc không thể
-                  bổ sung (vd. thuỷ tổ không có cha mẹ, người mất tích không rõ
-                  năm sinh/mất). App sẽ không nhắc nữa.
-                  </Trans>
-                </span>
-              </span>
-            </label>
-
-            <div className="space-y-2">
-              <Label htmlFor="birth_place">{t`Nơi sinh`}</Label>
-              <Input
-                icon={<IconMapPin />}
-                id="birth_place"
-                value={birthPlace}
-                onChange={(e) => setBirthPlace(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="burial_place">{t`Nơi an táng`}</Label>
-              <Input
-                icon={<IconGrave />}
-                id="burial_place"
-                value={burialPlace}
-                onChange={(e) => setBurialPlace(e.target.value)}
-              />
-            </div>
-
-            <Textarea
-              id="bio"
-              label={t`Tiểu sử`}
-              icon={<IconScroll />}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-            />
-          </div>
-        )}
-
-        {isHistorical && timeline !== null && (
-          <div className="space-y-3">
-            <h3 className="inline-flex items-center gap-2 text-base font-semibold">
-              <IconClock className="h-5 w-5" />
-              {t`Dòng thời gian`}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {t`Các mốc trong đời người, từ lúc sinh đến lúc mất. Mốc “Sinh” và “Mất” tự thêm từ ngày sinh, ngày mất.`}
-            </p>
-            <div className={readOnly ? "[&_button]:hidden" : ""}>
-              <TimelineFields drafts={timeline} onChange={setTimeline} />
-            </div>
-          </div>
-        )}
-
-        {effectiveRole(clan) !== null && addressLoaded && (
-          <PersonAddressCard
-            value={address}
-            onChange={(next) => {
-              setAddress(next);
-              setAddressTouched(true);
-            }}
-          />
-        )}
+            ) : undefined
+          }
+          address={
+            effectiveRole(clan) !== null && addressLoaded ? address : undefined
+          }
+          onAddressChange={(next) => {
+            setAddress(next);
+            setAddressTouched(true);
+          }}
+        />
 
         {(formError || mutation.error) && (
           <Alert variant="destructive">
@@ -766,7 +372,7 @@ export function EditPersonForm({
             type="submit"
             variant="default"
             data-testid="edit-person-submit-button"
-            disabled={mutation.isPending || !fullName.trim()}
+            disabled={mutation.isPending || !values.fullName.trim()}
           >
             {mutation.isPending ? (
               t`Đang lưu…`
