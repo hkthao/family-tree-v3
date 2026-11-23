@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { OptionSelect } from "@/components/ui/select";
 import { useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
@@ -30,10 +31,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listCommunityClans, type ClanSummary } from "@/lib/queries/clans";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { track } from "@/lib/analytics";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
@@ -415,25 +412,15 @@ function ModeStep(props: ModeStepProps) {
           label (previous issue). */}
       <div className="space-y-3">
         <StepHeader number={3} title={t`Cách đề nghị`} />
-        <SegmentedControl
+        <OptionSelect
           ariaLabel={t`Cách đề nghị`}
-          className="w-full sm:w-auto"
-        >
-          <SegmentedButton
-            active={mode === "token"}
-            onClick={() => setMode("token")}
-            className="flex-1 sm:flex-none"
-          >
-            {t`Gửi mã mời`}
-          </SegmentedButton>
-          <SegmentedButton
-            active={mode === "direct"}
-            onClick={() => setMode("direct")}
-            className="flex-1 sm:flex-none"
-          >
-            {t`Tìm dòng họ công khai`}
-          </SegmentedButton>
-        </SegmentedControl>
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "token", label: t`Gửi mã mời` },
+            { value: "direct", label: t`Tìm dòng họ công khai` },
+          ]}
+        />
         <p className="text-xs text-muted-foreground">
           {mode === "token"
             ? t`Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư.`

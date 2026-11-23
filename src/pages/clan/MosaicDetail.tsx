@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { OptionSelect } from "@/components/ui/select";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -27,10 +28,6 @@ import {
   normalizeSlots,
   type MosaicVariant,
 } from "@/components/mosaic/jigsaw";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { PageHeader } from "@/components/PageHeader";
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
@@ -515,31 +512,17 @@ function AddTileForm({
       }}
     >
       {/* Nguồn ảnh: một nhóm chia đều một hàng (ba nút rời rớt dòng trên điện thoại). */}
-      <SegmentedControl ariaLabel={t`Nguồn ảnh`} className="flex">
-        {avatar && (
-          <SegmentedButton
-            active={mode === "avatar"}
-            onClick={() => setMode("avatar")}
-            className="flex-1 px-2"
-          >
-            {t`Avatar`}
-          </SegmentedButton>
-        )}
-        <SegmentedButton
-          active={mode === "file"}
-          onClick={() => setMode("file")}
-          className="flex-1 px-2"
-        >
-          {t`Tải ảnh lên`}
-        </SegmentedButton>
-        <SegmentedButton
-          active={mode === "url"}
-          onClick={() => setMode("url")}
-          className="flex-1 px-2"
-        >
-          {t`Dán link`}
-        </SegmentedButton>
-      </SegmentedControl>
+      <OptionSelect
+        label={t`Nguồn ảnh`}
+        ariaLabel={t`Nguồn ảnh`}
+        value={mode}
+        onChange={setMode}
+        options={[
+          ...(avatar ? [{ value: "avatar" as const, label: t`Avatar` }] : []),
+          { value: "file" as const, label: t`Tải ảnh lên` },
+          { value: "url" as const, label: t`Dán link` },
+        ]}
+      />
 
       {mode === "avatar" ? (
         <p className="text-xs text-muted-foreground">

@@ -4,38 +4,25 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
-import { CalendarDateInput } from "@/components/CalendarDateInput";
+import { OtherParentPicker, SOLO_VALUE } from "@/components/OtherParentPicker";
+import { ExistingPersonPicker } from "@/components/ExistingPersonPicker";
 import {
-  IconCheck,
-  IconSearch,
-  IconUser,
-  IconUserPlus,
-  IconUsers,
-  IconX,
-} from "@/components/icons";
+  EMPTY_PERSON_CORE,
+  PersonCoreFields,
+  personCoreToColumns,
+  validatePersonForm,
+  type PersonCoreValues,
+} from "@/components/PersonFormFields";
+import { OptionSelect } from "@/components/ui/select";
+import { IconCheck, IconUserPlus, IconX } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
-import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
-import {
-  buildDeathAnniversary,
-  buildPersonDateColumns,
-  EMPTY_CALENDAR_DATE,
-  EMPTY_LUNAR_CALENDAR_DATE,
-  type CalendarDateValue,
-} from "@/lib/personDates";
 import {
   addChildToFamily,
   assignPersonToFamily,
@@ -47,31 +34,8 @@ import { getKinshipIndex } from "@/lib/queries/kinship";
 import { getPerson } from "@/lib/queries/persons";
 import { matchesName } from "@/lib/unaccent";
 
-import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 const PICKER_CAP = 1000;
-const SOLO_VALUE = "__solo__";
-
-// Thứ tự vợ/chồng → "cả, hai, ba…" (khớp thứ tự spouse_order do query
-// trả về). Quá 10 thì rơi về "thứ N".
-const SPOUSE_ORDINALS = [
-  "cả",
-  "hai",
-  "ba",
-  "tư",
-  "năm",
-  "sáu",
-  "bảy",
-  "tám",
-  "chín",
-  "mười",
-];
-
-function spouseRankLabel(spouseGender: "M" | "F", index: number): string {
-  const noun = spouseGender === "F" ? t`vợ` : t`chồng`;
-  const ord = SPOUSE_ORDINALS[index] ?? t`thứ ${index + 1}`;
-  return `${noun} ${ord}`;
-}
 
 interface AddChildFormProps {
   clanId: string;
@@ -122,13 +86,9 @@ export function AddChildForm({
   }, [rels, otherParent, otherParentTouched]);
 
   const [mode, setMode] = useState<"new" | "existing">("new");
-  const [fullName, setFullName] = useState("");
-  const [gender, setGender] = useState<"M" | "F">("M");
-  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
-  const [death, setDeath] = useState<CalendarDateValue>(
-    EMPTY_LUNAR_CALENDAR_DATE,
-  );
-  const [isLiving, setIsLiving] = useState(true);
+  const [core, setCore] = useState<PersonCoreValues>(EMPTY_PERSON_CORE);
+  const patchCore = (p: Partial<PersonCoreValues>) =>
+    setCore((c) => ({ ...c, ...p }));
   const [birthOrder, setBirthOrder] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -182,33 +142,13 @@ export function AddChildForm({
         return { id: existingId };
       }
 
-      const birthCols = buildPersonDateColumns(birth);
-      const deathCols = buildPersonDateColumns(death);
-      const anniv = buildDeathAnniversary(death);
       return addChildToFamily({
         clanId,
         family_id: family.id,
-        full_name: fullName.trim(),
-        gender,
-        birth_date: birthCols.solar_date,
-        birth_date_precision: birthCols.solar_precision,
-        birth_lunar_year: birthCols.lunar_year,
-        birth_lunar_month: birthCols.lunar_month,
-        birth_lunar_day: birthCols.lunar_day,
-        birth_lunar_is_leap: birthCols.lunar_is_leap,
-        is_living: isLiving,
+        ...personCoreToColumns(core),
         birth_order: birthOrder.trim()
           ? Math.max(1, Math.floor(Number(birthOrder)))
           : null,
-        death_date: deathCols.solar_date,
-        death_date_precision: deathCols.solar_precision,
-        death_lunar_year: deathCols.lunar_year,
-        death_lunar_month: deathCols.lunar_month,
-        death_lunar_day: deathCols.lunar_day,
-        death_lunar_is_leap: deathCols.lunar_is_leap,
-        death_anniv_lunar_month: anniv.death_anniv_lunar_month,
-        death_anniv_lunar_day: anniv.death_anniv_lunar_day,
-        death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
       });
     },
     onSuccess: async () => {
@@ -217,7 +157,7 @@ export function AddChildForm({
         mode === "existing"
           ? (clanIndex?.byId.get(existingId ?? "")?.full_name ??
             "người đã chọn")
-          : fullName.trim();
+          : core.fullName.trim();
       toast.success(mode === "existing" ? t`Đã gắn làm con` : t`Đã thêm con`, {
         description: label,
       });
@@ -233,10 +173,9 @@ export function AddChildForm({
         e.preventDefault();
         setFormError(null);
         if (mode === "new") {
-          if (!fullName.trim()) return;
+          if (!core.fullName.trim()) return;
           try {
-            buildPersonDateColumns(birth);
-            buildPersonDateColumns(death);
+            validatePersonForm(core);
           } catch (err) {
             setFormError((err as Error).message);
             return;
@@ -251,239 +190,68 @@ export function AddChildForm({
       }}
       className="space-y-6"
     >
-      <SegmentedControl ariaLabel={t`Chế độ thêm con`} className="w-full">
-        <SegmentedButton
-          className="flex-1 px-3"
-          active={mode === "new"}
-          onClick={() => setMode("new")}
-        >
-          {t`Người mới`}
-        </SegmentedButton>
-        <SegmentedButton
-          className="flex-1 px-3"
-          active={mode === "existing"}
-          onClick={() => setMode("existing")}
-        >
-          {t`Chọn người đã có`}
-        </SegmentedButton>
-      </SegmentedControl>
-      <div className="space-y-2">
-        <Label htmlFor="other_parent">{t`Con chung với ai?`}</Label>
-        <Select
-          id="other_parent"
-          icon={<IconUsers />}
-          value={otherParent}
-          onChange={(e) => {
-            setOtherParent(e.target.value);
-            setOtherParentTouched(true);
-          }}
-        >
-          <option value={SOLO_VALUE}>
-            Chưa rõ / đơn thân (chỉ {focal?.full_name ?? t`người này`})
-          </option>
-          {rels?.spouses.map((s, i) => (
-            <option key={s.id} value={s.id}>
-              {s.full_name}
-              {rels.spouses.length > 1
-                ? ` (${spouseRankLabel(s.gender, i)})`
-                : ""}
-            </option>
-          ))}
-        </Select>
-        {rels?.spouses &&
-          rels.spouses.length > 0 &&
-          otherParent === SOLO_VALUE && (
-            <Alert>
-              <AlertDescription>
-                {focal?.full_name ?? t`Người này`} đã có{" "}
-                {rels.spouses.length === 1
-                  ? t`vợ/chồng (${rels.spouses[0].full_name})`
-                  : t`${rels.spouses.length} vợ/chồng`}{" "}
-                — chọn để con được gắn đúng. Chỉ giữ "đơn thân" nếu người con
-                này thực sự không cùng cha mẹ với những anh chị em hiện có.
-              </AlertDescription>
-            </Alert>
-          )}
-        <p className="text-sm text-muted-foreground">
-          <Trans>
-            <Trans>
-              <Trans>
-                Ví dụ: người chồng có 2 đời vợ — muốn nhập con của vợ hai thì
-                chọn đúng vợ hai ở trên. Nếu vợ/chồng đó chưa có trong cây, hãy
-                thêm bằng "Thêm vợ/chồng" trước.
-              </Trans>
-            </Trans>
-          </Trans>
-        </p>
-      </div>
+      <OptionSelect
+        label={t`Cách thêm`}
+        ariaLabel={t`Chế độ thêm con`}
+        value={mode}
+        onChange={setMode}
+        options={[
+          { value: "new", label: t`Người mới` },
+          { value: "existing", label: t`Chọn người đã có` },
+        ]}
+      />
+      <OtherParentPicker
+        focalName={focal?.full_name ?? t`người này`}
+        spouses={rels?.spouses ?? []}
+        value={otherParent}
+        onChange={(id) => {
+          setOtherParent(id);
+          setOtherParentTouched(true);
+        }}
+      />
 
       {mode === "new" ? (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="full_name" required>
-              {t`Tên con`}
-            </Label>
-            <Input
-              id="full_name"
-              icon={<IconUser />}
-              data-testid="child-name-input"
-              required
-              autoFocus
-              maxLength={200}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder={t`Vd: Nguyễn Văn C`}
+        <PersonCoreFields
+          values={core}
+          onChange={patchCore}
+          nameLabel={t`Tên con`}
+          namePlaceholder={t`Vd: Nguyễn Văn C`}
+          nameTestId="child-name-input"
+          afterGender={
+            <BirthOrderPicker
+              value={birthOrder}
+              onChange={setBirthOrder}
+              helper={t`App gợi ý dựa trên số con đã có. Sửa nếu cần.`}
             />
-          </div>
-
-          <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">{t`Giới tính`}</legend>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={gender === "M"}
-                  onChange={() => setGender("M")}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>{t`Nam`}</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={gender === "F"}
-                  onChange={() => setGender("F")}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>{t`Nữ`}</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <BirthOrderPicker
-            value={birthOrder}
-            onChange={setBirthOrder}
-            helper={t`App gợi ý dựa trên số con đã có. Sửa nếu cần.`}
-          />
-
-          <CalendarDateInput
-            label={t`Ngày sinh (tuỳ chọn)`}
-            idPrefix="birth"
-            helperText={t`Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
-            value={birth}
-            onChange={setBirth}
-          />
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!isLiving}
-              onChange={(e) => {
-                const deceased = e.target.checked;
-                setIsLiving(!deceased);
-                // Bỏ tích "đã mất" → xoá ngày mất đã nhập để khỏi lưu nhầm.
-                if (!deceased) setDeath(EMPTY_LUNAR_CALENDAR_DATE);
-              }}
-              className="h-5 w-5 accent-primary shrink-0"
-            />
-            <span>{t`Đã mất`}</span>
-          </label>
-
-          {!isLiving && (
-            <CalendarDateInput
-              label={t`Ngày mất (nếu đã mất)`}
-              idPrefix="death"
-              value={death}
-              onChange={(next) => {
-                setDeath(next);
-                if (next.parts.year || next.parts.month || next.parts.day)
-                  setIsLiving(false);
-              }}
-              helperText={t`Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
-            />
-          )}
-        </>
+          }
+        />
       ) : (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
-            <Trans>
-              <Trans>
-                <Trans>
-                  Nối một người đã có sẵn trong cây làm con của người này (thay
-                  vì tạo mới) — tránh trùng người.
-                </Trans>
-              </Trans>
-            </Trans>
-          </p>
-          <Label>{t`Tìm người đã có trong dòng họ`}</Label>
-          <Input
-            icon={<IconSearch />}
-            value={existingFilter}
-            onChange={(e) => setExistingFilter(e.target.value)}
-            placeholder={t`Gõ tên để lọc (không cần dấu)`}
-          />
-          {clanIndex && totalMatched > 0 && (
-            <p className="text-xs text-muted-foreground">
-              {totalMatched > PICKER_CAP
-                ? t`Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
-                : t`Hiện ${totalMatched} kết quả.`}
-            </p>
-          )}
-          <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
-            {candidates.length === 0 && (
-              <li className="px-3 py-2 text-muted-foreground italic">
-                {clanIndex ? t`Không có người nào khớp.` : t`Đang tải…`}
-              </li>
-            )}
-            {candidates.map((p) => {
-              const active = p.id === existingId;
-              const hasOtherFamily = !!p.father_id || !!p.mother_id;
-              return (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    onClick={() => setExistingId(p.id)}
-                    className={`w-full text-left px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/50 ${
-                      active ? "bg-primary/10" : ""
-                    }`}
-                  >
-                    <PersonAvatar gender={p.gender} size={32} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <span
-                          className={`truncate ${active ? "font-semibold text-primary" : "font-medium"}`}
-                        >
-                          {p.full_name}
-                        </span>
-                        {p.birth_year && (
-                          <span className="text-xs text-muted-foreground shrink-0">
-                            {p.birth_year}
-                          </span>
-                        )}
-                      </div>
-                      {hasOtherFamily && (
-                        <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                          {t`Đang có bố/mẹ khác — sẽ ghi đè khi gắn.`}
-                        </p>
-                      )}
-                    </div>
-                    {active && (
-                      <IconCheck className="h-4 w-4 text-primary shrink-0" />
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <p className="text-xs text-muted-foreground">
-            Người đã chọn sẽ trở thành con của family hiện tại (
-            {focal?.full_name}
-            {otherParent !== SOLO_VALUE
-              ? ` + ${rels?.spouses.find((s) => s.id === otherParent)?.full_name ?? ""}`
-              : t` — đơn thân`}
-            ). Nếu trước đó họ đã có bố/mẹ, dữ liệu cũ sẽ bị thay thế.
-          </p>
-        </div>
+        <ExistingPersonPicker
+          intro={t`Nối một người đã có sẵn trong cây làm con của người này (thay vì tạo mới) — tránh trùng người.`}
+          outro={
+            <>
+              Người đã chọn sẽ trở thành con của family hiện tại (
+              {focal?.full_name}
+              {otherParent !== SOLO_VALUE
+                ? ` + ${rels?.spouses.find((s) => s.id === otherParent)?.full_name ?? ""}`
+                : t` — đơn thân`}
+              ). Nếu trước đó họ đã có bố/mẹ, dữ liệu cũ sẽ bị thay thế.
+            </>
+          }
+          filter={existingFilter}
+          onFilterChange={setExistingFilter}
+          candidates={candidates}
+          totalMatched={totalMatched}
+          cap={PICKER_CAP}
+          loaded={!!clanIndex}
+          selectedId={existingId}
+          onSelect={setExistingId}
+          rowNote={(p) =>
+            p.father_id || p.mother_id
+              ? t`Đang có bố/mẹ khác — sẽ ghi đè khi gắn.`
+              : null
+          }
+        />
       )}
 
       {(formError || mutation.error) && (
@@ -505,7 +273,7 @@ export function AddChildForm({
           data-testid="child-submit-button"
           disabled={
             mutation.isPending ||
-            (mode === "new" ? !fullName.trim() : !existingId)
+            (mode === "new" ? !core.fullName.trim() : !existingId)
           }
         >
           {mutation.isPending ? (

@@ -125,24 +125,25 @@ export function personHasDetails(p: PersonDetail): boolean {
   );
 }
 
-/** Các cột persons chung của thêm và sửa (form Sửa thêm todo_excluded, birth_order). */
-export function personFormToColumns(v: PersonFormValues) {
+/** Cột ngày sinh/mất (dương + âm + giỗ) + is_living — chung cho mọi form tạo/sửa người. */
+export function personDateColumns(v: {
+  birth: CalendarDateValue;
+  death: CalendarDateValue;
+  isLiving: boolean;
+}) {
   const birthCols = buildPersonDateColumns(v.birth);
   const deathCols = buildPersonDateColumns(v.death);
   const anniv = buildDeathAnniversary(v.death);
   return {
-    full_name: v.fullName.trim(),
-    gender: v.gender,
     is_living: v.isLiving,
-    is_root: v.isRoot,
     birth_date: birthCols.solar_date,
     birth_date_precision: birthCols.solar_precision,
-    death_date: deathCols.solar_date,
-    death_date_precision: deathCols.solar_precision,
     birth_lunar_year: birthCols.lunar_year,
     birth_lunar_month: birthCols.lunar_month,
     birth_lunar_day: birthCols.lunar_day,
     birth_lunar_is_leap: birthCols.lunar_is_leap,
+    death_date: deathCols.solar_date,
+    death_date_precision: deathCols.solar_precision,
     death_lunar_year: deathCols.lunar_year,
     death_lunar_month: deathCols.lunar_month,
     death_lunar_day: deathCols.lunar_day,
@@ -150,6 +151,16 @@ export function personFormToColumns(v: PersonFormValues) {
     death_anniv_lunar_month: anniv.death_anniv_lunar_month,
     death_anniv_lunar_day: anniv.death_anniv_lunar_day,
     death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
+  };
+}
+
+/** Các cột persons chung của thêm và sửa (form Sửa thêm todo_excluded, birth_order). */
+export function personFormToColumns(v: PersonFormValues) {
+  return {
+    full_name: v.fullName.trim(),
+    gender: v.gender,
+    is_root: v.isRoot,
+    ...personDateColumns(v),
     birth_place: v.birthPlace.trim() || null,
     burial_place: v.burialPlace.trim() || null,
     courtesy_name: v.courtesyName.trim() || null,
@@ -163,9 +174,46 @@ export function personFormToColumns(v: PersonFormValues) {
 }
 
 /** Kiểm tra ngày sinh/mất hợp lệ trước khi gọi API; ném lỗi có thông điệp rõ. */
-export function validatePersonForm(v: PersonFormValues) {
+export function validatePersonForm(v: {
+  birth: CalendarDateValue;
+  death: CalendarDateValue;
+}) {
   buildPersonDateColumns(v.birth);
   buildPersonDateColumns(v.death);
+}
+
+function GenderField({
+  value,
+  onChange,
+}: {
+  value: "M" | "F";
+  onChange: (g: "M" | "F") => void;
+}) {
+  return (
+    <fieldset className="space-y-3">
+      <legend className="mb-2 text-base font-medium">{t`Giới tính`}</legend>
+      <div className="flex gap-6">
+        {(
+          [
+            ["M", t`Nam`],
+            ["F", t`Nữ`],
+          ] as const
+        ).map(([g, label]) => (
+          <label key={g} className="flex cursor-pointer items-center gap-3">
+            <input
+              type="radio"
+              name="gender"
+              value={g}
+              checked={value === g}
+              onChange={() => onChange(g)}
+              className="h-4 w-4 accent-primary"
+            />
+            <span>{label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
 }
 
 export function PersonFormFields({
@@ -443,6 +491,126 @@ export function PersonFormFields({
         >
           <PersonAddressCard bare value={address} onChange={onAddressChange} />
         </FormGroup>
+      )}
+    </>
+  );
+}
+
+/**
+ * Phần lõi của mọi form "thêm nhanh một người" (Thêm con / cha mẹ / vợ chồng, Thêm nhanh):
+ * họ tên, giới tính, ngày sinh, Đã mất, ngày mất. Phần riêng của từng màn (Con chung với ai,
+ * Vai trò, Thứ tự con…) do màn đó tự thêm — qua `afterGender` hoặc đặt trước/sau component này.
+ */
+export type PersonCoreValues = Pick<
+  PersonFormValues,
+  "fullName" | "gender" | "isLiving" | "birth" | "death"
+>;
+
+export const EMPTY_PERSON_CORE: PersonCoreValues = {
+  fullName: "",
+  gender: "M",
+  isLiving: true,
+  birth: EMPTY_CALENDAR_DATE,
+  death: EMPTY_LUNAR_CALENDAR_DATE,
+};
+
+/** Cột persons từ phần lõi — truyền thẳng vào createPerson / addChildToFamily. */
+export function personCoreToColumns(v: PersonCoreValues) {
+  return {
+    full_name: v.fullName.trim(),
+    gender: v.gender,
+    ...personDateColumns(v),
+  };
+}
+
+export function PersonCoreFields({
+  values,
+  onChange,
+  nameLabel = t`Họ và tên`,
+  namePlaceholder = t`Vd: Nguyễn Văn A`,
+  nameTestId,
+  showGender = true,
+  afterGender,
+}: {
+  values: PersonCoreValues;
+  onChange: (patch: Partial<PersonCoreValues>) => void;
+  nameLabel?: string;
+  namePlaceholder?: string;
+  nameTestId?: string;
+  /** false khi giới tính đã do màn quyết định (vd. Thêm cha/mẹ chọn Cha hay Mẹ). */
+  showGender?: boolean;
+  /** Chèn giữa giới tính và ngày sinh (vd. thứ tự con). */
+  afterGender?: React.ReactNode;
+}) {
+  const v = values;
+  return (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="full_name" required>
+          {nameLabel}
+        </Label>
+        <Input
+          id="full_name"
+          icon={<IconUser />}
+          data-testid={nameTestId}
+          required
+          autoFocus
+          maxLength={200}
+          value={v.fullName}
+          onChange={(e) => onChange({ fullName: e.target.value })}
+          placeholder={namePlaceholder}
+        />
+      </div>
+
+      {showGender && (
+        <GenderField
+          value={v.gender}
+          onChange={(gender) => onChange({ gender })}
+        />
+      )}
+
+      {afterGender}
+
+      <CalendarDateInput
+        label={t`Ngày sinh`}
+        idPrefix="birth"
+        value={v.birth}
+        onChange={(birth) => onChange({ birth })}
+        helperText={t`Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
+      />
+
+      <label className="flex cursor-pointer items-center gap-3">
+        <input
+          type="checkbox"
+          checked={!v.isLiving}
+          onChange={(e) => {
+            const deceased = e.target.checked;
+            // Bỏ tích "đã mất" → xoá ngày mất đã nhập để khỏi lưu nhầm.
+            onChange({
+              isLiving: !deceased,
+              ...(deceased ? {} : { death: EMPTY_LUNAR_CALENDAR_DATE }),
+            });
+          }}
+          className="h-5 w-5 shrink-0 accent-primary"
+        />
+        <span>{t`Đã mất`}</span>
+      </label>
+
+      {!v.isLiving && (
+        <CalendarDateInput
+          label={t`Ngày mất (nếu đã mất)`}
+          idPrefix="death"
+          value={v.death}
+          onChange={(death) =>
+            onChange({
+              death,
+              ...(death.parts.year || death.parts.month || death.parts.day
+                ? { isLiving: false }
+                : {}),
+            })
+          }
+          helperText={t`Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
+        />
       )}
     </>
   );

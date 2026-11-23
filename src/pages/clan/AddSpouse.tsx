@@ -3,36 +3,24 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { CalendarDateInput } from "@/components/CalendarDateInput";
+import { ExistingPersonPicker } from "@/components/ExistingPersonPicker";
 import {
-  IconCheck,
-  IconSearch,
-  IconUser,
-  IconUserPlus,
-  IconX,
-} from "@/components/icons";
+  EMPTY_PERSON_CORE,
+  PersonCoreFields,
+  personCoreToColumns,
+  validatePersonForm,
+  type PersonCoreValues,
+} from "@/components/PersonFormFields";
+import { OptionSelect } from "@/components/ui/select";
+import { IconCheck, IconUserPlus, IconX } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
-import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
-import {
-  buildDeathAnniversary,
-  buildPersonDateColumns,
-  EMPTY_CALENDAR_DATE,
-  EMPTY_LUNAR_CALENDAR_DATE,
-  type CalendarDateValue,
-} from "@/lib/personDates";
 import {
   assignExistingSpouse,
   findOrCreateFamily,
@@ -42,7 +30,6 @@ import { getKinshipIndex } from "@/lib/queries/kinship";
 import { createPerson, getPerson } from "@/lib/queries/persons";
 import { matchesName } from "@/lib/unaccent";
 
-import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 const PICKER_CAP = 1000;
 
@@ -78,17 +65,18 @@ export function AddSpouseForm({
   const defaultGender: "M" | "F" = focal?.gender === "M" ? "F" : "M";
 
   const [mode, setMode] = useState<"new" | "existing">("new");
-  const [fullName, setFullName] = useState("");
-  const [gender, setGender] = useState<"M" | "F">(defaultGender);
+  const [core, setCore] = useState<PersonCoreValues>({
+    ...EMPTY_PERSON_CORE,
+    gender: defaultGender,
+  });
   // Lock-in once the user clicks a gender radio — otherwise the sync
   // effect below would snap it back to the opposite-of-focal default
   // every render.
   const [genderTouched, setGenderTouched] = useState(false);
-  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
-  const [death, setDeath] = useState<CalendarDateValue>(
-    EMPTY_LUNAR_CALENDAR_DATE,
-  );
-  const [isLiving, setIsLiving] = useState(true);
+  const patchCore = (p: Partial<PersonCoreValues>) => {
+    if (p.gender !== undefined) setGenderTouched(true);
+    setCore((c) => ({ ...c, ...p }));
+  };
   const [formError, setFormError] = useState<string | null>(null);
 
   const [existingFilter, setExistingFilter] = useState("");
@@ -101,8 +89,8 @@ export function AddSpouseForm({
   });
 
   // Refresh gender default once `focal` loads
-  if (focal && !genderTouched && gender !== defaultGender) {
-    setGender(defaultGender);
+  if (focal && !genderTouched && core.gender !== defaultGender) {
+    setCore((c) => ({ ...c, gender: defaultGender }));
   }
 
   // Eligible candidates: opposite gender of focal, not focal himself,
@@ -131,34 +119,14 @@ export function AddSpouseForm({
         return { id: existingId };
       }
 
-      const birthCols = buildPersonDateColumns(birth);
-      const deathCols = buildPersonDateColumns(death);
-      const anniv = buildDeathAnniversary(death);
       const spouse = await createPerson({
         clan_id: clanId,
-        full_name: fullName.trim(),
-        gender,
-        is_living: isLiving,
-        birth_date: birthCols.solar_date,
-        birth_date_precision: birthCols.solar_precision,
-        birth_lunar_year: birthCols.lunar_year,
-        birth_lunar_month: birthCols.lunar_month,
-        birth_lunar_day: birthCols.lunar_day,
-        birth_lunar_is_leap: birthCols.lunar_is_leap,
-        death_date: deathCols.solar_date,
-        death_date_precision: deathCols.solar_precision,
-        death_lunar_year: deathCols.lunar_year,
-        death_lunar_month: deathCols.lunar_month,
-        death_lunar_day: deathCols.lunar_day,
-        death_lunar_is_leap: deathCols.lunar_is_leap,
-        death_anniv_lunar_month: anniv.death_anniv_lunar_month,
-        death_anniv_lunar_day: anniv.death_anniv_lunar_day,
-        death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
+        ...personCoreToColumns(core),
       });
       await findOrCreateFamily({
         clanId,
         partnerA: { id: focal.id, gender: focal.gender },
-        partnerB: { id: spouse.id, gender },
+        partnerB: { id: spouse.id, gender: core.gender },
       });
       return spouse;
     },
@@ -168,7 +136,7 @@ export function AddSpouseForm({
         mode === "existing"
           ? (clanIndex?.byId.get(existingId ?? "")?.full_name ??
             "người đã chọn")
-          : fullName.trim();
+          : core.fullName.trim();
       toast.success(
         mode === "existing" ? t`Đã gắn vợ/chồng` : t`Đã thêm vợ/chồng`,
         { description: label },
@@ -185,10 +153,9 @@ export function AddSpouseForm({
         e.preventDefault();
         setFormError(null);
         if (mode === "new") {
-          if (!fullName.trim()) return;
+          if (!core.fullName.trim()) return;
           try {
-            buildPersonDateColumns(birth);
-            buildPersonDateColumns(death);
+            validatePersonForm(core);
           } catch (err) {
             setFormError((err as Error).message);
             return;
@@ -201,189 +168,39 @@ export function AddSpouseForm({
       }}
       className="space-y-6"
     >
-      <SegmentedControl ariaLabel={t`Chế độ thêm vợ/chồng`} className="w-full">
-        <SegmentedButton
-          className="flex-1 px-3"
-          active={mode === "new"}
-          onClick={() => setMode("new")}
-        >
-          {t`Người mới`}
-        </SegmentedButton>
-        <SegmentedButton
-          className="flex-1 px-3"
-          active={mode === "existing"}
-          onClick={() => setMode("existing")}
-        >
-          {t`Chọn người đã có`}
-        </SegmentedButton>
-      </SegmentedControl>
+      <OptionSelect
+        label={t`Cách thêm`}
+        ariaLabel={t`Chế độ thêm vợ/chồng`}
+        value={mode}
+        onChange={setMode}
+        options={[
+          { value: "new", label: t`Người mới` },
+          { value: "existing", label: t`Chọn người đã có` },
+        ]}
+      />
 
       {mode === "new" ? (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="full_name" required>
-              {t`Họ và tên`}
-            </Label>
-            <Input
-              id="full_name"
-              icon={<IconUser />}
-              data-testid="spouse-name-input"
-              required
-              autoFocus
-              maxLength={200}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder={t`Vd: Nguyễn Thị B`}
-            />
-          </div>
-
-          <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">{t`Giới tính`}</legend>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={gender === "M"}
-                  onChange={() => {
-                    setGender("M");
-                    setGenderTouched(true);
-                  }}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>{t`Nam`}</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={gender === "F"}
-                  onChange={() => {
-                    setGender("F");
-                    setGenderTouched(true);
-                  }}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>{t`Nữ`}</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <CalendarDateInput
-            label={t`Ngày sinh (tuỳ chọn)`}
-            idPrefix="birth"
-            value={birth}
-            onChange={setBirth}
-            helperText={t`Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
-          />
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!isLiving}
-              onChange={(e) => {
-                const deceased = e.target.checked;
-                setIsLiving(!deceased);
-                if (!deceased) setDeath(EMPTY_LUNAR_CALENDAR_DATE);
-              }}
-              className="h-5 w-5 accent-primary shrink-0"
-            />
-            <span>{t`Đã mất`}</span>
-          </label>
-
-          {!isLiving && (
-            <CalendarDateInput
-              label={t`Ngày mất (nếu đã mất)`}
-              idPrefix="death"
-              value={death}
-              onChange={(next) => {
-                setDeath(next);
-                if (next.parts.year || next.parts.month || next.parts.day)
-                  setIsLiving(false);
-              }}
-              helperText={t`Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
-            />
-          )}
-        </>
+        <PersonCoreFields
+          values={core}
+          onChange={patchCore}
+          namePlaceholder={t`Vd: Nguyễn Thị B`}
+          nameTestId="spouse-name-input"
+        />
       ) : (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">
-            <Trans>
-              <Trans>
-                <Trans>
-                  Nối một người đã có sẵn trong cây làm vợ/chồng (thay vì tạo
-                  mới) — tránh trùng người.
-                </Trans>
-              </Trans>
-            </Trans>
-          </p>
-          <Label>
-            Tìm người đã có (khác giới với {focal?.full_name ?? t`người gốc`})
-          </Label>
-          <Input
-            icon={<IconSearch />}
-            value={existingFilter}
-            onChange={(e) => setExistingFilter(e.target.value)}
-            placeholder={t`Gõ tên để lọc (không cần dấu)`}
-          />
-          {clanIndex && totalMatched > 0 && (
-            <p className="text-xs text-muted-foreground">
-              {totalMatched > PICKER_CAP
-                ? t`Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
-                : t`Hiện ${totalMatched} kết quả.`}
-            </p>
-          )}
-          <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
-            {candidates.length === 0 && (
-              <li className="px-3 py-2 text-muted-foreground italic">
-                {clanIndex
-                  ? t`Không có người khớp giới tính + tên.`
-                  : t`Đang tải…`}
-              </li>
-            )}
-            {candidates.map((p) => {
-              const active = p.id === existingId;
-              return (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    onClick={() => setExistingId(p.id)}
-                    className={`w-full text-left px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/50 ${
-                      active ? "bg-primary/10" : ""
-                    }`}
-                  >
-                    <PersonAvatar gender={p.gender} size={32} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <span
-                          className={`truncate ${active ? "font-semibold text-primary" : "font-medium"}`}
-                        >
-                          {p.full_name}
-                        </span>
-                        {p.birth_year && (
-                          <span className="text-xs text-muted-foreground shrink-0">
-                            {p.birth_year}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {active && (
-                      <IconCheck className="h-4 w-4 text-primary shrink-0" />
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <p className="text-xs text-muted-foreground">
-            <Trans>
-              <Trans>
-                <Trans>
-                  Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người đã
-                  chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép.
-                </Trans>
-              </Trans>
-            </Trans>
-          </p>
-        </div>
+        <ExistingPersonPicker
+          intro={t`Nối một người đã có sẵn trong cây làm vợ/chồng (thay vì tạo mới) — tránh trùng người.`}
+          label={t`Tìm người đã có (khác giới với ${focal?.full_name ?? t`người gốc`})`}
+          outro={t`Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người đã chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép.`}
+          filter={existingFilter}
+          onFilterChange={setExistingFilter}
+          candidates={candidates}
+          totalMatched={totalMatched}
+          cap={PICKER_CAP}
+          loaded={!!clanIndex}
+          emptyLabel={t`Không có người khớp giới tính + tên.`}
+          selectedId={existingId}
+          onSelect={setExistingId}
+        />
       )}
 
       {(formError || mutation.error) && (
@@ -405,7 +222,7 @@ export function AddSpouseForm({
           data-testid="spouse-submit-button"
           disabled={
             mutation.isPending ||
-            (mode === "new" ? !fullName.trim() : !existingId)
+            (mode === "new" ? !core.fullName.trim() : !existingId)
           }
         >
           {mutation.isPending ? (

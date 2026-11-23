@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { splitFieldClasses } from "@/components/ui/field-layout";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -71,3 +72,57 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 Select.displayName = "Select";
 
 export { Select };
+
+export interface OptionSelectProps<T extends string> {
+  /** Nhãn hiện trên ô; bỏ trống thì chỉ có `ariaLabel` cho trình đọc màn hình. */
+  label?: string;
+  ariaLabel: string;
+  value: T;
+  onChange: (value: T) => void;
+  options: { value: T; label: string; disabled?: boolean }[];
+  icon?: React.ReactNode;
+  className?: string;
+  id?: string;
+}
+
+/**
+ * Chọn một trong vài lựa chọn loại trừ nhau trong FORM (chế độ thêm, vai trò, loại giao dịch…)
+ * — thay cho dải nút tab: một ô gọn, đồng nhất với các ô chọn khác, không rớt dòng trên điện
+ * thoại. Dải nút (SegmentedControl) chỉ còn dùng để đổi cách XEM (lọc, tab trang).
+ */
+export function OptionSelect<T extends string>({
+  label,
+  ariaLabel,
+  value,
+  onChange,
+  options,
+  icon,
+  className,
+  id,
+}: OptionSelectProps<T>) {
+  const autoId = React.useId();
+  const selectId = id ?? autoId;
+  const field = (
+    <Select
+      id={selectId}
+      aria-label={label ? undefined : ariaLabel}
+      icon={icon}
+      className={className}
+      value={value}
+      onChange={(e) => onChange(e.target.value as T)}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value} disabled={o.disabled}>
+          {o.label}
+        </option>
+      ))}
+    </Select>
+  );
+  if (!label) return field;
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={selectId}>{label}</Label>
+      {field}
+    </div>
+  );
+}

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { OptionSelect } from "@/components/ui/select";
 import { useEffect, useRef, useState } from "react";
 
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
@@ -689,22 +690,16 @@ function QuickAddChild({
     <div className="space-y-5 pb-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {onBack && <BackToPickerButton onBack={onBack} />}
-        <SegmentedControl ariaLabel={t`Chế độ thêm con`} className="w-full">
-          <SegmentedButton
-            className="flex-1 px-3"
-            active={!bulkMode}
-            onClick={() => setBulkMode(false)}
-          >
-            {t`1 người`}
-          </SegmentedButton>
-          <SegmentedButton
-            className="flex-1 px-3"
-            active={bulkMode}
-            onClick={() => setBulkMode(true)}
-          >
-            {t`Nhiều người`}
-          </SegmentedButton>
-        </SegmentedControl>
+        <OptionSelect
+          label={t`Cách thêm`}
+          ariaLabel={t`Chế độ thêm con`}
+          value={bulkMode ? "many" : "one"}
+          onChange={(v) => setBulkMode(v === "many")}
+          options={[
+            { value: "one", label: t`1 người` },
+            { value: "many", label: t`Nhiều người` },
+          ]}
+        />
       </div>
 
       {spouses.length >= 2 && (
@@ -796,8 +791,8 @@ function QuickAddChild({
         <form onSubmit={onSubmitBulk} className="space-y-3">
           <p className="text-xs text-muted-foreground">
             <Trans>
-            Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi
-            thứ tự.
+              Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi
+              thứ tự.
             </Trans>
           </p>
           <ul className="space-y-2">
@@ -1218,33 +1213,27 @@ function QuickAddParent({
         />
       </div>
 
-      <div className="flex flex-col items-start gap-2">
-        <Label>{t`Vai trò`}</Label>
-        <SegmentedControl ariaLabel={t`Vai trò cha mẹ`} className="w-full">
-          <SegmentedButton
-            className="flex-1 px-3"
-            active={role === "M"}
-            onClick={() => {
-              setRole("M");
-              setRoleTouched(true);
-            }}
-            disabled={hasFather}
-          >
-            Cha
-          </SegmentedButton>
-          <SegmentedButton
-            className="flex-1 px-3"
-            active={role === "F"}
-            onClick={() => {
-              setRole("F");
-              setRoleTouched(true);
-            }}
-            disabled={hasMother}
-          >
-            {t`Mẹ`}
-          </SegmentedButton>
-        </SegmentedControl>
-      </div>
+      <OptionSelect
+        label={t`Vai trò`}
+        ariaLabel={t`Vai trò cha mẹ`}
+        value={role}
+        onChange={(r) => {
+          setRole(r);
+          setRoleTouched(true);
+        }}
+        options={[
+          {
+            value: "M",
+            label: hasFather ? t`Cha (đã có)` : t`Cha`,
+            disabled: hasFather,
+          },
+          {
+            value: "F",
+            label: hasMother ? t`Mẹ (đã có)` : t`Mẹ`,
+            disabled: hasMother,
+          },
+        ]}
+      />
 
       <DateFields
         idPrefix="qa-parent"

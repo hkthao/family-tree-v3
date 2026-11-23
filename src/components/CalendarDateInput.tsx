@@ -1,12 +1,9 @@
 import { useMemo, useState } from "react";
 
+import { OptionSelect } from "@/components/ui/select";
 import { IconMoon } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import {
   canChiToYears,
   parseCanChi,
@@ -162,22 +159,16 @@ export function CalendarDateInput({
         ))}
 
       {showLunarControls ? (
-        <SegmentedControl ariaLabel={t`Chọn lịch`}>
-          <SegmentedButton
-            active={!isLunar}
-            onClick={() => setMode("solar")}
-            className="px-3 h-9 min-w-[72px]"
-          >
-            {t`Dương`}
-          </SegmentedButton>
-          <SegmentedButton
-            active={isLunar}
-            onClick={() => setMode("lunar")}
-            className="px-3 h-9 min-w-[72px]"
-          >
-            {t`Âm`}
-          </SegmentedButton>
-        </SegmentedControl>
+        <OptionSelect
+          ariaLabel={t`Chọn lịch`}
+          className="w-44"
+          value={isLunar ? "lunar" : "solar"}
+          onChange={setMode}
+          options={[
+            { value: "solar", label: t`Dương lịch` },
+            { value: "lunar", label: t`Âm lịch` },
+          ]}
+        />
       ) : hideHelp ? null : (
         <button
           type="button"
