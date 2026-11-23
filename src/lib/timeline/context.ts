@@ -1,5 +1,5 @@
 import { bucketOfYear } from "@/lib/timeline/computeClanTimeline";
-import { erasOverlapping, type TimelineIconKey } from "@/lib/timeline/eras";
+import { erasOverlapping, getEraCards, type TimelineIconKey } from "@/lib/timeline/eras";
 
 /**
  * "Bối cảnh thời đại" của một mốc (thẻ giấy ghi chú). Mặc định lấy theo năm từ thư viện thời đại; người dùng
@@ -34,18 +34,28 @@ export function textToBullets(text: string): string[] {
     .map((l) => l.slice(0, MAX_BULLET_LEN));
 }
 
+/**
+ * Thời đại CHỨA đúng năm đó (không phải thời đại chạm giai đoạn gom nhóm). Trước 1500 poster gom mốc theo THẾ KỶ nên
+ * giai đoạn của 1230 là 1201–1300 chạm cả Lý lẫn Trần — lấy thời đại đầu tiên sẽ ra "Nhà Lý" sai. Không thời đại nào chứa
+ * năm (ngoài thư viện, hoặc kẽ hở) thì mới lùi về thời đại đầu tiên chạm giai đoạn.
+ */
+function eraOfYear(year: number) {
+  const exact = getEraCards().find((e) => e.from <= year && year <= e.to);
+  if (exact) return exact;
+  const b = bucketOfYear(year);
+  return erasOverlapping(b.from, b.to)[0];
+}
+
 /** Id thời đại (theo thư viện `eras.ts`) mà năm rơi vào; null nếu năm không hợp lệ. */
 export function eraIdForYear(year: number): string | null {
   if (!Number.isInteger(year) || year < 1) return null;
-  const b = bucketOfYear(year);
-  return erasOverlapping(b.from, b.to)[0]?.id ?? null;
+  return eraOfYear(year)?.id ?? null;
 }
 
-/** Bối cảnh mặc định theo năm (thời đại đầu tiên giao với giai đoạn của năm đó), hoặc null. */
+/** Bối cảnh mặc định theo năm (thời đại chứa năm đó, xem `eraOfYear`), hoặc null. */
 export function defaultContext(year: number): MilestoneContext | null {
   if (!Number.isInteger(year) || year < 1) return null;
-  const b = bucketOfYear(year);
-  const era = erasOverlapping(b.from, b.to)[0];
+  const era = eraOfYear(year);
   return era
     ? { title: era.title, bullets: era.bullets, iconKey: era.iconKey }
     : null;

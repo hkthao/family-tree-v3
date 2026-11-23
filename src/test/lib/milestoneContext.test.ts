@@ -53,3 +53,22 @@ describe("bối cảnh thời đại của mốc", () => {
     expect(contextToColumns(1990, d1975.title, bulletsToText(d1975.bullets)).context_title).toBe(d1975.title);
   });
 });
+
+describe("bối cảnh mặc định lấy ĐÚNG thời đại chứa năm (không lấy theo giai đoạn gom nhóm)", () => {
+  it.each([
+    [1010, "Nhà Lý"],
+    [1225, "Nhà Lý"],
+    [1226, "Nhà Trần"],
+    [1230, "Nhà Trần"], // trước đây ra "Nhà Lý" vì giai đoạn 1201–1300 chạm cả hai
+    [1232, "Nhà Trần"],
+    [1399, "Nhà Trần"],
+    [1400, "Nhà Hồ"],
+    [1428, "Nhà Lê sơ"],
+    [1975, "Đất nước chia hai miền"],
+  ])("%i → %s", (year, title) => {
+    expect(defaultContext(year)?.title).toBe(title);
+  });
+  it("trước thời đại đầu tiên (1009) không có bối cảnh mặc định chính xác nhưng không vỡ", () => {
+    expect(() => defaultContext(900)).not.toThrow();
+  });
+});

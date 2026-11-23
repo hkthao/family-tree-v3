@@ -92,4 +92,20 @@ describe("TimelinePoster — dựng được ở mọi kiểu", () => {
       unmount();
     }
   });
+
+  it("dòng thời gian một người (Lý–Trần): MỌI mốc đều có thẻ bối cảnh đúng thời đại và khung hình", () => {
+    const years = [1218, 1225, 1225, 1230, 1232];
+    const rows = years.map((y, i) => row({ id: `p${i}`, year: y, title: `Mốc ${i}`, person_id: "x", on_clan: false }));
+    const { container } = render(
+      <TimelinePoster clanName="" bare iconFrames layout="horizontal" items={items(rows)} />,
+    );
+    // mỗi mốc một thẻ bối cảnh: tổng số thẻ = số mốc (không "cái có cái không")
+    const notes = [...container.querySelectorAll("ul")].filter((ul) => ul.closest("[style*='background']") && /Dời đô|Ba lần kháng chiến/.test(ul.textContent ?? ""));
+    expect(notes).toHaveLength(years.length);
+    // 1230 và 1232 thuộc nhà Trần; 1225 vẫn nhà Lý
+    expect(screen.getAllByText("Nhà Trần")).toHaveLength(2);
+    expect(screen.getAllByText("Nhà Lý").length).toBe(3); // 1218, 1225, 1225
+    // mỗi mốc có một khung ảnh minh hoạ (SVG cảnh) dù chưa có ảnh
+    expect(container.querySelectorAll("svg[viewBox='0 0 400 300']")).toHaveLength(years.length);
+  });
 });

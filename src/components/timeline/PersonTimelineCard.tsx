@@ -60,6 +60,8 @@ export function PersonTimelineCard({
     queryKey: queryKeys.timelineRows(clanId, userId ?? "", personId),
     queryFn: () => listTimelineRows(clanId, { personId }),
     enabled: !!personId,
+    // Mốc ít và hay đổi (nhập từ tiểu sử, sửa ở trang chi tiết): luôn lấy lại khi mở, khỏi hiện dữ liệu cũ trong bộ nhớ đệm.
+    refetchOnMount: "always",
   });
 
   const birthYear = yearOf(birthDate);
@@ -132,6 +134,7 @@ export function PersonTimelineCard({
           <TimelinePoster
             clanName=""
             bare
+            iconFrames
             layout="horizontal"
             items={milestones.map((m) => ({ c: m }))}
           />

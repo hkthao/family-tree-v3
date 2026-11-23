@@ -41,6 +41,7 @@ export function useClanTimeline(opts: { personId?: string | null; all?: boolean 
     queryKey: queryKeys.timelineRows(clan.id, userId, personId ?? (all ? "*" : null)),
     queryFn: () => listTimelineRows(clan.id, { personId, all }),
     enabled: !!userId,
+    refetchOnMount: "always",
   });
 
   // Cây chỉ cần cho gợi ý và ảnh người đại diện → chỉ tải khi người dùng sửa được, hoặc khi có mốc kèm ảnh người.
