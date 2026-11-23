@@ -20,9 +20,11 @@
     <meta property="og:image" content="https://donghoviet.thaohk.com/assets/og-banner.png" />
     <meta property="og:locale" content="vi_VN" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/assets/fonts/be-vietnam-pro-400-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/be-vietnam-pro-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/noto-serif-400-700-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/noto-serif-400-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/assets/fonts/fonts.css" />
     <script>
       (function () {
         try {
@@ -76,7 +78,7 @@
 
       /* Buttons */
       .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem; min-height: 54px;
-             padding: 0 1.8rem; border-radius: 999px; font-weight: 600; font-size: 1.04rem; cursor: pointer;
+             padding: 0 1.8rem; border-radius: 6px; font-weight: 600; font-size: 1.04rem; cursor: pointer;
              border: 1.5px solid transparent; transition: transform .14s, filter .14s, background .14s; white-space: nowrap; }
       .btn .ico { width: 1.2em; height: 1.2em; }
       .btn:active { transform: scale(.97); }
@@ -98,7 +100,7 @@
       .nav-links a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 2.5px; background: hsl(var(--primary)); border-radius: 2px; }
       .nav-actions { display: flex; align-items: center; gap: .5rem; }
       .icon-btn { width: 46px; height: 46px; display: inline-flex; align-items: center; justify-content: center;
-                  border-radius: 999px; border: 1.5px solid hsl(var(--border)); background: hsl(var(--card)); cursor: pointer; color: hsl(var(--fg)); }
+                  border-radius: 6px; border: 1.5px solid hsl(var(--border)); background: hsl(var(--card)); cursor: pointer; color: hsl(var(--fg)); }
       .icon-btn:hover { background: hsl(var(--muted)); }
       .icon-btn .ico { width: 22px; height: 22px; }
       .menu-btn { display: inline-flex; }
@@ -421,7 +423,7 @@
     </svg>
     <header>
       <div class="wrap nav">
-        <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
+        <a class="brand" href="/"><img src="/assets/app-icon.svg" width="38" height="38" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
         <nav class="nav-links">
           <a href="/">Giới thiệu</a>
           <a href="/huong-dan.html">Kiến thức gia phả</a>

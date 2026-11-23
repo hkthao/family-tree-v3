@@ -25,3 +25,8 @@ Let's Encrypt cấp qua DNS-01 (HTTP-01 bị chặn tới app host).
 CTA trỏ `/xem/demo` và `/signup` của app kèm UTM theo từng vị trí — **không** trỏ root,
 vì root redirect thẳng vào tường đăng nhập. Dark-mode dùng chung localStorage key
 `family-tree:theme` với app để lựa chọn sáng/tối được giữ khi sang app.
+
+## Thư viện hình ảnh
+Mục `#hinh-anh` trong `index.html`. Thêm ảnh: bỏ file `.webp` vào `assets/` (nên rộng ≤ 1600px, dưới 150 KB; chuyển bằng `cwebp -q 82 anh.png -o anh.webp`),
+rồi chép một dòng `<a class="gal-item" href="/assets/ten.webp" data-lightbox data-caption="Chú thích">…</a>` trong `.gal-grid`
+(nhớ `width`/`height` thật và `alt`). Bấm ảnh mở xem toàn màn hình, có trước/sau, phóng to (nút, lăn chuột, nhấp đúp, chụm 2 ngón), kéo để di chuyển.

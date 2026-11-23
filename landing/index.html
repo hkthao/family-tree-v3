@@ -18,7 +18,7 @@
             data-domains="donghoviet.thaohk.com,giapha.thaohk.com"></script>
 
     <title>Dòng Họ Việt — Gia phả số gìn giữ cội nguồn dòng họ</title>
-    <meta name="description" content="Gia phả số cho dòng họ Việt — dễ dùng cho cả người lớn tuổi. Cả họ cùng dựng cây gia phả, nhớ ngày giỗ âm lịch, lưu giữ giọng kể và di sản của ông bà cho muôn đời sau." />
+    <meta name="description" content="Gia phả số cho dòng họ Việt: cây gia phả nhiều đời, nhắc ngày giỗ âm lịch, tra cứu xưng hô, QR mộ phần, dòng thời gian, xuất sổ gia phả PDF. Cả họ cùng góp, dễ dùng cho người lớn tuổi." />
     <link rel="canonical" href="https://donghoviet.thaohk.com/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://donghoviet.thaohk.com/" />
@@ -38,9 +38,11 @@
     <meta name="twitter:description" content="Cả họ cùng vun đắp cây gia phả, nhớ ngày giỗ, lưu giữ giọng kể và di sản của ông bà." />
     <meta name="twitter:image" content="https://donghoviet.thaohk.com/assets/og-banner.png" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/assets/fonts/be-vietnam-pro-400-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/be-vietnam-pro-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/noto-serif-400-700-vietnamese.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/fonts/noto-serif-400-700-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/assets/fonts/fonts.css" />
 
     <script>
       (function () {
@@ -96,7 +98,7 @@
 
       /* Buttons */
       .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem; min-height: 54px;
-             padding: 0 1.8rem; border-radius: 999px; font-weight: 600; font-size: 1.04rem; cursor: pointer;
+             padding: 0 1.8rem; border-radius: 6px; font-weight: 600; font-size: 1.04rem; cursor: pointer;
              border: 1.5px solid transparent; transition: transform .14s, filter .14s, background .14s; white-space: nowrap; }
       .btn .ico { width: 1.2em; height: 1.2em; }
       .btn:active { transform: scale(.97); }
@@ -118,7 +120,7 @@
       .nav-links a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 2.5px; background: hsl(var(--primary)); border-radius: 2px; }
       .nav-actions { display: flex; align-items: center; gap: .5rem; }
       .icon-btn { width: 46px; height: 46px; display: inline-flex; align-items: center; justify-content: center;
-                  border-radius: 999px; border: 1.5px solid hsl(var(--border)); background: hsl(var(--card)); cursor: pointer; color: hsl(var(--fg)); }
+                  border-radius: 6px; border: 1.5px solid hsl(var(--border)); background: hsl(var(--card)); cursor: pointer; color: hsl(var(--fg)); }
       .icon-btn:hover { background: hsl(var(--muted)); }
       .icon-btn .ico { width: 22px; height: 22px; }
       .menu-btn { display: inline-flex; }
@@ -172,8 +174,8 @@
       .hero-trust span { display: inline-flex; align-items: center; gap: .45rem; }
       .hero-trust .ico { width: 1.2em; height: 1.2em; color: hsl(var(--accent)); }
       .hero-photo { position: relative; border-radius: calc(var(--radius) * 1.4); overflow: hidden;
-                    box-shadow: 0 30px 70px hsl(var(--fg)/.22); aspect-ratio: 4/5; }
-      @media (max-width: 940px) { .hero-photo { aspect-ratio: 5/4; max-height: 460px; margin-inline: auto; max-width: 520px; } }
+                    box-shadow: 0 30px 70px hsl(var(--fg)/.22); aspect-ratio: 5/4; }
+      @media (max-width: 940px) { .hero-photo { aspect-ratio: 4/3; max-height: 380px; margin-inline: auto; max-width: 520px; } }
       .hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 28%; display: block; }
 
       /* Steps */
@@ -285,11 +287,41 @@
 
       @media (hover: none) { html, body { scrollbar-width: none; } *::-webkit-scrollbar { display: none; width: 0; height: 0; } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .reveal { opacity: 1; transform: none; } }
-    </style>
+      .row-photo.shot, .gal-item { cursor: zoom-in; }
+      .gal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 3rem; }
+      @media (min-width: 900px) { .gal-grid { grid-template-columns: repeat(3, 1fr); gap: 1.3rem; } }
+      .gal-item { display: block; margin: 0; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); overflow: hidden;
+                  transition: transform .2s, box-shadow .2s; }
+      .gal-item:hover, .gal-item:focus-visible { transform: translateY(-3px); box-shadow: 0 14px 30px hsl(var(--fg)/.12); }
+      .gal-item img { width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; display: block; background: hsl(var(--muted)); }
+      .gal-item.wide { grid-column: 1 / -1; }
+      .gal-item.wide img { aspect-ratio: auto; object-fit: contain; background: #f6efe3; }
+      .gal-item img.top { object-position: top; }
+      .gal-item figcaption { padding: .8rem 1rem 1rem; font-size: .95rem; font-weight: 500; line-height: 1.4; }
+      .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(20,14,10,.94); display: none; flex-direction: column; overscroll-behavior: contain; touch-action: none; }
+      .lightbox.open { display: flex; }
+      .lb-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+      .lb-stage img { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 6px; background: #f6efe3; transform-origin: center; user-select: none; -webkit-user-drag: none; }
+      .lb-stage.zoomed { cursor: grab; } .lb-stage.dragging { cursor: grabbing; }
+      .lb-bar { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: flex-end; gap: .5rem; padding: max(.8rem, env(safe-area-inset-top)) .8rem .8rem; z-index: 2; }
+      .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; }
+      .lb-nav.prev { left: .8rem; } .lb-nav.next { right: .8rem; }
+      .lb-cap { color: #f6efe3; text-align: center; padding: .7rem 1rem max(1rem, env(safe-area-inset-bottom)); font-size: .98rem; }
+      .lb-cap small { display: block; opacity: .7; margin-top: .15rem; }
+      .lightbox .icon-btn { background: rgba(246,239,227,.14); border-color: rgba(246,239,227,.35); color: #f6efe3; }
+      .lightbox .icon-btn:hover { background: rgba(246,239,227,.28); }
+      .lightbox .icon-btn[disabled] { opacity: .35; pointer-events: none; }
+</style>
 
     <!-- FAQPage: 5 câu hỏi vốn đã có trên trang. Đây là loại rich
          result dễ ăn nhất của Google và gần như không tốn công. Sửa
          phần FAQ ở body thì nhớ sửa cả khối này. -->
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@graph":[
+      {"@type":"Organization","@id":"https://donghoviet.thaohk.com/#org","name":"Dòng Họ Việt","url":"https://donghoviet.thaohk.com/","logo":"https://donghoviet.thaohk.com/assets/app-icon-512.png","email":"support@thaohk.com","sameAs":["https://www.facebook.com/donghoviet2026"]},
+      {"@type":"WebSite","@id":"https://donghoviet.thaohk.com/#site","url":"https://donghoviet.thaohk.com/","name":"Dòng Họ Việt","inLanguage":"vi","publisher":{"@id":"https://donghoviet.thaohk.com/#org"}}
+    ]}
+    </script>
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -385,15 +417,20 @@
       <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
       <symbol id="i-landmark" viewBox="0 0 24 24"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></symbol>
       <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+          <symbol id="i-prev" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+      <symbol id="i-next" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+      <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
+      <symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
     </svg>
 
     <header>
       <div class="wrap nav">
-        <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
+        <a class="brand" href="/"><img src="/assets/app-icon.svg" width="38" height="38" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
         <nav class="nav-links">
           <a href="#cach-dung">Cách dùng</a>
           <a href="#cau-chuyen">Câu chuyện</a>
           <a href="#tinh-nang">Tính năng</a>
+          <a href="#hinh-anh">Hình ảnh</a>
           <a href="#an-toan">An toàn</a>
           <a href="#cau-hoi">Hỏi đáp</a>
           <a href="/huong-dan.html">Kiến thức</a>
@@ -408,6 +445,7 @@
         <a href="#cach-dung">Cách dùng</a>
         <a href="#cau-chuyen">Câu chuyện</a>
         <a href="#tinh-nang">Tính năng</a>
+          <a href="#hinh-anh">Hình ảnh</a>
         <a href="#an-toan">An toàn</a>
         <a href="#cau-hoi">Hỏi đáp</a>
         <a href="/huong-dan.html">Kiến thức gia phả</a>
@@ -423,7 +461,7 @@
           <div>
             <span class="hero-badge"><svg class="ico"><use href="#i-heart"/></svg>Gia phả số cho dòng họ Việt</span>
             <h1>Gìn giữ <span class="accent">cội nguồn</span> dòng họ cho muôn đời sau</h1>
-            <p class="lead">Nơi cả họ cùng nhau dựng nên cây gia phả, ghi nhớ công ơn tổ tiên và lưu giữ những câu chuyện của ông bà — để con cháu mai sau biết mình từ đâu mà đến.</p>
+            <p class="lead">Cả họ cùng dựng cây gia phả nhiều đời, nhớ ngày giỗ theo âm lịch, lưu giọng kể của ông bà, mộ phần, từ đường và di sản — rồi xuất thành sổ gia phả, phả đồ khổ lớn, poster dòng thời gian để lưu truyền cho con cháu.</p>
             <div class="hero-cta">
               <a class="btn btn-primary" data-cta="hero-demo" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=hero"><svg class="ico"><use href="#i-eye"/></svg>Xem thử gia phả mẫu</a>
               <a class="btn btn-ghost" data-cta="hero-signup" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=hero"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả miễn phí</a>
@@ -435,7 +473,7 @@
             </div>
           </div>
           <div class="hero-photo reveal">
-            <img src="/assets/hero-family.jpg" alt="Đại gia đình Việt nhiều thế hệ quây quần bên ông bà" loading="eager" />
+            <img src="/assets/hero-family.webp" width="900" height="1353" fetchpriority="high" decoding="async" alt="Đại gia đình Việt nhiều thế hệ quây quần bên ông bà" />
           </div>
         </div>
       </section>
@@ -449,8 +487,8 @@
         </div>
         <div class="wrap steps">
           <div class="step reveal"><div class="n">1</div><h3>Tạo dòng họ</h3><p>Lập dòng họ trong vài phút, thêm cụ tổ và vài đời đầu bạn nhớ. Không cần đầy đủ ngay.</p><div class="bar"></div></div>
-          <div class="step reveal"><div class="n">2</div><h3>Mời cả họ cùng góp</h3><p>Gửi một đường link mời. Mỗi người tự nhận mình và bổ sung nhánh nhà mình.</p><div class="bar"></div></div>
-          <div class="step reveal"><div class="n">3</div><h3>Lưu giữ cho muôn đời</h3><p>Cây nhiều đời dần hoàn chỉnh, được sao lưu an toàn — không lo thất lạc, mai một.</p><div class="bar"></div></div>
+          <div class="step reveal"><div class="n">2</div><h3>Mời cả họ cùng góp</h3><p>Gửi link qua Zalo hay Facebook — người nhận <b>không cần tài khoản</b> vẫn góp được câu chuyện, ảnh cũ, thông tin nhánh nhà mình. Người lớn tuổi chỉ cần nói, không phải gõ.</p><div class="bar"></div></div>
+          <div class="step reveal"><div class="n">3</div><h3>Lưu giữ cho muôn đời</h3><p>Cây nhiều đời dần hoàn chỉnh, in thành sổ gia phả, treo phả đồ ở từ đường, quét QR ở mộ phần — được sao lưu an toàn, không lo thất lạc.</p><div class="bar"></div></div>
         </div>
         <div class="wrap center" style="margin-top:3rem">
           <a class="btn btn-primary reveal" data-cta="mid" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=mid"><svg class="ico"><use href="#i-arrow"/></svg>Bắt đầu dòng họ của bạn</a>
@@ -471,7 +509,7 @@
                 <div style="flex:1"><div style="font-weight:600">Cụ kể về gốc tích dòng họ</div><div class="wave" id="wave"></div></div>
               </div>
             </div>
-            <div class="row-photo"><img src="/assets/family-storytelling.jpg" alt="Ông bà kể chuyện dòng họ cho con cháu nghe" loading="lazy" /></div>
+            <div class="row-photo"><img src="/assets/family-storytelling.webp" width="1200" height="800" loading="lazy" decoding="async" alt="Ông bà kể chuyện dòng họ cho con cháu nghe" /></div>
           </div>
 
           <div class="row flip reveal">
@@ -481,33 +519,65 @@
               <p>Dựng phả hệ trực quan qua nhiều thế hệ, đặt người làm tâm, xem toàn màn hình, in hoặc xuất sổ gia phả khổ lớn để treo nơi từ đường.</p>
               <a class="more" data-cta="more-demo" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=more">Xem dòng họ mẫu <svg class="ico"><use href="#i-arrow"/></svg></a>
             </div>
-            <div class="row-photo shot"><img src="/assets/app-tree.png" alt="Giao diện cây gia phả nhiều đời trong ứng dụng" loading="lazy" /></div>
+            <div class="row-photo shot" data-lightbox data-caption="Cây gia phả nhiều đời: thẻ vợ chồng, đời, ngày sinh – mất"><img src="/assets/app-tree.webp" width="1498" height="836" loading="lazy" decoding="async" alt="Giao diện cây gia phả nhiều đời trong ứng dụng" /></div>
           </div>
 
           <div class="row reveal">
             <div class="row-text">
               <span class="eyebrow"><svg class="ico"><use href="#i-heart"/></svg>Nếp nhà</span>
               <h2 class="h-sec">Gìn giữ truyền thống &amp; di sản dòng họ</h2>
-              <p>Lưu giai thoại, gia phong, tục lệ, công trạng và kỷ vật của dòng họ; ghi nhớ ngày giỗ, nơi an nghỉ của tổ tiên — để nếp nhà được trao lại cho đời sau.</p>
+              <p>Lưu giai thoại, gia phong, tục lệ, công trạng và kỷ vật; quản lý mộ phần, nghĩa trang, từ đường; ghi nhận công đức và quỹ họ; dựng poster dòng thời gian qua từng thế hệ — để nếp nhà được trao lại cho đời sau.</p>
               <a class="more" data-cta="more-features" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=features">Khám phá tính năng <svg class="ico"><use href="#i-arrow"/></svg></a>
             </div>
-            <div class="row-photo"><img src="/assets/family-tradition.jpg" alt="Ba thế hệ cùng giữ nếp nhà ngày Tết" loading="lazy" /></div>
+            <div class="row-photo"><img src="/assets/family-tradition.webp" width="1200" height="800" loading="lazy" decoding="async" alt="Ba thế hệ cùng giữ nếp nhà ngày Tết" /></div>
           </div>
         </div>
       </section>
 
-      <!-- Vietnamese-specific features -->
+      <!-- Tính năng -->
       <section class="tint" id="tinh-nang">
         <div class="wrap center">
-          <span class="eyebrow"><svg class="ico"><use href="#i-sparkles"/></svg>Đặc trưng Việt</span>
-          <h2 class="h-sec">Hiểu dòng họ Việt — điều phần mềm ngoại không làm được</h2>
-          <p class="lead">Được làm riêng cho tập tục, lễ nghĩa và cách xưng hô của người Việt.</p>
+          <span class="eyebrow"><svg class="ico"><use href="#i-sparkles"/></svg>Hơn cả một cây gia phả</span>
+          <h2 class="h-sec">Mọi điều một dòng họ Việt cần, trong một nơi</h2>
+          <p class="lead">Làm riêng cho tập tục, lễ nghĩa và cách xưng hô của người Việt — từ ngày giỗ, mộ phần, từ đường đến sổ gia phả in treo.</p>
         </div>
         <div class="wrap feat-grid">
-          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-calendar"/></svg></div><h3>Nhớ giỗ theo âm lịch</h3><p>Ghi ngày sinh/mất theo cả âm &amp; dương lịch; tự nhắc ngày giỗ, ngày kỵ — không bao giờ quên.</p></div>
-          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-chat"/></svg></div><h3>Máy tính xưng hô</h3><p>Hai người trong họ gọi nhau là gì — chú, bác, cô, dì, cậu, cháu? Tra ra ngay.</p></div>
-          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-qr"/></svg></div><h3>Mã QR ở mộ &amp; từ đường</h3><p>In QR dán nơi mộ phần hoặc từ đường; con cháu quét là hiện ngay tiểu sử người đã khuất.</p></div>
-          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-link"/></svg></div><h3>Nối lại chi thất lạc</h3><p>Liên kết các nhánh tản mát nhiều đời và kết nối thông gia giữa hai dòng họ.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-calendar"/></svg></div><h3>Nhớ giỗ theo âm lịch</h3><p>Ghi ngày sinh, ngày mất theo cả âm và dương lịch; tự tính giỗ hằng năm và nhắc qua thông báo, email. Có lịch âm dương, xem ngày tốt xấu.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-chat"/></svg></div><h3>Tra cứu xưng hô</h3><p>Hai người trong họ gọi nhau là gì — chú, bác, cô, dì, cậu, cháu? Chọn hai người là ra, kèm giải thích đường quan hệ.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-invite"/></svg></div><h3>Mời cả họ cùng góp</h3><p>Một đường link, không cần tài khoản. Có sẵn tin nhắn và ảnh mời có mã QR để đăng Zalo, Facebook. Quản trị duyệt trước khi đưa vào gia phả.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-mic"/></svg></div><h3>Hỏi ông bà, trả lời bằng giọng nói</h3><p>Mỗi tuần một câu gợi ý hoặc tự đặt; cả nhà trả lời qua link. Người lớn tuổi bấm micro và nói, không cần gõ dấu tiếng Việt.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-qr"/></svg></div><h3>Mộ phần và mã QR</h3><p>Danh mục nơi an nghỉ, chỉ đường, lịch sử dời mộ, tảo mộ. In QR dán tại mộ hay từ đường — con cháu quét là hiện tiểu sử người đã khuất.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-heart"/></svg></div><h3>Di sản, công đức, quỹ họ</h3><p>Từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh và ghi âm; bảng vàng công đức; sổ thu chi minh bạch; bản đồ con cháu theo tỉnh thành.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-clock"/></svg></div><h3>Dòng thời gian dạng poster</h3><p>Câu chuyện dòng họ và từng người qua các thế hệ, kèm bối cảnh thời đại từ nhà Lý đến nay. Xuất PDF, PNG, gắn mã QR để treo hoặc chia sẻ.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-tree"/></svg></div><h3>Sổ gia phả và phả đồ khổ lớn</h3><p>Xuất sổ PDF đủ lời nói đầu, phả ký, phả hệ, phả đồ, ngoại phả, phụ khảo, mục lục. Cây gia phả xem 2D, 3D, thư mục, in khổ lớn.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-users"/></svg></div><h3>Ảnh ghép và phòng ký ức</h3><p>Mỗi người góp một mảnh để ghép thành tấm ảnh đại gia đình. Phòng trưng bày ảnh 3D cho những buổi họp mặt.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-landmark"/></svg></div><h3>Gia phả lịch sử có nguồn</h3><p>Các triều Lý, Trần, Hậu Lê, Nguyễn với khoảng 500 nhân vật, tiểu sử, dòng thời gian và trích dẫn nguồn — xem công khai, không cần đăng nhập.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-link"/></svg></div><h3>Nối chi, liên kết dòng họ</h3><p>Nối các nhánh tản mát nhiều đời; liên kết thông gia và họ hàng giữa hai dòng họ qua một thành viên chung.</p></div>
+          <div class="feat reveal"><div class="ic"><svg class="ico"><use href="#i-sparkles"/></svg></div><h3>Kết nối trợ lý AI</h3><p>Cho Claude, ChatGPT đọc gia phả để tra cứu, soạn tiểu sử có nguồn, thêm mốc thời gian. Bạn cấp quyền và thu hồi bất cứ lúc nào.</p></div>
+        </div>
+        <div class="wrap center" style="margin-top:2.6rem">
+          <a class="btn btn-primary reveal" data-cta="features-demo" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=features_grid"><svg class="ico"><use href="#i-eye"/></svg>Xem thử gia phả mẫu</a>
+        </div>
+      </section>
+
+      <!-- Thư viện hình ảnh -->
+      <section id="hinh-anh">
+        <div class="wrap center">
+          <span class="eyebrow"><svg class="ico"><use href="#i-eye"/></svg>Hình ảnh</span>
+          <h2 class="h-sec">Xem ứng dụng thật trông thế nào</h2>
+          <p class="lead">Bấm vào ảnh để xem toàn màn hình, phóng to và lướt qua từng màn hình của ứng dụng.</p>
+        </div>
+        <div class="wrap gal-grid">
+          <a class="gal-item wide reveal" href="/assets/app-dong-thoi-gian.webp" data-lightbox data-caption="Dòng thời gian: poster câu chuyện dòng họ qua các thế hệ, kèm bối cảnh thời đại"><img src="/assets/app-dong-thoi-gian.webp" width="8960" height="1852" loading="lazy" decoding="async" alt="Dòng thời gian: poster câu chuyện dòng họ qua các thế hệ, kèm bối cảnh thời đại" /><figcaption>Dòng thời gian: poster câu chuyện dòng họ qua các thế hệ, kèm bối cảnh thời đại</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-tree.webp" data-lightbox data-caption="Cây gia phả nhiều đời: thẻ vợ chồng, đời, ngày sinh – mất"><img src="/assets/app-tree.webp" width="1498" height="836" loading="lazy" decoding="async" alt="Cây gia phả nhiều đời: thẻ vợ chồng, đời, ngày sinh – mất" /><figcaption>Cây gia phả nhiều đời: thẻ vợ chồng, đời, ngày sinh – mất</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-tong-quan.webp" data-lightbox data-caption="Tổng quan: số liệu dòng họ, số đời, giới tính, tình trạng"><img src="/assets/app-tong-quan.webp" width="1684" height="859" loading="lazy" decoding="async" alt="Tổng quan: số liệu dòng họ, số đời, giới tính, tình trạng" /><figcaption>Tổng quan: số liệu dòng họ, số đời, giới tính, tình trạng</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-cay-gia-pha.webp" data-lightbox data-caption="Cây gia phả: đặt bất kỳ ai làm trung tâm, zoom, xuất sổ, chia sẻ"><img src="/assets/app-cay-gia-pha.webp" width="1684" height="859" loading="lazy" decoding="async" alt="Cây gia phả: đặt bất kỳ ai làm trung tâm, zoom, xuất sổ, chia sẻ" /><figcaption>Cây gia phả: đặt bất kỳ ai làm trung tâm, zoom, xuất sổ, chia sẻ</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-danh-ba.webp" data-lightbox data-caption="Danh bạ: tìm kiếm, lọc, tiến độ hoàn thiện hồ sơ"><img src="/assets/app-danh-ba.webp" width="1684" height="859" loading="lazy" decoding="async" alt="Danh bạ: tìm kiếm, lọc, tiến độ hoàn thiện hồ sơ" /><figcaption>Danh bạ: tìm kiếm, lọc, tiến độ hoàn thiện hồ sơ</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-tra-cuu-quan-he.webp" data-lightbox data-caption="Tra cứu quan hệ: tổ tiên, vợ chồng, anh chị em, toàn bộ con cháu theo đời"><img class="top" src="/assets/app-tra-cuu-quan-he.webp" width="1684" height="3845" loading="lazy" decoding="async" alt="Tra cứu quan hệ: tổ tiên, vợ chồng, anh chị em, toàn bộ con cháu theo đời" /><figcaption>Tra cứu quan hệ: tổ tiên, vợ chồng, anh chị em, toàn bộ con cháu theo đời</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-su-kien.webp" data-lightbox data-caption="Sự kiện: ngày giỗ âm lịch, nhắc trước, thiệp, theo dõi qua email"><img class="top" src="/assets/app-su-kien.webp" width="1684" height="2811" loading="lazy" decoding="async" alt="Sự kiện: ngày giỗ âm lịch, nhắc trước, thiệp, theo dõi qua email" /><figcaption>Sự kiện: ngày giỗ âm lịch, nhắc trước, thiệp, theo dõi qua email</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-tat-ca-tinh-nang.webp" data-lightbox data-caption="Tất cả tính năng: bảng tin, di sản, mộ phần, quỹ họ, dòng thời gian…"><img class="top" src="/assets/app-tat-ca-tinh-nang.webp" width="1684" height="2729" loading="lazy" decoding="async" alt="Tất cả tính năng: bảng tin, di sản, mộ phần, quỹ họ, dòng thời gian…" /><figcaption>Tất cả tính năng: bảng tin, di sản, mộ phần, quỹ họ, dòng thời gian…</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-ban-do.webp" data-lightbox data-caption="Bản đồ dòng họ: con cháu, mộ phần, di sản phân bố theo tỉnh thành"><img class="top" src="/assets/app-ban-do.webp" width="1684" height="2162" loading="lazy" decoding="async" alt="Bản đồ dòng họ: con cháu, mộ phần, di sản phân bố theo tỉnh thành" /><figcaption>Bản đồ dòng họ: con cháu, mộ phần, di sản phân bố theo tỉnh thành</figcaption></a>
+          <a class="gal-item reveal" href="/assets/app-anh-ghep.webp" data-lightbox data-caption="Ảnh ghép đại gia đình: mỗi người góp một mảnh"><img src="/assets/app-anh-ghep.webp" width="1684" height="1080" loading="lazy" decoding="async" alt="Ảnh ghép đại gia đình: mỗi người góp một mảnh" /><figcaption>Ảnh ghép đại gia đình: mỗi người góp một mảnh</figcaption></a>
         </div>
       </section>
 
@@ -525,24 +595,18 @@
         </div>
       </section>
 
-      <!-- Testimonials -->
+      <!-- Gia phả lịch sử -->
       <section class="tint">
         <div class="wrap center">
-          <span class="eyebrow"><svg class="ico"><use href="#i-heart"/></svg>Dòng họ nói gì</span>
-          <h2 class="h-sec">Được các dòng họ tin dùng</h2>
+          <span class="eyebrow"><svg class="ico"><use href="#i-landmark"/></svg>Có sẵn để khám phá</span>
+          <h2 class="h-sec">Gia phả các triều đại Việt, có dẫn nguồn</h2>
+          <p class="lead">Lý, Trần, Hậu Lê, Nguyễn — khoảng 500 nhân vật với tiểu sử, dòng thời gian và trích dẫn từng chi tiết. Mở xem công khai, không cần tài khoản; cũng là cách nhanh nhất để thấy app làm được gì.</p>
         </div>
-        <!-- LỜI CHỨNG THỰC — MẪU, thay bằng lời thật trước khi quảng bá -->
-        <div class="wrap testi-grid">
-          <div class="tcard reveal"><div class="mark">“</div><p class="q">Cả họ tôi ở khắp ba miền, vậy mà chỉ sau một tháng đã cùng dựng lại được cây gia phả sáu đời.</p><div class="who"><span class="ava">NP</span><div><b>Ông Nguyễn Văn Phúc</b><small>Trưởng tộc họ Nguyễn · Bắc Ninh</small></div></div></div>
-          <div class="tcard reveal"><div class="mark">“</div><p class="q">Tôi kịp ghi âm giọng bà nội kể chuyện gốc tích dòng họ trước khi bà mất — quý hơn vàng.</p><div class="who"><span class="ava">TL</span><div><b>Bà Trần Thị Lan</b><small>Họ Trần · Nam Định</small></div></div></div>
-          <div class="tcard reveal"><div class="mark">“</div><p class="q">Mấy cụ lớn tuổi cũng tự vào xem và bổ sung được. Chữ to, nút lớn, không hề rối.</p><div class="who"><span class="ava">LH</span><div><b>Ông Lê Quang Hải</b><small>Trưởng họ Lê · Hà Tĩnh</small></div></div></div>
-          <div class="tcard reveal"><div class="mark">“</div><p class="q">Về quê giỗ tổ, lớp trẻ tra ngay được ai vai trên vai dưới, gọi nhau cho đúng.</p><div class="who"><span class="ava">PĐ</span><div><b>Anh Phạm Minh Đức</b><small>Họ Phạm · TP.HCM</small></div></div></div>
-          <div class="tcard reveal"><div class="mark">“</div><p class="q">In được cuốn gia phả và phả đồ khổ lớn treo ở từ đường. Con cháu về ai cũng trầm trồ.</p><div class="who"><span class="ava">VT</span><div><b>Ông Võ Đình Tâm</b><small>Trưởng họ Võ · Quảng Nam</small></div></div></div>
-          <div class="tcard reveal"><div class="mark">“</div><p class="q">Nhờ nhắc giỗ theo âm lịch, con cháu không còn quên ngày kỵ của các cụ.</p><div class="who"><span class="ava">ĐH</span><div><b>Ông Đặng Văn Hoà</b><small>Trưởng họ Đặng · Thái Bình</small></div></div></div>
+        <div class="wrap center" style="margin-top:2.4rem">
+          <a class="btn btn-primary reveal" data-cta="history" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=history"><svg class="ico"><use href="#i-eye"/></svg>Mở gia phả mẫu</a>
         </div>
       </section>
 
-      <!-- FAQ -->
       <section id="cau-hoi">
         <div class="wrap center">
           <span class="eyebrow"><svg class="ico"><use href="#i-chat"/></svg>Hỏi đáp</span>
@@ -561,7 +625,7 @@
       <section>
         <div class="wrap">
           <div class="cta reveal">
-            <img class="dragon" src="/assets/dragon.svg" alt="" aria-hidden="true" />
+            <img class="dragon" src="/assets/dragon.svg" alt="" aria-hidden="true" loading="lazy" decoding="async" />
             <h2 class="serif">Bắt đầu gìn giữ dòng họ của bạn hôm nay</h2>
             <p>Chỉ vài phút để tạo dòng họ và mời cả họ cùng vun đắp. Miễn phí, và bạn luôn được hỗ trợ.</p>
             <div class="btns">
@@ -585,13 +649,14 @@
       <div class="wrap">
         <div class="foot-top">
           <div class="foot-brand">
-            <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="" style="width:32px;height:32px;border-radius:9px"/><span>Dòng Họ Việt</span></a>
+            <a class="brand" href="/"><img src="/assets/app-icon.svg" width="32" height="32" alt="" style="width:32px;height:32px;border-radius:9px"/><span>Dòng Họ Việt</span></a>
             <p>Gia phả số gìn giữ cội nguồn dòng họ Việt — để con cháu muôn đời sau biết mình từ đâu mà đến.</p>
           </div>
           <div class="foot-col">
             <h4>Khám phá</h4>
             <a href="#cach-dung">Cách dùng</a>
             <a href="#tinh-nang">Tính năng</a>
+          <a href="#hinh-anh">Hình ảnh</a>
             <a href="#cau-hoi">Hỏi đáp</a>
             <a href="/huong-dan.html">Kiến thức gia phả</a>
             <a href="/huong-dan/cach-tinh-ngay-gio-am-lich.html">Cách tính ngày giỗ</a>
@@ -721,6 +786,97 @@
           },
           { passive: true },
         );
+      })();
+    </script>
+
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh toàn màn hình">
+      <div class="lb-bar">
+        <button class="icon-btn" type="button" data-lb="out" aria-label="Thu nhỏ"><svg class="ico"><use href="#i-zoom-out"/></svg></button>
+        <button class="icon-btn" type="button" data-lb="in" aria-label="Phóng to"><svg class="ico"><use href="#i-zoom-in"/></svg></button>
+        <button class="icon-btn" type="button" data-lb="close" aria-label="Đóng"><svg class="ico"><use href="#i-close"/></svg></button>
+      </div>
+      <div class="lb-stage" id="lbStage">
+        <button class="icon-btn lb-nav prev" type="button" data-lb="prev" aria-label="Ảnh trước"><svg class="ico"><use href="#i-prev"/></svg></button>
+        <img id="lbImg" alt="" draggable="false" />
+        <button class="icon-btn lb-nav next" type="button" data-lb="next" aria-label="Ảnh sau"><svg class="ico"><use href="#i-next"/></svg></button>
+      </div>
+      <div class="lb-cap" id="lbCap"></div>
+    </div>
+    <script>
+      (function () {
+        var box = document.getElementById("lightbox"), stage = document.getElementById("lbStage"),
+            img = document.getElementById("lbImg"), cap = document.getElementById("lbCap");
+        var items = [], cur = 0, scale = 1, tx = 0, ty = 0, MAX = 5;
+        document.querySelectorAll("[data-lightbox]").forEach(function (el) {
+          var im = el.querySelector("img"); if (!im) return;
+          // Cùng một ảnh xuất hiện 2 lần (trang chủ + thư viện) thì chỉ giữ một trong danh sách duyệt.
+          var src = el.getAttribute("href") || im.getAttribute("src");
+          var idx = items.findIndex(function (x) { return x.src === src; });
+          if (idx < 0) { idx = items.length; items.push({ src: src, alt: im.alt, cap: el.getAttribute("data-caption") || im.alt }); }
+          el.tabIndex = 0; el.setAttribute("role", "button");
+          function open(e) { if (e) e.preventDefault(); show(idx); box.classList.add("open"); document.body.style.overflow = "hidden"; }
+          el.addEventListener("click", open);
+          el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") open(e); });
+        });
+        function apply() {
+          img.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + scale + ")";
+          stage.classList.toggle("zoomed", scale > 1);
+        }
+        function clamp() {
+          if (scale <= 1) { tx = ty = 0; return; }
+          var mx = (img.clientWidth * scale - stage.clientWidth) / 2, my = (img.clientHeight * scale - stage.clientHeight) / 2;
+          tx = Math.max(-Math.max(mx, 0), Math.min(Math.max(mx, 0), tx));
+          ty = Math.max(-Math.max(my, 0), Math.min(Math.max(my, 0), ty));
+        }
+        function zoom(to) { scale = Math.max(1, Math.min(MAX, to)); clamp(); apply(); }
+        function show(i) {
+          cur = (i + items.length) % items.length; scale = 1; tx = ty = 0; apply();
+          img.src = items[cur].src; img.alt = items[cur].alt;
+          cap.innerHTML = ""; var t = document.createElement("div"); t.textContent = items[cur].cap; cap.appendChild(t);
+          var c = document.createElement("small"); c.textContent = (cur + 1) + " / " + items.length; cap.appendChild(c);
+          var multi = items.length > 1;
+          box.querySelectorAll(".lb-nav").forEach(function (b) { b.style.display = multi ? "" : "none"; });
+        }
+        function close() { box.classList.remove("open"); document.body.style.overflow = ""; img.removeAttribute("src"); }
+        box.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-lb]");
+          if (b) { var a = b.getAttribute("data-lb");
+            if (a === "close") close(); else if (a === "prev") show(cur - 1); else if (a === "next") show(cur + 1);
+            else if (a === "in") zoom(scale * 1.5); else if (a === "out") zoom(scale / 1.5); return; }
+          if (e.target === stage && scale === 1 && !moved) close();
+        });
+        document.addEventListener("keydown", function (e) {
+          if (!box.classList.contains("open")) return;
+          if (e.key === "Escape") close(); else if (e.key === "ArrowLeft") show(cur - 1); else if (e.key === "ArrowRight") show(cur + 1);
+          else if (e.key === "+" || e.key === "=") zoom(scale * 1.5); else if (e.key === "-") zoom(scale / 1.5); else if (e.key === "0") zoom(1);
+        });
+        stage.addEventListener("wheel", function (e) { e.preventDefault(); zoom(scale * (e.deltaY < 0 ? 1.2 : 1 / 1.2)); }, { passive: false });
+        img.addEventListener("dblclick", function () { zoom(scale > 1 ? 1 : 2.5); });
+        // Kéo để di chuyển khi đã phóng to; vuốt ngang để chuyển ảnh khi chưa phóng to; 2 ngón để chụm/nở.
+        var pts = {}, startX = 0, startY = 0, baseTx = 0, baseTy = 0, pinch0 = 0, pinchScale = 1, moved = false;
+        function dist() { var k = Object.keys(pts); if (k.length < 2) return 0; var a = pts[k[0]], b = pts[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
+        stage.addEventListener("pointerdown", function (e) {
+          if (e.target.closest("[data-lb]")) return;
+          stage.setPointerCapture(e.pointerId); pts[e.pointerId] = { x: e.clientX, y: e.clientY }; moved = false;
+          startX = e.clientX; startY = e.clientY; baseTx = tx; baseTy = ty;
+          if (Object.keys(pts).length === 2) { pinch0 = dist(); pinchScale = scale; }
+          stage.classList.add("dragging");
+        });
+        stage.addEventListener("pointermove", function (e) {
+          if (!pts[e.pointerId]) return; pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+          if (Object.keys(pts).length >= 2) { if (pinch0) zoom(pinchScale * dist() / pinch0); moved = true; return; }
+          var dx = e.clientX - startX, dy = e.clientY - startY;
+          if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+          if (scale > 1) { tx = baseTx + dx; ty = baseTy + dy; clamp(); apply(); }
+        });
+        function up(e) {
+          if (!pts[e.pointerId]) return;
+          var dx = e.clientX - startX, n = Object.keys(pts).length; delete pts[e.pointerId];
+          stage.classList.remove("dragging");
+          if (n === 1 && scale === 1 && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - startY) * 1.5) show(cur + (dx < 0 ? 1 : -1));
+          setTimeout(function () { moved = false; }, 0);
+        }
+        stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
       })();
     </script>
   </body>
