@@ -140,6 +140,20 @@ describe("pickDefaultFocal", () => {
     expect(pickDefaultFocal(persons)).toBe("b");
   });
 
+  it("không có is_root: chọn người gốc nhiều hậu duệ nhất, không phải con cả", () => {
+    const persons = [
+      p("eldest", "Con cả", "M", { generation: 2, birth_family_id: "f1" }),
+      p("root", "Cụ tổ", "M", { generation: 1 }),
+      p("wife", "Bà", "F", { generation: 1 }),
+      p("gc", "Cháu", "M", { generation: 3, birth_family_id: "f2" }),
+    ];
+    const families = [
+      { id: "f1", husband_id: "root", wife_id: "wife", spouse_order: null, created_at: null },
+      { id: "f2", husband_id: "eldest", wife_id: null, spouse_order: null, created_at: null },
+    ];
+    expect(pickDefaultFocal(persons, families)).toBe("root");
+  });
+
   it("falls back to first person when no generations set", () => {
     expect(pickDefaultFocal([p("a", "A", "M"), p("b", "B", "F")])).toBe("a");
   });

@@ -473,7 +473,7 @@ export default function Tree() {
   // Cached so the "Về mặc định" button can compare cheaply and the
   // initialisation effect below doesn't recompute on every render.
   const defaultFocal = useMemo(
-    () => (data ? pickDefaultFocal(data.persons) : null),
+    () => (data ? pickDefaultFocal(data.persons, data.families) : null),
     [data],
   );
   // Người trung tâm nằm trên URL (?p=<id>): bấm vào một người rồi Back vẫn ở đúng người đó. Không có

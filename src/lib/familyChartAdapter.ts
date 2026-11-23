@@ -343,10 +343,55 @@ export function addInlawGhosts(
  * exists (the Thuỷ tổ — the natural root of the tree). Otherwise fall back
  * to the person with the smallest known generation, then to the first row.
  */
-export function pickDefaultFocal(persons: PersonForTree[]): string | null {
+export function pickDefaultFocal(
+  persons: PersonForTree[],
+  families: FamilyForTree[] = [],
+): string | null {
   if (persons.length === 0) return null;
   const root = persons.find((p) => p.is_root);
   if (root) return root.id;
+
+  // Chưa đánh dấu Thuỷ tổ: chọn người đứng đầu dòng máu — không có cha mẹ trong cây,
+  // nhiều hậu duệ nhất (tránh rơi vào "con cả" chỉ vì thứ tự dữ liệu).
+  if (families.length > 0) {
+    const famById = new Map(families.map((f) => [f.id, f]));
+    const childrenOf = new Map<string, string[]>();
+    for (const p of persons) {
+      const f = p.birth_family_id ? famById.get(p.birth_family_id) : undefined;
+      if (!f) continue;
+      for (const par of [f.husband_id, f.wife_id]) {
+        if (!par) continue;
+        const arr = childrenOf.get(par) ?? [];
+        arr.push(p.id);
+        childrenOf.set(par, arr);
+      }
+    }
+    const memo = new Map<string, number>();
+    const count = (id: string, seen: Set<string>): number => {
+      const hit = memo.get(id);
+      if (hit !== undefined) return hit;
+      if (seen.has(id)) return 0;
+      seen.add(id);
+      let n = 0;
+      for (const c of childrenOf.get(id) ?? []) n += 1 + count(c, seen);
+      seen.delete(id);
+      memo.set(id, n);
+      return n;
+    };
+    const hasParents = (p: PersonForTree) =>
+      !!p.birth_family_id && famById.has(p.birth_family_id);
+    const tops = persons
+      .filter((p) => !hasParents(p) && (childrenOf.get(p.id)?.length ?? 0) > 0)
+      .map((p) => ({ p, n: count(p.id, new Set()) }))
+      .sort(
+        (a, b) =>
+          b.n - a.n ||
+          (a.p.generation ?? 99) - (b.p.generation ?? 99) ||
+          (a.p.gender === "M" ? 0 : 1) - (b.p.gender === "M" ? 0 : 1),
+      );
+    if (tops.length > 0) return tops[0].p.id;
+  }
+
   const withGen = persons
     .filter((p) => p.generation !== null)
     .sort((a, b) => (a.generation ?? 99) - (b.generation ?? 99));
