@@ -1,5 +1,6 @@
 import { useContext } from "react";
 
+import { Callout } from "@/components/ui/callout";
 import { AddressPicker } from "@/components/AddressPicker";
 import { IconMapPin, IconTag } from "@/components/icons";
 import { InSidePanelContext } from "@/components/panel/context";
@@ -48,14 +49,14 @@ export function PersonAddressCard({
           {t`Tuỳ chọn`}
         </Chip>
       </div>
-      <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+      <Callout>
         <Trans>
-        Không bắt buộc. Nếu bạn nhập thông tin ở đây,
-        <strong>tỉnh/thành sẽ được hiển thị trên Bản đồ</strong> của dòng
-        họ (chỉ thành viên dòng họ xem được). Không nhập thì người này sẽ không
-        xuất hiện trên bản đồ.
+          Không bắt buộc. Nếu bạn nhập thông tin ở đây,
+          <strong>tỉnh/thành sẽ được hiển thị trên Bản đồ</strong> của dòng họ
+          (chỉ thành viên dòng họ xem được). Không nhập thì người này sẽ không
+          xuất hiện trên bản đồ.
         </Trans>
-      </p>
+      </Callout>
       <AddressPicker
         idPrefix="person-addr"
         value={{

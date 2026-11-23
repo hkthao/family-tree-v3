@@ -370,15 +370,6 @@ msgstr "(the current biography is empty)"
 msgid "(trống)"
 msgstr "(empty)"
 
-#: src/pages/clan/NewPerson.tsx
-#: src/pages/clan/NewPerson.tsx
-#: src/pages/clan/NewPerson.tsx
-#: src/pages/clan/NewPerson.tsx
-#: src/pages/clan/NewPerson.tsx
-#: src/pages/clan/NewPerson.tsx
-msgid "(tuỳ chọn)"
-msgstr "(optional)"
-
 #: src/pages/clan/HeritageDetail.tsx
 msgid "). Dán vào đây."
 msgstr "). Paste it here."
@@ -448,6 +439,13 @@ msgstr "{0} answers"
 msgid "{0} chờ duyệt"
 msgstr "{0} pending"
 
+#. placeholder {0}: s.gender === "F" ? t`Vợ` : t`Chồng`
+#. placeholder {0}: spouseRankLabel(s.gender, i)
+#: src/components/OtherParentPicker.tsx
+#: src/components/OtherParentPicker.tsx
+msgid "{0} của {focalName}"
+msgstr "{0} of {focalName}"
+
 #. placeholder {0}: lineage.steps.length
 #: src/pages/clan/MyLineage.tsx
 msgid "{0} đời — chưa đến thuỷ tổ"
@@ -469,6 +467,11 @@ msgstr "{0} clans"
 #: src/pages/clan/Heritage.tsx
 msgid "{0} ghi âm"
 msgstr "{0} recordings"
+
+#. placeholder {0}: pad2(h)
+#: src/components/ui/date-picker.tsx
+msgid "{0} giờ"
+msgstr "{0}h"
 
 #. placeholder {0}: Math.round(res.bytes / 1024)
 #: src/components/PhotoUploadField.tsx
@@ -545,6 +548,11 @@ msgstr "{0} resting places"
 msgid "{0} ơi, cả nhà nhờ bạn đóng góp chuyện ông bà, ảnh cũ"
 msgstr "{0}, the family asks you to share stories of our grandparents and old photos"
 
+#. placeholder {0}: pad2(m)
+#: src/components/ui/date-picker.tsx
+msgid "{0} phút"
+msgstr "{0} min"
+
 #. placeholder {0}: clan.person_count
 #. placeholder {0}: clan.person_count.toLocaleString("vi-VN")
 #: src/components/ClanBadges.tsx
@@ -587,11 +595,6 @@ msgstr "{0} is still in the clan. If the two already have children, the children
 #: src/pages/Videos.tsx
 msgid "{0} video ngắn (~30-70 giây). Bấm card để xem."
 msgstr "{0} short videos (~30–70 seconds). Tap a card to watch."
-
-#. placeholder {0}: rels.spouses.length
-#: src/pages/clan/AddChild.tsx
-msgid "{0} vợ/chồng"
-msgstr "{0} spouses"
 
 #. placeholder {0}: nameOf(code)
 #. placeholder {1}: LAYER_UNIT[layer]
@@ -675,6 +678,10 @@ msgstr "{diffMin} minutes ago"
 #: src/components/ClanBadges.tsx
 msgid "{doi} đời"
 msgstr "{doi} generations"
+
+#: src/components/OtherParentPicker.tsx
+msgid "{focalName} đã có vợ/chồng ở trên — hãy chọn đúng người để con được gắn đúng. Chỉ chọn \"Chưa rõ\" khi con này thực sự không cùng cha mẹ với các anh chị em hiện có."
+msgstr "{focalName} already has a spouse listed above — pick the right person so the child is linked correctly. Choose \"Unknown\" only if this child truly does not share parents with the existing siblings."
 
 #: src/lib/relations.ts
 msgid "{further} đời sau"
@@ -862,8 +869,8 @@ msgstr "<0><1/> Red pin: GPS location</0><2><3/> Grey pin: province only</2>"
 msgid "<0><1/>Ngày tốt (hoàng đạo)</0><2><3/>Ngày xấu (hắc đạo)</2><4><5>•</5> Ngày kiêng</4><6><7/> Lễ, tết</6><8><9/>Có sự kiện dòng họ</8>"
 msgstr "<0><1/>Good day (Hoàng đạo)</0><2><3/>Bad day (Hắc đạo)</2><4><5>•</5> Taboo day</4><6><7/> Festivals</6><8><9/>Clan event</8>"
 
-#. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEffect, useRef, useState } from "react"; import { Link } from "react-router-dom"; import { FilterableSelect } from "@/components/FilterableSelect"; import { useToast } from "@/components/Toast"; import { IconBuildings, IconDownload, IconFlame, IconLink, IconPlay, IconTrash, IconX, } from "@/components/icons"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { giaPhaImportFinalize, giaPhaImportStart, giaPhaImportStep, listAllClans, wipeClanDirectory, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { Trans } from "@lingui/react/macro"; import { t } from "@lingui/core/macro"; export function GiaPhaImportTab() { const qc = useQueryClient(); const toast = useToast(); const clansQ = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), }); const clans = clansQ.data ?? []; // import section const [mode, setMode] = useState<"new" | "existing">("new"); const [sourceUrl, setSourceUrl] = useState(""); const [newClanName, setNewClanName] = useState(""); const [targetClanId, setTargetClanId] = useState(""); const [replace, setReplace] = useState(false); // staged-job state: drive start → step×N → finalize, with progress. const LS_KEY = "giapha-import-job"; const [running, setRunning] = useState(false); const [prog, setProg] = useState<{ scraped: number; total: number; phase: string; } | null>(null); const [result, setResult] = useState<Awaited< ReturnType<typeof giaPhaImportFinalize> > | null>(null); const [resultClanName, setResultClanName] = useState<string | undefined>( undefined, ); const [resumeJob, setResumeJob] = useState<{ jobId: string; total: number; clanName?: string; } | null>(null); const cancelRef = useRef(false); // On mount, surface an unfinished job (e.g. tab was closed) so it can resume. useEffect(() => { try { const raw = localStorage.getItem(LS_KEY); if (raw) setResumeJob(JSON.parse(raw)); } catch { /* ignore */ } }, []); // Loop steps until 'ready', then finalize. `jobId` already exists. async function runJob(jobId: string, total: number, clanName?: string) { setRunning(true); cancelRef.current = false; try { let status = "scraping"; let scraped = prog?.scraped ?? 0; while (status === "scraping") { if (cancelRef.current) { toast.info(t`Đã tạm dừng — có thể tiếp tục sau.`); setRunning(false); return; } const r = await giaPhaImportStep(jobId); status = r.status; scraped = r.scraped; setProg({ scraped, total: r.total, phase: t`Đang tải dữ liệu` }); } setProg({ scraped, total, phase: t`Đang ghi vào dòng họ` }); const res = await giaPhaImportFinalize(jobId); setResult(res); setResultClanName(clanName); localStorage.removeItem(LS_KEY); setResumeJob(null); setProg(null); qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã nhập gia phả`, { description: t`${res.counts.persons} người · ${res.counts.families} gia đình`, }); } catch (e) { toast.error(t`Nhập thất bại`, { description: (e as Error).message }); } finally { setRunning(false); } } async function startImport() { setResult(null); setRunning(true); cancelRef.current = false; try { const job = await giaPhaImportStart({ sourceUrl: sourceUrl.trim(), clanId: mode === "existing" ? targetClanId : undefined, clanName: mode === "new" ? newClanName.trim() || undefined : undefined, replace: mode === "existing" ? replace : undefined, }); const ls = { jobId: job.jobId, total: job.total, clanName: job.clanName }; localStorage.setItem(LS_KEY, JSON.stringify(ls)); setProg({ scraped: 0, total: job.total, phase: t`Đang tải dữ liệu` }); await runJob(job.jobId, job.total, job.clanName); } catch (e) { toast.error(t`Không bắt đầu được`, { description: (e as Error).message }); setRunning(false); } } function dismissResume() { localStorage.removeItem(LS_KEY); setResumeJob(null); } // wipe section const [wipeClanId, setWipeClanId] = useState(""); const [confirmText, setConfirmText] = useState(""); const wipeClan = clans.find((c) => c.id === wipeClanId); const canWipe = !!wipeClan && confirmText.trim() === wipeClan.name; const wipeM = useMutation({ mutationFn: () => wipeClanDirectory(wipeClanId), onSuccess: (r) => { qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã xoá toàn bộ danh bạ`, { description: t`${r.deleted_persons} người · ${r.deleted_families} gia đình`, }); setConfirmText(""); }, onError: (e) => toast.error(t`Xoá thất bại`, { description: (e as Error).message }), }); return ( <section className="space-y-4"> {/* ── Import ── */} <div className="space-y-3 rounded-lg border p-4"> <h2 className="text-lg font-semibold">{t`Nhập từ vietnamgiapha.com`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Dán link gia phả (vd{" "} <code>https://vietnamgiapha.com/XemGiaPha/1691/giapha.html</code>) rồi bấm Tạo. Hệ thống tự tải, bóc tách và tạo danh bạ. Quá trình có thể mất 30–60 giây. </Trans> </p> <div className="flex flex-wrap gap-1.5"> {(["new", "existing"] as const).map((m) => ( <button key={m} type="button" onClick={() => setMode(m)} className={`px-3 h-9 rounded-md border text-sm ${mode === m ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted/40"}`} > {m === "new" ? t`Tạo dòng họ mới` : t`Nhập vào dòng họ có sẵn`} </button> ))} </div> <div className="space-y-1.5"> <Label htmlFor="src-url">{t`Link gia phả`}</Label> <Input id="src-url" icon={<IconLink />} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://vietnamgiapha.com/XemGiaPha/…" /> </div> {mode === "new" ? ( <div className="space-y-1.5"> <Label htmlFor="new-name">{t`Tên dòng họ (bỏ trống = tự lấy từ nguồn)`}</Label> <Input id="new-name" icon={<IconBuildings />} value={newClanName} onChange={(e) => setNewClanName(e.target.value)} placeholder={t`vd: Chi họ Cao Minh Triết`} /> </div> ) : ( <div className="space-y-2"> <div className="space-y-1.5"> <Label htmlFor="target-clan">{t`Dòng họ đích`}</Label> <FilterableSelect id="target-clan" icon={<IconBuildings />} value={targetClanId} onChange={setTargetClanId} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> <label className="flex items-start gap-2 text-sm cursor-pointer"> <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} className="mt-1 h-4 w-4 accent-primary" /> <span> Xoá toàn bộ danh bạ hiện tại của dòng họ này{" "} <strong>{t`trước khi`}</strong> nhập (tránh trùng lặp khi nhập lại). </span> </label> </div> )} {resumeJob && !running && ( <Alert> <AlertDescription className="flex flex-wrap items-center gap-2"> <span> Có lần nhập đang dở {resumeJob.clanName ? ` (${resumeJob.clanName})` : ""} — {resumeJob.total} người. Tiếp tục? </span> <Button size="sm" variant="outline" onClick={() => runJob(resumeJob.jobId, resumeJob.total, resumeJob.clanName) } > <IconPlay className="h-4 w-4 mr-1.5" /> {t`Tiếp tục nhập`} </Button> <Button size="sm" variant="ghost" onClick={dismissResume}> {t`Bỏ qua`} </Button> </AlertDescription> </Alert> )} {!running ? ( <Button size="sm" variant="outline" disabled={ !sourceUrl.trim() || (mode === "existing" && !targetClanId) } onClick={startImport} > <IconDownload className="h-4 w-4 mr-1.5" /> {t`Tạo`} </Button> ) : ( <div className="space-y-2"> <div className="flex items-center justify-between text-sm"> <span className="text-muted-foreground"> {prog?.phase ?? t`Đang xử lý`} {prog ? t` — ${prog.scraped}/${prog.total} người` : "…"} </span> <Button size="sm" variant="outline" onClick={() => { cancelRef.current = true; }} > <IconX className="h-4 w-4 mr-1.5" /> {t`Tạm dừng`} </Button> </div> {prog && prog.total > 0 && ( <div className="h-2 w-full overflow-hidden rounded-full bg-muted"> <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((prog.scraped / prog.total) * 100)}%`, }} /> </div> )} <p className="text-xs text-muted-foreground"> <Trans> Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau — tiến độ được lưu trên máy chủ. </Trans> </p> </div> )} {result && ( <Alert> <AlertDescription> ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "} <strong>{result.counts.families}</strong> gia đình vào{" "} <Link to={`/clans/${result.clanId}`} className="text-primary underline" > {resultClanName ?? t`dòng họ`} </Link> . {(result.warnings.ambiguousMothers > 0 || result.warnings.missingGender > 0) && ( <span className="block mt-1 text-muted-foreground"> Cần rà lại: {result.warnings.ambiguousMothers} con mẹ chưa chắc (mặc định vợ cả) {result.warnings.missingGender > 0 && t`, ${result.warnings.missingGender} thiếu giới tính`} . {result.warnings.note} </span> )} </AlertDescription> </Alert> )} </div> {/* ── Danger: wipe directory ── */} <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4"> <h2 className="text-lg font-semibold text-destructive"> {t`Xoá toàn bộ danh bạ (nguy hiểm)`} </h2> <Alert variant="destructive"> <Trans> <AlertDescription> <strong>{t`Hành động không thể hoàn tác.`}</strong> Xoá vĩnh viễn{" "} <strong>{t`tất cả người và quan hệ gia đình`}</strong> trong dòng họ đã chọn — KHÔNG khôi phục được từ nhật ký. Dòng họ, thành viên và cài đặt vẫn giữ nguyên. Chỉ dùng khi muốn nhập lại từ đầu. </AlertDescription> </Trans> </Alert> <div className="space-y-1.5"> <Label htmlFor="wipe-clan">{t`Dòng họ cần xoá danh bạ`}</Label> <FilterableSelect id="wipe-clan" icon={<IconBuildings />} value={wipeClanId} onChange={(v) => { setWipeClanId(v); setConfirmText(""); }} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> {wipeClan && ( <div className="space-y-1.5"> <Label htmlFor="wipe-confirm"> <Trans> Gõ đúng tên dòng họ <strong>“{wipeClan.name}”</strong> để xác nhận xoá {wipeClan.person_count} người: </Trans> </Label> <Input id="wipe-confirm" icon={<IconFlame />} value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder={wipeClan.name} autoComplete="off" /> </div> )} <Button size="sm" variant="destructive" disabled={!canWipe || wipeM.isPending} onClick={() => wipeM.mutate()} > <IconTrash className="h-4 w-4 mr-1.5" /> {wipeM.isPending ? t`Đang xoá…` : t`Xoá toàn bộ danh bạ`} </Button> </div> </section> ); } 
-#. placeholder {1}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEffect, useRef, useState } from "react"; import { Link } from "react-router-dom"; import { FilterableSelect } from "@/components/FilterableSelect"; import { useToast } from "@/components/Toast"; import { IconBuildings, IconDownload, IconFlame, IconLink, IconPlay, IconTrash, IconX, } from "@/components/icons"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { giaPhaImportFinalize, giaPhaImportStart, giaPhaImportStep, listAllClans, wipeClanDirectory, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { Trans } from "@lingui/react/macro"; import { t } from "@lingui/core/macro"; export function GiaPhaImportTab() { const qc = useQueryClient(); const toast = useToast(); const clansQ = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), }); const clans = clansQ.data ?? []; // import section const [mode, setMode] = useState<"new" | "existing">("new"); const [sourceUrl, setSourceUrl] = useState(""); const [newClanName, setNewClanName] = useState(""); const [targetClanId, setTargetClanId] = useState(""); const [replace, setReplace] = useState(false); // staged-job state: drive start → step×N → finalize, with progress. const LS_KEY = "giapha-import-job"; const [running, setRunning] = useState(false); const [prog, setProg] = useState<{ scraped: number; total: number; phase: string; } | null>(null); const [result, setResult] = useState<Awaited< ReturnType<typeof giaPhaImportFinalize> > | null>(null); const [resultClanName, setResultClanName] = useState<string | undefined>( undefined, ); const [resumeJob, setResumeJob] = useState<{ jobId: string; total: number; clanName?: string; } | null>(null); const cancelRef = useRef(false); // On mount, surface an unfinished job (e.g. tab was closed) so it can resume. useEffect(() => { try { const raw = localStorage.getItem(LS_KEY); if (raw) setResumeJob(JSON.parse(raw)); } catch { /* ignore */ } }, []); // Loop steps until 'ready', then finalize. `jobId` already exists. async function runJob(jobId: string, total: number, clanName?: string) { setRunning(true); cancelRef.current = false; try { let status = "scraping"; let scraped = prog?.scraped ?? 0; while (status === "scraping") { if (cancelRef.current) { toast.info(t`Đã tạm dừng — có thể tiếp tục sau.`); setRunning(false); return; } const r = await giaPhaImportStep(jobId); status = r.status; scraped = r.scraped; setProg({ scraped, total: r.total, phase: t`Đang tải dữ liệu` }); } setProg({ scraped, total, phase: t`Đang ghi vào dòng họ` }); const res = await giaPhaImportFinalize(jobId); setResult(res); setResultClanName(clanName); localStorage.removeItem(LS_KEY); setResumeJob(null); setProg(null); qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã nhập gia phả`, { description: t`${res.counts.persons} người · ${res.counts.families} gia đình`, }); } catch (e) { toast.error(t`Nhập thất bại`, { description: (e as Error).message }); } finally { setRunning(false); } } async function startImport() { setResult(null); setRunning(true); cancelRef.current = false; try { const job = await giaPhaImportStart({ sourceUrl: sourceUrl.trim(), clanId: mode === "existing" ? targetClanId : undefined, clanName: mode === "new" ? newClanName.trim() || undefined : undefined, replace: mode === "existing" ? replace : undefined, }); const ls = { jobId: job.jobId, total: job.total, clanName: job.clanName }; localStorage.setItem(LS_KEY, JSON.stringify(ls)); setProg({ scraped: 0, total: job.total, phase: t`Đang tải dữ liệu` }); await runJob(job.jobId, job.total, job.clanName); } catch (e) { toast.error(t`Không bắt đầu được`, { description: (e as Error).message }); setRunning(false); } } function dismissResume() { localStorage.removeItem(LS_KEY); setResumeJob(null); } // wipe section const [wipeClanId, setWipeClanId] = useState(""); const [confirmText, setConfirmText] = useState(""); const wipeClan = clans.find((c) => c.id === wipeClanId); const canWipe = !!wipeClan && confirmText.trim() === wipeClan.name; const wipeM = useMutation({ mutationFn: () => wipeClanDirectory(wipeClanId), onSuccess: (r) => { qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã xoá toàn bộ danh bạ`, { description: t`${r.deleted_persons} người · ${r.deleted_families} gia đình`, }); setConfirmText(""); }, onError: (e) => toast.error(t`Xoá thất bại`, { description: (e as Error).message }), }); return ( <section className="space-y-4"> {/* ── Import ── */} <div className="space-y-3 rounded-lg border p-4"> <h2 className="text-lg font-semibold">{t`Nhập từ vietnamgiapha.com`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Dán link gia phả (vd{" "} <code>https://vietnamgiapha.com/XemGiaPha/1691/giapha.html</code>) rồi bấm Tạo. Hệ thống tự tải, bóc tách và tạo danh bạ. Quá trình có thể mất 30–60 giây. </Trans> </p> <div className="flex flex-wrap gap-1.5"> {(["new", "existing"] as const).map((m) => ( <button key={m} type="button" onClick={() => setMode(m)} className={`px-3 h-9 rounded-md border text-sm ${mode === m ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted/40"}`} > {m === "new" ? t`Tạo dòng họ mới` : t`Nhập vào dòng họ có sẵn`} </button> ))} </div> <div className="space-y-1.5"> <Label htmlFor="src-url">{t`Link gia phả`}</Label> <Input id="src-url" icon={<IconLink />} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://vietnamgiapha.com/XemGiaPha/…" /> </div> {mode === "new" ? ( <div className="space-y-1.5"> <Label htmlFor="new-name">{t`Tên dòng họ (bỏ trống = tự lấy từ nguồn)`}</Label> <Input id="new-name" icon={<IconBuildings />} value={newClanName} onChange={(e) => setNewClanName(e.target.value)} placeholder={t`vd: Chi họ Cao Minh Triết`} /> </div> ) : ( <div className="space-y-2"> <div className="space-y-1.5"> <Label htmlFor="target-clan">{t`Dòng họ đích`}</Label> <FilterableSelect id="target-clan" icon={<IconBuildings />} value={targetClanId} onChange={setTargetClanId} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> <label className="flex items-start gap-2 text-sm cursor-pointer"> <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} className="mt-1 h-4 w-4 accent-primary" /> <span> Xoá toàn bộ danh bạ hiện tại của dòng họ này{" "} <strong>{t`trước khi`}</strong> nhập (tránh trùng lặp khi nhập lại). </span> </label> </div> )} {resumeJob && !running && ( <Alert> <AlertDescription className="flex flex-wrap items-center gap-2"> <span> Có lần nhập đang dở {resumeJob.clanName ? ` (${resumeJob.clanName})` : ""} — {resumeJob.total} người. Tiếp tục? </span> <Button size="sm" variant="outline" onClick={() => runJob(resumeJob.jobId, resumeJob.total, resumeJob.clanName) } > <IconPlay className="h-4 w-4 mr-1.5" /> {t`Tiếp tục nhập`} </Button> <Button size="sm" variant="ghost" onClick={dismissResume}> {t`Bỏ qua`} </Button> </AlertDescription> </Alert> )} {!running ? ( <Button size="sm" variant="outline" disabled={ !sourceUrl.trim() || (mode === "existing" && !targetClanId) } onClick={startImport} > <IconDownload className="h-4 w-4 mr-1.5" /> {t`Tạo`} </Button> ) : ( <div className="space-y-2"> <div className="flex items-center justify-between text-sm"> <span className="text-muted-foreground"> {prog?.phase ?? t`Đang xử lý`} {prog ? t` — ${prog.scraped}/${prog.total} người` : "…"} </span> <Button size="sm" variant="outline" onClick={() => { cancelRef.current = true; }} > <IconX className="h-4 w-4 mr-1.5" /> {t`Tạm dừng`} </Button> </div> {prog && prog.total > 0 && ( <div className="h-2 w-full overflow-hidden rounded-full bg-muted"> <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((prog.scraped / prog.total) * 100)}%`, }} /> </div> )} <p className="text-xs text-muted-foreground"> <Trans> Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau — tiến độ được lưu trên máy chủ. </Trans> </p> </div> )} {result && ( <Alert> <AlertDescription> ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "} <strong>{result.counts.families}</strong> gia đình vào{" "} <Link to={`/clans/${result.clanId}`} className="text-primary underline" > {resultClanName ?? t`dòng họ`} </Link> . {(result.warnings.ambiguousMothers > 0 || result.warnings.missingGender > 0) && ( <span className="block mt-1 text-muted-foreground"> Cần rà lại: {result.warnings.ambiguousMothers} con mẹ chưa chắc (mặc định vợ cả) {result.warnings.missingGender > 0 && t`, ${result.warnings.missingGender} thiếu giới tính`} . {result.warnings.note} </span> )} </AlertDescription> </Alert> )} </div> {/* ── Danger: wipe directory ── */} <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4"> <h2 className="text-lg font-semibold text-destructive"> {t`Xoá toàn bộ danh bạ (nguy hiểm)`} </h2> <Alert variant="destructive"> <Trans> <AlertDescription> <strong>{t`Hành động không thể hoàn tác.`}</strong> Xoá vĩnh viễn{" "} <strong>{t`tất cả người và quan hệ gia đình`}</strong> trong dòng họ đã chọn — KHÔNG khôi phục được từ nhật ký. Dòng họ, thành viên và cài đặt vẫn giữ nguyên. Chỉ dùng khi muốn nhập lại từ đầu. </AlertDescription> </Trans> </Alert> <div className="space-y-1.5"> <Label htmlFor="wipe-clan">{t`Dòng họ cần xoá danh bạ`}</Label> <FilterableSelect id="wipe-clan" icon={<IconBuildings />} value={wipeClanId} onChange={(v) => { setWipeClanId(v); setConfirmText(""); }} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> {wipeClan && ( <div className="space-y-1.5"> <Label htmlFor="wipe-confirm"> <Trans> Gõ đúng tên dòng họ <strong>“{wipeClan.name}”</strong> để xác nhận xoá {wipeClan.person_count} người: </Trans> </Label> <Input id="wipe-confirm" icon={<IconFlame />} value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder={wipeClan.name} autoComplete="off" /> </div> )} <Button size="sm" variant="destructive" disabled={!canWipe || wipeM.isPending} onClick={() => wipeM.mutate()} > <IconTrash className="h-4 w-4 mr-1.5" /> {wipeM.isPending ? t`Đang xoá…` : t`Xoá toàn bộ danh bạ`} </Button> </div> </section> ); } 
+#. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEffect, useRef, useState } from "react"; import { Link } from "react-router-dom"; import { FilterableSelect } from "@/components/FilterableSelect"; import { useToast } from "@/components/Toast"; import { IconBuildings, IconDownload, IconFlame, IconLink, IconPlay, IconTrash, IconX, } from "@/components/icons"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { giaPhaImportFinalize, giaPhaImportStart, giaPhaImportStep, listAllClans, wipeClanDirectory, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { Trans } from "@lingui/react/macro"; import { t } from "@lingui/core/macro"; export function GiaPhaImportTab() { const qc = useQueryClient(); const toast = useToast(); const clansQ = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), }); const clans = clansQ.data ?? []; // import section const [mode, setMode] = useState<"new" | "existing">("new"); const [sourceUrl, setSourceUrl] = useState(""); const [newClanName, setNewClanName] = useState(""); const [targetClanId, setTargetClanId] = useState(""); const [replace, setReplace] = useState(false); // staged-job state: drive start → step×N → finalize, with progress. const LS_KEY = "giapha-import-job"; const [running, setRunning] = useState(false); const [prog, setProg] = useState<{ scraped: number; total: number; phase: string; } | null>(null); const [result, setResult] = useState<Awaited< ReturnType<typeof giaPhaImportFinalize> > | null>(null); const [resultClanName, setResultClanName] = useState<string | undefined>( undefined, ); const [resumeJob, setResumeJob] = useState<{ jobId: string; total: number; clanName?: string; } | null>(null); const cancelRef = useRef(false); // On mount, surface an unfinished job (e.g. tab was closed) so it can resume. useEffect(() => { try { const raw = localStorage.getItem(LS_KEY); if (raw) setResumeJob(JSON.parse(raw)); } catch { /* ignore */ } }, []); // Loop steps until 'ready', then finalize. `jobId` already exists. async function runJob(jobId: string, total: number, clanName?: string) { setRunning(true); cancelRef.current = false; try { let status = "scraping"; let scraped = prog?.scraped ?? 0; while (status === "scraping") { if (cancelRef.current) { toast.info(t`Đã tạm dừng — có thể tiếp tục sau.`); setRunning(false); return; } const r = await giaPhaImportStep(jobId); status = r.status; scraped = r.scraped; setProg({ scraped, total: r.total, phase: t`Đang tải dữ liệu` }); } setProg({ scraped, total, phase: t`Đang ghi vào dòng họ` }); const res = await giaPhaImportFinalize(jobId); setResult(res); setResultClanName(clanName); localStorage.removeItem(LS_KEY); setResumeJob(null); setProg(null); qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã nhập gia phả`, { description: t`${res.counts.persons} người · ${res.counts.families} gia đình`, }); } catch (e) { toast.error(t`Nhập thất bại`, { description: (e as Error).message }); } finally { setRunning(false); } } async function startImport() { setResult(null); setRunning(true); cancelRef.current = false; try { const job = await giaPhaImportStart({ sourceUrl: sourceUrl.trim(), clanId: mode === "existing" ? targetClanId : undefined, clanName: mode === "new" ? newClanName.trim() || undefined : undefined, replace: mode === "existing" ? replace : undefined, }); const ls = { jobId: job.jobId, total: job.total, clanName: job.clanName }; localStorage.setItem(LS_KEY, JSON.stringify(ls)); setProg({ scraped: 0, total: job.total, phase: t`Đang tải dữ liệu` }); await runJob(job.jobId, job.total, job.clanName); } catch (e) { toast.error(t`Không bắt đầu được`, { description: (e as Error).message }); setRunning(false); } } function dismissResume() { localStorage.removeItem(LS_KEY); setResumeJob(null); } // wipe section const [wipeClanId, setWipeClanId] = useState(""); const [confirmText, setConfirmText] = useState(""); const wipeClan = clans.find((c) => c.id === wipeClanId); const canWipe = !!wipeClan && confirmText.trim() === wipeClan.name; const wipeM = useMutation({ mutationFn: () => wipeClanDirectory(wipeClanId), onSuccess: (r) => { qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã xoá toàn bộ danh bạ`, { description: t`${r.deleted_persons} người · ${r.deleted_families} gia đình`, }); setConfirmText(""); }, onError: (e) => toast.error(t`Xoá thất bại`, { description: (e as Error).message }), }); return ( <section className="space-y-4"> {/* ── Import ── */} <div className="space-y-3 rounded-lg border p-4"> <h2 className="text-lg font-semibold">{t`Nhập từ vietnamgiapha.com`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Dán link gia phả (vd{" "} <code>https://vietnamgiapha.com/XemGiaPha/1691/giapha.html</code>) rồi bấm Tạo. Hệ thống tự tải, bóc tách và tạo danh bạ. Quá trình có thể mất 30–60 giây. </Trans> </p> <div className="flex flex-wrap gap-1.5"> {(["new", "existing"] as const).map((m) => ( <button key={m} type="button" onClick={() => setMode(m)} className={`px-3 h-9 rounded-md border text-sm ${mode === m ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted/40"}`} > {m === "new" ? t`Tạo dòng họ mới` : t`Nhập vào dòng họ có sẵn`} </button> ))} </div> <div className="space-y-1.5"> <Label htmlFor="src-url">{t`Link gia phả`}</Label> <Input id="src-url" icon={<IconLink />} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://vietnamgiapha.com/XemGiaPha/…" /> </div> {mode === "new" ? ( <div className="space-y-1.5"> <Label htmlFor="new-name">{t`Tên dòng họ (bỏ trống = tự lấy từ nguồn)`}</Label> <Input id="new-name" icon={<IconBuildings />} value={newClanName} onChange={(e) => setNewClanName(e.target.value)} placeholder={t`vd: Chi họ Cao Minh Triết`} /> </div> ) : ( <div className="space-y-2"> <div className="space-y-1.5"> <Label htmlFor="target-clan">{t`Dòng họ đích`}</Label> <FilterableSelect id="target-clan" icon={<IconBuildings />} value={targetClanId} onChange={setTargetClanId} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> <label className="flex items-start gap-2 text-sm cursor-pointer"> <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} className="mt-1 h-4 w-4 accent-primary" /> <span> Xoá toàn bộ danh bạ hiện tại của dòng họ này{" "} <strong>{t`trước khi`}</strong> nhập (tránh trùng lặp khi nhập lại). </span> </label> </div> )} {resumeJob && !running && ( <Alert> <AlertDescription className="flex flex-wrap items-center gap-2"> <span> Có lần nhập đang dở {resumeJob.clanName ? ` (${resumeJob.clanName})` : ""} — {resumeJob.total} người. Tiếp tục? </span> <Button size="sm" variant="outline" onClick={() => runJob(resumeJob.jobId, resumeJob.total, resumeJob.clanName) } > <IconPlay className="h-4 w-4 mr-1.5" /> {t`Tiếp tục nhập`} </Button> <Button size="sm" variant="ghost" onClick={dismissResume}> {t`Bỏ qua`} </Button> </AlertDescription> </Alert> )} {!running ? ( <Button size="sm" variant="outline" disabled={ !sourceUrl.trim() || (mode === "existing" && !targetClanId) } onClick={startImport} > <IconDownload className="h-4 w-4 mr-1.5" /> {t`Tạo`} </Button> ) : ( <div className="space-y-2"> <div className="flex items-center justify-between text-sm"> <span className="text-muted-foreground"> {prog?.phase ?? t`Đang xử lý`} {prog ? t` — ${prog.scraped}/${prog.total} người` : "…"} </span> <Button size="sm" variant="outline" onClick={() => { cancelRef.current = true; }} > <IconX className="h-4 w-4 mr-1.5" /> {t`Tạm dừng`} </Button> </div> {prog && prog.total > 0 && ( <div className="h-2 w-full overflow-hidden rounded-full bg-muted"> <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((prog.scraped / prog.total) * 100)}%`, }} /> </div> )} <p className="text-xs text-muted-foreground"> <Trans> Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau — tiến độ được lưu trên máy chủ. </Trans> </p> </div> )} {result && ( <Alert variant="success"> <AlertDescription> ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "} <strong>{result.counts.families}</strong> gia đình vào{" "} <Link to={`/clans/${result.clanId}`} className="text-primary underline" > {resultClanName ?? t`dòng họ`} </Link> . {(result.warnings.ambiguousMothers > 0 || result.warnings.missingGender > 0) && ( <span className="block mt-1 text-muted-foreground"> Cần rà lại: {result.warnings.ambiguousMothers} con mẹ chưa chắc (mặc định vợ cả) {result.warnings.missingGender > 0 && t`, ${result.warnings.missingGender} thiếu giới tính`} . {result.warnings.note} </span> )} </AlertDescription> </Alert> )} </div> {/* ── Danger: wipe directory ── */} <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4"> <h2 className="text-lg font-semibold text-destructive"> {t`Xoá toàn bộ danh bạ (nguy hiểm)`} </h2> <Alert variant="destructive"> <Trans> <AlertDescription> <strong>{t`Hành động không thể hoàn tác.`}</strong> Xoá vĩnh viễn{" "} <strong>{t`tất cả người và quan hệ gia đình`}</strong> trong dòng họ đã chọn — KHÔNG khôi phục được từ nhật ký. Dòng họ, thành viên và cài đặt vẫn giữ nguyên. Chỉ dùng khi muốn nhập lại từ đầu. </AlertDescription> </Trans> </Alert> <div className="space-y-1.5"> <Label htmlFor="wipe-clan">{t`Dòng họ cần xoá danh bạ`}</Label> <FilterableSelect id="wipe-clan" icon={<IconBuildings />} value={wipeClanId} onChange={(v) => { setWipeClanId(v); setConfirmText(""); }} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> {wipeClan && ( <div className="space-y-1.5"> <Label htmlFor="wipe-confirm"> <Trans> Gõ đúng tên dòng họ <strong>“{wipeClan.name}”</strong> để xác nhận xoá {wipeClan.person_count} người: </Trans> </Label> <Input id="wipe-confirm" icon={<IconFlame />} value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder={wipeClan.name} autoComplete="off" /> </div> )} <Button size="sm" variant="destructive" disabled={!canWipe || wipeM.isPending} onClick={() => wipeM.mutate()} > <IconTrash className="h-4 w-4 mr-1.5" /> {wipeM.isPending ? t`Đang xoá…` : t`Xoá toàn bộ danh bạ`} </Button> </div> </section> ); } 
+#. placeholder {1}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEffect, useRef, useState } from "react"; import { Link } from "react-router-dom"; import { FilterableSelect } from "@/components/FilterableSelect"; import { useToast } from "@/components/Toast"; import { IconBuildings, IconDownload, IconFlame, IconLink, IconPlay, IconTrash, IconX, } from "@/components/icons"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { giaPhaImportFinalize, giaPhaImportStart, giaPhaImportStep, listAllClans, wipeClanDirectory, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { Trans } from "@lingui/react/macro"; import { t } from "@lingui/core/macro"; export function GiaPhaImportTab() { const qc = useQueryClient(); const toast = useToast(); const clansQ = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), }); const clans = clansQ.data ?? []; // import section const [mode, setMode] = useState<"new" | "existing">("new"); const [sourceUrl, setSourceUrl] = useState(""); const [newClanName, setNewClanName] = useState(""); const [targetClanId, setTargetClanId] = useState(""); const [replace, setReplace] = useState(false); // staged-job state: drive start → step×N → finalize, with progress. const LS_KEY = "giapha-import-job"; const [running, setRunning] = useState(false); const [prog, setProg] = useState<{ scraped: number; total: number; phase: string; } | null>(null); const [result, setResult] = useState<Awaited< ReturnType<typeof giaPhaImportFinalize> > | null>(null); const [resultClanName, setResultClanName] = useState<string | undefined>( undefined, ); const [resumeJob, setResumeJob] = useState<{ jobId: string; total: number; clanName?: string; } | null>(null); const cancelRef = useRef(false); // On mount, surface an unfinished job (e.g. tab was closed) so it can resume. useEffect(() => { try { const raw = localStorage.getItem(LS_KEY); if (raw) setResumeJob(JSON.parse(raw)); } catch { /* ignore */ } }, []); // Loop steps until 'ready', then finalize. `jobId` already exists. async function runJob(jobId: string, total: number, clanName?: string) { setRunning(true); cancelRef.current = false; try { let status = "scraping"; let scraped = prog?.scraped ?? 0; while (status === "scraping") { if (cancelRef.current) { toast.info(t`Đã tạm dừng — có thể tiếp tục sau.`); setRunning(false); return; } const r = await giaPhaImportStep(jobId); status = r.status; scraped = r.scraped; setProg({ scraped, total: r.total, phase: t`Đang tải dữ liệu` }); } setProg({ scraped, total, phase: t`Đang ghi vào dòng họ` }); const res = await giaPhaImportFinalize(jobId); setResult(res); setResultClanName(clanName); localStorage.removeItem(LS_KEY); setResumeJob(null); setProg(null); qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã nhập gia phả`, { description: t`${res.counts.persons} người · ${res.counts.families} gia đình`, }); } catch (e) { toast.error(t`Nhập thất bại`, { description: (e as Error).message }); } finally { setRunning(false); } } async function startImport() { setResult(null); setRunning(true); cancelRef.current = false; try { const job = await giaPhaImportStart({ sourceUrl: sourceUrl.trim(), clanId: mode === "existing" ? targetClanId : undefined, clanName: mode === "new" ? newClanName.trim() || undefined : undefined, replace: mode === "existing" ? replace : undefined, }); const ls = { jobId: job.jobId, total: job.total, clanName: job.clanName }; localStorage.setItem(LS_KEY, JSON.stringify(ls)); setProg({ scraped: 0, total: job.total, phase: t`Đang tải dữ liệu` }); await runJob(job.jobId, job.total, job.clanName); } catch (e) { toast.error(t`Không bắt đầu được`, { description: (e as Error).message }); setRunning(false); } } function dismissResume() { localStorage.removeItem(LS_KEY); setResumeJob(null); } // wipe section const [wipeClanId, setWipeClanId] = useState(""); const [confirmText, setConfirmText] = useState(""); const wipeClan = clans.find((c) => c.id === wipeClanId); const canWipe = !!wipeClan && confirmText.trim() === wipeClan.name; const wipeM = useMutation({ mutationFn: () => wipeClanDirectory(wipeClanId), onSuccess: (r) => { qc.invalidateQueries({ queryKey: queryKeys.adminClans() }); toast.success(t`Đã xoá toàn bộ danh bạ`, { description: t`${r.deleted_persons} người · ${r.deleted_families} gia đình`, }); setConfirmText(""); }, onError: (e) => toast.error(t`Xoá thất bại`, { description: (e as Error).message }), }); return ( <section className="space-y-4"> {/* ── Import ── */} <div className="space-y-3 rounded-lg border p-4"> <h2 className="text-lg font-semibold">{t`Nhập từ vietnamgiapha.com`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Dán link gia phả (vd{" "} <code>https://vietnamgiapha.com/XemGiaPha/1691/giapha.html</code>) rồi bấm Tạo. Hệ thống tự tải, bóc tách và tạo danh bạ. Quá trình có thể mất 30–60 giây. </Trans> </p> <div className="flex flex-wrap gap-1.5"> {(["new", "existing"] as const).map((m) => ( <button key={m} type="button" onClick={() => setMode(m)} className={`px-3 h-9 rounded-md border text-sm ${mode === m ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted/40"}`} > {m === "new" ? t`Tạo dòng họ mới` : t`Nhập vào dòng họ có sẵn`} </button> ))} </div> <div className="space-y-1.5"> <Label htmlFor="src-url">{t`Link gia phả`}</Label> <Input id="src-url" icon={<IconLink />} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://vietnamgiapha.com/XemGiaPha/…" /> </div> {mode === "new" ? ( <div className="space-y-1.5"> <Label htmlFor="new-name">{t`Tên dòng họ (bỏ trống = tự lấy từ nguồn)`}</Label> <Input id="new-name" icon={<IconBuildings />} value={newClanName} onChange={(e) => setNewClanName(e.target.value)} placeholder={t`vd: Chi họ Cao Minh Triết`} /> </div> ) : ( <div className="space-y-2"> <div className="space-y-1.5"> <Label htmlFor="target-clan">{t`Dòng họ đích`}</Label> <FilterableSelect id="target-clan" icon={<IconBuildings />} value={targetClanId} onChange={setTargetClanId} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> <label className="flex items-start gap-2 text-sm cursor-pointer"> <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} className="mt-1 h-4 w-4 accent-primary" /> <span> Xoá toàn bộ danh bạ hiện tại của dòng họ này{" "} <strong>{t`trước khi`}</strong> nhập (tránh trùng lặp khi nhập lại). </span> </label> </div> )} {resumeJob && !running && ( <Alert> <AlertDescription className="flex flex-wrap items-center gap-2"> <span> Có lần nhập đang dở {resumeJob.clanName ? ` (${resumeJob.clanName})` : ""} — {resumeJob.total} người. Tiếp tục? </span> <Button size="sm" variant="outline" onClick={() => runJob(resumeJob.jobId, resumeJob.total, resumeJob.clanName) } > <IconPlay className="h-4 w-4 mr-1.5" /> {t`Tiếp tục nhập`} </Button> <Button size="sm" variant="ghost" onClick={dismissResume}> {t`Bỏ qua`} </Button> </AlertDescription> </Alert> )} {!running ? ( <Button size="sm" variant="outline" disabled={ !sourceUrl.trim() || (mode === "existing" && !targetClanId) } onClick={startImport} > <IconDownload className="h-4 w-4 mr-1.5" /> {t`Tạo`} </Button> ) : ( <div className="space-y-2"> <div className="flex items-center justify-between text-sm"> <span className="text-muted-foreground"> {prog?.phase ?? t`Đang xử lý`} {prog ? t` — ${prog.scraped}/${prog.total} người` : "…"} </span> <Button size="sm" variant="outline" onClick={() => { cancelRef.current = true; }} > <IconX className="h-4 w-4 mr-1.5" /> {t`Tạm dừng`} </Button> </div> {prog && prog.total > 0 && ( <div className="h-2 w-full overflow-hidden rounded-full bg-muted"> <div className="h-full bg-primary transition-all" style={{ width: `${Math.round((prog.scraped / prog.total) * 100)}%`, }} /> </div> )} <p className="text-xs text-muted-foreground"> <Trans> Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau — tiến độ được lưu trên máy chủ. </Trans> </p> </div> )} {result && ( <Alert variant="success"> <AlertDescription> ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "} <strong>{result.counts.families}</strong> gia đình vào{" "} <Link to={`/clans/${result.clanId}`} className="text-primary underline" > {resultClanName ?? t`dòng họ`} </Link> . {(result.warnings.ambiguousMothers > 0 || result.warnings.missingGender > 0) && ( <span className="block mt-1 text-muted-foreground"> Cần rà lại: {result.warnings.ambiguousMothers} con mẹ chưa chắc (mặc định vợ cả) {result.warnings.missingGender > 0 && t`, ${result.warnings.missingGender} thiếu giới tính`} . {result.warnings.note} </span> )} </AlertDescription> </Alert> )} </div> {/* ── Danger: wipe directory ── */} <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4"> <h2 className="text-lg font-semibold text-destructive"> {t`Xoá toàn bộ danh bạ (nguy hiểm)`} </h2> <Alert variant="destructive"> <Trans> <AlertDescription> <strong>{t`Hành động không thể hoàn tác.`}</strong> Xoá vĩnh viễn{" "} <strong>{t`tất cả người và quan hệ gia đình`}</strong> trong dòng họ đã chọn — KHÔNG khôi phục được từ nhật ký. Dòng họ, thành viên và cài đặt vẫn giữ nguyên. Chỉ dùng khi muốn nhập lại từ đầu. </AlertDescription> </Trans> </Alert> <div className="space-y-1.5"> <Label htmlFor="wipe-clan">{t`Dòng họ cần xoá danh bạ`}</Label> <FilterableSelect id="wipe-clan" icon={<IconBuildings />} value={wipeClanId} onChange={(v) => { setWipeClanId(v); setConfirmText(""); }} options={clans.map((c) => ({ value: c.id, label: t`${c.name} (${c.person_count} người)`, }))} emptyLabel={t`— Chọn dòng họ —`} filterLabel={t`Tìm dòng họ`} /> </div> {wipeClan && ( <div className="space-y-1.5"> <Label htmlFor="wipe-confirm"> <Trans> Gõ đúng tên dòng họ <strong>“{wipeClan.name}”</strong> để xác nhận xoá {wipeClan.person_count} người: </Trans> </Label> <Input id="wipe-confirm" icon={<IconFlame />} value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder={wipeClan.name} autoComplete="off" /> </div> )} <Button size="sm" variant="destructive" disabled={!canWipe || wipeM.isPending} onClick={() => wipeM.mutate()} > <IconTrash className="h-4 w-4 mr-1.5" /> {wipeM.isPending ? t`Đang xoá…` : t`Xoá toàn bộ danh bạ`} </Button> </div> </section> ); } 
 #: src/pages/admin/GiaPha.tsx
 msgid "<0><1>{0}</1> Xoá vĩnh viễn <2>{1}</2> trong dòng họ đã chọn — KHÔNG khôi phục được từ nhật ký. Dòng họ, thành viên và cài đặt vẫn giữ nguyên. Chỉ dùng khi muốn nhập lại từ đầu.</0>"
 msgstr "<0><1>{0}</1> Permanently delete <2>{1}</2> in the selected clan — it CANNOT be restored from the log. The clan, members and settings are kept. Only use this when you want to re-import from scratch.</0>"
@@ -1095,10 +1102,6 @@ msgstr "The AI looks up people, relationships, anniversaries and records. It can
 msgid "ÂL"
 msgstr "Lunar"
 
-#: src/components/CalendarDateInput.tsx
-msgid "Âm"
-msgstr "Lunar"
-
 #: src/components/gallery/palettes.ts
 msgid "Ấm (kem)"
 msgstr "Warm (cream)"
@@ -1107,6 +1110,7 @@ msgstr "Warm (cream)"
 msgid "Ấm áp"
 msgstr "Warm"
 
+#: src/components/CalendarDateInput.tsx
 #: src/components/EventDetailDialog.tsx
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/Events.tsx
@@ -1352,7 +1356,7 @@ msgid "Anon đọc được. Bật khi đây là cập nhật muốn quảng bá
 msgstr "Readable by anonymous visitors. Turn on when this is an update you want to promote publicly."
 
 #: src/components/ClanFormFields.tsx
-#: src/pages/clan/Settings.tsx
+#: src/components/ClanFormGroups.tsx
 msgid "Áp cho avatar của mọi thành viên trong họ."
 msgstr "Applies to the avatars of all members of the clan."
 
@@ -1502,9 +1506,9 @@ msgstr "Click Add → hover over Custom → choose Web"
 msgid "Bấm Add. Claude sẽ mở trang của hệ thống này để bạn đăng nhập và bấm \"Cho phép\"."
 msgstr "Click Add. Claude opens a page of this system where you sign in and click \"Allow\"."
 
-#: src/pages/clan/NewPerson.tsx
-msgid "Bấm để nhập các thông tin tuỳ chọn nếu bạn có: tên tự, tên húy, tên thụy, ngày mất, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần — vẫn lưu được người mới."
-msgstr "Tap to enter optional details if you have them: courtesy name, taboo name, posthumous name, date of death, place of birth, burial place, biography. Skip if not needed — the new person can still be saved."
+#: src/components/OtherParentPicker.tsx
+msgid "Bấm chọn người còn lại là cha hoặc mẹ của con (cùng với {focalName})."
+msgstr "Choose the child's other parent (together with {focalName})."
 
 #: src/pages/Account.tsx
 msgid "Bấm link trong email để hoàn tất."
@@ -1821,6 +1825,7 @@ msgstr "White museum"
 msgid "Báo trước"
 msgstr "Notify in advance"
 
+#: src/components/FormGroup.tsx
 #: src/components/ui/label.tsx
 #: src/lib/queries/customs.ts
 msgid "Bắt buộc"
@@ -1870,7 +1875,7 @@ msgstr "Turn on to receive push notifications. The app still reminds you by emai
 msgid "Bật khi bạn chắc người này đúng là người trong cây."
 msgstr "Turn on when you're sure this person really is the one in the tree."
 
-#: src/pages/clan/EditPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Bật khi thông tin thiếu là <0>cố ý</0> hoặc không thể bổ sung (vd. thuỷ tổ không có cha mẹ, người mất tích không rõ năm sinh/mất). App sẽ không nhắc nữa."
 msgstr "Turn on when the missing information is <0>intentional</0> or can't be filled in (e.g. a founding ancestor with no parents, a missing person with no known birth/death year). The app will stop reminding you."
 
@@ -1901,10 +1906,6 @@ msgstr "Turn on notifications so you don't miss anything"
 #: src/components/EnablePushPrompt.tsx
 msgid "Bật thông báo trên iPhone/iPad"
 msgstr "Turn on notifications on iPhone/iPad"
-
-#: src/pages/clan/Settings.tsx
-msgid "Bật/tắt thông tin hiển thị, phần người ngoài được xem và viền avatar. Tên, mô tả và nội dung sổ gia phả sửa ở trang “Thông tin & Sổ gia phả”; chi ở mục “Chi (nhánh)”."
-msgstr "Toggle what is displayed, what outsiders can see and the avatar frame. Name, description and the genealogy book text are edited on “Info & genealogy book”; branches under “Branches”."
 
 #: src/components/Tree3DView.tsx
 msgid "bay tới xem"
@@ -2278,6 +2279,13 @@ msgstr "Invite method"
 msgid "Cách này dùng token: bấm nút \"+\" để tạo token và chép lại ngay (chỉ hiện một lần). Ở các bước dưới, {tok} là token đó."
 msgstr "This way uses a token: press \"+\" to create one and copy it right away (shown only once). In the steps below, {tok} is that token."
 
+#: src/components/QuickAddSheet.tsx
+#: src/pages/clan/AddChild.tsx
+#: src/pages/clan/AddParent.tsx
+#: src/pages/clan/AddSpouse.tsx
+msgid "Cách thêm"
+msgstr "How to add"
+
 #: src/pages/clan/Tree.tsx
 msgid "Cách trình bày sơ đồ cây"
 msgstr "How the tree diagram is laid out"
@@ -2620,10 +2628,15 @@ msgstr "Makes the tree livelier"
 msgid "Cây tự xếp"
 msgstr "Auto-arranged tree"
 
+#: src/components/QuickAddSheet.tsx
 #: src/lib/relations.ts
 #: src/pages/clan/Import.tsx
 msgid "Cha"
 msgstr "Father"
+
+#: src/components/QuickAddSheet.tsx
+msgid "Cha (đã có)"
+msgstr "Father (already added)"
 
 #: src/components/QuickAddSheet.tsx
 msgid "Cha / mẹ"
@@ -2807,6 +2820,7 @@ msgid "chi"
 msgstr "branches"
 
 #: src/pages/clan/Audit.tsx
+#: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Import.tsx
 msgid "Chi"
 msgstr "Branch"
@@ -2836,6 +2850,14 @@ msgstr "Only applies to clans on the other side that are public. The app emails 
 msgid "Chỉ ban quản trị xem; không hiện cho người khác."
 msgstr "Visible only to the administrators; not shown to anyone else."
 
+#: src/components/PersonFormFields.tsx
+msgid "Chỉ cần họ tên là lưu được; các nhóm bên dưới điền sau cũng được."
+msgstr "Only the full name is needed to save; you can fill in the sections below later."
+
+#: src/pages/NewClan.tsx
+msgid "Chỉ cần tên dòng họ là tạo được; các nhóm bên dưới điền sau cũng được."
+msgstr "Only the clan name is needed to create it; you can fill in the sections below later."
+
 #: src/pages/Announcements.tsx
 msgid "Chỉ chưa đọc"
 msgstr "Unread only"
@@ -2858,6 +2880,10 @@ msgstr "Directions"
 #: src/pages/Share.tsx
 msgid "Chỉ đường →"
 msgstr "Directions →"
+
+#: src/components/OtherParentPicker.tsx
+msgid "Chỉ ghi {focalName} là cha/mẹ của con này."
+msgstr "Record only {focalName} as this child's parent."
 
 #: src/pages/Account.tsx
 msgid "Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng."
@@ -2891,18 +2917,12 @@ msgstr "Income only"
 msgid "Chỉ người đã mất"
 msgstr "Deceased only"
 
-#: src/pages/clan/EditPerson.tsx
-msgid "Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu bia mộ ghi ngày âm."
-msgstr "Just the year is fine — leave day and month blank. Tap 'Enter in the lunar calendar' if the tombstone gives a lunar date."
+#: src/components/PersonFormFields.tsx
+msgid "Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu tài liệu hoặc bia mộ ghi ngày âm."
+msgstr "Just the year is fine — leave the day and month blank. Tap 'Enter in lunar calendar' if the document or tombstone gives a lunar date."
 
-#: src/pages/clan/NewPerson.tsx
-msgid "Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
-msgstr "Just the year is fine — leave day and month blank. Tap 'Enter in the lunar calendar' if the document gives a lunar date."
-
+#: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
 msgid "Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
 msgstr "Just the year is fine. Tap 'Enter in the lunar calendar' if the document gives a lunar date."
 
@@ -2915,8 +2935,8 @@ msgid "Chỉ quản trị dòng họ mới kết nối được AI. Tài khoản
 msgstr "Only clan admins can connect an AI. This account does not manage any clan."
 
 #: src/pages/clan/BookInfo.tsx
-msgid "Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ."
-msgstr "Only the clan admin can edit the name, description and display options; you can edit the information for the book."
+msgid "Chỉ quản trị dòng họ sửa được tên và mô tả; bạn sửa được phần sổ gia phả bên dưới."
+msgstr "Only clan admins can edit the name and description; you can edit the family book section below."
 
 #: src/pages/CustomsImport.tsx
 msgid "Chỉ quản trị nền tảng được nhập Sổ tay."
@@ -2953,8 +2973,7 @@ msgstr "Details"
 msgid "Chi tiết & nguồn"
 msgstr "Details & sources"
 
-#: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/NewPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Chi tiết bổ sung"
 msgstr "Additional details"
 
@@ -3241,10 +3260,6 @@ msgstr "Choose a template ({0})"
 msgid "Chọn màu bất kỳ"
 msgstr "Choose any color"
 
-#: src/pages/NewClan.tsx
-msgid "Chọn mẫu để có sẵn bài hoàn chỉnh rồi sửa lại; AI soạn theo mô tả dùng được sau khi tạo."
-msgstr "Choose a template to start with a complete draft, then edit it; AI drafting from a description can be used after the clan is created."
-
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Chọn một ảnh"
 msgstr "Choose a photo"
@@ -3268,6 +3283,10 @@ msgstr "Choose an item to open. Each item is a separate page."
 #: src/pages/clan/Relations.tsx
 msgid "Chọn một người để xem tổ tiên, vợ/chồng, anh chị em và toàn bộ con cháu."
 msgstr "Choose a person to see their ancestors, spouses, siblings and all descendants."
+
+#: src/components/ui/date-picker.tsx
+msgid "Chọn ngày"
+msgstr "Pick a date"
 
 #: src/lib/nextSteps.ts
 msgid "Chọn ngày cho việc lớn"
@@ -3347,10 +3366,8 @@ msgstr "Choose my place on the tree →"
 msgid "Chọn việc và khoảng thời gian, hệ thống liệt kê sẵn những ngày đẹp."
 msgstr "Choose the task and the time range, and the system lists the good days for you."
 
-#: src/pages/clan/AddChild.tsx
-msgid "chồng"
-msgstr "husband"
-
+#: src/components/OtherParentPicker.tsx
+#: src/components/OtherParentPicker.tsx
 #: src/pages/clan/People.tsx
 msgid "Chồng"
 msgstr "Husband"
@@ -3760,6 +3777,10 @@ msgstr "No year entered"
 msgid "Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi nối."
 msgstr "No Page connected yet. Syncing won't run until one is connected."
 
+#: src/components/OtherParentPicker.tsx
+msgid "Chưa rõ / không ghi"
+msgstr "Unknown / not recorded"
+
 #: src/components/community/QuestionPanel.tsx
 msgid "Chưa tạo được"
 msgstr "Couldn't create"
@@ -3837,6 +3858,10 @@ msgstr "Claude Code — run once in a terminal"
 msgid "Client MCP khác (Claude Desktop, ChatGPT…): địa chỉ {url}, header Authorization: Bearer <token>."
 msgstr "Other MCP clients (Claude Desktop, ChatGPT…): URL {url}, header Authorization: Bearer <token>."
 
+#: src/components/ui/date-picker.tsx
+msgid "CN"
+msgstr "Sun"
+
 #: src/components/ContributionDiffView.tsx
 msgid "Có"
 msgstr "Yes"
@@ -3883,6 +3908,10 @@ msgstr "What's new"
 #: src/lib/bookTemplates.ts
 msgid "Có gia phả cổ (dịch từ chữ Hán)"
 msgstr "Has an old genealogy (translated from Hán script)"
+
+#: src/pages/NewClan.tsx
+msgid "Có giá trị mặc định, đổi sau ở Cài đặt dòng họ."
+msgstr "Defaults are set; change them later in Clan settings."
 
 #: src/pages/clan/GoodDays.tsx
 msgid "Có giỗ / sinh nhật / sự kiện dòng họ"
@@ -4019,9 +4048,9 @@ msgstr "Descendants and graves by province / city."
 msgid "Con cháu, mộ phần và di sản phân bố theo tỉnh/thành. Chỉ thành viên dòng họ xem được."
 msgstr "Descendants, graves and heritage by province / city. Visible only to clan members."
 
-#: src/pages/clan/AddChild.tsx
-msgid "Con chung với ai?"
-msgstr "Who is the other parent?"
+#: src/components/OtherParentPicker.tsx
+msgid "Con chung với ai"
+msgstr "Child of which couple"
 
 #. placeholder {0}: h.parentNames.join(" & ")
 #: src/components/TreeFolderView.tsx
@@ -4041,6 +4070,10 @@ msgstr "Daughter"
 #: src/pages/CustomsDetail.tsx
 msgid "Còn gọi: {0}"
 msgstr "Also known as: {0}"
+
+#: src/components/OtherParentPicker.tsx
+msgid "Con này là con chung với ai?"
+msgstr "Who is this child's other parent?"
 
 #: src/components/community/InviteCardDialog.tsx
 msgid "Còn nhiều trang trống"
@@ -4699,12 +4732,9 @@ msgstr "deceased"
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/NewPerson.tsx
 msgid "Đã mất"
 msgstr "Deceased"
 
@@ -5652,6 +5682,7 @@ msgstr "loading…"
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/ClanApiTokensTab.tsx
 #: src/components/community/PersonMemoriesSection.tsx
+#: src/components/ExistingPersonPicker.tsx
 #: src/components/HeritagePhotosSection.tsx
 #: src/components/LoadingState.tsx
 #: src/components/MapOverviewCard.tsx
@@ -5679,9 +5710,6 @@ msgstr "loading…"
 #: src/pages/AnnouncementDetail.tsx
 #: src/pages/Announcements.tsx
 #: src/pages/Changelog.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardModeration.tsx
@@ -5884,7 +5912,7 @@ msgstr "For Claude Code users (command-line tool)"
 msgid "Đánh dấu đã đọc"
 msgstr "Mark as read"
 
-#: src/pages/clan/NewPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Đánh dấu khi đây là gốc của dòng họ (đời 1). Có thể có nhiều Thuỷ tổ nếu nhiều chi tách lập."
 msgstr "Tick when this person is the root of the clan (generation 1). There can be several founding ancestors if several branches were founded separately."
 
@@ -6072,13 +6100,13 @@ msgstr "Later"
 msgid "Để thêm thông tin tiểu sử (cụ làm gì, sống ở đâu…), chuyển sang tab "
 msgstr "To add biography details (what the ancestor did, where they lived…), switch to the "
 
-#: src/pages/clan/NewPerson.tsx
-msgid "Để trống nếu còn sống. Ưu tiên ghi ngày âm — chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
-msgstr "Leave blank if still living. Lunar date preferred — only the anniversary (month/day) is needed; the year can be left blank."
+#: src/components/PersonFormFields.tsx
+msgid "Để trống nếu còn sống. Ưu tiên ghi ngày âm — chỉ cần nhớ ngày giỗ là đủ: điền tháng/ngày âm, bỏ trống năm cũng được."
+msgstr "Leave blank if still living. Lunar date preferred — knowing the death anniversary is enough: enter the lunar month/day, the year can stay blank."
 
-#: src/pages/clan/NewPerson.tsx
-msgid "Để trống thì hệ thống tự tính từ năm sinh – năm mất. Từ 60 tuổi hiển thị \"hưởng thọ\", dưới 60 là \"hưởng dương\"."
-msgstr "If left blank, it's calculated from the years of birth and death. From 60 it's shown as \"hưởng thọ\" (a long life), under 60 as \"hưởng dương\"."
+#: src/components/PersonFormFields.tsx
+msgid "Để trống thì hệ thống tự tính từ năm sinh – năm mất (nếu có đủ). Từ 60 tuổi hiển thị \"hưởng thọ\", dưới 60 là \"hưởng dương\"."
+msgstr "If left blank it is calculated from the birth and death years (when both are known). From age 60 it shows \"hưởng thọ\" (lived a long life), under 60 \"hưởng dương\"."
 
 #: src/components/ContributionDiffView.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -6777,7 +6805,6 @@ msgid "Dòng phụ (năm sinh–mất…)"
 msgstr "Secondary line (birth–death years…)"
 
 #: src/components/HistoricalPersonSections.tsx
-#: src/pages/clan/EditPerson.tsx
 msgid "Dòng thời gian"
 msgstr "Timeline"
 
@@ -6858,10 +6885,6 @@ msgstr "Last used"
 msgid "Dung lượng"
 msgstr "Size"
 
-#: src/pages/clan/Heritage.tsx
-msgid "Dung lượng ảnh & ghi âm"
-msgstr "Photo & recording storage"
-
 #: src/pages/Login.tsx
 msgid "Dùng mật khẩu"
 msgstr "Use a password"
@@ -6900,15 +6923,12 @@ msgstr "Use it in a conversation"
 msgid "Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng thật."
 msgstr "Touch a few times and then leave alone — and a mistake really breaks things."
 
-#: src/components/CalendarDateInput.tsx
-msgid "Dương"
-msgstr "Solar"
-
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đường cong"
 msgstr "Curved"
 
+#: src/components/CalendarDateInput.tsx
 #: src/pages/clan/Events.tsx
 msgid "Dương lịch"
 msgstr "Solar"
@@ -7245,6 +7265,10 @@ msgstr "Ivory paper"
 msgid "Giỗ"
 msgstr "Death anniv."
 
+#: src/components/ui/date-picker.tsx
+msgid "Giờ"
+msgstr "Hour"
+
 #: src/pages/clan/Tree.tsx
 msgid "Giỗ {anniv}"
 msgstr "Death anniversary {anniv}"
@@ -7319,15 +7343,13 @@ msgstr "Account limit"
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
@@ -7374,6 +7396,10 @@ msgstr "Type <0>XOA</0> to confirm"
 msgid "Gõ có dấu hoặc không dấu"
 msgstr "Type with or without accents"
 
+#: src/components/ui/rich-select.tsx
+msgid "Gõ để lọc (không cần dấu)"
+msgstr "Type to filter (accents optional)"
+
 #: src/components/AddressPicker.tsx
 msgid "Gõ để lọc tỉnh / thành (không cần dấu)"
 msgstr "Type to filter provinces / cities (no accents needed)"
@@ -7418,6 +7444,10 @@ msgstr "Unlink the spouse from {0}?"
 msgid "Gỡ liên kết với {0}"
 msgstr "Unlink from {0}"
 
+#: src/components/ui/date-picker.tsx
+msgid "Gõ năm"
+msgstr "Type a year"
+
 #: src/pages/CustomsForm.tsx
 msgid "Gõ tên bài để tìm & thêm liên kết…"
 msgstr "Type an article name to find it and add a link…"
@@ -7432,9 +7462,7 @@ msgstr "Type your name in the family tree…"
 msgid "Gõ tên đầy đủ hoặc một phần…"
 msgstr "Type the full name or part of it…"
 
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
+#: src/components/ExistingPersonPicker.tsx
 msgid "Gõ tên để lọc (không cần dấu)"
 msgstr "Type a name to filter (no accents needed)"
 
@@ -7458,6 +7486,10 @@ msgstr "Type a name to find a member…"
 #: src/components/ClanPicker.tsx
 msgid "Gõ tên dòng họ…"
 msgstr "Type a clan name…"
+
+#: src/components/ui/date-picker.tsx
+msgid "Gõ tháng"
+msgstr "Type a month"
 
 #: src/pages/Customs.tsx
 msgid "Gõ tình huống cũng được — vd \"nhà mới\", \"có em bé\"…"
@@ -7766,20 +7798,19 @@ msgstr "expires {0}"
 msgid "Hết hạn {0}"
 msgstr "Expires {0}"
 
+#: src/components/ExistingPersonPicker.tsx
+msgid "Hiện {cap} / {totalMatched} kết quả — gõ thêm để thu hẹp."
+msgstr "Showing {cap} / {totalMatched} results — type more to narrow down."
+
 #: src/components/ClanPicker.tsx
 msgid "Hiện {LIMIT} kết quả đầu — gõ thêm để thu hẹp."
 msgstr "Showing the first {LIMIT} results — type more to narrow down."
 
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
 #: src/pages/clan/Kinship.tsx
 msgid "Hiện {PICKER_CAP} / {totalMatched} kết quả — gõ thêm để thu hẹp."
 msgstr "Showing {PICKER_CAP} / {totalMatched} results — type more to narrow down."
 
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
+#: src/components/ExistingPersonPicker.tsx
 #: src/pages/clan/Kinship.tsx
 msgid "Hiện {totalMatched} kết quả."
 msgstr "Showing {totalMatched} results."
@@ -7845,7 +7876,7 @@ msgstr "Current"
 msgid "Hiện thêm ({0})"
 msgstr "Show more ({0})"
 
-#: src/pages/clan/Settings.tsx
+#: src/components/ClanFormGroups.tsx
 msgid "Hiển thị & quyền xem"
 msgstr "Display & viewing permissions"
 
@@ -8004,11 +8035,9 @@ msgstr "Ancestral clan"
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/EditPerson.tsx
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Họ và tên"
@@ -8115,6 +8144,7 @@ msgstr "About whom? (optional)"
 #: src/components/EventsCalendar.tsx
 #: src/components/TodayHubCard.tsx
 #: src/components/TodayHubCard.tsx
+#: src/components/ui/date-picker.tsx
 #: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/lib/pageTitle.ts
@@ -8337,9 +8367,9 @@ msgstr "Print on gravestones, business cards"
 msgid "In ngày {0}"
 msgstr "Printed on {0}"
 
-#: src/pages/clan/BookInfo.tsx
-msgid "In ở bìa và trang đầu của sổ gia phả PDF."
-msgstr "Printed on the cover and first page of the genealogy book PDF."
+#: src/components/ClanFormGroups.tsx
+msgid "In ở bìa và các trang của sổ PDF; chọn mẫu để có sẵn bài rồi sửa lại. Điền sau cũng được."
+msgstr "Printed on the cover and pages of the PDF book; pick a template to get a ready-made text, then edit it. You can fill this in later."
 
 #: src/lib/nextSteps.ts
 msgid "In thành cuốn sổ có bìa"
@@ -8476,10 +8506,6 @@ msgstr "Guests via link"
 #: src/pages/Account.tsx
 msgid "Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào."
 msgstr "When turned on, the app will ask for permission to show notifications. Every morning on a death anniversary / birthday a reminder will appear on your phone — even when the app is closed. You can turn it off at any time."
-
-#: src/pages/clan/EditPerson.tsx
-msgid "Khi bật, đời = 1; trigger tự cập nhật đời cho con cháu."
-msgstr "When on, generation = 1; the generation of descendants is updated automatically."
 
 #: src/pages/Clans.tsx
 msgid "Khi có dòng họ chuyển sang chế độ công khai, họ sẽ xuất hiện ở đây."
@@ -8749,6 +8775,10 @@ msgstr "No results"
 msgid "Không có kết quả cho \"{debounced}\"."
 msgstr "No results for \"{debounced}\"."
 
+#: src/components/ui/rich-select.tsx
+msgid "Không có kết quả khớp."
+msgstr "No matching results."
+
 #: src/pages/clan/Kinship.tsx
 msgid "Không có kết quả."
 msgstr "No result."
@@ -8787,8 +8817,7 @@ msgstr "No one matches the gender + name."
 msgid "Không có người khớp."
 msgstr "No matching people."
 
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
+#: src/components/ExistingPersonPicker.tsx
 msgid "Không có người nào khớp."
 msgstr "No one matches."
 
@@ -9913,6 +9942,7 @@ msgid "Loại đơn vị"
 msgstr "Unit type"
 
 #: src/pages/clan/ClanFund.tsx
+#: src/pages/clan/ClanFund.tsx
 msgid "Loại giao dịch"
 msgstr "Transaction type"
 
@@ -9921,7 +9951,7 @@ msgstr "Transaction type"
 msgid "Loại hướng dẫn"
 msgstr "Guide type"
 
-#: src/pages/clan/EditPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Loại khỏi \"Việc cần làm\""
 msgstr "Remove from \"To-do\""
 
@@ -9948,7 +9978,7 @@ msgid "Loại sự kiện"
 msgstr "Event types"
 
 #: src/pages/clan/MapStats.tsx
-msgid "Loại trừ người đã khuất"
+msgid "Loại trừ người đã mất"
 msgstr "Exclude deceased people"
 
 #: src/pages/clan/Board.tsx
@@ -9962,6 +9992,10 @@ msgstr "Filter updates"
 #: src/pages/clan/HonorBook.tsx
 msgid "Lọc công đức"
 msgstr "Filter merits"
+
+#: src/components/ui/rich-select.tsx
+msgid "Lọc danh sách"
+msgstr "Filter list"
 
 #: src/pages/clan/Heritage.tsx
 msgid "Lọc di sản"
@@ -10154,10 +10188,6 @@ msgstr "Invitation to join a clan"
 #: src/components/BookTextsSection.tsx
 msgid "Lời nói đầu"
 msgstr "Foreword"
-
-#: src/pages/clan/BookInfo.tsx
-msgid "Lời nói đầu, phả ký, ngoại phả, phụ khảo trong sổ gia phả PDF. Phần để trống sẽ không in. Phả hệ, phả đồ, ngày giỗ, cưới gả tự dựng từ dữ liệu."
-msgstr "Foreword, chronicle, in-law chapter and appendix in the PDF family book. Blank sections are not printed. Pedigree, tree diagram, death anniversaries and marriages are built automatically from the data."
 
 #: src/components/ShareCardDialog.tsx
 msgid "Lời trích / mô tả"
@@ -10473,6 +10503,10 @@ msgstr "mother"
 msgid "Mẹ"
 msgstr "Mother"
 
+#: src/components/QuickAddSheet.tsx
+msgid "Mẹ (đã có)"
+msgstr "Mother (already added)"
+
 #: src/components/HistoricalPersonSections.tsx
 msgid "Mẹ nuôi: "
 msgstr "Adoptive mother: "
@@ -10635,6 +10669,7 @@ msgid "Mở ra xem, hầu như chỉ đọc."
 msgstr "Open to view; mostly read-only."
 
 #: src/components/CollapsibleCard.tsx
+#: src/components/FormGroup.tsx
 #: src/components/TodayHubCard.tsx
 #: src/components/ui/card.tsx
 msgid "Mở rộng"
@@ -11073,14 +11108,13 @@ msgstr "To see more, open"
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/InlawFamilyCard.tsx
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/RelationshipGroup.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -11092,7 +11126,6 @@ msgstr "To see more, open"
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/MyLineage.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/QrExport.tsx
@@ -11108,6 +11141,7 @@ msgstr "Male"
 
 #: src/components/CalendarDateInput.tsx
 #: src/components/TimelineFields.tsx
+#: src/components/ui/date-picker.tsx
 msgid "Năm"
 msgstr "Year"
 
@@ -11360,6 +11394,10 @@ msgstr "Founding ancestor's death anniversary (giỗ Tổ)"
 msgid "Ngày giỗ, sinh nhật và sự kiện của dòng họ vào Google / Apple Calendar"
 msgstr "Your clan's death anniversaries, birthdays and events in Google / Apple Calendar"
 
+#: src/components/ui/date-picker.tsx
+msgid "Ngày không hợp lệ hoặc ngoài khoảng cho phép."
+msgstr "Invalid date, or outside the allowed range."
+
 #: src/components/TodayHubCard.tsx
 msgid "Ngày kia"
 msgstr "The day after tomorrow"
@@ -11388,12 +11426,9 @@ msgstr "Date of death"
 msgid "Ngày mất (âm)"
 msgstr "Date of death (lunar)"
 
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/NewPerson.tsx
 msgid "Ngày mất (nếu đã mất)"
 msgstr "Date of death (if deceased)"
 
@@ -11407,10 +11442,10 @@ msgstr "date of birth"
 
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Ngày sinh"
 msgstr "Date of birth"
@@ -11422,9 +11457,6 @@ msgid "Ngày sinh (âm)"
 msgstr "Date of birth (lunar)"
 
 #: src/components/QuickAddSheet.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
 msgid "Ngày sinh (tuỳ chọn)"
 msgstr "Date of birth (optional)"
 
@@ -11462,6 +11494,10 @@ msgstr "Good days follow the traditional calendar (the 12 trực indicate what t
 #: src/pages/clan/GoodDays.tsx
 msgid "Ngày xấu (Hắc đạo)"
 msgstr "Inauspicious day (Hắc đạo)"
+
+#: src/components/ui/date-picker.tsx
+msgid "ngày/tháng/năm"
+msgstr "dd/mm/yyyy"
 
 #. placeholder {0}: hostOf(memory.media_url!)
 #: src/components/community/MemoryCard.tsx
@@ -11735,7 +11771,6 @@ msgid "người này"
 msgstr "this person"
 
 #: src/components/QuickAddSheet.tsx
-#: src/pages/clan/AddChild.tsx
 msgid "Người này"
 msgstr "This person"
 
@@ -11804,6 +11839,7 @@ msgstr "People, graves, heritage, guides…"
 msgid "Nguồn"
 msgstr "Source"
 
+#: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Nguồn ảnh"
 msgstr "Photo source"
@@ -12003,6 +12039,10 @@ msgstr "Enter by Stem–Branch (Bính Thìn…)"
 msgid "Nhập theo lịch Âm"
 msgstr "Enter in the lunar calendar"
 
+#: src/components/PersonFormFields.tsx
+msgid "Nhập thì người này hiện trên Bản đồ của dòng họ."
+msgstr "If filled in, this person appears on the clan's Map."
+
 #: src/lib/navModel.tsx
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/Import.tsx
@@ -12163,10 +12203,9 @@ msgstr "Related resting places"
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
@@ -12224,11 +12263,6 @@ msgstr "The content is for reference only; customs may differ by region."
 msgid "Nội dung sẽ được nối vào tiểu sử hiện tại. Tiếp tục?"
 msgstr "The text will be appended to the current biography. Continue?"
 
-#: src/pages/clan/BookInfo.tsx
-#: src/pages/NewClan.tsx
-msgid "Nội dung Sổ gia phả"
-msgstr "Family book content"
-
 #: src/pages/CustomsDetail.tsx
 msgid "Nội dung tham khảo; phong tục có thể khác nhau theo vùng/gia đình."
 msgstr "Reference content; customs may differ by region / family."
@@ -12251,6 +12285,7 @@ msgid "Nơi ở cho {0} người"
 msgstr "Residence for {0} people"
 
 #: src/components/PersonAddressCard.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Nơi ở hiện tại"
 msgstr "Current residence"
 
@@ -12265,10 +12300,9 @@ msgstr "Place where ashes were scattered"
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Nơi sinh"
 msgstr "Place of birth"
@@ -12309,15 +12343,14 @@ msgstr "Notify failures (total)"
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/InlawFamilyCard.tsx
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/RelationshipGroup.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -12329,7 +12362,6 @@ msgstr "Notify failures (total)"
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/MyLineage.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/QrExport.tsx
@@ -12540,6 +12572,10 @@ msgstr "Fortune & prosperity"
 #: src/lib/queries/vnDivisions.ts
 msgid "Phường"
 msgstr "Ward"
+
+#: src/components/ui/date-picker.tsx
+msgid "Phút"
+msgstr "Minute"
 
 #: src/components/HomeCustomizeDrawer.tsx
 msgid "Podcast hôm nay"
@@ -12825,6 +12861,10 @@ msgstr "Full moon of the 4th lunar month — the Buddha's birthday."
 msgid "Riêng tư"
 msgstr "Private"
 
+#: src/pages/clan/Settings.tsx
+msgid "Riêng tư / công khai, phần người ngoài được xem, viền avatar. Tên, mô tả và sổ gia phả sửa ở trang “Thông tin & Sổ gia phả”."
+msgstr "Private / public, what outsiders can see, avatar frame. Name, description and the family book are edited on the “Details & Family book” page."
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Rộng (cm)"
 msgstr "Width (cm)"
@@ -12876,10 +12916,6 @@ msgstr "Copy as a new person"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Sao chép tin nhắn"
 msgstr "Copy message"
-
-#: src/pages/clan/Heritage.tsx
-msgid "Sắp đầy. Hãy xoá bớt ảnh/ghi âm cũ trước khi thêm mới."
-msgstr "Almost full. Delete some old photos / recordings before adding new ones."
 
 #: src/pages/clan/Branches.tsx
 #: src/pages/clan/Branches.tsx
@@ -13047,6 +13083,10 @@ msgstr "Rows per page"
 #: src/pages/clan/ClanFund.tsx
 msgid "Số dư hiện tại"
 msgstr "Current balance"
+
+#: src/components/ClanFormGroups.tsx
+msgid "Sổ gia phả"
+msgstr "Family book"
 
 #: src/components/ClanStatsPanel.tsx
 #: src/components/HomeCustomizeDrawer.tsx
@@ -13256,10 +13296,6 @@ msgstr "Edit the tree directly. For trusted relatives."
 msgid "Sửa chi"
 msgstr "Edit branch"
 
-#: src/pages/clan/EditPerson.tsx
-msgid "Sửa chi tiết khác"
-msgstr "Edit more details"
-
 #: src/components/community/InviteCardDialog.tsx
 msgid "Sửa chữ trên ảnh"
 msgstr "Edit text on the image"
@@ -13366,6 +13402,30 @@ msgstr "The subscription is missing a key — try again"
 #: src/pages/admin/HeThongPage.tsx
 msgid "Sức khoẻ database, cron, thông báo gửi hỏng."
 msgstr "Database health, cron jobs, failed notifications."
+
+#: src/components/ui/date-picker.tsx
+msgid "T2"
+msgstr "Mon"
+
+#: src/components/ui/date-picker.tsx
+msgid "T3"
+msgstr "Tue"
+
+#: src/components/ui/date-picker.tsx
+msgid "T4"
+msgstr "Wed"
+
+#: src/components/ui/date-picker.tsx
+msgid "T5"
+msgstr "Thu"
+
+#: src/components/ui/date-picker.tsx
+msgid "T6"
+msgstr "Fri"
+
+#: src/components/ui/date-picker.tsx
+msgid "T7"
+msgstr "Sat"
 
 #: src/pages/clan/Inlaws.tsx
 msgid "Tab trạng thái"
@@ -13877,11 +13937,11 @@ msgstr "Your name"
 msgid "Tên của bạn (để ghi người nhận diện)"
 msgstr "Your name (credited for the identification)"
 
-#: src/pages/clan/EditPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Tên đặt khi mất, dùng trong văn cúng"
 msgstr "Name given after death, used in memorial prayers"
 
-#: src/pages/clan/EditPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Tên đặt khi trưởng thành, dùng nơi trang trọng"
 msgstr "Name given in adulthood, used in formal settings"
 
@@ -13914,6 +13974,10 @@ msgstr "Name (optional)"
 msgid "Tên gọi khác (cách nhau bởi dấu phẩy)"
 msgstr "Other names (separated by commas)"
 
+#: src/components/PersonFormFields.tsx
+msgid "Tên gọi khác, nơi sinh, ngày mất, an táng, tiểu sử."
+msgstr "Other names, birthplace, date of death, burial, biography."
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 #: src/pages/Account.tsx
 #: src/pages/Account.tsx
@@ -13929,17 +13993,16 @@ msgstr "The name shown in the clan and on events. Not your email."
 
 #: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Tên húy"
 msgstr "Tên húy (taboo name)"
 
-#: src/pages/clan/NewPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Tên húy / biệt hiệu"
 msgstr "Taboo name / nickname"
 
-#: src/pages/clan/EditPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Tên khai sinh, kiêng gọi sau khi mất"
 msgstr "Birth name, avoided in speech after death"
 
@@ -13963,10 +14026,9 @@ msgstr "Event name"
 msgid "Tên thuỵ"
 msgstr "Posthumous name (thuỵ)"
 
+#: src/components/PersonFormFields.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Tên thụy"
 msgstr "Tên thụy (posthumous name)"
@@ -13976,17 +14038,12 @@ msgid "Tên token"
 msgstr "Token name"
 
 #: src/components/ContributionDiffView.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Tên tự"
 msgstr "Tên tự (courtesy name)"
-
-#: src/pages/clan/EditPerson.tsx
-msgid "Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần."
-msgstr "Courtesy name, taboo name, posthumous name, date of death, birth order, place of birth, burial place, biography. Skip if not needed yet."
 
 #: src/pages/ConnectAiAuthorize.tsx
 msgid "Tên ứng dụng do chính ứng dụng tự khai. Chỉ cho phép nếu bạn vừa tự bấm kết nối từ Claude, ChatGPT hoặc ứng dụng bạn tin."
@@ -14000,6 +14057,10 @@ msgstr "Name and address of the branch hall"
 msgid "Tên và địa chỉ nhà thờ họ (từ đường)"
 msgstr "Name and address of the clan ancestral hall (từ đường)"
 
+#: src/pages/clan/BookInfo.tsx
+msgid "Tên và mô tả dòng họ."
+msgstr "Clan name and description."
+
 #: src/components/QuickAddSheet.tsx
 msgid "Tên vợ / chồng"
 msgstr "Spouse's name"
@@ -14011,10 +14072,6 @@ msgstr "Name Z → A"
 #: src/components/ShareSectionsCard.tsx
 msgid "Tên, khu vực, người an nghỉ đã mất — không có toạ độ."
 msgstr "Name, area, deceased people resting there — no coordinates."
-
-#: src/pages/clan/BookInfo.tsx
-msgid "Tên, mô tả — cùng bộ ô với lúc tạo dòng họ."
-msgstr "Name and description — same fields as when the clan was created."
 
 #: src/lib/festivals.ts
 msgid "Tết Đoan Ngọ"
@@ -14065,6 +14122,7 @@ msgid "Tham gia dòng họ"
 msgstr "Join the clan"
 
 #: src/components/CalendarDateInput.tsx
+#: src/components/ui/date-picker.tsx
 msgid "Tháng"
 msgstr "Month"
 
@@ -14077,7 +14135,9 @@ msgstr "Straight"
 msgid "Tháng (âm lịch)"
 msgstr "Month (lunar)"
 
+#. placeholder {0}: i + 1
 #. placeholder {0}: info.canChi.month
+#: src/components/ui/date-picker.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Tháng {0}"
 msgstr "Month {0}"
@@ -14117,6 +14177,7 @@ msgid "Tháng nhuận"
 msgstr "Leap month"
 
 #: src/components/EventsCalendar.tsx
+#: src/components/ui/date-picker.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Tháng sau"
 msgstr "Next month"
@@ -14126,6 +14187,7 @@ msgid "Tháng sinh (âm)"
 msgstr "Month of birth (lunar)"
 
 #: src/components/EventsCalendar.tsx
+#: src/components/ui/date-picker.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Tháng trước"
 msgstr "Previous month"
@@ -14316,10 +14378,6 @@ msgstr "Add branch"
 #: src/components/BranchesSection.tsx
 msgid "Thêm chi đầu tiên ở form bên dưới — chi giúp lọc danh bạ và đăng ký thông báo riêng."
 msgstr "Add the first branch in the form below — branches help filter the People list and set up separate notifications."
-
-#: src/pages/clan/NewPerson.tsx
-msgid "Thêm chi tiết khác"
-msgstr "Add more details"
 
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/Cemeteries.tsx
@@ -14746,10 +14804,10 @@ msgstr "Details & Family book"
 msgid "thông tin bạn đã ghi"
 msgstr "the details you entered"
 
-#: src/pages/clan/BookInfo.tsx
-#: src/pages/NewClan.tsx
-msgid "Thông tin cho sổ gia phả"
-msgstr "Information for the family book"
+#: src/components/ClanFormGroups.tsx
+#: src/components/PersonFormFields.tsx
+msgid "Thông tin chính"
+msgstr "Main information"
 
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -14761,7 +14819,6 @@ msgid "Thông tin đóng góp"
 msgstr "Contribution details"
 
 #: src/components/ShareSectionsCard.tsx
-#: src/pages/clan/BookInfo.tsx
 msgid "Thông tin dòng họ"
 msgstr "Clan details"
 
@@ -14786,7 +14843,7 @@ msgid "Thu (đóng góp)"
 msgstr "Income (contribution)"
 
 #. placeholder {0}: index + 1
-#: src/pages/clan/AddChild.tsx
+#: src/components/OtherParentPicker.tsx
 msgid "thứ {0}"
 msgstr "No. {0}"
 
@@ -14857,14 +14914,13 @@ msgstr "Try changing the status or removing some keywords."
 #: src/components/BioText.tsx
 #: src/components/CollapsibleCard.tsx
 #: src/components/community/MemoryCard.tsx
+#: src/components/FormGroup.tsx
 #: src/components/TodayHubCard.tsx
 #: src/components/ui/card.tsx
 #: src/pages/admin/shared.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Dashboard.tsx
-#: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Thu gọn"
 msgstr "Show less"
@@ -14971,10 +15027,9 @@ msgstr "Belongs to clans"
 msgid "thuỷ tổ"
 msgstr "founding ancestor"
 
+#: src/components/PersonFormFields.tsx
 #: src/components/Tree3DView.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Import.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 msgid "Thuỷ tổ"
@@ -15073,11 +15128,10 @@ msgid "Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằ
 msgstr "The title, description, sections and FAQ currently there will be replaced by the Markdown content."
 
 #: src/components/ContributionDiffView.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/SharedPersonCard.tsx
-#: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Memories.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Tiểu sử"
 msgstr "Biography"
@@ -15213,8 +15267,12 @@ msgstr "Find the person whose relationships you want to see"
 msgid "Tìm người chưa gắn vào cây"
 msgstr "Find people not attached to the tree"
 
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
+#. placeholder {0}: focal?.full_name ?? t`người gốc`
+#: src/pages/clan/AddSpouse.tsx
+msgid "Tìm người đã có (khác giới với {0})"
+msgstr "Find an existing person (opposite gender to {0})"
+
+#: src/components/ExistingPersonPicker.tsx
 msgid "Tìm người đã có trong dòng họ"
 msgstr "Find an existing person in the clan"
 
@@ -16116,10 +16174,6 @@ msgstr "Ancestral hall, customs, tales, keepsakes."
 msgid "Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
 msgstr "Ancestral halls (từ đường), customs, tales, documents — preserving the clan's spiritual values."
 
-#: src/pages/clan/EditPerson.tsx
-msgid "Tự ghi tuổi thọ cho người đã mất. Để trống thì hệ thống tự tính từ năm sinh – năm mất (nếu có đủ). Từ 60 tuổi hiển thị \"hưởng thọ\", dưới 60 là \"hưởng dương\"."
-msgstr "Enter the age at death for someone deceased. If left blank, it's calculated from the years of birth and death (when both are known). From 60 it's shown as \"hưởng thọ\" (a long life), under 60 as \"hưởng dương\"."
-
 #: src/components/GlobalSearch.tsx
 msgid "Từ khoá tìm kiếm"
 msgstr "Search keywords"
@@ -16156,8 +16210,7 @@ msgstr "Title"
 msgid "Tước hiệu, chức vị"
 msgstr "Titles and offices"
 
-#: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/NewPerson.tsx
+#: src/components/PersonFormFields.tsx
 msgid "Tuổi thọ"
 msgstr "Age at death"
 
@@ -16185,6 +16238,7 @@ msgid "Tuỳ chỉnh trang chủ"
 msgstr "Customize the home page"
 
 #: src/components/CollapsibleFilters.tsx
+#: src/components/FormGroup.tsx
 #: src/components/HeaderActions.tsx
 #: src/components/HeaderActions.tsx
 #: src/components/PersonAddressCard.tsx
@@ -16240,10 +16294,6 @@ msgstr "Fund ledger options"
 msgid "Tuỳ chọn trợ giúp"
 msgstr "Help options"
 
-#: src/pages/NewClan.tsx
-msgid "Tuỳ chọn, in ở bìa và trang giới thiệu của sổ; điền sau cũng được."
-msgstr "Optional; printed on the cover and introduction page of the book. You can fill it in later."
-
 #: src/pages/clan/InlawsNew.tsx
 msgid "Tuỳ chọn. Admin bên kia thấy khi nhập mã mời."
 msgstr "Optional. The admin on the other side sees it when entering the invite code."
@@ -16272,16 +16322,10 @@ msgstr "useClanContext must be inside ClanLayout (Outlet or PanelHost)"
 msgid "user này"
 msgstr "this user"
 
+#: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
-#: src/pages/clan/AddChild.tsx
-#: src/pages/clan/AddParent.tsx
-#: src/pages/clan/AddSpouse.tsx
 msgid "Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
 msgstr "Lunar date preferred. Only the anniversary (month/day) is needed; the year can be left blank."
-
-#: src/pages/clan/EditPerson.tsx
-msgid "Ưu tiên ghi ngày âm. Chỉ cần nhớ ngày giỗ là đủ — điền tháng/ngày âm, bỏ trống năm cũng được."
-msgstr "Lunar date preferred. Remembering the death anniversary is enough — fill in the lunar month/day; the year can be left blank."
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"
@@ -16298,6 +16342,10 @@ msgstr "A few lines introducing the room…"
 #: src/components/ClanFormFields.tsx
 msgid "Vài dòng giới thiệu về dòng họ"
 msgstr "A few lines introducing the clan"
+
+#: src/components/PersonFormFields.tsx
+msgid "Vài dòng về cuộc đời, công trạng, nghề nghiệp…"
+msgstr "A few lines about their life, achievements, occupation…"
 
 #: src/pages/clan/EditPerson.tsx
 msgid "Vài giây trước"
@@ -16497,13 +16545,18 @@ msgstr "e.g. Lạc Hồng Cemetery, Vĩnh Nghiêm Pagoda"
 msgid "vd: Nghĩa trang X, lô 3"
 msgstr "e.g. X Cemetery, plot 3"
 
+#: src/components/PersonFormFields.tsx
+msgid "Vd: nghĩa trang xã, khu mộ dòng họ"
+msgstr "e.g. village cemetery, clan burial ground"
+
 #: src/pages/clan/AddSpouse.tsx
 msgid "Vd: Nguyễn Thị B"
 msgstr "E.g. Nguyễn Thị B"
 
+#: src/components/PersonFormFields.tsx
+#: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/pages/clan/AddParent.tsx
-#: src/pages/clan/NewPerson.tsx
 msgid "Vd: Nguyễn Văn A"
 msgstr "E.g. Nguyễn Văn A"
 
@@ -16571,6 +16624,10 @@ msgstr "E.g. Donation to build the ancestral hall / Admitted to Bách Khoa Unive
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "vd: xã …, huyện …, tỉnh …"
 msgstr "e.g. … commune, … district, … province"
+
+#: src/components/PersonFormFields.tsx
+msgid "Vd: xã Mỹ Thọ, huyện Bình Lục, tỉnh Hà Nam"
+msgstr "e.g. Mỹ Thọ commune, Bình Lục district, Hà Nam province"
 
 #: src/components/community/CommunityCard.tsx
 msgid "về"
@@ -16642,14 +16699,14 @@ msgstr "latitude"
 msgid "Ví dụ: Claude trên laptop"
 msgstr "For example: Claude on my laptop"
 
-#: src/pages/clan/AddChild.tsx
-msgid "Ví dụ: người chồng có 2 đời vợ — muốn nhập con của vợ hai thì chọn đúng vợ hai ở trên. Nếu vợ/chồng đó chưa có trong cây, hãy thêm bằng \"Thêm vợ/chồng\" trước."
-msgstr "Example: a husband has had 2 wives — to enter the second wife's child, pick the second wife above. If that spouse isn't in the tree yet, add her first with \"Add spouse\"."
-
 #: src/components/community/CommunitySharePanel.tsx
 #: src/components/community/MemoryForm.tsx
 msgid "Ví dụ: Nguyễn Minh"
 msgstr "e.g. Nguyễn Minh"
+
+#: src/components/OtherParentPicker.tsx
+msgid "Ví dụ: ông có hai đời vợ, muốn nhập con của bà hai thì chọn đúng dòng \"Vợ hai\". Nếu vợ/chồng chưa có trong cây, hãy bấm \"Thêm vợ/chồng\" trước."
+msgstr "Example: if he had two wives and you are adding the second wife's child, pick the \"Wife two\" row. If the spouse is not in the tree yet, add them first with \"Add spouse\"."
 
 #: src/pages/clan/GoodDays.tsx
 msgid "Vì sao đẹp?"
@@ -16725,7 +16782,7 @@ msgid "Viền avatar"
 msgstr "Avatar frame"
 
 #: src/components/ClanFormFields.tsx
-#: src/pages/clan/Settings.tsx
+#: src/components/ClanFormGroups.tsx
 msgid "Viền avatar cả dòng họ"
 msgstr "Avatar frame for the whole clan"
 
@@ -16762,10 +16819,8 @@ msgstr "Honoring the generosity and achievements of the clan's descendants."
 msgid "VITE_VAPID_PUBLIC_KEY chưa cấu hình"
 msgstr "VITE_VAPID_PUBLIC_KEY is not configured"
 
-#: src/pages/clan/AddChild.tsx
-msgid "vợ"
-msgstr "wife"
-
+#: src/components/OtherParentPicker.tsx
+#: src/components/OtherParentPicker.tsx
 #: src/pages/clan/People.tsx
 msgid "Vợ"
 msgstr "Wife"
@@ -16801,11 +16856,6 @@ msgstr "Military general"
 #: src/pages/clan/Import.tsx
 msgid "Vợ/Chồng"
 msgstr "Spouse"
-
-#. placeholder {0}: rels.spouses[0].full_name
-#: src/pages/clan/AddChild.tsx
-msgid "vợ/chồng ({0})"
-msgstr "spouse ({0})"
 
 #. placeholder {0}: sp.full_name
 #: src/components/QuickAddSheet.tsx
@@ -17410,6 +17460,10 @@ msgstr "Delete the milestone of year {0}"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Xoá mục di sản này?"
 msgstr "Delete this heritage entry?"
+
+#: src/components/ui/date-picker.tsx
+msgid "Xoá ngày"
+msgstr "Clear date"
 
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx

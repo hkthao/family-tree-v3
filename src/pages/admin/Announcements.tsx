@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DateTimePicker } from "@/components/ui/date-picker";
 import { useMemo, useState } from "react";
 
 import { Chip, type ChipTone } from "@/components/Chip";
@@ -6,7 +7,6 @@ import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
-import { IconTile } from "@/components/IconTile";
 import {
   IconBell,
   IconCalendar,
@@ -278,9 +278,8 @@ function AnnouncementRow({ row, onOpen }: { row: Announcement; onOpen: () => voi
       <button
         type="button"
         onClick={onOpen}
-        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+        className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
       >
-        <IconTile icon={IconBell} tone={LEVEL_TONE[row.level]} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{row.title}</p>
           <p className="mt-0.5 line-clamp-2 whitespace-pre-line text-sm text-muted-foreground">
@@ -451,13 +450,11 @@ function AnnouncementForm({
 
         <div className="space-y-2">
           <Label htmlFor="ann-published">{t`Lịch đăng`}</Label>
-          <Input
+          <DateTimePicker
             id="ann-published"
-            icon={<IconCalendar />}
-            type="datetime-local"
             value={publishedAt}
-            onChange={(e) => {
-              setPublishedAt(e.target.value);
+            onChange={(v) => {
+              setPublishedAt(v);
               setPublishNow(false);
             }}
             disabled={publishNow}
@@ -481,12 +478,10 @@ function AnnouncementForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="ann-expires">{t`Hết hạn (tuỳ chọn)`}</Label>
-          <Input
+          <DateTimePicker
             id="ann-expires"
-            icon={<IconClock />}
-            type="datetime-local"
             value={expiresAt}
-            onChange={(e) => setExpiresAt(e.target.value)}
+            onChange={setExpiresAt}
           />
         </div>
       </ReadOnlyFieldset>

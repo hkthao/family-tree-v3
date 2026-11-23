@@ -312,7 +312,7 @@ export function GiaPhaImportTab() {
         )}
 
         {result && (
-          <Alert>
+          <Alert variant="success">
             <AlertDescription>
               ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "}
               <strong>{result.counts.families}</strong> gia đình vào{" "}

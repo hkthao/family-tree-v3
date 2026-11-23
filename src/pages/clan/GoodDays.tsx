@@ -1,4 +1,6 @@
 import { weekdayName } from "@/lib/formatDate";
+import { Callout } from "@/components/ui/callout";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useQuery } from "@tanstack/react-query";
 import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
@@ -383,21 +385,21 @@ export default function GoodDays() {
           {range === "custom" && (
             <div className="flex items-center gap-2 rounded-lg border bg-muted/20 p-3 text-sm">
               <span className="shrink-0 text-muted-foreground">{t`Từ`}</span>
-              <input
-                type="date"
-                value={customFrom}
-                max={customTo}
-                onChange={(e) => setCustomFrom(e.target.value)}
-                className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
-              />
+              <div className="min-w-0 flex-1">
+                <DatePicker
+                  value={customFrom}
+                  max={customTo}
+                  onChange={setCustomFrom}
+                />
+              </div>
               <span className="shrink-0 text-muted-foreground">{t`đến`}</span>
-              <input
-                type="date"
-                value={customTo}
-                min={customFrom}
-                onChange={(e) => setCustomTo(e.target.value)}
-                className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
-              />
+              <div className="min-w-0 flex-1">
+                <DatePicker
+                  value={customTo}
+                  min={customFrom}
+                  onChange={setCustomTo}
+                />
+              </div>
             </div>
           )}
         </section>
@@ -439,7 +441,7 @@ export default function GoodDays() {
         </section>
       </div>
 
-      <p className="rounded-md border bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
+      <Callout>
         <Trans>
           <Trans>
             <Trans>
@@ -450,7 +452,7 @@ export default function GoodDays() {
             </Trans>
           </Trans>
         </Trans>
-      </p>
+      </Callout>
     </div>
   );
 }

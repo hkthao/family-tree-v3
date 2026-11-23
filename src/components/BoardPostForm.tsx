@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -7,7 +8,6 @@ import { InSidePanelContext } from "@/components/panel/context";
 import { useToast } from "@/components/Toast";
 import {
   IconBook,
-  IconCalendar,
   IconCheck,
   IconPencil,
   IconScroll,
@@ -198,13 +198,7 @@ export function BoardPostForm({
         {(type === "event" || type === "notice") && (
           <div className="space-y-2">
             <Label htmlFor="post-event-date">{t`Ngày diễn ra (tuỳ chọn)`}</Label>
-            <Input
-              id="post-event-date"
-              icon={<IconCalendar />}
-              type="date"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-            />
+            <DatePicker id="post-event-date" value={eventDate} onChange={setEventDate} />
           </div>
         )}
       </ReadOnlyFieldset>

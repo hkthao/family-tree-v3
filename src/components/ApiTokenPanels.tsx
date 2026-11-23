@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Callout } from "@/components/ui/callout";
 import { useState } from "react";
 
 import { Chip } from "@/components/Chip";
@@ -306,10 +307,7 @@ export function ApiTokenCreatePanel({
                 </option>
               ))}
             </Select>
-            <p className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-              <sc.icon className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{sc.hint}</span>
-            </p>
+            <Callout icon={<sc.icon className="h-4 w-4" />}>{sc.hint}</Callout>
           </div>
           <div className="space-y-2">
             <Label htmlFor="api-token-days">{t`Hạn dùng`}</Label>
@@ -423,10 +421,7 @@ export function ApiTokenViewPanel({
               <Input readOnly icon={icon} value={value} />
             </div>
           ))}
-          <p className="flex items-start gap-2 rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-            <sc.icon className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{sc.hint}</span>
-          </p>
+          <Callout icon={<sc.icon className="h-4 w-4" />}>{sc.hint}</Callout>
           {tokenStatus(tk) === "active" && (
             <FormActions>
               <Button

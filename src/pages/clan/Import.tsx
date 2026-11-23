@@ -200,7 +200,7 @@ export default function Import() {
           </CardHeader>
           <CardContent>
             {plan.issues.length === 0 ? (
-              <Alert>
+              <Alert variant="success">
                 <AlertDescription>
                   {t`Không có lỗi hay cảnh báo. Bạn có thể nhập ngay.`}
                 </AlertDescription>

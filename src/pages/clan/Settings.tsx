@@ -146,7 +146,7 @@ export default function Settings() {
           </Alert>
         )}
         {mutation.isSuccess && (
-          <Alert>
+          <Alert variant="success">
             <AlertDescription>{t`Đã lưu.`}</AlertDescription>
           </Alert>
         )}

@@ -44,7 +44,9 @@ describe("lưới phải khai báo số cột cho MÀN HẸP", () => {
         bad.push(`${file}: "${cls.trim()}"`);
       }
     }
-    expect(bad, `thiếu grid-cols-… cho màn hẹp:\n${bad.join("\n")}`).toEqual([]);
+    expect(bad, `thiếu grid-cols-… cho màn hẹp:\n${bad.join("\n")}`).toEqual(
+      [],
+    );
   });
 });
 
@@ -68,5 +70,27 @@ describe("ngày hiện cho NGƯỜI đọc", () => {
       }
     }
     expect(bad, `ngày thô lọt ra giao diện:\n${bad.join("\n")}`).toEqual([]);
+  });
+});
+
+describe("ô chọn ngày", () => {
+  it('không dùng <input type="date"> / datetime-local gốc', () => {
+    // Lịch gốc hiện theo ngôn ngữ máy (tiếng Anh: "November", "Clear", "Today") và lệch style
+    // với các ô khác. Dùng DatePicker / DateTimePicker (src/components/ui/date-picker.tsx).
+    const bad: string[] = [];
+    for (const file of FILES) {
+      // Hai tệp này chỉ NHẮC tới ô gốc trong chú thích.
+      if (file.includes("date-picker") || file.includes("isoDate")) continue;
+      const text = readFileSync(file, "utf8");
+      for (const m of text.matchAll(
+        /\btype=["'{]+(date|datetime-local|month|week)["'}]/g,
+      )) {
+        bad.push(`${file}: type="${m[1]}"`);
+      }
+    }
+    expect(
+      bad,
+      `dùng DatePicker thay cho ô ngày gốc:\n${bad.join("\n")}`,
+    ).toEqual([]);
   });
 });

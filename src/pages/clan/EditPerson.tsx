@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Callout } from "@/components/ui/callout";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -255,38 +256,38 @@ export function EditPersonForm({
     >
       <ReadOnlyFieldset readOnly={readOnly} className="space-y-6">
         {existingDraft && !draftDismissed && !readOnly && (
-          <div className="rounded-md border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20 p-3 flex items-start gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">{t`Có bản nháp chưa lưu`}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                <Trans>
-                  {formatDraftAge(existingDraft.savedAt)} · Bạn đã sửa hồ sơ này
-                  nhưng chưa bấm Lưu lần trước.
-                </Trans>
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={restoreDraft}
-              className="shrink-0"
-            >
-              <IconUndo className="h-4 w-4 mr-1.5" />
-              {t`Khôi phục`}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={dismissDraft}
-              className="shrink-0"
-              title={t`Bỏ bản nháp`}
-              aria-label={t`Bỏ bản nháp`}
-            >
-              <IconX className="h-4 w-4" />
-            </Button>
-          </div>
+          <Callout
+            tone="warning"
+            title={t`Có bản nháp chưa lưu`}
+            action={
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={restoreDraft}
+                >
+                  <IconUndo className="mr-1.5 h-4 w-4" />
+                  {t`Khôi phục`}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={dismissDraft}
+                  title={t`Bỏ bản nháp`}
+                  aria-label={t`Bỏ bản nháp`}
+                >
+                  <IconX className="h-4 w-4" />
+                </Button>
+              </div>
+            }
+          >
+            <Trans>
+              {formatDraftAge(existingDraft.savedAt)} · Bạn đã sửa hồ sơ này
+              nhưng chưa bấm Lưu lần trước.
+            </Trans>
+          </Callout>
         )}
 
         <PersonFormFields

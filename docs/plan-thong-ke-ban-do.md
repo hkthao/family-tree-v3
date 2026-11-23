@@ -69,7 +69,7 @@ definer nhưng **tự kiểm tra `is_clan_member`**, chỉ trả số đếm the
 - `ProvinceMap` — SVG 34 tỉnh + Hoàng Sa/Trường Sa đúng vị trí (bắt buộc,
   nhạy cảm chủ quyền). Tô theo thang số người; nhãn "Tỉnh · N người".
 - Cột phải: Top tỉnh, donut Bắc/Trung/Nam, "Trạng thái dữ liệu" (có/thiếu địa
-  chỉ), ô tick "Loại trừ người đã khuất".
+  chỉ), ô tick "Loại trừ người đã mất".
 - Form người (`NewPerson`/`EditPerson`): **một card riêng, tuỳ chọn** "Nơi ở
   hiện tại", tách khỏi các card thông tin cơ bản. Gồm ô chọn Tỉnh/Thành →
   Phường/Xã (cascade, có tìm kiếm) + ô chi tiết. Đầu card có dòng ghi chú rõ:

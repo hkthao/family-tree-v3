@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useMemo, useState } from "react";
 
 import {
@@ -870,13 +871,7 @@ function AddEventForm({
           {calendar === "solar" ? (
             <div className="space-y-2">
               <Label htmlFor="evt-solar">{t`Ngày dương lịch`}</Label>
-              <Input
-                id="evt-solar"
-                icon={<IconCalendar />}
-                type="date"
-                value={dateSolar}
-                onChange={(e) => setDateSolar(e.target.value)}
-              />
+              <DatePicker id="evt-solar" value={dateSolar} onChange={setDateSolar} />
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 max-w-xs">

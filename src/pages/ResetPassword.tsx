@@ -63,7 +63,7 @@ export default function ResetPassword() {
     >
       {done ? (
         <div className="space-y-5">
-          <Alert>
+          <Alert variant="success">
             <AlertDescription>
               {t`Đã đổi mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.`}
             </AlertDescription>

@@ -1,32 +1,27 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 
+import { Callout, type CalloutTone } from "@/components/ui/callout";
 import { cn } from "@/lib/utils";
 
-const alertVariants = cva(
-  "relative w-full rounded-lg border px-4 py-3 text-base [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
-  {
-    variants: {
-      variant: {
-        default: "bg-background text-foreground",
-        destructive:
-          "border-destructive/50 text-destructive [&>svg]:text-destructive bg-destructive/10",
-      },
-    },
-    defaultVariants: { variant: "default" },
-  },
-);
+/**
+ * Kết quả / lỗi của một thao tác (đã lưu, lỗi từ máy chủ…) — vỏ mỏng trên `Callout` để giữ cùng
+ * một kiểu với mọi ghi chú trong app. Ghi chú tĩnh, cảnh báo giải thích: dùng thẳng `Callout`.
+ * Có `role="alert"` nên trình đọc màn hình đọc ngay khi hiện.
+ */
+type AlertVariant = "default" | "destructive" | "success" | "warning";
+
+const TONE_OF: Record<AlertVariant, CalloutTone> = {
+  default: "info",
+  destructive: "danger",
+  success: "success",
+  warning: "warning",
+};
 
 const Alert = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
+  React.HTMLAttributes<HTMLDivElement> & { variant?: AlertVariant }
+>(({ variant = "default", ...props }, ref) => (
+  <Callout ref={ref} role="alert" tone={TONE_OF[variant]} {...props} />
 ));
 Alert.displayName = "Alert";
 
@@ -48,7 +43,7 @@ const AlertDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-base [&_p]:leading-relaxed", className)}
+    className={cn("text-sm [&_p]:leading-relaxed", className)}
     {...props}
   />
 ));

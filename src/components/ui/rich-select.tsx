@@ -30,7 +30,12 @@ export function RichSelect<T extends string>({
   onChange,
   options,
   searchable,
+  compact,
+  searchPlaceholder,
 }: {
+  /** Ô nhỏ (cao h-10, chữ sm) để đặt trong popover/hàng chật — vd. chọn năm trên lịch. */
+  compact?: boolean;
+  searchPlaceholder?: string;
   /** Hiện ô lọc đầu danh sách (gõ không cần dấu). Mặc định: tự bật khi có hơn 7 lựa chọn. */
   searchable?: boolean;
   label?: string;
@@ -44,6 +49,7 @@ export function RichSelect<T extends string>({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const id = useId();
   const showSearch = searchable ?? options.length > 7;
   const shown = options.filter(
@@ -57,6 +63,14 @@ export function RichSelect<T extends string>({
     setQuery("");
   };
   const current = options.find((o) => o.value === value) ?? options[0];
+
+  // Mở danh sách dài (vd. 120 năm): cuộn tới mục đang chọn thay vì bắt đầu từ đầu.
+  useEffect(() => {
+    if (!open) return;
+    listRef.current
+      ?.querySelector('[aria-selected="true"]')
+      ?.scrollIntoView?.({ block: "center" });
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -113,7 +127,10 @@ export function RichSelect<T extends string>({
               move(-1);
             }
           }}
-          className="flex h-12 w-full items-center gap-3 rounded-md border border-input bg-background px-3 text-left ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className={cn(
+            "flex w-full items-center rounded-md border border-input bg-background text-left ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            compact ? "h-10 gap-1 px-2 text-sm" : "h-12 gap-3 px-3",
+          )}
         >
           {current && body(current, true)}
           <svg
@@ -136,9 +153,10 @@ export function RichSelect<T extends string>({
         </button>
         {open && (
           <ul
+            ref={listRef}
             role="listbox"
             aria-label={ariaLabel}
-            className="absolute left-0 right-0 z-20 mt-1 max-h-80 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg"
+            className="absolute left-0 right-0 z-40 mt-1 max-h-80 min-w-32 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg"
           >
             {showSearch && (
               <li role="presentation" className="p-1">
@@ -157,7 +175,9 @@ export function RichSelect<T extends string>({
                       }
                     }
                   }}
-                  placeholder={t`Gõ để lọc (không cần dấu)`}
+                  placeholder={
+                    searchPlaceholder ?? t`Gõ để lọc (không cần dấu)`
+                  }
                   aria-label={t`Lọc danh sách`}
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
@@ -180,7 +200,8 @@ export function RichSelect<T extends string>({
                     close();
                   }}
                   className={cn(
-                    "flex min-h-14 cursor-pointer items-center gap-3 rounded-sm px-2 py-2",
+                    "flex cursor-pointer items-center gap-3 rounded-sm px-2",
+                    compact ? "min-h-10 py-1 text-sm" : "min-h-14 py-2",
                     selected ? "bg-primary/10 font-medium" : "hover:bg-muted",
                   )}
                 >

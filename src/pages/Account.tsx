@@ -379,7 +379,7 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
             </Alert>
           )}
           {m.isSuccess && !changed && (
-            <Alert>
+            <Alert variant="success">
               <AlertDescription>{t`Đã lưu.`}</AlertDescription>
             </Alert>
           )}
@@ -573,7 +573,7 @@ function PasswordCard() {
             </Alert>
           )}
           {m.isSuccess && (
-            <Alert>
+            <Alert variant="success">
               <AlertDescription>{t`Đã đổi mật khẩu.`}</AlertDescription>
             </Alert>
           )}

@@ -398,9 +398,9 @@ chuẩn chỉ khi dữ liệu không phải "danh sách để duyệt" (xem Ngo�
 
 ## Dòng danh sách
 
-- Ô ảnh / icon bên trái là **ô bo góc nằm trong phần đệm của dòng**, cao bằng phần
-  nội dung (`HeritageThumb flush`), cỡ vừa (56px, icon 20px). Không dán sát mép thẻ,
-  không to hơn chữ — đã thử cả hai và đều xấu.
+- Danh sách **Di sản** và **Mộ phần** KHÔNG hiện ảnh thu nhỏ ở đầu dòng (đã bỏ — ảnh xem ở trang
+  chi tiết); dòng chỉ có chữ + chip. Thẻ "Dung lượng ảnh & ghi âm" cũng không đặt trên danh sách
+  (hạn mức vẫn được kiểm khi tải ảnh lên).
 - Dòng **không có ảnh** (Quỹ họ, Bảng vàng…) vẫn có ô bên trái: `IconTile`
   (`src/components/IconTile.tsx`) — icon + tông màu cùng loại với chip của dòng
   (Thu = tải xuống / xanh, Chi = tải lên / đỏ; công đức theo loại).
@@ -632,6 +632,51 @@ sau; bấm tab thì `scrollIntoView` tab đó. Từ `sm` cho xuống dòng như 
 Một công cụ nhiều bước nằm dưới nội dung chính (Tìm ngày đẹp cho việc lớn) → gom trong **một**
 thẻ `rounded-xl border bg-card p-4 shadow-sm`, tiêu đề `clan-name text-xl` ở đầu thẻ — không để
 trôi tự do sau một đường kẻ.
+
+## Thông báo nội tuyến: dùng `Callout`
+
+Mọi ghi chú, cảnh báo, kết quả, lỗi nằm trong trang/form dùng **một** component `Callout`
+(`src/components/ui/callout.tsx`) — không tự dựng `rounded border bg-muted/…` hay `border-amber-…`.
+
+| Tông | Dùng khi |
+|---|---|
+| `note` (mặc định) | giải thích thêm, trung tính (vd. "Ngày tốt chỉ để tham khảo") |
+| `info` | thông tin cần chú ý |
+| `success` | đã xong / kết quả tốt |
+| `warning` | hành động có hệ quả, bản nháp chưa lưu |
+| `danger` | lỗi |
+
+- Nền chỉ nhuộm nhẹ, chữ luôn là màu chữ chính (đọc được trên nền tối); màu tông ở viền + icon.
+- Có `title` và `action` (nút bên phải) cho trường hợp "Có bản nháp chưa lưu — [Khôi phục] [Bỏ]".
+- `Alert` (kết quả/lỗi của một thao tác, có `role="alert"`) chỉ là vỏ mỏng trên `Callout`:
+  `variant` = `default` (info) / `success` / `warning` / `destructive`.
+- Khối **dữ liệu** có viền màu (tổng công đức, sự kiện trong ngày) không phải thông báo, không dùng Callout.
+
+## Form thêm / sửa một thực thể: một bộ ô dùng chung
+
+- Thêm và sửa dùng **cùng** một component ô nhập: `PersonFormFields` (người), `ClanFormGroups`
+  (dòng họ), `PersonCoreFields` (phần lõi của Thêm con / cha mẹ / vợ chồng). Trang chỉ lo nạp dữ
+  liệu, nút Lưu và phần riêng của nó (ảnh, dòng thời gian, Con chung với ai…) qua prop/slot.
+- Dữ liệu form gom thành **một object** `values` + `onChange(patch)`, kèm hàm `…ToColumns` dùng
+  chung cho tạo và sửa — không rải 15 `useState`.
+- Tối đa **3 card** `FormGroup` mỗi form: Thông tin chính (luôn mở, nhãn Bắt buộc) → các nhóm
+  Tuỳ chọn (thu gọn sẵn; tự mở nếu đã có dữ liệu). Thu gọn bằng chevron đơn như `CardHeader`.
+- Chú thích đặt **dưới nhãn, trước ô** (không dưới ô — dễ đọc nhầm là của ô kế tiếp).
+  Placeholder là **hướng dẫn** ("Vd: …"), không ghi "(tuỳ chọn)" — nhãn nhóm đã nói điều đó.
+
+## Ô chọn trong form: không dùng dải nút tab
+
+- Chọn một trong vài mục loại trừ nhau (cách thêm, vai trò, loại giao dịch, lịch dương/âm):
+  `OptionSelect` (`ui/select.tsx`). `SegmentedControl` chỉ còn để đổi cách **xem** (lọc, tab trang).
+- Mục cần hình hoặc lời giải thích (Con chung với ai, Viền avatar, năm/tháng trên lịch):
+  `RichSelect` (`ui/rich-select.tsx`) — ô cao `h-12` như `Input`, danh sách có hình + mô tả,
+  hơn 7 mục tự có ô lọc không dấu.
+
+## Ngày: `DatePicker`, không `<input type="date">`
+
+`<input type="date">` / `datetime-local` gốc hiện lịch theo ngôn ngữ máy (tiếng Anh) và lệch style.
+Dùng `DatePicker` / `DateTimePicker` (`ui/date-picker.tsx`): gõ `ngày/tháng/năm` hoặc bấm vào ô để
+mở lịch tiếng Việt; giá trị vẫn là `yyyy-mm-dd`. Ngày sinh/mất của người dùng `CalendarDateInput`.
 
 ## Lối tắt quản trị: ở hub, không ở Cài đặt
 

@@ -1,4 +1,5 @@
 import { lockBodyScroll } from "@/lib/scrollLock";
+import { Callout } from "@/components/ui/callout";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -398,7 +399,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
             {/* Hướng dẫn đăng ẢNH thiệp. Facebook web không cho gắn ảnh
                 qua nút chia sẻ link → trên máy tính phải tải ảnh rồi đăng
                 như ảnh thường. */}
-            <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground space-y-1">
+            <Callout className="[&_p]:leading-relaxed">
               <p>
                 <span className="font-medium text-foreground">{t`Điện thoại:`}</span>{" "}
                 bấm <span className="font-medium">{t`Chia sẻ`}</span> để gửi
@@ -410,7 +411,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 lên Facebook như đăng ảnh thường (Facebook không cho gắn ảnh qua
                 nút chia sẻ nhanh).
               </p>
-            </div>
+            </Callout>
 
             {/* Chép link công khai để dán vào Zalo/Facebook. Ở chế độ
                 khoe phải lưu ảnh trước (publish) để link /khoe mở được. */}
@@ -550,10 +551,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                       {!props.members.find((m) => m.id === pickedMemberId)
                         ?.photo_path && (
                         <span className="text-muted-foreground">
-                          <Trans>
-                          {" "}
-                          (chưa có ảnh)
-                          </Trans>
+                          <Trans> (chưa có ảnh)</Trans>
                         </span>
                       )}
                     </span>
@@ -595,10 +593,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                                 {m.full_name}
                                 {!m.photo_path && (
                                   <span className="text-muted-foreground">
-                                    <Trans>
-                                    {" "}
-                                    · chưa có ảnh
-                                    </Trans>
+                                    <Trans> · chưa có ảnh</Trans>
                                   </span>
                                 )}
                               </button>

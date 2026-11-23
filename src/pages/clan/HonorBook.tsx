@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useMemo, useState } from "react";
 
 import { FormActions } from "@/components/ui/form-actions";
@@ -10,7 +11,6 @@ import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import {
   IconAward,
-  IconCalendar,
   IconCheck,
   IconPencil,
   IconSearch,
@@ -483,13 +483,7 @@ function HonorForm({
           )}
           <div className="space-y-1.5">
             <Label htmlFor="honor-date">{t`Ngày (tuỳ chọn)`}</Label>
-            <Input
-              id="honor-date"
-              icon={<IconCalendar />}
-              type="date"
-              value={occurredOn}
-              onChange={(e) => setOccurredOn(e.target.value)}
-            />
+            <DatePicker id="honor-date" value={occurredOn} onChange={setOccurredOn} />
           </div>
         </div>
         <div className="space-y-1.5">

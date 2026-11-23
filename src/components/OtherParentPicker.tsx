@@ -1,5 +1,5 @@
 import { PersonAvatar } from "@/components/PersonAvatar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Callout } from "@/components/ui/callout";
 import { RichSelect } from "@/components/ui/rich-select";
 
 import { t } from "@lingui/core/macro";
@@ -94,11 +94,9 @@ export function OtherParentPicker({
         }))}
       />
       {spouses.length > 0 && value === SOLO_VALUE && (
-        <Alert>
-          <AlertDescription>
-            {t`${focalName} đã có vợ/chồng ở trên — hãy chọn đúng người để con được gắn đúng. Chỉ chọn "Chưa rõ" khi con này thực sự không cùng cha mẹ với các anh chị em hiện có.`}
-          </AlertDescription>
-        </Alert>
+        <Callout tone="warning">
+          {t`${focalName} đã có vợ/chồng ở trên — hãy chọn đúng người để con được gắn đúng. Chỉ chọn "Chưa rõ" khi con này thực sự không cùng cha mẹ với các anh chị em hiện có.`}
+        </Callout>
       )}
       {spouses.length > 1 && (
         <p className="text-sm text-muted-foreground">

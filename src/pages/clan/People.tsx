@@ -4,6 +4,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
+import { Callout } from "@/components/ui/callout";
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -721,13 +722,13 @@ export default function People() {
             title={t`Nơi ở cho ${selected.size} người`}
             onReset={() => setBulkAddr(EMPTY_PERSON_ADDRESS)}
           >
-            <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+            <Callout>
               <Trans>
                 Đặt <strong>cùng một nơi ở</strong> cho {selected.size} người đã
                 chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì{" "}
                 <strong>xoá</strong> nơi ở của họ.
               </Trans>
-            </p>
+            </Callout>
             <AddressPicker
               idPrefix="bulk-addr"
               value={{
@@ -866,7 +867,11 @@ export default function People() {
                   canCopy={canEdit}
                   community={communityInfo?.get(p.id)}
                   showPending={canEdit}
-                  onInvite={isMember && clan.kind !== "historical" ? setInvitePerson : undefined}
+                  onInvite={
+                    isMember && clan.kind !== "historical"
+                      ? setInvitePerson
+                      : undefined
+                  }
                 />
               ))}
             </ul>
@@ -917,10 +922,16 @@ export default function People() {
           invite={{
             variants: ["hoso", "chung"],
             context: {
-              personYears: [invitePerson.birth_date?.slice(0, 4) ?? "?", invitePerson.death_date?.slice(0, 4) ?? "?"].join(" – "),
+              personYears: [
+                invitePerson.birth_date?.slice(0, 4) ?? "?",
+                invitePerson.death_date?.slice(0, 4) ?? "?",
+              ].join(" – "),
               facts: [
                 ...personFacts(invitePerson),
-                { label: t`Một kỷ niệm về cụ`, done: (communityInfo?.get(invitePerson.id)?.total ?? 0) > 0 },
+                {
+                  label: t`Một kỷ niệm về cụ`,
+                  done: (communityInfo?.get(invitePerson.id)?.total ?? 0) > 0,
+                },
               ],
             },
           }}
@@ -1030,7 +1041,9 @@ function PersonListItem({
   const rel = lookupRelatives(person.id, relatives);
   const missing =
     onInvite && !person.is_living && person.birth_place !== undefined
-      ? personFacts(person).filter((f) => !f.done).map((f) => f.label)
+      ? personFacts(person)
+          .filter((f) => !f.done)
+          .map((f) => f.label)
       : [];
   const life = lifespan(person);
   const metaBits = [genderLabel(person.gender)];

@@ -11,7 +11,6 @@ import {
   IconScroll,
   IconUsers,
 } from "@/components/icons";
-import { IconTile } from "@/components/IconTile";
 import { usePanel } from "@/components/panel/usePanel";
 import { SidePanel } from "@/components/SidePanel";
 import { Button } from "@/components/ui/button";
@@ -330,7 +329,7 @@ export default function MapStats() {
               onChange={(e) => setIncludeDeceased(!e.target.checked)}
               className="h-4 w-4 accent-primary"
             />
-            {t`Loại trừ người đã khuất`}
+            {t`Loại trừ người đã mất`}
           </label>
         )}
       </div>
@@ -521,18 +520,8 @@ export default function MapStats() {
                   <button
                     type="button"
                     onClick={it.open}
-                    className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+                    className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
                   >
-                    <IconTile
-                      icon={LayerIcon}
-                      tone={
-                        layer === "people"
-                          ? "primary"
-                          : layer === "graves"
-                            ? "violet"
-                            : "warning"
-                      }
-                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{it.title}</p>
                       {it.subtitle && (

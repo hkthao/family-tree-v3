@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -572,13 +573,7 @@ export default function RestingPlaceDetail({
                   </div>
                   <div className="space-y-2 max-w-[200px]">
                     <Label htmlFor="rel-date">{t`Ngày cải táng (tuỳ chọn)`}</Label>
-                    <Input
-                      id="rel-date"
-                      icon={<IconCalendar />}
-                      type="date"
-                      value={relDate}
-                      onChange={(e) => setRelDate(e.target.value)}
-                    />
+                    <DatePicker id="rel-date" value={relDate} onChange={setRelDate} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="rel-note">{t`Ghi chú`}</Label>

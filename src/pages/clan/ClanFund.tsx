@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DatePicker } from "@/components/ui/date-picker";
+import { OptionSelect } from "@/components/ui/select";
 import { useMemo, useState } from "react";
 
 import { FormActions } from "@/components/ui/form-actions";
@@ -9,9 +11,7 @@ import { Chip } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { EmptyState } from "@/components/EmptyState";
-import { IconTile } from "@/components/IconTile";
 import {
-  IconCalendar,
   IconCheck,
   IconDownload,
   IconPencil,
@@ -32,10 +32,6 @@ import { Label } from "@/components/ui/label";
 import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import {
@@ -420,12 +416,8 @@ function FundRow({ tx, onOpen }: { tx: FundTransaction; onOpen: () => void }) {
       <button
         type="button"
         onClick={onOpen}
-        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+        className="block w-full p-3 text-left transition-colors hover:bg-muted/40"
       >
-        <IconTile
-          icon={isIn ? IconDownload : IconUpload}
-          tone={isIn ? "success" : "danger"}
-        />
         <div className="min-w-0 flex-1">
           <p
             className={`text-base font-semibold tabular-nums ${
@@ -531,22 +523,16 @@ function FundForm({
       className="space-y-3"
     >
       <ReadOnlyFieldset readOnly={readOnly}>
-        <SegmentedControl ariaLabel={t`Loại giao dịch`} className="w-full">
-          <SegmentedButton
-            active={direction === "in"}
-            onClick={() => setDirection("in")}
-            className="flex-1 px-3"
-          >
-            {t`Thu (đóng góp)`}
-          </SegmentedButton>
-          <SegmentedButton
-            active={direction === "out"}
-            onClick={() => setDirection("out")}
-            className="flex-1 px-3"
-          >
-            Chi
-          </SegmentedButton>
-        </SegmentedControl>
+        <OptionSelect
+          label={t`Loại giao dịch`}
+          ariaLabel={t`Loại giao dịch`}
+          value={direction}
+          onChange={setDirection}
+          options={[
+            { value: "in", label: t`Thu (đóng góp)` },
+            { value: "out", label: t`Chi` },
+          ]}
+        />
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
@@ -600,13 +586,7 @@ function FundForm({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="fund-date">{t`Ngày (tuỳ chọn)`}</Label>
-          <Input
-            id="fund-date"
-            icon={<IconCalendar />}
-            type="date"
-            value={occurredOn}
-            onChange={(e) => setOccurredOn(e.target.value)}
-          />
+          <DatePicker id="fund-date" value={occurredOn} onChange={setOccurredOn} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="fund-note">{t`Ghi chú (tuỳ chọn)`}</Label>
