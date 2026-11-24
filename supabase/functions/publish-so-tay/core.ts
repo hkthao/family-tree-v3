@@ -3,7 +3,14 @@
  * deploy). Không đụng Deno/Supabase nên test được bằng vitest (src/test/lib/publishSoTay.test.ts).
  */
 
-export const CATEGORIES = ["tho_cung", "vong_doi", "le_tet", "le_hoi", "sinh_hoat", "van_khan"] as const;
+// Phải khớp content-site/src/taxonomy.ts (mỗi danh mục thuộc một chuyên mục của Blog).
+export const CATEGORIES = [
+  "tho_cung", "vong_doi", "sinh_hoat", "van_khan",
+  "le_tet", "le_hoi",
+  "di_san_vat_the", "di_san_phi_vat_the",
+  "bat_dau", "tinh_nang",
+  "lap_gia_pha", "dong_ho_hoc",
+] as const;
 export type Category = (typeof CATEGORIES)[number];
 export type PublishStatus = "needs_review" | "published";
 

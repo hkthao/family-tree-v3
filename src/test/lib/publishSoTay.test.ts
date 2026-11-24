@@ -106,3 +106,15 @@ describe("publish-so-tay: GitHub", () => {
     await expect(dispatchDeploy(CFG, vi.fn(async () => res(403)) as unknown as typeof fetch)).rejects.toThrow(/403/);
   });
 });
+
+describe("danh mục Blog đồng bộ giữa app, hàm đăng bài và content-site", () => {
+  it("cùng một danh sách ở ba nơi", async () => {
+    const { BLOG_CATEGORIES } = await import("@/lib/customs/compose");
+    const { CATEGORIES } = await import("../../../supabase/functions/publish-so-tay/core");
+    const { readFileSync } = await import("node:fs");
+    const tax = readFileSync("content-site/src/taxonomy.ts", "utf8");
+    const fromTaxonomy = [...tax.matchAll(/\{ slug: "([a-z_]+)", channel:/g)].map((m) => m[1]);
+    expect(BLOG_CATEGORIES.map((c) => c.value)).toEqual([...CATEGORIES]);
+    expect([...CATEGORIES].sort()).toEqual(fromTaxonomy.sort());
+  });
+});

@@ -12,8 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
-import { buildMarkdownFile, EMPTY_DRAFT, slugOf, type Draft } from "@/lib/customs/compose";
-import { CUSTOM_CATEGORY_LABEL, type CustomCategory } from "@/lib/queries/customs";
+import { BLOG_CATEGORIES, buildMarkdownFile, EMPTY_DRAFT, slugOf, type Draft } from "@/lib/customs/compose";
 import { queryKeys } from "@/lib/queries/keys";
 import { PublishError, publishSoTay, type PublishResult } from "@/lib/queries/soTayPublish";
 import { getMyProfile } from "@/lib/queries/profile";
@@ -22,7 +21,6 @@ import { t } from "@lingui/core/macro";
 
 const MarkdownEditor = lazy(() => import("@/components/markdown/MarkdownEditor"));
 
-const CATEGORIES = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
 const DRAFT_KEY = "family-tree:so-tay-soan";
 
 export default function CustomsCompose() {
@@ -162,10 +160,10 @@ export default function CustomsCompose() {
         </label>
         <label className="space-y-1">
           <span className="text-sm font-medium">{t`Chủ đề`}</span>
-          <Select value={draft.category} onChange={(e) => set("category", e.target.value as CustomCategory)}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CUSTOM_CATEGORY_LABEL[c]}
+          <Select value={draft.category} onChange={(e) => set("category", e.target.value)}>
+            {BLOG_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
               </option>
             ))}
           </Select>

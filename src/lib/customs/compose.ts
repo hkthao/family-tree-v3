@@ -1,10 +1,25 @@
 import { unaccent } from "@/lib/unaccent";
-import type { CustomCategory } from "@/lib/queries/customs";
+
+/** Danh mục Blog (phải khớp content-site/src/taxonomy.ts và supabase/functions/publish-so-tay/core.ts). Nhãn có tên chuyên mục. */
+export const BLOG_CATEGORIES: { value: string; label: string }[] = [
+  { value: "tho_cung", label: "Sổ tay văn hoá · Thờ cúng & tín ngưỡng" },
+  { value: "vong_doi", label: "Sổ tay văn hoá · Nghi lễ vòng đời" },
+  { value: "sinh_hoat", label: "Sổ tay văn hoá · Phong tục sinh hoạt" },
+  { value: "van_khan", label: "Sổ tay văn hoá · Văn khấn & văn tế" },
+  { value: "le_tet", label: "Lễ hội & Phong tục · Lễ Tết theo mùa" },
+  { value: "le_hoi", label: "Lễ hội & Phong tục · Lễ hội cộng đồng" },
+  { value: "di_san_vat_the", label: "Di sản Việt · Di tích & di sản vật thể" },
+  { value: "di_san_phi_vat_the", label: "Di sản Việt · Di sản phi vật thể" },
+  { value: "bat_dau", label: "Hướng dẫn sử dụng · Bắt đầu" },
+  { value: "tinh_nang", label: "Hướng dẫn sử dụng · Tính năng" },
+  { value: "lap_gia_pha", label: "Kiến thức gia phả · Lập gia phả" },
+  { value: "dong_ho_hoc", label: "Kiến thức gia phả · Họ hàng & dòng họ" },
+];
 
 export interface Draft {
   title: string;
   description: string;
-  category: CustomCategory;
+  category: string;
   tags: string;
   aliases: string;
   regions: string;
