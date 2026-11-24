@@ -14,3 +14,4 @@ User-agent: Applebot-Extended
 Allow: /
 
 Sitemap: https://donghoviet.thaohk.com/sitemap.xml
+Sitemap: https://donghoviet.thaohk.com/sitemap-index.xml

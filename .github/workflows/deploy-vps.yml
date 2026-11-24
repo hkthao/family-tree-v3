@@ -114,6 +114,25 @@ jobs:
           target: "/opt/gia-pha/"
           strip_components: 1
 
+      # Sổ tay Văn hoá: content-site (Astro) sinh trang SEO /so-tay/*, tìm kiếm (pagefind) và sitemap. Gộp vào landing để
+      # đi cùng một lần đồng bộ bên dưới. KHÔNG đưa admin/ (giao diện CMS) và so-tay-data/ (dữ liệu của app, đã nằm trong
+      # image app) lên landing công khai.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build content site
+        run: |
+          cd content-site
+          npm ci
+          npm run build
+
+      - name: Assemble landing (static + content site)
+        run: |
+          mkdir -p landing-merged
+          cp -R landing/. landing-merged/
+          rsync -a --exclude admin --exclude so-tay-data content-site/dist/ landing-merged/
+
       # Landing page tĩnh (donghoviet.thaohk.com).
       #
       # Đẩy vào thư mục TRUNG GIAN rồi mới đồng bộ sang chỗ thật. Lý do:
@@ -130,7 +149,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "landing/*"
+          source: "landing-merged/*"
           target: "/opt/landing-staging/"
           strip_components: 1
           rm: true
