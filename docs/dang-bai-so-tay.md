@@ -1,6 +1,10 @@
-# Đăng bài Sổ tay từ trong app (nút "Đăng")
+# Hàm `publish-so-tay` (đăng bài Sổ tay bằng commit GitHub) — ĐÃ GỠ GIAO DIỆN, CHƯA TRIỂN KHAI
 
-Trang `/so-tay/soan` (chỉ admin nền tảng): soạn bài → **Đăng lên web và app** hoặc **Lưu chờ duyệt**.
+> **Trạng thái:** trang soạn bài `/so-tay/soan`, nút nổi "Soạn bài" trong app và CMS Sveltia (`/admin/` của content-site) đã bị **gỡ**
+> vì chưa đạt yêu cầu bảo mật/vận hành. Hàm `supabase/functions/publish-so-tay` (và test của nó) vẫn nằm trong repo để dùng lại cho
+> kế hoạch **MCP**, nhưng **chưa triển khai lên prod, chưa cấu hình token GitHub**. Không có đường nào trong app gọi tới hàm này.
+> Hiện bài Sổ tay/Blog được thêm bằng cách sửa tệp `content-site/content/so-tay/*.md` (hoặc skill `so-tay-viet-bai`), commit rồi deploy.
+> Phần dưới mô tả thiết kế cũ của hàm, giữ để tham khảo.
 
 ## Luồng
 1. App gọi Edge Function `publish-so-tay` (JWT + kiểm `profiles.is_platform_admin`).
@@ -29,5 +33,5 @@ functions rồi khởi động lại container edge-functions), xác minh bằng
 ## Giới hạn / lưu ý
 - Hàm ghi thẳng vào nhánh đã cấu hình bằng danh tính của token (commit hiện dưới tài khoản chủ token).
 - Bài đăng bằng trang này luôn dùng khuôn tối thiểu (tiêu đề, mô tả, chủ đề, thẻ, tên gọi khác, vùng, thời điểm, nội dung).
-  Các trường nâng cao (infobox, ảnh có ghi công, FAQ, nguồn) sửa bằng CMS `/admin/` của content-site hoặc sửa tệp.
-- Ghi đè bài đã có: hàm hỏi xác nhận; riêng bài có thông tin nhanh / ảnh / FAQ / nguồn / bài liên quan (như 10 bài lễ hội) bị **từ chối** (`409 rich`) vì khuôn tối thiểu sẽ làm mất các phần đó — sửa những bài này bằng CMS hoặc sửa tệp.
+  Các trường nâng cao (infobox, ảnh có ghi công, FAQ, nguồn) sửa trực tiếp trong tệp .md.
+- Ghi đè bài đã có: hàm hỏi xác nhận; riêng bài có thông tin nhanh / ảnh / FAQ / nguồn / bài liên quan (như 10 bài lễ hội) bị **từ chối** (`409 rich`) vì khuôn tối thiểu sẽ làm mất các phần đó — sửa những bài này trực tiếp trong tệp .md.

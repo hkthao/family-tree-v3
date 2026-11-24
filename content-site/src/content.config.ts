@@ -5,7 +5,7 @@ import { CATEGORY_SLUGS } from "./taxonomy";
 
 /**
  * Nguồn DUY NHẤT của Sổ tay Văn hoá: trang SEO (donghoviet) + dữ liệu cho app (so-tay-data/*.json).
- * Sửa schema ở đây thì sửa cả public/admin/config.yml (CMS) và src/lib/queries/customs.ts (app).
+ * Sửa schema ở đây thì sửa cả src/lib/queries/customs.ts (app) và supabase/functions/publish-so-tay/core.ts (danh mục).
  */
 const soTay = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./content/so-tay" }),

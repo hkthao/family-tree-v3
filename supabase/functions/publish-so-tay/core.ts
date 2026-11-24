@@ -93,7 +93,7 @@ export function validate(raw: unknown): Validated {
 
 const y = (s: string) => JSON.stringify(s);
 
-/** Phải ra đúng như buildMarkdownFile ở src/lib/customs/compose.ts (có test so khớp), chỉ khác status. */
+/** Dựng tệp .md đúng khuôn content-site/content/so-tay (frontmatter + thân). */
 export function buildFile(v: { title: string; description: string; category: string; tags: string[]; aliases: string[]; regions: string[]; timing: string; body: string; status: string }, today: string): string {
   const arr = (a: string[]) => `[${a.map(y).join(", ")}]`;
   return [

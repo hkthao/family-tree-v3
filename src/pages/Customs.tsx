@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 
 import { PanelLink } from "@/components/panel/PanelLink";
 
-import { FabGroup } from "@/components/FabGroup";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
@@ -11,7 +10,6 @@ import {
   IconBook,
   IconCalendar,
   IconHelp,
-  IconPencil,
   IconMapPin,
   IconSearch,
   IconTag,
@@ -21,10 +19,7 @@ import { Pagination } from "@/components/Pagination";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { SearchInput } from "@/components/SearchInput";
 import { Select } from "@/components/ui/select";
-import { useAuth } from "@/hooks/useAuth";
 import { useUrlState } from "@/hooks/useUrlState";
-import { getMyProfile } from "@/lib/queries/profile";
-import { queryKeys } from "@/lib/queries/keys";
 import {
   CUSTOM_CATEGORY_LABEL,
   CUSTOM_MANDATORY_LABEL,
@@ -38,14 +33,6 @@ import { t } from "@lingui/core/macro";
 const CATEGORIES = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
 
 export default function Customs() {
-  const { user } = useAuth();
-  const userId = user?.id ?? "";
-  const { data: profile } = useQuery({
-    queryKey: queryKeys.myProfile(userId),
-    queryFn: () => getMyProfile(userId),
-    enabled: !!userId,
-  });
-  const isAdmin = !!profile?.is_platform_admin;
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useUrlState("q", "");
   const [catRaw, setCat] = useUrlState("loai", "");
@@ -95,13 +82,6 @@ export default function Customs() {
         title={t`Sổ tay Văn hoá`}
         description={t`Tra cứu phong tục, nghi lễ, tín ngưỡng các vùng miền Việt Nam.`}
       />
-      {isAdmin && (
-        <FabGroup
-          label={t`Soạn bài`}
-          actions={[{ label: t`Soạn bài`, icon: <IconPencil />, to: "/so-tay/soan" }]}
-        />
-      )}
-
       {/* Chủ đề + vùng nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm). */}
       <div className="space-y-2">
         <CollapsibleFilters

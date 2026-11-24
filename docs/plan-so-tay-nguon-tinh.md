@@ -115,3 +115,8 @@ Cái **dùng chung được** là lớp "bài viết":
 2. Một bộ render + soạn thảo (editor rich-text, làm sạch HTML) tái dùng trong app cho phả ký, lời nói đầu, tiểu sử.
 3. Danh mục/thẻ: bài dòng họ có thẻ riêng của họ; phần thẻ công khai (vd "Hà Nội", "tháng Giêng âm lịch") dùng chung danh sách của nền tảng.
 Nếu sau này có dòng họ muốn **xuất bản công khai** một số bài (vd phả ký) ra web để Google index, làm cơ chế riêng: trang xuất bản render phía máy chủ hoặc build theo yêu cầu từ DB, không đi qua git. Đó là tính năng khác, chưa nằm trong phạm vi hiện tại.
+
+## 9. Cập nhật 2026-11-24: gỡ giao diện soạn bài
+Trang soạn bài trong app (`/so-tay/soan`, nút "Soạn bài"), mã dựng tệp `.md` đi kèm và CMS Sveltia (`content-site/public/admin`) đã bị gỡ vì chưa đạt yêu cầu bảo mật.
+Giữ lại: nguồn bài dạng tệp, Astro/Pagefind, trang Blog, hàm `publish-so-tay` (chưa triển khai, dự định dùng cho kế hoạch MCP) và các thành phần
+`src/components/markdown/` (trình soạn/xem Markdown, chưa dùng ở đâu). Mục 7 và 8 ở trên phần CMS/soạn bài chỉ còn là lịch sử thiết kế.

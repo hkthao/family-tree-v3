@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { buildMarkdownFile, EMPTY_DRAFT } from "@/lib/customs/compose";
 import {
   buildFile,
   CONTENT_DIR,
@@ -60,14 +59,17 @@ describe("publish-so-tay: kiểm tra dữ liệu", () => {
 });
 
 describe("publish-so-tay: dựng tệp", () => {
-  it("khớp với bản dựng tệp ở phía app (chỉ khác status)", () => {
-    const draft = { ...EMPTY_DRAFT, title: 'Lễ "Vu Lan": báo hiếu', description: "Mô tả đủ dài để qua kiểm tra.", tags: "Miền Bắc, Hà Nội", aliases: "a, b", regions: "Miền Bắc", timing: "Rằm", category: "le_tet" as const, body: "## Ý\n\nNội dung" };
-    const app = buildMarkdownFile(draft, "2026-11-25");
-    const server = buildFile(
-      { title: draft.title, description: draft.description, category: draft.category, tags: ["Miền Bắc", "Hà Nội"], aliases: ["a", "b"], regions: ["Miền Bắc"], timing: "Rằm", body: draft.body, status: "needs_review" },
+  it("frontmatter đúng khuôn content-site, chuỗi có dấu nháy/hai chấm được escape, thân bài đứng sau", () => {
+    const md = buildFile(
+      { title: 'Lễ "Vu Lan": báo hiếu', description: "Mô tả đủ dài để qua kiểm tra.", category: "le_tet", tags: ["Miền Bắc", "Hà Nội"], aliases: ["a"], regions: [], timing: "Rằm", body: "## Ý\n\nNội dung", status: "published" },
       "2026-11-25",
     );
-    expect(server).toBe(app);
+    expect(md.startsWith("---\nstatus: published\n")).toBe(true);
+    expect(md).toContain('title: "Lễ \\"Vu Lan\\": báo hiếu"');
+    expect(md).toContain('tags: ["Miền Bắc", "Hà Nội"]');
+    expect(md).toContain("updated: 2026-11-25");
+    expect(md).toContain("timing: \"Rằm\"");
+    expect(md.trim().endsWith("Nội dung")).toBe(true);
   });
 });
 
@@ -107,14 +109,12 @@ describe("publish-so-tay: GitHub", () => {
   });
 });
 
-describe("danh mục Blog đồng bộ giữa app, hàm đăng bài và content-site", () => {
-  it("cùng một danh sách ở ba nơi", async () => {
-    const { BLOG_CATEGORIES } = await import("@/lib/customs/compose");
+describe("danh mục Blog đồng bộ giữa hàm đăng bài và content-site", () => {
+  it("cùng một danh sách", async () => {
     const { CATEGORIES } = await import("../../../supabase/functions/publish-so-tay/core");
     const { readFileSync } = await import("node:fs");
     const tax = readFileSync("content-site/src/taxonomy.ts", "utf8");
     const fromTaxonomy = [...tax.matchAll(/\{ slug: "([a-z_]+)", channel:/g)].map((m) => m[1]);
-    expect(BLOG_CATEGORIES.map((c) => c.value)).toEqual([...CATEGORIES]);
     expect([...CATEGORIES].sort()).toEqual(fromTaxonomy.sort());
   });
 });

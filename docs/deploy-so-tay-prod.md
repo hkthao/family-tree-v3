@@ -40,7 +40,7 @@ gh workflow run deploy-vps.yml --ref main
 ```
 Workflow build image app (có stage build content-site cho dữ liệu Sổ tay) và build content-site gộp vào landing. Kiểm sau deploy:
 `/blog.html`, `/le-hoi.html`, `/huong-dan.html` trên landing; `/so-tay` trong app (đủ bài, tìm kiếm không dấu, lưu bài).
-Hàm `publish-so-tay` (nút Đăng) chưa cần: chỉ triển khai khi đã cấu hình token GitHub (xem docs/dang-bai-so-tay.md).
+Hàm `publish-so-tay` không triển khai (giao diện soạn bài và CMS đã gỡ; xem docs/dang-bai-so-tay.md).
 
 ## Quay lại nếu có sự cố
 Đưa image app về tag trước (xem `docs/` deploy; image gắn theo SHA), landing: chạy lại workflow ở commit trước. DB: migration chỉ đổi kiểu cột

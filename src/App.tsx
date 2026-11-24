@@ -45,7 +45,6 @@ const Clans = lazy(() => import("@/pages/Clans"));
 const Customs = lazy(() => import("@/pages/Customs"));
 const Podcast = lazy(() => import("@/pages/Podcast"));
 const DemoRedirect = lazy(() => import("@/pages/DemoRedirect"));
-const CustomsCompose = lazy(() => import("@/pages/CustomsCompose"));
 const CustomsDetail = lazy(() => import("@/pages/CustomsDetail"));
 const Docs = lazy(() => import("@/pages/Docs"));
 const AddChild = lazy(() => import("@/pages/clan/AddChild"));
@@ -211,14 +210,6 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <Podcast />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/so-tay/soan"
-                element={
-                  <RequireAuth>
-                    <CustomsCompose />
                   </RequireAuth>
                 }
               />
