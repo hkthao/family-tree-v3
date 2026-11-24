@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import DOMPurify from "dompurify";
+import { useMemo, type ReactNode } from "react";
 
 /**
  * Khuôn "bài báo" cho các trang/ngăn kéo XEM chi tiết có nội dung để đọc (Di sản, Mộ phần, Sổ tay): không bọc thẻ,
@@ -139,6 +140,37 @@ export function ArticleProse({ children }: { children: ReactNode }) {
     <p className="whitespace-pre-wrap break-words text-justify text-[17px] leading-8 [overflow-wrap:anywhere] sm:text-lg">
       {children}
     </p>
+  );
+}
+
+/**
+ * Thân bài dạng HTML (bài Sổ tay sinh từ Markdown ở content-site). Luôn làm sạch bằng DOMPurify (chỉ cho thẻ văn bản,
+ * danh sách, bảng, ảnh); liên kết mở tab mới. Kiểu chữ theo ArticleProse, con (p/ul/ol/table/figure) tự dãn cách.
+ */
+export function ArticleHtml({ html }: { html: string }) {
+  const clean = useMemo(() => {
+    const out = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["p", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "a", "table", "thead", "tbody", "tr", "th", "td", "caption", "h3", "h4", "blockquote", "figure", "figcaption", "img", "span", "sup", "sub"],
+      ALLOWED_ATTR: ["href", "src", "alt", "width", "height", "loading", "title", "colspan", "rowspan"],
+      ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|\/|#)/i,
+    });
+    // Liên kết ra ngoài: mở tab mới, không lộ opener.
+    const doc = new DOMParser().parseFromString(out, "text/html");
+    doc.querySelectorAll("a[href]").forEach((a) => {
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer nofollow");
+    });
+    doc.querySelectorAll("img").forEach((img) => {
+      img.setAttribute("loading", "lazy");
+      img.setAttribute("referrerpolicy", "no-referrer");
+    });
+    return doc.body.innerHTML;
+  }, [html]);
+  return (
+    <div
+      className="break-words text-justify text-[17px] leading-8 [overflow-wrap:anywhere] sm:text-lg [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:pl-3 [&_figcaption]:mt-1.5 [&_figcaption]:font-sans [&_figcaption]:text-sm [&_figcaption]:italic [&_figcaption]:text-muted-foreground [&_figure]:my-3 [&_h3]:mt-4 [&_h3]:font-semibold [&_img]:max-h-72 [&_img]:w-full [&_img]:rounded-lg [&_img]:object-cover [&_li]:mb-1 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-3 [&_table]:mb-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-base [&_td]:border [&_td]:p-2 [&_td]:align-top [&_th]:border [&_th]:bg-muted/50 [&_th]:p-2 [&_th]:text-left [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
+      dangerouslySetInnerHTML={{ __html: clean }}
+    />
   );
 }
 

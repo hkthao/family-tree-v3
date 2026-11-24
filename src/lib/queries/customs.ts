@@ -61,20 +61,29 @@ export const CUSTOM_ORIGIN_LABEL: Record<CustomOrigin, string> = lazyMessages({
 /** Vùng miền phổ biến (regions là text[] mở rộng được, đây là gợi ý sẵn). */
 export const CUSTOM_REGIONS = ["Miền Bắc", "Miền Trung", "Miền Nam"] as const;
 
+/** Thân bài: `body` là HTML (do content-site sinh từ Markdown), luôn làm sạch bằng DOMPurify trước khi hiển thị. */
 export interface CustomSection {
   heading: string;
   body: string;
-  /** Ảnh minh hoạ cho đoạn (https, tuỳ chọn) — vd mâm cúng, đèn lồng… */
-  image_url?: string;
-  image_caption?: string;
-  [k: string]: string | undefined;
 }
 export interface CustomFaq {
   q: string;
   a: string;
-  [k: string]: string;
+}
+export interface CustomSource {
+  name: string;
+  url?: string;
 }
 
+export interface CustomTag {
+  slug: string;
+  name: string;
+}
+
+/**
+ * Bài Sổ tay Văn hoá. Nguồn là tệp (content-site/content/so-tay/*.md) → public/so-tay-data/*.json; KHÔNG còn bảng DB.
+ * `id` là slug bài. Danh sách (index.json) không kèm `sections`/`faq`; getCustomEntry mới trả đủ.
+ */
 export interface CustomEntry {
   id: string;
   title: string;
@@ -90,28 +99,16 @@ export interface CustomEntry {
   related_ids: string[];
   reliability: number | null;
   applicable_to: string | null;
-  sources: string | null;
+  sources: CustomSource[];
   sections: CustomSection[];
   faq: CustomFaq[];
+  tags: CustomTag[];
   cover_image_url: string | null;
+  /** Trang SEO công khai của bài (landing). */
+  page_url: string | null;
   status: CustomStatus;
   created_at: string;
   updated_at: string;
-}
-
-const COLS =
-  "id, title, aliases, short_description, category, regions, lunar_month, timing, scope, mandatory_level, origins, related_ids, reliability, applicable_to, sources, sections, faq, cover_image_url, status, created_at, updated_at";
-
-function toEntry(r: Record<string, unknown>): CustomEntry {
-  return {
-    ...(r as unknown as CustomEntry),
-    aliases: (r.aliases as string[] | null) ?? [],
-    regions: (r.regions as string[] | null) ?? [],
-    origins: (r.origins as CustomOrigin[] | null) ?? [],
-    related_ids: (r.related_ids as string[] | null) ?? [],
-    sections: (r.sections as unknown as CustomSection[]) ?? [],
-    faq: (r.faq as unknown as CustomFaq[]) ?? [],
-  };
 }
 
 /** Bản rút gọn để chọn/hiển thị bài liên quan. */
@@ -121,42 +118,88 @@ export interface CustomEntryLite {
   category: CustomCategory;
 }
 
-/** Danh sách bài (id, title, category) — dùng cho picker "bài liên quan". */
-export async function listCustomEntriesLite(
-  client: Client = defaultClient,
-): Promise<CustomEntryLite[]> {
-  const { data, error } = await client
-    .from("custom_entries")
-    .select("id, title, category")
-    .is("deleted_at", null)
-    .order("title", { ascending: true });
-  if (error) throw new Error(error.message);
-  return (data ?? []) as CustomEntryLite[];
+const DATA_BASE = "/so-tay-data";
+
+async function fetchJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${DATA_BASE}/${path}`, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error(`Không tải được ${path} (${res.status})`);
+  return (await res.json()) as T;
 }
 
-/** Lấy các bài theo danh sách id (cho mục "Bài liên quan" ở trang xem). */
-export async function getCustomEntriesByIds(
-  ids: string[],
-  client: Client = defaultClient,
-): Promise<CustomEntryLite[]> {
+type IndexRow = Record<string, unknown> & { id: string };
+
+function toEntry(r: IndexRow): CustomEntry {
+  const x = r as Record<string, unknown>;
+  return {
+    id: r.id,
+    title: String(x.title ?? ""),
+    aliases: (x.aliases as string[] | undefined) ?? [],
+    short_description: (x.short_description as string | null | undefined) ?? null,
+    category: x.category as CustomCategory,
+    regions: (x.regions as string[] | undefined) ?? [],
+    lunar_month: (x.lunar_month as number | null | undefined) ?? null,
+    timing: (x.timing as string | null | undefined) ?? null,
+    scope: (x.scope as CustomScope | null | undefined) ?? null,
+    mandatory_level: (x.mandatory_level as CustomMandatory | null | undefined) ?? null,
+    origins: (x.origins as CustomOrigin[] | undefined) ?? [],
+    related_ids: (x.related_ids as string[] | undefined) ?? [],
+    reliability: (x.reliability as number | null | undefined) ?? null,
+    applicable_to: (x.applicable_to as string | null | undefined) ?? null,
+    sources: (x.sources as CustomSource[] | undefined) ?? [],
+    sections: (x.sections as CustomSection[] | undefined) ?? [],
+    faq: (x.faq as CustomFaq[] | undefined) ?? [],
+    tags: (x.tags as CustomTag[] | undefined) ?? [],
+    cover_image_url: (x.cover_image_url as string | null | undefined) ?? null,
+    page_url: (x.page_url as string | null | undefined) ?? null,
+    status: "published",
+    created_at: String(x.updated_at ?? ""),
+    updated_at: String(x.updated_at ?? ""),
+  };
+}
+
+// Mục lục và văn bản toàn văn chỉ tải một lần mỗi phiên (cache theo Promise; lỗi thì bỏ cache để thử lại).
+let indexPromise: Promise<CustomEntry[]> | null = null;
+let fulltextPromise: Promise<Record<string, string>> | null = null;
+
+function loadIndex(): Promise<CustomEntry[]> {
+  indexPromise ??= fetchJson<{ items: IndexRow[] }>("index.json")
+    .then((d) => d.items.map(toEntry))
+    .catch((e) => {
+      indexPromise = null;
+      throw e;
+    });
+  return indexPromise;
+}
+
+function loadFulltext(): Promise<Record<string, string>> {
+  fulltextPromise ??= fetchJson<Record<string, string>>("fulltext.json").catch((e) => {
+    fulltextPromise = null;
+    throw e;
+  });
+  return fulltextPromise;
+}
+
+/** Danh sách bài (id, title, category). */
+export async function listCustomEntriesLite(): Promise<CustomEntryLite[]> {
+  const all = await loadIndex();
+  return all.map(({ id, title, category }) => ({ id, title, category }));
+}
+
+/** Lấy các bài theo danh sách id (cho mục "Bài liên quan" ở trang xem), giữ đúng thứ tự. */
+export async function getCustomEntriesByIds(ids: string[]): Promise<CustomEntryLite[]> {
   if (ids.length === 0) return [];
-  const { data, error } = await client
-    .from("custom_entries")
-    .select("id, title, category")
-    .in("id", ids)
-    .is("deleted_at", null);
-  if (error) throw new Error(error.message);
-  // Giữ đúng thứ tự như related_ids.
-  const byId = new Map((data ?? []).map((r) => [(r as CustomEntryLite).id, r as CustomEntryLite]));
-  return ids.map((id) => byId.get(id)).filter((x): x is CustomEntryLite => !!x);
+  const all = await loadIndex();
+  const byId = new Map(all.map((e) => [e.id, e]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((x): x is CustomEntry => !!x)
+    .map(({ id, title, category }) => ({ id, title, category }));
 }
 
 export interface ListCustomsParams {
   search?: string;
   category?: CustomCategory | null;
   region?: string | null;
-  /** Admin xem cả bản nháp; user thường chỉ published (RLS đã chặn dù sao). */
-  includeUnpublished?: boolean;
 }
 
 /** Mở rộng từ khoá tìm bằng synonym + bỏ dấu. Export để test. */
@@ -173,102 +216,38 @@ export function expandNeedles(search: string): string[] {
   return [...extra];
 }
 
-export async function listCustomEntries(
-  params: ListCustomsParams = {},
-  client: Client = defaultClient,
-): Promise<CustomEntry[]> {
-  let q = client
-    .from("custom_entries")
-    .select(COLS)
-    .is("deleted_at", null)
-    .order("title", { ascending: true });
-  if (!params.includeUnpublished) q = q.eq("status", "published");
-  if (params.category) q = q.eq("category", params.category);
-  if (params.region) q = q.contains("regions", [params.region]);
+export async function listCustomEntries(params: ListCustomsParams = {}): Promise<CustomEntry[]> {
+  let rows = [...(await loadIndex())].sort((a, b) => a.title.localeCompare(b.title, "vi"));
+  if (params.category) rows = rows.filter((e) => e.category === params.category);
+  if (params.region) rows = rows.filter((e) => e.regions.includes(params.region as string));
 
-  const { data, error } = await q;
-  if (error) throw new Error(error.message);
-  let rows = (data ?? []).map((r) => toEntry(r as Record<string, unknown>));
-
-  // Tìm theo tình huống/synonym — lọc client trên search_text-like blob.
+  // Tìm theo tình huống/synonym, không dấu: tiêu đề + tên gọi khác + mô tả + thẻ ở mục lục; toàn văn tải khi cần.
   const needles = params.search ? expandNeedles(params.search) : [];
   if (needles.length > 0) {
+    const full = await loadFulltext().catch(() => ({}) as Record<string, string>);
     rows = rows.filter((e) => {
-      const hay = unaccent(
-        `${e.title} ${e.aliases.join(" ")} ${e.short_description ?? ""} ${e.sections
-          .map((s) => `${s.heading} ${s.body}`)
-          .join(" ")}`,
-      );
+      const hay =
+        full[e.id] ??
+        unaccent(`${e.title} ${e.aliases.join(" ")} ${e.short_description ?? ""} ${e.tags.map((t) => t.name).join(" ")}`);
       return needles.some((n) => hay.includes(n));
     });
   }
   return rows;
 }
 
-export async function getCustomEntry(
-  id: string,
-  client: Client = defaultClient,
-): Promise<CustomEntry | null> {
-  const { data, error } = await client
-    .from("custom_entries")
-    .select(COLS)
-    .eq("id", id)
-    .is("deleted_at", null)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return data ? toEntry(data as Record<string, unknown>) : null;
+export async function getCustomEntry(id: string): Promise<CustomEntry | null> {
+  if (!/^[a-z0-9-]+$/.test(id)) return null;
+  try {
+    return toEntry(await fetchJson<IndexRow>(`${id}.json`));
+  } catch {
+    return null;
+  }
 }
 
-export type CustomEntryInput = Partial<
-  Omit<CustomEntry, "id" | "created_at" | "updated_at">
-> & { title: string; category: CustomCategory };
+// ── Bookmarks (vẫn lưu DB theo người dùng; entry_id là slug bài) ────────────
 
-export async function createCustomEntry(
-  input: CustomEntryInput,
-  client: Client = defaultClient,
-): Promise<{ id: string }> {
-  const { data: auth } = await client.auth.getUser();
-  const { data, error } = await client
-    .from("custom_entries")
-    .insert({ ...input, created_by: auth.user?.id ?? null } as never)
-    .select("id")
-    .single();
-  if (error) throw new Error(error.message);
-  return { id: (data as { id: string }).id };
-}
-
-export async function updateCustomEntry(
-  id: string,
-  patch: Partial<CustomEntryInput>,
-  client: Client = defaultClient,
-): Promise<void> {
-  const { error } = await client
-    .from("custom_entries")
-    .update(patch as never)
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-}
-
-/** Soft-delete. */
-export async function deleteCustomEntry(
-  id: string,
-  client: Client = defaultClient,
-): Promise<void> {
-  const { error } = await client
-    .from("custom_entries")
-    .update({ deleted_at: new Date().toISOString() } as never)
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-}
-
-// ── Bookmarks ───────────────────────────────────────────────────────────────
-
-export async function listBookmarkedIds(
-  client: Client = defaultClient,
-): Promise<Set<string>> {
-  const { data, error } = await client
-    .from("custom_bookmarks")
-    .select("entry_id");
+export async function listBookmarkedIds(client: Client = defaultClient): Promise<Set<string>> {
+  const { data, error } = await client.from("custom_bookmarks").select("entry_id");
   if (error) throw new Error(error.message);
   return new Set((data ?? []).map((r) => r.entry_id as string));
 }
@@ -285,10 +264,16 @@ export async function setBookmark(
       .upsert({ entry_id: entryId, user_id: auth.user!.id } as never);
     if (error) throw new Error(error.message);
   } else {
-    const { error } = await client
-      .from("custom_bookmarks")
-      .delete()
-      .eq("entry_id", entryId);
+    const { error } = await client.from("custom_bookmarks").delete().eq("entry_id", entryId);
     if (error) throw new Error(error.message);
   }
+}
+
+/**
+ * Truy vấn Sổ tay đọc từ tệp tĩnh (đổi theo mỗi lần deploy) nên KHÔNG lưu bền vào IndexedDB: cache cũ giữ đường dẫn ảnh/id
+ * của bản trước và, vì refetchOnMount tắt, không bao giờ tự làm mới. Bookmark là dữ liệu theo người dùng nên vẫn lưu.
+ */
+const STATIC_CUSTOMS_KEYS = new Set(["customs", "custom-entry", "custom-related", "customs-published-lite", "customs-embed"]);
+export function isStaticCustomsQuery(queryKey: readonly unknown[]): boolean {
+  return typeof queryKey[0] === "string" && STATIC_CUSTOMS_KEYS.has(queryKey[0]);
 }

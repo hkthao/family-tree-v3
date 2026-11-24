@@ -18,3 +18,9 @@ supabase
 scripts/seed-fixtures.ts
 scripts/migrate-from-thaohk.ts
 scripts/create-platform-admin.ts
+
+content-site/node_modules
+content-site/dist
+content-site/.astro
+content-site/src/generated
+content-site/public/assets

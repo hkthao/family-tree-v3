@@ -3,19 +3,18 @@ import { useEffect, useState } from "react";
 
 import { PanelLink } from "@/components/panel/PanelLink";
 
-import { FilterableSelect } from "@/components/FilterableSelect";
 import { FabGroup } from "@/components/FabGroup";
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
 import {
   IconBook,
   IconCalendar,
   IconHelp,
+  IconPencil,
   IconMapPin,
-  IconPlus,
   IconSearch,
   IconTag,
-  IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -24,6 +23,8 @@ import { SearchInput } from "@/components/SearchInput";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlState } from "@/hooks/useUrlState";
+import { getMyProfile } from "@/lib/queries/profile";
+import { queryKeys } from "@/lib/queries/keys";
 import {
   CUSTOM_CATEGORY_LABEL,
   CUSTOM_MANDATORY_LABEL,
@@ -32,8 +33,6 @@ import {
   type CustomCategory,
   type CustomEntry,
 } from "@/lib/queries/customs";
-import { getMyProfile } from "@/lib/queries/profile";
-import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
 const CATEGORIES = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
@@ -41,14 +40,12 @@ const CATEGORIES = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
 export default function Customs() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
-
   const { data: profile } = useQuery({
     queryKey: queryKeys.myProfile(userId),
     queryFn: () => getMyProfile(userId),
     enabled: !!userId,
   });
   const isAdmin = !!profile?.is_platform_admin;
-
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useUrlState("q", "");
   const [catRaw, setCat] = useUrlState("loai", "");
@@ -72,15 +69,14 @@ export default function Customs() {
   }, [search]);
 
   const { data: entries, isLoading } = useQuery({
-    queryKey: ["customs", { debounced, category, region, isAdmin }],
+    queryKey: ["customs", { debounced, category, region }],
     queryFn: () =>
       listCustomEntries({
         search: debounced || undefined,
         category: category || null,
         region: region || null,
-        includeUnpublished: isAdmin,
       }),
-    // Public: chạy cho cả khách chưa đăng nhập (RLS chỉ trả bài published).
+    // Nguồn là tệp tĩnh (so-tay-data), không cần đăng nhập.
     staleTime: 5 * 60 * 1000,
   });
 
@@ -101,21 +97,8 @@ export default function Customs() {
       />
       {isAdmin && (
         <FabGroup
-          label={t`Thêm`}
-          actions={[
-            {
-              label: t`Thêm bài`,
-              icon: <IconPlus />,
-              to: "/so-tay/new",
-              panel: { id: "custom-new" },
-            },
-            {
-              label: t`Nhập Markdown`,
-              icon: <IconUpload />,
-              to: "/so-tay/import",
-              panel: { id: "custom-import" },
-            },
-          ]}
+          label={t`Soạn bài`}
+          actions={[{ label: t`Soạn bài`, icon: <IconPencil />, to: "/so-tay/soan" }]}
         />
       )}
 
@@ -215,7 +198,7 @@ export default function Customs() {
 }
 
 export function CustomCard({ entry }: { entry: CustomEntry }) {
-  const created = new Date(entry.created_at).toLocaleDateString("vi-VN");
+  const created = entry.updated_at ? new Date(entry.updated_at).toLocaleDateString("vi-VN") : "";
   return (
     <li>
       <PanelLink
@@ -246,11 +229,6 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
               <h2 className="clan-name min-w-0 line-clamp-2 font-semibold leading-snug group-hover:text-primary">
                 {entry.title}
               </h2>
-              {entry.status !== "published" && (
-                <span className="mt-0.5 shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">
-                  {entry.status === "draft" ? t`Nháp` : t`Chờ duyệt`}
-                </span>
-              )}
             </div>
             <p className="mt-1 truncate text-xs text-muted-foreground">
               <span className="font-medium text-primary/80">
@@ -293,7 +271,7 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
           )}
           <span
             className="ml-auto inline-flex shrink-0 items-center gap-1"
-            title={t`Ngày tạo`}
+            title={t`Cập nhật`}
           >
             <IconCalendar className="h-3.5 w-3.5" />
             {created}

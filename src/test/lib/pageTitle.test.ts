@@ -6,8 +6,6 @@ describe("metaForPath", () => {
   it("resolves specific routes before their prefixes", () => {
     expect(metaForPath("/clans/new")?.title).toBe("Tạo dòng họ mới");
     expect(metaForPath("/clans")?.title).toBe("Dòng họ của tôi");
-    expect(metaForPath("/so-tay/new")?.title).toBe("Thêm bài Sổ tay");
-    expect(metaForPath("/so-tay/abc/edit")?.title).toBe("Sửa bài Sổ tay");
     expect(metaForPath("/so-tay/abc")?.title).toBe("Sổ tay Văn hoá");
   });
 

@@ -4,7 +4,7 @@
  *
  * Vì sao: app là SPA, nên không có sitemap thì công cụ tìm kiếm và bot AI (ChatGPT Search, Perplexity, Gemini…)
  * không biết có những trang công khai nào. Sitemap liệt kê: trang tĩnh công khai, MỌI bài hướng dẫn `/docs/<slug>` (lấy
- * từ registry), và MỌI mục Sổ tay Văn hoá đã đăng (đọc công khai qua REST với khoá anon, RLS chỉ trả mục `published`).
+ * từ registry), và MỌI mục Sổ tay Văn hoá đã đăng (đọc từ public/so-tay-data/index.json).
  *
  * Không có VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY (build cục bộ) hoặc gọi lỗi → bỏ phần Sổ tay, vẫn ghi phần tĩnh;
  * KHÔNG bao giờ làm hỏng build. Chạy: `node scripts/gen-sitemap.mjs`.
@@ -41,21 +41,12 @@ function docSlugs() {
   }
 }
 
+/** Sổ tay lấy từ public/so-tay-data/index.json (do content-site sinh; xem scripts/ensure-so-tay-data.mjs). */
 async function handbookEntries() {
-  const url = process.env.VITE_SUPABASE_URL;
-  const key = process.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !key) return [];
   try {
-    const res = await fetch(
-      `${url.replace(/\/$/, "")}/rest/v1/custom_entries?select=id,updated_at&status=eq.published&order=updated_at.desc&limit=1000`,
-      {
-        headers: { apikey: key, Authorization: `Bearer ${key}` },
-        signal: AbortSignal.timeout(15000),
-      },
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const rows = await res.json();
-    return Array.isArray(rows) ? rows : [];
+    const raw = readFileSync(join(root, "public/so-tay-data/index.json"), "utf8");
+    const rows = JSON.parse(raw).items ?? [];
+    return rows.map((r) => ({ id: r.id, updated_at: r.updated_at }));
   } catch (e) {
     console.warn(`[gen-sitemap] bỏ qua Sổ tay: ${e.message}`);
     return [];

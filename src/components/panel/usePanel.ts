@@ -27,10 +27,7 @@ export type PanelId =
   | "timeline-edit"
   | "clan-new"
   | "inlaw-new"
-  | "custom-view"
-  | "custom-new"
-  | "custom-edit"
-  | "custom-import";
+  | "custom-view";
 
 export interface PanelParams {
   /** Id bản ghi đang thao tác: người (sửa / thêm quan hệ), mộ phần, di sản, bài đăng. */

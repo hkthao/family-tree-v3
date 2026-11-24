@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import {
   Article,
@@ -9,24 +9,20 @@ import {
   ArticleFigure,
   ArticleFooter,
   ArticleHeader,
+  ArticleHtml,
   ArticleList,
-  ArticleProse,
   ArticleSection,
 } from "@/components/Article";
 import { CustomsShell } from "@/components/CustomsShell";
 import { DrawerViewActions } from "@/components/ui/form-actions";
 import { PanelLink } from "@/components/panel/PanelLink";
-import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconArrowLeft,
   IconBook,
-  IconCheck,
   IconHelp,
   IconLogIn,
-  IconPencil,
   IconShare2,
   IconStar,
-  IconTrash,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
@@ -37,15 +33,11 @@ import {
   CUSTOM_MANDATORY_LABEL,
   CUSTOM_ORIGIN_LABEL,
   CUSTOM_SCOPE_LABEL,
-  deleteCustomEntry,
   getCustomEntriesByIds,
   getCustomEntry,
   listBookmarkedIds,
   setBookmark,
-  updateCustomEntry,
 } from "@/lib/queries/customs";
-import { getMyProfile } from "@/lib/queries/profile";
-import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
 /** Hiện trong ngăn kéo XEM (bấm bài ở danh sách Sổ tay / Hôm nay): lấy id từ đây, bỏ khung trang và nút quay lại,
@@ -63,25 +55,15 @@ export default function CustomsDetail({
   // Trong ngăn kéo: không bọc khung trang (đã nằm trong trang đang mở) nhưng vẫn là MỘT khối gốc — ngăn kéo biến mỗi
   // con trực tiếp thành cột flex, nhiều con rời thì thanh nút đáy bị xếp dọc.
   const Shell = embedded ? EmbeddedRoot : CustomsShell;
-  const isNew = entryId === "new"; // phòng khớp nhầm route
   const { user } = useAuth();
   const userId = user?.id ?? "";
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
-  const confirm = useConfirm();
-
-  const { data: profile } = useQuery({
-    queryKey: queryKeys.myProfile(userId),
-    queryFn: () => getMyProfile(userId),
-    enabled: !!userId,
-  });
-  const isAdmin = !!profile?.is_platform_admin;
 
   const { data: entry, isLoading } = useQuery({
     queryKey: ["custom-entry", entryId],
     queryFn: () => getCustomEntry(entryId!),
-    enabled: !!entryId && !isNew,
+    enabled: !!entryId,
   });
 
   // Bài Sổ tay là tài sản SEO thật của app (khách vào từ tìm kiếm) —
@@ -110,35 +92,11 @@ export default function CustomsDetail({
       qc.invalidateQueries({ queryKey: ["custom-bookmarks", userId] }),
   });
 
-  const deleteM = useMutation({
-    mutationFn: () => deleteCustomEntry(entryId!),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["customs"] });
-      toast.success(t`Đã xoá bài`);
-      if (embedded) embedded.onClose();
-      else navigate("/so-tay");
-    },
-    onError: (e) =>
-      toast.error(t`Không xoá được`, { description: (e as Error).message }),
-  });
-
-  // Duyệt nhanh: chuyển thẳng sang "Công khai" mà không cần mở form.
-  const approveM = useMutation({
-    mutationFn: () => updateCustomEntry(entryId!, { status: "published" }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["customs"] });
-      qc.invalidateQueries({ queryKey: ["custom-entry", entryId] });
-      toast.success(t`Đã duyệt — bài đã công khai`);
-    },
-    onError: (e) =>
-      toast.error(t`Không duyệt được`, { description: (e as Error).message }),
-  });
-
   // Chia sẻ lên mạng xã hội: Web Share API (mobile) → fallback chép link.
   async function shareEntry() {
     // Luôn chia sẻ link CÔNG KHAI (không cần đăng nhập) để mở được ngoài Zalo/Facebook.
     const url = entry
-      ? `${window.location.origin}/xem/so-tay/${entry.id}`
+      ? (entry.page_url ?? `${window.location.origin}/xem/so-tay/${entry.id}`)
       : window.location.href;
     const title = entry?.title ?? t`Sổ tay Văn hoá`;
     const text = entry?.short_description ?? title;
@@ -157,8 +115,6 @@ export default function CustomsDetail({
       toast.error(t`Không chia sẻ được`, { description: url });
     }
   }
-
-  if (isNew) return <Navigate to="/so-tay/new" replace />;
 
   if (isLoading) {
     return (
@@ -190,22 +146,6 @@ export default function CustomsDetail({
 
   const actionButtons = (
     <>
-      {isAdmin && (
-        <Button
-          variant="destructive-outline"
-          onClick={async () => {
-            const ok = await confirm({
-              title: t`Xoá bài này?`,
-              confirmLabel: t`Xoá`,
-              destructive: true,
-            });
-            if (ok) deleteM.mutate();
-          }}
-        >
-          <IconTrash className="mr-1.5 h-4 w-4 shrink-0" />
-          {t`Xoá`}
-        </Button>
-      )}
       <Button variant="outline" onClick={shareEntry}>
         <IconShare2 className="mr-1.5 h-4 w-4 shrink-0" />
         {t`Chia sẻ`}
@@ -218,32 +158,9 @@ export default function CustomsDetail({
           title={bookmarked ? t`Bỏ lưu` : t`Lưu bài`}
         >
           <IconStar
-              className={`h-4 w-4 shrink-0 ${bookmarked ? "fill-current text-accent" : ""}`}
-            />
+            className={`h-4 w-4 shrink-0 ${bookmarked ? "fill-current text-accent" : ""}`}
+          />
           {bookmarked ? t`Đã lưu` : t`Lưu`}
-        </Button>
-      )}
-      {isAdmin && entry.status !== "published" && (
-        <Button
-          variant="outline"
-          onClick={() => approveM.mutate()}
-          disabled={approveM.isPending}
-          title={t`Duyệt & công khai`}
-        >
-          <IconCheck className="mr-1.5 h-4 w-4 shrink-0" />
-          {t`Duyệt`}
-        </Button>
-      )}
-      {isAdmin && (
-        <Button asChild>
-          <PanelLink
-            to={`/so-tay/${entry.id}/edit`}
-            panel="custom-edit"
-            panelParams={{ pid: entry.id }}
-          >
-            <IconPencil className="mr-1.5 h-4 w-4 shrink-0" />
-            {t`Sửa`}
-          </PanelLink>
         </Button>
       )}
     </>
@@ -279,11 +196,6 @@ export default function CustomsDetail({
       {/* Dạng bài báo (khuôn chung components/Article): không bọc thẻ, chuyên mục → tít → sapo → dòng thông tin →
           ảnh lớn → các mục. Hiển thị đầy đủ nội dung (không gập/mở) — không bắt bấm để xem. */}
       <Article>
-        {entry.status !== "published" && (
-          <p className="mb-2 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-accent">
-            Bản {entry.status === "draft" ? t`nháp` : t`chờ duyệt`}
-          </p>
-        )}
         <ArticleHeader
           kicker={CUSTOM_CATEGORY_LABEL[entry.category]}
           title={entry.title}
@@ -320,24 +232,8 @@ export default function CustomsDetail({
 
         {/* Các đoạn nội dung — hiện đầy đủ, chữ to, giãn dòng thoáng */}
         {entry.sections.map((s, i) => (
-          <ArticleSection key={i} title={s.heading || t`Phần ${i + 1}`}>
-            {s.image_url && (
-              <figure className="mb-3">
-                <img
-                  src={s.image_url}
-                  alt={s.image_caption || s.heading || ""}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  className="max-h-72 w-full rounded-lg object-cover"
-                />
-                {s.image_caption && (
-                  <figcaption className="mt-1.5 font-sans text-sm italic text-muted-foreground">
-                    {s.image_caption}
-                  </figcaption>
-                )}
-              </figure>
-            )}
-            <ArticleProse>{s.body}</ArticleProse>
+          <ArticleSection key={i} title={s.heading || t`Giới thiệu`}>
+            <ArticleHtml html={s.body} />
           </ArticleSection>
         ))}
 
@@ -387,13 +283,26 @@ export default function CustomsDetail({
         )}
 
         <ArticleFooter>
-          {entry.sources && (
-            <p className="flex items-start gap-2">
+          {entry.sources.length > 0 && (
+            <div className="flex items-start gap-2">
               <IconBook className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="min-w-0 break-words [overflow-wrap:anywhere]">
-                <b>{t`Nguồn:`}</b> {entry.sources}
-              </span>
-            </p>
+              <div className="min-w-0 break-words [overflow-wrap:anywhere]">
+                <b>{t`Nguồn:`}</b>
+                <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                  {entry.sources.map((src, i) => (
+                    <li key={i}>
+                      {src.url ? (
+                        <a href={src.url} target="_blank" rel="noopener noreferrer nofollow" className="text-primary underline">
+                          {src.name}
+                        </a>
+                      ) : (
+                        src.name
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           )}
           <p className="flex items-start gap-2">
             <IconHelp className="mt-0.5 h-4 w-4 shrink-0" />

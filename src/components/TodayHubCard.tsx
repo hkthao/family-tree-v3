@@ -137,7 +137,7 @@ export function TodayHubCard({
 
   const { data: customs } = useQuery({
     queryKey: ["customs-published-lite"],
-    queryFn: () => listCustomEntries({ includeUnpublished: false }),
+    queryFn: () => listCustomEntries(),
     staleTime: 6 * 60 * 60 * 1000,
   });
   const tip =

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { listCustomEntries } from "@/lib/queries/customs";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
 
@@ -75,14 +76,30 @@ export async function globalSearch(
 ): Promise<SearchHit[]> {
   const text = q.trim();
   if (text.length < 2) return [];
-  const { data, error } = await client.rpc("global_search", { q: text, per_type: perType });
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => ({
-    kind: r.kind as SearchKind,
-    id: r.id,
-    clanId: r.clan_id,
-    clanName: r.clan_name,
-    title: r.title,
-    subtitle: r.subtitle,
+  // Sổ tay văn hoá là tệp tĩnh (không còn trong DB): tìm ở client, gộp vào kết quả của RPC.
+  const [rpc, customs] = await Promise.all([
+    client.rpc("global_search", { q: text, per_type: perType }),
+    listCustomEntries({ search: text }).catch(() => []),
+  ]);
+  if (rpc.error) throw new Error(rpc.error.message);
+  const fromDb: SearchHit[] = (rpc.data ?? [])
+    // Nhánh 'custom' của RPC cũ (đọc bảng custom_entries) bỏ đi; nguồn duy nhất là tệp tĩnh.
+    .filter((r) => r.kind !== "custom")
+    .map((r) => ({
+      kind: r.kind as SearchKind,
+      id: r.id,
+      clanId: r.clan_id,
+      clanName: r.clan_name,
+      title: r.title,
+      subtitle: r.subtitle,
+    }));
+  const fromFiles: SearchHit[] = customs.slice(0, perType).map((e) => ({
+    kind: "custom",
+    id: e.id,
+    clanId: null,
+    clanName: null,
+    title: e.title,
+    subtitle: e.short_description,
   }));
+  return [...fromDb, ...fromFiles];
 }

@@ -9,6 +9,16 @@
 # the SPA-fallback + cache headers from netlify.toml mirrored
 # into nginx.conf.
 
+# Sổ tay Văn hoá: sinh public/so-tay-data/*.json từ content-site (Astro) — nguồn bài là tệp .md, không còn trong DB.
+FROM node:22-alpine AS content
+WORKDIR /app/content-site
+COPY content-site/package*.json ./
+RUN npm ci
+COPY content-site/ ./
+COPY landing/ /app/landing/
+COPY scripts/build-landing-guides.mjs /app/scripts/build-landing-guides.mjs
+RUN npm run build
+
 FROM node:22-alpine AS build
 WORKDIR /app
 
@@ -19,6 +29,7 @@ RUN npm ci
 # Now copy the rest and build. Build-args populate Vite env so
 # the version footer + Supabase client + Sentry DSN compile in.
 COPY . .
+COPY --from=content /app/content-site/dist/so-tay-data ./public/so-tay-data
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 ARG VITE_SENTRY_DSN=
@@ -37,8 +48,8 @@ ENV VITE_VAPID_PUBLIC_KEY=$VITE_VAPID_PUBLIC_KEY
 ENV VITE_UMAMI_URL=$VITE_UMAMI_URL
 ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
 ENV GITHUB_SHA=$GITHUB_SHA
-# Sitemap cho bot tìm kiếm / bot AI: trang tĩnh + bài hướng dẫn + mục Sổ tay đã đăng (đọc qua REST bằng khoá anon).
-# Lỗi mạng/khoá thì bỏ phần Sổ tay, KHÔNG làm hỏng build (script luôn thoát 0).
+# Sitemap cho bot tìm kiếm / bot AI: trang tĩnh + bài hướng dẫn + mục Sổ tay (đọc public/so-tay-data/index.json).
+# Lỗi thì bỏ phần Sổ tay, KHÔNG làm hỏng build (script luôn thoát 0).
 RUN node scripts/gen-sitemap.mjs || true
 RUN npm run build
 

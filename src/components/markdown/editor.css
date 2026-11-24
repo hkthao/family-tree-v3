@@ -1,0 +1,26 @@
+/* Trình soạn Markdown: nút công cụ là biểu tượng cỡ vừa (đủ bấm), chữ nội dung lớn. */
+.big-md .w-md-editor { font-size: 18px; }
+.big-md .w-md-editor-toolbar { height: auto; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; padding: 8px; }
+.big-md .w-md-editor-toolbar ul { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.big-md .w-md-editor-toolbar li { display: flex; margin: 0; }
+.big-md .w-md-editor-toolbar li > button {
+  height: 40px;
+  min-width: 40px;
+  padding: 0 8px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.big-md .w-md-editor-toolbar li > button svg { width: 20px; height: 20px; }
+.big-md .w-md-editor-toolbar li.active > button { background: hsl(var(--primary) / 0.15); border-color: hsl(var(--primary)); }
+.big-md .w-md-editor-toolbar-divider { display: none; }
+/* Ô gõ và lớp tô màu phía sau phải cùng cỡ chữ, nếu lệch thì con trỏ trôi khỏi chữ. */
+.big-md .w-md-editor-text-pre > code,
+.big-md .w-md-editor-text-input,
+.big-md .w-md-editor-text-pre {
+  font-size: 18px !important;
+  line-height: 1.8 !important;
+}
+.big-md .wmde-markdown { font-size: 18px; line-height: 1.9; }

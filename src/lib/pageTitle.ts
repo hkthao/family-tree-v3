@@ -53,9 +53,7 @@ export const ROUTE_META: RouteMeta[] = lazyMessages([
     title: msg`Sổ tay Văn hoá`,
     description: msg`Phong tục, nghi lễ và tín ngưỡng Việt Nam: giỗ chạp, tang lễ, cưới hỏi, thờ cúng tổ tiên — giải thích ngắn gọn, dễ tra cứu.`,
   },
-  { pattern: "/so-tay/new", title: msg`Thêm bài Sổ tay` },
-  { pattern: "/so-tay/import", title: msg`Nhập bài Sổ tay` },
-  { pattern: "/so-tay/:entryId/edit", title: msg`Sửa bài Sổ tay` },
+  { pattern: "/so-tay/soan", title: msg`Soạn bài Sổ tay` },
   {
     pattern: "/so-tay/:entryId",
     title: msg`Sổ tay Văn hoá`,

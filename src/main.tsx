@@ -9,6 +9,7 @@ import { I18nRoot } from "./lib/i18n/I18nRoot";
 import { initAnalytics } from "./lib/analytics";
 import { initPwa } from "./lib/pwa";
 import { persister, queryClient } from "./lib/queryClient";
+import { isStaticCustomsQuery } from "./lib/queries/customs";
 import { initSentry } from "./lib/sentry";
 import { initBackground } from "./lib/background";
 import { initTheme } from "./lib/theme";
@@ -120,7 +121,14 @@ function render() {
             // v10: đóng góp cộng đồng (person_memories) thêm applied / identify /
             //     question_id… Cache cũ thiếu `applied` → đọc applied.length trên
             //     undefined làm hỏng dòng ở trang Đóng góp nội dung (MemoryRow).
-            buster: "v10",
+            // v11: Sổ tay chuyển từ bảng DB sang tệp tĩnh (id uuid → slug, ảnh bìa đổi đường dẫn). Danh sách cache cũ vẫn trỏ
+            //     ảnh về địa chỉ cũ nên hiện ô ảnh vỡ. Bust, và từ nay các truy vấn Sổ tay KHÔNG được lưu bền (xem
+            //     dehydrateOptions) vì dữ liệu tĩnh, đã có cache HTTP.
+            buster: "v11",
+            dehydrateOptions: {
+              shouldDehydrateQuery: (q) =>
+                q.state.status === "success" && !isStaticCustomsQuery(q.queryKey),
+            },
           }}
         >
           <I18nRoot>

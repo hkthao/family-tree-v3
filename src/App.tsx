@@ -45,9 +45,8 @@ const Clans = lazy(() => import("@/pages/Clans"));
 const Customs = lazy(() => import("@/pages/Customs"));
 const Podcast = lazy(() => import("@/pages/Podcast"));
 const DemoRedirect = lazy(() => import("@/pages/DemoRedirect"));
+const CustomsCompose = lazy(() => import("@/pages/CustomsCompose"));
 const CustomsDetail = lazy(() => import("@/pages/CustomsDetail"));
-const CustomsForm = lazy(() => import("@/pages/CustomsForm"));
-const CustomsImport = lazy(() => import("@/pages/CustomsImport"));
 const Docs = lazy(() => import("@/pages/Docs"));
 const AddChild = lazy(() => import("@/pages/clan/AddChild"));
 const AddParent = lazy(() => import("@/pages/clan/AddParent"));
@@ -216,18 +215,10 @@ export default function App() {
                 }
               />
               <Route
-                path="/so-tay/new"
+                path="/so-tay/soan"
                 element={
                   <RequireAuth>
-                    <CustomsForm />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/so-tay/import"
-                element={
-                  <RequireAuth>
-                    <CustomsImport />
+                    <CustomsCompose />
                   </RequireAuth>
                 }
               />
@@ -236,14 +227,6 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <CustomsDetail />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/so-tay/:entryId/edit"
-                element={
-                  <RequireAuth>
-                    <CustomsForm />
                   </RequireAuth>
                 }
               />
