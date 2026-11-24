@@ -311,6 +311,14 @@
       .lightbox .icon-btn { background: rgba(246,239,227,.14); border-color: rgba(246,239,227,.35); color: #f6efe3; }
       .lightbox .icon-btn:hover { background: rgba(246,239,227,.28); }
       .lightbox .icon-btn[disabled] { opacity: .35; pointer-events: none; }
+      /* Nút lên đầu trang: tròn, đỏ, nằm trong khung nội dung (cùng lề phải với .wrap) chứ không dính mép trình duyệt. */
+      .to-top { position: fixed; right: max(1.4rem, calc((100% - 1120px) / 2 + 1.4rem)); bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index: 60; width: 48px; height: 48px;
+                display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; cursor: pointer; border: 0;
+                background: hsl(var(--primary)); color: hsl(var(--primary-fg)); box-shadow: 0 10px 26px hsl(var(--primary)/.35);
+                opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .2s, transform .2s, visibility .2s, filter .2s; }
+      .to-top.show { opacity: 1; visibility: visible; transform: none; }
+      .to-top:hover { filter: brightness(1.1); }
+      .to-top .ico { width: 22px; height: 22px; }
 </style>
 
     <!-- FAQPage: 5 câu hỏi vốn đã có trên trang. Đây là loại rich
@@ -417,7 +425,8 @@
       <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
       <symbol id="i-landmark" viewBox="0 0 24 24"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></symbol>
       <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
-          <symbol id="i-prev" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+          <symbol id="i-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+      <symbol id="i-prev" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
       <symbol id="i-next" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
       <symbol id="i-zoom-in" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
       <symbol id="i-zoom-out" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
@@ -873,6 +882,18 @@
           setTimeout(function () { moved = false; }, 0);
         }
         stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
+      })();
+    </script>
+
+    <button class="to-top" id="toTop" type="button" aria-label="Lên đầu trang" title="Lên đầu trang"><svg class="ico"><use href="#i-up"/></svg></button>
+    <script>
+      (function () {
+        var b = document.getElementById("toTop"); if (!b) return;
+        function sync() { b.classList.toggle("show", window.scrollY > 600); }
+        window.addEventListener("scroll", sync, { passive: true }); sync();
+        b.addEventListener("click", function () {
+          window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        });
       })();
     </script>
   </body>
