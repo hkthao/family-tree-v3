@@ -65,6 +65,14 @@ const idToSlug = {};
 const used = new Set();
 for (const r of rows) {
   let s = MERGE[r.title] ?? (slugify(r.title.replace(/\(.*?\)/g, "")) || slugify(r.title));
+  // Địa chỉ rút gọn quá ngắn (vd "Ngày giỗ (Giỗ đầu, …)" → "ngay-gio", dễ nhầm với "ngày giờ") thì dùng tiêu đề đầy đủ.
+  if (!MERGE[r.title] && s.length < 12) s = slugify(r.title);
+  // Trùng địa chỉ với bài viết tay (vd "Tết Nguyên Đán (Giao thừa…)" → tet-nguyen-dan): lấy slug từ TIÊU ĐỀ ĐẦY ĐỦ để không mất bài.
+  if (!MERGE[r.title] && isRich(join(out, `${s}.md`))) {
+    const full = slugify(r.title);
+    console.warn(`địa chỉ "${s}" đã là bài viết tay → bài "${r.title}" dùng địa chỉ "${full}"`);
+    s = full;
+  }
   if (!MERGE[r.title]) {
     const base = s;
     for (let i = 2; used.has(s); i++) s = `${base}-${i}`;
@@ -118,7 +126,7 @@ for (const r of rows) {
     related: (r.related_ids ?? []).map((id) => idToSlug[id]).filter(Boolean),
     sources: r.sources ? [{ name: r.sources }] : [],
   };
-  writeFileSync(file, `---\n${YAML.stringify(fm, { lineWidth: 0 })}---\n\n${body}`);
+  writeFileSync(file, `---\n${YAML.stringify(fm, { lineWidth: 0, aliasDuplicateObjects: false })}---\n\n${body}`);
   wrote++;
 }
 

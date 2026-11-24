@@ -34,6 +34,6 @@ for (const g of guides) {
     faq: g.faq,
     related: g.related,
   };
-  writeFileSync(join(out, `${g.slug}.md`), `---\n${YAML.stringify(fm, { lineWidth: 0 })}---\n\n${body}`);
+  writeFileSync(join(out, `${g.slug}.md`), `---\n${YAML.stringify(fm, { lineWidth: 0, aliasDuplicateObjects: false })}---\n\n${body}`);
   console.log("ok", g.slug);
 }

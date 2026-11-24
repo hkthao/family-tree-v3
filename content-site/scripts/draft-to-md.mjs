@@ -46,7 +46,7 @@ for (const f of process.argv.slice(2)) {
       related: (e.related_titles ?? []).map((t) => slugify(t.replace(/\(.*?\)/g, ""))),
       sources: e.sources ? [{ name: e.sources }] : [],
     };
-    writeFileSync(join(out, `${slug}.md`), `---\n${YAML.stringify(fm, { lineWidth: 0 })}---\n\n${body}`);
+    writeFileSync(join(out, `${slug}.md`), `---\n${YAML.stringify(fm, { lineWidth: 0, aliasDuplicateObjects: false })}---\n\n${body}`);
     console.log("ok", slug);
   }
 }

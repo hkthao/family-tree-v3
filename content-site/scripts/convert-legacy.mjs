@@ -20,7 +20,7 @@ function slugify(s) {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 const write = (slug, fm, body) =>
-  writeFileSync(join(out, `${slug}.md`), `---\n${YAML.stringify(fm, { lineWidth: 0 })}---\n\n${body}`);
+  writeFileSync(join(out, `${slug}.md`), `---\n${YAML.stringify(fm, { lineWidth: 0, aliasDuplicateObjects: false })}---\n\n${body}`);
 
 // ── 1. Bài lễ hội ──────────────────────────────────────────────────────────
 const META = {
