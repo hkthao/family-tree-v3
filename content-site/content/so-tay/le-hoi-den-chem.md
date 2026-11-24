@@ -1,0 +1,112 @@
+---
+status: published
+title: "Lễ hội đình Chèm: thờ Lý Ông Trọng, rước nước và thời gian hội"
+short: Lễ hội đình Chèm
+description: Lễ hội đình Chèm bên sông Hồng (Hà Nội) thờ Lý Ông Trọng, diễn ra 14 đến 16 tháng 5 âm lịch với lễ rước nước và mộc dục; xem thời gian, địa điểm và cách đi hội.
+updated: 2026-11-24
+category: le_hoi
+tags:
+  - Miền Bắc
+  - Hà Nội
+  - Lý Ông Trọng
+  - Tháng Năm âm lịch
+  - Di sản phi vật thể quốc gia
+aliases:
+  - đình chèm
+  - lý ông trọng
+  - hội chèm
+regions:
+  - Miền Bắc
+lunar_month: 5
+timing: 14–16 tháng 5 âm lịch (chính hội ngày 15)
+minutes: 7
+when: 14–16 tháng 5 âm lịch (chính hội ngày 15)
+where: Phường Đông Ngạc, Hà Nội
+lead: <strong>Lễ hội đình Chèm là hội làng truyền thống ở phường Đông Ngạc, Hà Nội, bên bờ sông Hồng, để tưởng nhớ Lý Ông Trọng, vị thần được dân làng tôn là Đức Thánh Chèm.</strong> Hội kéo dài ba ngày, từ 14 đến 16 tháng 5 âm lịch, với hai nghi lễ chính là rước nước trên sông Hồng và tắm tượng (mộc dục). Hội được công nhận là Di sản văn hoá phi vật thể quốc gia năm 2016.
+infobox:
+  - label: Thời gian
+    value: 14–16 tháng 5 âm lịch, chính hội ngày 15. Ngày dương lịch thay đổi mỗi năm.
+  - label: Địa điểm
+    value: Đình Chèm, bên bờ sông Hồng, phường Đông Ngạc, Hà Nội (trước đây thuộc phường Thụy Phương, quận Bắc Từ Liêm)
+  - label: Thờ
+    value: Lý Ông Trọng (Đức Thánh Chèm, còn gọi Đức Ông), cùng Đức Bà và các nhân vật thờ theo tục địa phương
+  - label: Hoạt động chính
+    value: Rước nước, mộc dục, rước văn, thi nấu chè kho, bơi chải, thả chim bồ câu, các trò chơi dân gian
+images:
+  - file: le-hoi-den-chem-1.webp
+    alt: Nghi môn và đình Chèm ở phường Đông Ngạc, Hà Nội
+    caption: Nghi môn và đình Chèm.
+    credit: NKSTTSSHNVN, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%C3%ACnh_Ch%C3%A8m_-_NKS.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 934
+  - file: le-hoi-den-chem-2.webp
+    alt: Sân và tiền đường khu đền Chèm
+    caption: Sân và tiền đường khu đền.
+    credit: NKSTTSSHNVN, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%C3%ACnh_Ch%C3%A8m_3_-_NKS.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 934
+  - file: le-hoi-den-chem-3.webp
+    alt: Bia giới thiệu đình Chèm
+    caption: Bia giới thiệu đình Chèm; bảng còn ghi tên xã cũ là Thụy Phương.
+    credit: NKSTTSSHNVN, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%C3%ACnh_Ch%C3%A8m_4.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 934
+faq:
+  - q: Lễ hội đình Chèm diễn ra vào ngày nào?
+    a: Hội diễn ra từ ngày 14 đến ngày 16 tháng 5 âm lịch, chính hội vào ngày 15. Ngày dương lịch thay đổi theo năm, nên nên kiểm tra thông báo của ban tổ chức trước khi đi.
+  - q: Đình Chèm thờ ai?
+    a: Đình thờ Lý Ông Trọng, dân làng gọi là Đức Thánh Chèm hoặc Đức Ông, cùng Đức Bà và một số nhân vật được thờ theo tục địa phương.
+  - q: Rước nước trong lễ hội đình Chèm là gì?
+    a: Đó là nghi lễ đoàn thuyền ra giữa sông Hồng, quay thuyền ba vòng rồi múc nước sông đưa về đình. Nước dùng cho lễ tắm tượng và thờ cúng trong năm.
+  - q: Đình Chèm ở đâu?
+    a: Đình Chèm nằm bên bờ sông Hồng, thuộc phường Đông Ngạc, Hà Nội. Trước đây địa điểm này thuộc phường Thụy Phương, quận Bắc Từ Liêm.
+  - q: Lễ hội đình Chèm có là di sản văn hoá không?
+    a: Có. Hội được đưa vào Danh mục di sản văn hoá phi vật thể quốc gia năm 2016, thuộc loại hình lễ hội truyền thống.
+heritage: <p>Hội đình Chèm cho thấy cách một cộng đồng nhớ về người xưa và giữ nếp làng qua nhiều đời. Với các dòng họ, đây là một gợi ý để nhớ rằng thờ cúng tổ tiên và thờ người có công với quê hương đều xuất phát từ lòng biết ơn, và chuyện ấy có thể được ghi lại trong gia phả cho con cháu.</p>
+related:
+  - le-hoi-thanh-giong
+  - hoi-den-hung
+  - le-hoi-duc-thanh-tran
+sources:
+  - name: Lễ hội đình Chèm, Wikipedia tiếng Việt
+    url: https://vi.wikipedia.org/wiki/L%E1%BB%85_h%E1%BB%99i_%C4%91%C3%ACnh_Ch%C3%A8m
+  - name: Nghi thức rước nước độc đáo ở lễ hội đình Chèm, Báo Đại Đoàn Kết
+    url: https://daidoanket.vn/nghi-thuc-ruoc-nuoc-doc-dao-o-le-hoi-dinh-chem.html
+  - name: Độc đáo di tích đình Chèm, Báo Nhân Dân
+    url: https://nhandan.vn/doc-dao-di-tich-dinh-chem-post322290.html
+  - name: Lễ hội đình Chèm diễn ra trong cái nắng đổ lửa, VietnamNet
+    url: https://vietnamnet.vn/le-hoi-dinh-chem-dien-ra-trong-cai-nang-do-lua-248053.html
+  - name: Thạch Phương, Lê Trung Vũ (chủ biên), 60 lễ hội truyền thống Việt Nam, NXB Khoa học xã hội
+---
+
+## Lễ hội đình Chèm là gì và có ý nghĩa gì
+
+<p><strong>Lễ hội đình Chèm là hội của làng thờ Thành hoàng, nhớ công người có tài và đức với dân.</strong> Ba làng Chèm, Hoàng Xá và Liên Mạc cùng tham gia theo tục kết nghĩa. Làng Chèm là làng anh cả, đảm nhiệm phần việc chính và phân việc cho hai làng còn lại.</p><p>Các nhà nghiên cứu nhìn hội Chèm ở nhiều lớp. Có ý kiến cho rằng các nghi lễ cầu nước, cầu mưa thuận gió hoà của cư dân nông nghiệp vẫn còn dấu vết trong rước nước và thả chim. Từ khoảng năm 1990, hội có thêm một số nghi thức Phật giáo và Đạo giáo. Đây là cách hiểu tham khảo, không phải điều đã được xác nhận cho mọi nghi thức.</p>
+
+## Thời gian và địa điểm
+
+<figure><img src="/assets/le-hoi/le-hoi-den-chem-2.webp" alt="Sân và tiền đường khu đền Chèm" width="1400" height="934" loading="lazy" /><figcaption>Sân và tiền đường khu đền. · Ảnh: NKSTTSSHNVN, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%C3%ACnh_Ch%C3%A8m_3_-_NKS.jpg">Wikimedia Commons</a>)</figcaption></figure>
+
+<p><strong>Hội diễn ra ba ngày, từ 14 đến 16 tháng 5 âm lịch, chính hội vào ngày 15.</strong> Ngày 14, đình và đền mở cửa để dân làng và khách dâng hương; chiều cùng ngày, đoàn rước văn từ đình đi rồi trở về đình. Ngày 15 có các nghi lễ lớn như rước nước và mộc dục. Ngày 16 làng tiếp tục rước nước để lấy nước dùng thờ cúng trong năm.</p><p>Trước ngày hội, khoảng ngày 12 và 13 tháng 5, làng làm lễ thay y phục, bao sái tượng thờ và tổ chức thi nấu chè kho ở đình. Theo một số nguồn, hội lớn được tổ chức năm năm một lần (theo Wikipedia tiếng Việt), các năm khác thì nghi thức được giản lược. Vì vậy trước khi đi, bạn nên kiểm tra thông báo của ban tổ chức hoặc UBND phường Đông Ngạc.</p><p>Đình Chèm nằm bên bờ tả ngạn sông Hồng, thuộc phường Đông Ngạc, Hà Nội. Trước khi sắp xếp lại đơn vị hành chính, địa điểm này được ghi là phường Thụy Phương, quận Bắc Từ Liêm. Theo mô tả trong sách, từ trung tâm Hà Nội có thể đi về phía cầu Thăng Long, dừng ở chân cầu rồi đi theo đê ngược lên khoảng 1 km là tới. Đường đi có thể đã thay đổi, nên xem bản đồ trước khi đi.</p>
+
+## Nguồn gốc và truyền thuyết
+
+<figure><img src="/assets/le-hoi/le-hoi-den-chem-3.webp" alt="Bia giới thiệu đình Chèm" width="1400" height="934" loading="lazy" /><figcaption>Bia giới thiệu đình Chèm; bảng còn ghi tên xã cũ là Thụy Phương. · Ảnh: NKSTTSSHNVN, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%C3%ACnh_Ch%C3%A8m_4.jpg">Wikimedia Commons</a>)</figcaption></figure>
+
+<p><strong>Tương truyền, Lý Ông Trọng tên gốc là Lý Thân, sinh ở làng Chèm,</strong> có sức khoẻ và tài năng hơn người. Ông từng trừ kẻ cường hào trong làng rồi được vua trọng dụng. Sau đó ông được cử sang đất Tần trấn giữ biên ải, chống quân Hung Nô, và được gả công chúa. Khi nhà Tần lại mời ông sang lần nữa, ông không muốn rời quê; theo một số dị bản, ông đã mất ở đó. Người làng lập đền thờ, tôn ông làm Thành hoàng và tạc tượng ông cùng phu nhân.</p><p>Truyền thuyết có nhiều dị bản. Có nơi kể ông được vua Hùng trọng dụng, có nơi kể ông sống vào thời An Dương Vương. Đây là các cách kể dân gian, chưa có căn cứ lịch sử chắc chắn về từng chi tiết.</p>
+
+## Phần lễ: rước nước, mộc dục và rước văn
+
+<p><strong>Rước nước là nghi lễ trung tâm của hội.</strong> Đoàn thuyền đi từ bến đình ra giữa sông Hồng, đi qua địa phận ba làng rồi quay thuyền ba vòng. Chủ tế thả vòng càn khôn bằng cây song trên mặt nước, dùng gáo múc nước bên trong vòng đổ vào chóe. Nước được đưa về đình để dùng trong lễ tắm tượng và thờ cúng cả năm. Số thuyền có thể khác nhau theo từng thời kỳ; có nguồn ghi hai thuyền, có nguồn ghi ba thuyền rồng của ba làng.</p><p><strong>Mộc dục là lễ tắm tượng Đức Thánh.</strong> Thuở trước, lễ được làm trên sông vì ông thường ra sông tắm. Nay để an toàn, lễ thường được làm ngay trong sân hoặc khu tiểu vương đình, chiều ngày 15. Khu tắm được che bằng vải đỏ và chỉ những người do ban tổ chức chỉ định mới được vào.</p><p><strong>Rước văn là đoàn rước bản văn tế.</strong> Đoàn có trống khẩu, chủ tế mang hộp văn, người che lọng đi theo, rồi làm lễ tế ở đình. Chủ tế phải là người làng Chèm. Trong hội còn có các nghi thức phát tấu, cúng phan, cúng Phật, khai quang và yên vị, do thầy cúng hoặc người làng đảm nhiệm theo tục lệ.</p>
+
+## Phần hội và trò chơi dân gian
+
+<p><strong>Phần hội có nhiều trò dân gian, và mỗi năm chương trình có thể khác.</strong> Một số hoạt động được ghi nhận qua các năm gồm:</p><ul><li><strong>Bơi chải:</strong> trước đây thi trên sông Hồng, nay có khi chuyển về ao đình.</li><li><strong>Thả chim bồ câu:</strong> các chủ chim từ nhiều nơi về thi thả, làm cho ngày hội thêm náo nhiệt. Theo tín ngưỡng địa phương, việc thả chim gắn với mong muốn các vong linh được siêu thoát.</li><li><strong>Bắt vịt, kéo co, cờ người, nhảy bao bố, thả diều:</strong> các trò dân gian có thi tài và có cổ vũ.</li><li><strong>Hát chèo, quan họ và hội vật:</strong> thường có trong các năm khi làng tổ chức đủ chương trình.</li></ul>
+
+## Ẩm thực: chè kho dâng lễ
+
+<p><strong>Chè kho là món dâng trong hội, được làm và thi nấu ngay tại đình trước ngày chính hội.</strong> Theo một khảo tả năm 2016, chè kho được nấu từ đậu xanh, đường trắng, dầu chuối và mỡ lợn, và các tổ dân phố của ba làng tham gia luân phiên. Sản phẩm sau cuộc thi được dâng làm lễ vật.</p>
+
+## Kinh nghiệm đi hội
+
+<ul><li><strong>Đi sớm:</strong> vào ngày chính hội, đường quanh đình và bờ đê thường đông. Nên đến trước giờ rước để có chỗ xem.</li><li><strong>Trang phục:</strong> chọn đồ gọn, kín đáo khi vào khu đền đình. Theo tục kiêng được nhiều nguồn ghi, người vào đình không nên mặc màu vàng.</li><li><strong>Giữ trật tự và an toàn:</strong> rước nước diễn ra trên sông có thuyền và lực lượng đường thuỷ hỗ trợ, nên đứng xem ở vị trí được chỉ dẫn, không xuống nước trong khu vực rước.</li><li><strong>Chụp ảnh:</strong> xin phép trước khi chụp người đang thực hành nghi lễ, và tuân theo chỉ dẫn của ban tổ chức ở khu vực tắm tượng.</li><li><strong>Kiểm tra lịch:</strong> ngày âm lịch cố định, nhưng giờ và chương trình thay đổi theo năm. Hãy xem thông báo của UBND phường Đông Ngạc hoặc ban tổ chức trước khi đi.</li></ul>

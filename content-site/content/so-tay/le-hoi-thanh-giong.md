@@ -1,0 +1,101 @@
+---
+status: published
+title: "Hội Gióng đền Phù Đổng, đền Sóc: thời gian và kinh nghiệm"
+short: Hội Gióng
+description: Hội Gióng ở đền Phù Đổng và đền Sóc (Hà Nội) là gì, diễn ra vào tháng nào âm lịch, có những nghi lễ và tục hội nào, và cần lưu ý gì khi đi xem hội.
+updated: 2026-11-24
+category: le_hoi
+tags:
+  - Miền Bắc
+  - Hà Nội
+  - Thánh Gióng
+  - Tháng Tư âm lịch
+  - UNESCO
+aliases:
+  - hội gióng
+  - phù đổng thiên vương
+  - phù đổng
+  - đền sóc
+regions:
+  - Miền Bắc
+lunar_month: 4
+timing: Mùng 9 tháng 4 âm lịch (Phù Đổng); mùng 6–8 tháng Giêng âm lịch (đền Sóc)
+minutes: 6
+when: Mùng 9 tháng 4 âm lịch (Phù Đổng); mùng 6–8 tháng Giêng âm lịch (đền Sóc)
+where: Xã Phù Đổng và xã Sóc Sơn, Thành phố Hà Nội
+lead: "<strong>Hội Gióng ở đền Phù Đổng và đền Sóc là lễ hội tưởng nhớ Thánh Gióng, người anh hùng trong truyền thuyết đã đánh tan giặc Ân; UNESCO ghi danh lễ hội này là Di sản văn hóa phi vật thể đại diện của nhân loại năm 2010.</strong> Hội có hai nơi tổ chức: đền Phù Đổng ở xã Phù Đổng, nơi Thánh Gióng được sinh ra, vào khoảng mùng 7 đến mùng 9 tháng 4 âm lịch; đền Sóc ở xã Sóc Sơn, Hà Nội, vào mùng 6 đến mùng 8 tháng Giêng âm lịch."
+infobox:
+  - label: Thời gian
+    value: "Đền Phù Đổng: chính hội mùng 9 tháng 4 âm lịch. Đền Sóc: mùng 6 đến mùng 8 tháng Giêng âm lịch, chính hội mùng 7."
+  - label: Địa điểm
+    value: Đền Phù Đổng ở xã Phù Đổng; đền Sóc ở xã Sóc Sơn (trước năm 2025 là xã Phù Linh, huyện Sóc Sơn). Cả hai thuộc Thành phố Hà Nội.
+  - label: Thờ
+    value: Thánh Gióng, còn gọi là Phù Đổng Thiên Vương.
+  - label: Hoạt động chính
+    value: Rước nước, rước cờ, trận cờ và cướp chiếu (Phù Đổng); lễ tắm tượng, dâng hoa tre, chém tướng giặc (đền Sóc).
+images:
+  - file: le-hoi-thanh-giong-1.webp
+    alt: Các thanh niên múa cờ trong hội Gióng ở làng Phù Đổng
+    caption: Màn múa cờ trong hội Gióng làng Phù Đổng, năm 2011.
+    credit: Hoangvantoanajc, CC BY-SA 3.0 (<a href="https://commons.wikimedia.org/wiki/File:H%E1%BB%99i_Gi%C3%B3ng1.jpg">Wikimedia Commons</a>)
+    w: 1294
+    h: 2107
+  - file: le-hoi-thanh-giong-2.webp
+    alt: Đoàn rước trong hội Gióng ở làng Phù Đổng
+    caption: Đoàn rước trong hội Gióng ở làng Phù Đổng.
+    credit: Hoangvantoanajc, CC BY-SA 3.0 (<a href="https://commons.wikimedia.org/wiki/File:H%E1%BB%99i_Gi%C3%B3ng2.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 832
+faq:
+  - q: Hội Gióng ở đền Phù Đổng và đền Sóc được UNESCO ghi danh khi nào?
+    a: Ngày 16/11/2010, tại kỳ họp của Ủy ban liên chính phủ theo Công ước 2003 ở Nairobi, Kenya. Tên gọi được ghi danh là Hội Gióng ở đền Phù Đổng và đền Sóc.
+  - q: Hội Gióng Phù Đổng diễn ra vào ngày nào?
+    a: Chính hội là mùng 9 tháng 4 âm lịch, phần hội thường được ghi từ khoảng mùng 7 đến mùng 9. Các nguồn ghi khác nhau và có năm kéo dài hơn, nên nên kiểm tra thông báo của địa phương trước khi đi.
+  - q: Hội đền Sóc khác gì hội Phù Đổng?
+    a: Hội đền Sóc tổ chức vào tháng Giêng âm lịch, từ mùng 6 đến mùng 8, với lễ tắm tượng, dâng hoa tre và chém tướng giặc. Hội Phù Đổng tổ chức vào tháng 4 âm lịch, nổi bật với rước cờ, trận cờ và tục giành chiếu.
+  - q: Có nên tham gia tục cướp hoa tre không?
+    a: Đó là tục cầu may của dân làng và khách thập phương. Bạn có thể tham gia vừa sức, nhưng cần giữ an toàn cho bản thân và trẻ nhỏ, không xô đẩy người khác.
+  - q: Thánh Gióng là ai?
+    a: Thánh Gióng, còn gọi là Phù Đổng Thiên Vương, là nhân vật trong truyền thuyết được thờ như một vị thánh bảo vệ đất nước và mùa màng. Câu chuyện về Thánh có nhiều dị bản ở các làng khác nhau.
+heritage: "<p>Hội Gióng nhắc người ta về cội nguồn: người xưa đi hội để nhớ ơn người đi trước và học tấm gương của người anh hùng. Dòng họ cũng có thể làm điều tương tự qua ngày giỗ tổ, tảo mộ và chạp họ. Ghi rõ ngày giỗ và vị trí mộ phần trong gia phả để con cháu sau này còn nhớ đường về.</p>"
+related:
+  - hoi-den-hung
+  - le-hoi-duc-thanh-tran
+  - hoi-chua-huong
+sources:
+  - name: Cục Di sản văn hóa, Hội Gióng ở đền Phù Đổng và đền Sóc
+    url: https://dsvh.gov.vn/hoi-giong-o-den-phu-dong-va-den-soc-486
+  - name: Báo Điện tử Chính phủ, Lễ hội Gióng là Di sản văn hoá phi vật thể của nhân loại (17/11/2010)
+    url: https://baochinhphu.vn/le-hoi-giong-la-di-san-van-hoa-phi-vat-the-cua-nhan-loai-10247257.htm
+  - name: VnExpress, Lễ hội Thánh Gióng được công nhận di sản phi vật thể (17/11/2010)
+    url: https://vnexpress.net/le-hoi-thanh-giong-duoc-cong-nhan-di-san-phi-vat-the-2180562.html
+  - name: Về làng, Lễ hội Gióng Sóc Sơn
+    url: https://velang.vn/hoi-lang/le-hoi-ha-noi/le-hoi-giong-soc-son/
+  - name: Hoàng Thành Thăng Long, Hội Gióng
+    url: https://hoangthanhthanglong.vn/hoi-giong/
+  - name: Thạch Phương, Lê Trung Vũ (chủ biên), 60 lễ hội truyền thống Việt Nam, NXB Khoa học xã hội
+---
+
+## Hội Gióng là gì và vì sao quan trọng
+
+<p><strong>Hội Gióng là lễ hội tưởng nhớ Thánh Gióng, người anh hùng trong truyền thuyết đã đánh thắng giặc Ân.</strong> Lễ hội được UNESCO ghi danh vào ngày 16/11/2010 với tên gọi “Hội Gióng ở đền Phù Đổng và đền Sóc”, là một trong những di sản văn hóa phi vật thể tiêu biểu của Việt Nam và của Hà Nội.</p><p>Người xưa xem hội là dịp nhớ ơn người anh hùng và noi gương ông để rèn chí khí cho con cháu. Ngày nay, hội vẫn là dịp cả làng và khách thập phương gặp nhau, cùng dự lễ, cùng xem hội và gìn giữ các nghi thức được truyền lại từ nhiều đời.</p><p>Trong tín ngưỡng dân gian, Thánh Gióng thuộc nhóm “Tứ bất tử” cùng với các vị thánh khác được nhân dân thờ phụng. Vì vậy, ngoài ý nghĩa tưởng niệm một người anh hùng dựng nước và giữ nước, hội còn gắn với mong ước về một năm mưa thuận gió hòa, mùa màng tốt tươi.</p>
+
+## Thời gian và địa điểm
+
+<p><strong>Hội Phù Đổng và hội đền Sóc là hai lễ hội ở hai nơi, hai thời điểm trong năm.</strong> Hội Phù Đổng vào tháng 4 âm lịch, chính hội là mùng 9. Hội đền Sóc vào tháng Giêng âm lịch, chính hội là mùng 7.</p><ul><li><strong>Đền Phù Đổng:</strong> thuộc xã Phù Đổng, Thành phố Hà Nội. Không gian lễ hội trải dài khoảng 2 km từ đền Thượng đến Đống Đàm, gồm đền Thượng thờ Thánh Gióng, đền Mẫu thờ mẹ Gióng và chùa Kiến Sở, cùng con đê nối các làng quanh đó.</li><li><strong>Đền Sóc:</strong> thuộc xã Sóc Sơn, Thành phố Hà Nội. Sau khi sắp xếp đơn vị hành chính từ tháng 7/2025, địa danh này là xã Sóc Sơn; trước đó là xã Phù Linh, huyện Sóc Sơn. Khu di tích gồm đền Thượng, đền Hạ, chùa Đại Bi, miếu Thánh Mẫu và nhà bia.</li></ul><p>Các nguồn ghi ngày khác nhau theo năm và theo cách tính. Trước khi đi, nên kiểm tra thông báo của ban quản lý di tích hoặc chính quyền xã.</p>
+
+## Nguồn gốc và truyền thuyết
+
+<p><strong>Tương truyền, Thánh Gióng sinh ra ở làng Phù Đổng trong hoàn cảnh lạ.</strong> Cậu bé lên ba tuổi vẫn chưa biết nói, biết cười. Khi nhà vua kêu gọi người ra cứu nước đánh giặc Ân, cậu bỗng đứng dậy, lớn nhanh lạ thường, dùng tre ngà đánh tan giặc. Xong việc, Thánh không về làng mà bay lên trời từ núi Sóc, sau khi cởi áo và cưỡi ngựa.</p><p>Truyền thuyết có nhiều dị bản ở các làng quanh vùng, và mỗi làng giữ một chi tiết riêng:</p><ul><li><strong>Xuân Đỉnh:</strong> tương truyền Gióng dừng nghỉ trên đường về trời rồi để quên roi sắt; phiến đá nơi Gióng ngồi vẫn còn bên giếng làng.</li><li><strong>Bộ Đầu:</strong> Gióng cứu mẹ mình khỏi hai con thuồng luồng trên sông Hồng, và làng thờ Thánh làm Thành hoàng.</li><li><strong>Chi Nam:</strong> nhân vật được thờ là ông Hiển Công, người được kể đã cùng dân đánh giặc trên sông Đuống.</li></ul>
+
+## Phần lễ
+
+<p><strong>Phần lễ là các nghi thức trang trọng do làng và các chức sắc thực hiện, theo hội lệ (hương ước) xưa.</strong> Ở đền Phù Đổng, việc chuẩn bị kéo dài từ đầu tháng Ba đến đầu tháng Tư âm lịch: nhận sổ hội lệ, phân vai, tập dượt, dọn dẹp đồ thờ. Khi vào hội, làng tế Thánh, rước nước từ giếng đền Mẫu lên đền Thượng để cầu mưa thuận gió hòa, rồi rước cờ lệnh.</p><p>Ở đền Sóc, đêm mùng 5 có nghi thức mời Thánh về. Đúng nửa đêm mùng 6, có lễ khai quang tắm tượng Thánh do chủ tế và chức sắc thực hiện. Mùng 6 là lễ dâng hương của dân làng và khách thập phương.</p><ul><li><strong>Lễ dâng hoa tre (mùng 7):</strong> hoa tre là thanh tre dài khoảng 50 cm, đầu vót thành xơ và nhuộm màu, chủ yếu là vàng. Sau lễ dâng, hoa tre được tung ra sân đền cho dân chúng lấy cầu may.</li><li><strong>Lễ chém tướng giặc (mùng 7):</strong> diễn lại việc Thánh Gióng dùng tre ngà đánh gục tướng giặc Thạch Linh và hai tướng phụ, bằng hình thức biểu diễn tượng trưng.</li></ul>
+
+## Phần hội và trò chơi
+
+<p><strong>Phần hội là các trò diễn và tục vui sau phần lễ, khác nhau giữa hai nơi.</strong> Ở đền Phù Đổng, hội có trận cờ mô phỏng trận đánh giặc tại các điểm Đống Đàm và Soi Bia. Người tham gia múa cờ lệnh theo đội hình. Khi trận kết thúc, dân làng lao vào giành mảnh chiếu để cầu may.</p><p>Theo mô tả của các nguồn, có hát chèo mừng thắng trận. Ở đền Sóc, ngoài nghi lễ, khách còn xem các trò chơi dân gian như chọi gà, cờ tướng và hát ca trù.</p><p>Cả hai hội đều đông người. Khi tung hoa tre hay chiếu, không khí rất náo nhiệt, nên hãy giữ an toàn cho bản thân và trẻ nhỏ.</p>
+
+## Kinh nghiệm đi hội
+
+<ul><li><strong>Đi sớm, về sớm vào ngày chính.</strong> Ngày hội đông, đường vào có thể kẹt xe. Nên gửi xe ở bãi quy định và đi bộ đoạn cuối.</li><li><strong>Ăn mặc gọn gàng, kín đáo.</strong> Đây là không gian đền thờ và lễ rước, nên ăn mặc lịch sự, tôn trọng các nghi thức.</li><li><strong>Giữ đồ đạc khi có tục giành lộc.</strong> Với tục cướp hoa tre hay cướp chiếu, nên đứng ngoài vòng, không xô đẩy, để trẻ nhỏ ở chỗ an toàn.</li><li><strong>Kiểm tra lịch trước.</strong> Ngày âm lịch có thể lệch nhau tuỳ năm. Thông báo của ban tổ chức là căn cứ đáng tin nhất để chọn ngày đi.</li></ul>

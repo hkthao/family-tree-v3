@@ -1,0 +1,43 @@
+---
+import Base from "../layouts/Base.astro";
+import Cards from "../components/Cards.astro";
+import Cta from "../components/Cta.astro";
+import { published, tagIndex } from "../lib";
+import { CATEGORIES, categoryUrl, slugify } from "../taxonomy";
+
+const all = await published();
+const tags = tagIndex(all);
+const SITE = "https://donghoviet.thaohk.com";
+const title = "Sổ tay văn hoá Việt Nam: phong tục, nghi lễ, lễ hội và cách thực hiện";
+const description =
+  "Sổ tay văn hoá Việt Nam: ý nghĩa, thời gian âm lịch, lễ vật, trình tự các phong tục thờ cúng, nghi lễ vòng đời, lễ Tết và lễ hội truyền thống, kèm khác biệt giữa các vùng miền.";
+const ld = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "CollectionPage", name: title, description, inLanguage: "vi", url: `${SITE}/so-tay.html` },
+    { "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Dòng Họ Việt", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: "Sổ tay văn hoá", item: `${SITE}/so-tay.html` } ] },
+    { "@type": "ItemList", itemListElement: all.map((a, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/so-tay/${a.id}.html`, name: a.data.title })) },
+  ],
+};
+---
+<Base title={title} description={description} path="/so-tay.html" ld={ld}>
+  <section class="article">
+    <nav class="crumbs" aria-label="Đường dẫn"><a href="/">Dòng Họ Việt</a> › Sổ tay văn hoá</nav>
+    <h1>{title}</h1>
+    <p class="lead">Mỗi bài trả lời thẳng: phong tục hay lễ hội này là gì, vào ngày nào âm lịch, chuẩn bị gì, làm theo trình tự nào và khác nhau ra sao giữa các vùng. Phong tục gắn chặt với tổ tiên và cội nguồn, nên cuối mỗi bài có liên hệ tới việc gìn giữ gia phả và ngày giỗ của dòng họ.</p>
+    <p><a class="btn btn-ghost" href="/so-tay/tim-kiem.html">Tìm kiếm trong Sổ tay</a></p>
+    {CATEGORIES.map((c) => {
+      const items = all.filter((a) => a.data.category === c.slug);
+      return items.length ? (<><h2><a href={`/so-tay/danh-muc/${categoryUrl(c.slug)}.html`}>{c.name}</a></h2><Cards items={items} /></>) : null;
+    })}
+    {tags.length > 0 && (<>
+      <h2>Gom theo thẻ</h2>
+      <p class="tags">
+        {tags.map((t, i) => (<><a href={`/so-tay/the/${slugify(t.name)}.html`}>{t.name} ({t.items.length})</a>{i < tags.length - 1 ? " · " : ""}</>))}
+      </p>
+    </>)}
+    <Cta campaign="hub" />
+  </section>
+</Base>

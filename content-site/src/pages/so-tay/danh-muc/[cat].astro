@@ -1,0 +1,35 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Cards from "../../../components/Cards.astro";
+import Cta from "../../../components/Cta.astro";
+import { published } from "../../../lib";
+import { CATEGORIES, categoryUrl } from "../../../taxonomy";
+
+export async function getStaticPaths() {
+  const all = await published();
+  return CATEGORIES.map((c) => ({ params: { cat: categoryUrl(c.slug) }, props: { cat: c, items: all.filter((a) => a.data.category === c.slug) } }));
+}
+const { cat, items } = Astro.props;
+const SITE = "https://donghoviet.thaohk.com";
+const path = `/so-tay/danh-muc/${categoryUrl(cat.slug)}.html`;
+const title = `${cat.name}: phong tục, nghi lễ và cách thực hiện`;
+const description = `Các bài về ${cat.name.toLowerCase()} trong Sổ tay văn hoá: ý nghĩa, thời gian, lễ vật, trình tự và khác biệt giữa các vùng miền.`;
+const ld = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "CollectionPage", name: title, description, inLanguage: "vi", url: `${SITE}${path}` },
+    { "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Dòng Họ Việt", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: "Sổ tay văn hoá", item: `${SITE}/so-tay.html` },
+      { "@type": "ListItem", position: 3, name: cat.name, item: `${SITE}${path}` } ] },
+  ],
+};
+---
+<Base title={title} description={description} path={path} ld={ld} noindex={items.length === 0}>
+  <section class="article">
+    <nav class="crumbs" aria-label="Đường dẫn"><a href="/">Dòng Họ Việt</a> › <a href="/so-tay.html">Sổ tay văn hoá</a> › {cat.name}</nav>
+    <h1>{cat.name}</h1>
+    {items.length ? <Cards items={items} /> : <p>Chưa có bài trong danh mục này.</p>}
+    <Cta campaign={`dm_${cat.slug}`} />
+  </section>
+</Base>

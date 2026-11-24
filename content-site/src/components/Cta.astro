@@ -1,0 +1,12 @@
+---
+const { campaign, title = "Bắt đầu lập gia phả" } = Astro.props as { campaign: string; title?: string };
+const APP = "https://giapha.thaohk.com";
+---
+<div class="cta-box">
+  <h2>{title}</h2>
+  <p>Dòng Họ Việt giúp cả họ cùng dựng cây gia phả nhiều đời, nhớ ngày giỗ âm lịch và lưu lại câu chuyện của ông bà. Bắt đầu miễn phí.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" data-cta={`sotay-${campaign}`} href={`${APP}/signup?utm_source=landing&utm_medium=guide&utm_campaign=sotay_${campaign}`}><svg class="ico"><use href="#i-tree"></use></svg>Tạo gia phả miễn phí</a>
+    <a class="btn btn-ghost" data-cta={`sotay-demo-${campaign}`} href={`${APP}/xem/demo?utm_source=landing&utm_medium=so-tay&utm_campaign=sotay_${campaign}`}><svg class="ico"><use href="#i-eye"></use></svg>Xem thử gia phả mẫu</a>
+  </div>
+</div>

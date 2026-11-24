@@ -1,0 +1,20 @@
+{
+  "name": "content-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync-shell": "node scripts/sync-shell.mjs",
+    "dev": "npm run sync-shell && astro dev",
+    "build": "npm run sync-shell && astro build && node scripts/copy-img.mjs && pagefind --site dist --glob \"so-tay/**/*.html\"",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.6",
+    "astro": "6.4.8",
+    "marked": "^15.0.12"
+  },
+  "devDependencies": {
+    "pagefind": "1.6.0",
+    "yaml": "^2.9.1"
+  }
+}

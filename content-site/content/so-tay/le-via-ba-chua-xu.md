@@ -1,0 +1,151 @@
+---
+status: published
+title: "Lễ vía Bà Chúa Xứ núi Sam: thời gian, địa điểm và nghi lễ"
+short: Lễ vía Bà Chúa Xứ
+description: "Lễ vía Bà Chúa Xứ núi Sam ở An Giang diễn ra từ 22–23 đến 27 tháng 4 âm lịch tuỳ cách tính, chính vía ngày 25: địa điểm, nguồn gốc, nghi lễ, kinh nghiệm."
+updated: 2026-11-24
+category: le_hoi
+tags:
+  - Miền Nam
+  - An Giang
+  - Bà Chúa Xứ
+  - Tháng Tư âm lịch
+  - UNESCO
+aliases:
+  - núi sam
+  - châu đốc
+  - vía bà
+  - miếu bà chúa xứ
+regions:
+  - Miền Nam
+lunar_month: 4
+timing: Từ 22–23 đến 27 tháng 4 âm lịch tuỳ cách tính (chính vía 25 tháng 4)
+minutes: 6
+when: Từ 22–23 đến 27 tháng 4 âm lịch tuỳ cách tính (chính vía 25 tháng 4)
+where: Khu di tích núi Sam, phường Vĩnh Tế, tỉnh An Giang
+lead: <strong>Lễ vía Bà Chúa Xứ núi Sam là một trong những lễ hội lớn nhất vùng Nam Bộ, tổ chức ở chân núi Sam thuộc phường Vĩnh Tế, tỉnh An Giang, từ ngày 22 hoặc 23 đến ngày 27 tháng 4 âm lịch tuỳ cách tính, với ngày chính vía là 25 tháng 4 âm lịch.</strong> Đối tượng được thờ là Bà Chúa Xứ. Khách thập phương đến lễ Bà để cầu bình an, mùa màng và buôn bán thuận lợi. Lễ hội được UNESCO ghi danh năm 2024.
+infobox:
+  - label: Thời gian
+    value: Từ ngày 22 hoặc 23 đến ngày 27 tháng 4 âm lịch hằng năm (tuỳ cách tính); chính vía là ngày 25 tháng 4 âm lịch. Tắm Bà đêm 23 rạng 24.
+  - label: Địa điểm
+    value: Khu di tích miếu Bà Chúa Xứ, chân núi Sam, phường Vĩnh Tế, tỉnh An Giang
+  - label: Thờ
+    value: Bà Chúa Xứ
+  - label: Hoạt động chính
+    value: Lễ tắm Bà, lễ túc yết, lễ hồi sắc, rước kiệu, hát bội
+images:
+  - file: le-via-ba-chua-xu-1.webp
+    alt: Mặt tiền miếu Bà Chúa Xứ núi Sam, An Giang
+    caption: Miếu Bà Chúa Xứ núi Sam, thuộc khu di tích chân núi Sam.
+    credit: Bùi Thụy Đào Nguyên, phạm vi công cộng (<a href="https://commons.wikimedia.org/wiki/File:MieuBa1.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 1051
+  - file: le-via-ba-chua-xu-2.webp
+    alt: Miếu Bà Chúa Xứ ở núi Sam, Châu Đốc
+    caption: Ngôi miếu thờ Bà Chúa Xứ trên địa bàn phường Núi Sam, thành phố Châu Đốc trước năm 2025.
+    credit: Bùi Thụy Đào Nguyên, CC BY-SA 3.0 (<a href="https://commons.wikimedia.org/wiki/File:Mi%E1%BA%BFu_B%C3%A0_Ch%C3%BAa_X%E1%BB%A9_N%C3%BAi_Sam.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 1050
+  - file: le-via-ba-chua-xu-3.webp
+    alt: Biển hiệu “Miếu Bà Chúa Xứ Núi Sam” lúc chiều tối
+    caption: Biển hiệu miếu Bà Chúa Xứ núi Sam, ảnh chụp ngày 1 tháng 4 năm 2014.
+    credit: Phương Huy, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:Mi%E1%BA%BFu_b%C3%A0_Ch%C3%BAa_x%E1%BB%A9_N%C3%BAi_Sam,_ng%C3%A0y_01_th%C3%A1ng_4_n%C4%83m_2014_(1).jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 1050
+  - file: le-via-ba-chua-xu-4.webp
+    alt: Đường vào miếu Bà Chúa Xứ núi Sam
+    caption: Lối vào miếu Bà Chúa Xứ núi Sam, ảnh chụp ngày 1 tháng 4 năm 2014.
+    credit: Phương Huy, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%C6%B0%E1%BB%9Dng_v%C3%A0o_Mi%E1%BA%BFu_b%C3%A0_Ch%C3%BAa_X%E1%BB%A9_N%C3%BAi_Sam,_ng%C3%A0y_01_th%C3%A1ng_4_n%C4%83m_2014_(1).jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 1050
+faq:
+  - q: Lễ vía Bà Chúa Xứ núi Sam diễn ra vào ngày nào?
+    a: Lễ diễn ra từ ngày 22 hoặc 23 đến ngày 27 tháng 4 âm lịch hằng năm tuỳ cách tính, ngày chính vía là 25 tháng 4 âm lịch. Giờ và chương trình có thể khác nhau theo năm, nên nên xem thông báo của ban tổ chức.
+  - q: Miếu Bà Chúa Xứ ở đâu?
+    a: Miếu nằm dưới chân núi Sam, thuộc phường Vĩnh Tế, tỉnh An Giang. Trước khi sắp xếp đơn vị hành chính năm 2025, khu vực này thuộc phường Núi Sam, thành phố Châu Đốc.
+  - q: Lễ vía Bà có được UNESCO ghi danh không?
+    a: Có. UNESCO ghi danh lễ hội vào ngày 4 tháng 12 năm 2024, tại kỳ họp thứ 19 của Ủy ban liên Chính phủ Công ước 2003, họp ở Asunción, Paraguay.
+  - q: Lễ tắm Bà là gì?
+    a: Là nghi thức lau tượng Bà bằng nước thơm và thay bộ đồ mới, diễn ra đêm 23 rạng 24 tháng 4 âm lịch.
+  - q: Người không theo tín ngưỡng có nên đến không?
+    a: Có thể đến để tham quan cảnh núi và các công trình kiến trúc. Khi có mặt trong khu lễ, nên giữ thái độ trang nghiêm và tôn trọng nghi lễ của người dân.
+heritage: <p>Lễ vía Bà cũng như chạp họ hay giỗ tổ cho thấy người Việt tưởng nhớ những người đi trước theo cách riêng của từng cộng đồng. Nếu dòng họ có ngày lễ riêng, nên ghi ngày ấy vào gia phả để con cháu ở xa cùng nhớ.</p>
+related:
+  - hoi-chua-huong
+  - hoi-lim
+  - le-hoi-thanh-giong
+sources:
+  - name: "VietnamPlus: An Giang khai hội Vía Bà Chúa Xứ núi Sam năm 2026"
+    url: https://www.vietnamplus.vn/an-giang-khai-hoi-via-ba-chua-xu-nui-sam-nam-2026-post1114961.vnp
+  - name: "Nhân Dân: An Giang tổ chức lễ đón bằng UNESCO ghi danh Lễ hội Vía Bà Chúa Xứ núi Sam"
+    url: https://nhandan.vn/post-866133.html
+  - name: "Lao Động: Lễ hội Vía Bà Chúa Xứ núi Sam được ghi danh di sản thế giới"
+    url: https://news.laodong.vn/van-hoa-giai-tri/le-hoi-via-ba-chua-xu-nui-sam-duoc-ghi-danh-di-san-the-gioi-1430631.ldo
+  - name: "Báo Văn hoá: Kỷ niệm 10 năm Lễ hội Vía Bà Chúa Xứ núi Sam thành di sản văn hoá phi vật thể quốc gia"
+    url: https://baovanhoa.vn/van-hoa/ky-niem-10-nam-le-hoi-via-ba-chua-xu-nui-sam-thanh-di-san-van-hoa-phi-vat-the-quoc-gia-95106.html
+  - name: "Báo Văn hoá: Sắp diễn ra Lễ hội Vía Bà Chúa Xứ núi Sam 2026 (phường Vĩnh Tế)"
+    url: https://baovanhoa.vn/van-hoa/sap-dien-ra-le-hoi-via-ba-chua-xu-nui-sam-2026-234014.html
+  - name: Thạch Phương, Lê Trung Vũ (chủ biên), 60 lễ hội truyền thống Việt Nam, NXB Khoa học xã hội
+---
+
+## Lễ hội là gì và có ý nghĩa gì
+
+<figure><img src="/assets/le-hoi/le-via-ba-chua-xu-2.webp" alt="Miếu Bà Chúa Xứ ở núi Sam, Châu Đốc" width="1400" height="1050" loading="lazy" /><figcaption>Ngôi miếu thờ Bà Chúa Xứ trên địa bàn phường Núi Sam, thành phố Châu Đốc trước năm 2025. · Ảnh: Bùi Thụy Đào Nguyên, CC BY-SA 3.0 (<a href="https://commons.wikimedia.org/wiki/File:Mi%E1%BA%BFu_B%C3%A0_Ch%C3%BAa_X%E1%BB%A9_N%C3%BAi_Sam.jpg">Wikimedia Commons</a>)</figcaption></figure>
+
+<p><strong>Lễ vía Bà Chúa Xứ là lễ hội dân gian thờ Bà Chúa Xứ tại miếu núi Sam, kết hợp cúng tế, rước kiệu và hát bội.</strong> Người dân và khách đến để lễ Bà, cầu bình an và làm ăn thuận lợi. Khách không chỉ đến từ đồng bằng sông Cửu Long mà còn từ miền Đông, Thành phố Hồ Chí Minh và nhiều tỉnh miền Trung, miền Bắc. Có người đến để du ngoạn, có người đến để cầu tài, cầu lộc. Ngoài phần tín ngưỡng, nhiều khách còn ngắm cảnh núi Sam và các di tích quanh đó, trong đó có lăng Thoại Ngọc Hầu.</p>
+<p>Lễ hội được đưa vào Danh mục di sản văn hoá phi vật thể quốc gia năm 2014. Ngày 4 tháng 12 năm 2024, UNESCO ghi danh lễ hội vào Danh sách di sản văn hoá phi vật thể đại diện của nhân loại.</p>
+
+## Thời gian và địa điểm
+
+<figure><img src="/assets/le-hoi/le-via-ba-chua-xu-3.webp" alt="Biển hiệu “Miếu Bà Chúa Xứ Núi Sam” lúc chiều tối" width="1400" height="1050" loading="lazy" /><figcaption>Biển hiệu miếu Bà Chúa Xứ núi Sam, ảnh chụp ngày 1 tháng 4 năm 2014. · Ảnh: Phương Huy, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:Mi%E1%BA%BFu_b%C3%A0_Ch%C3%BAa_x%E1%BB%A9_N%C3%BAi_Sam,_ng%C3%A0y_01_th%C3%A1ng_4_n%C4%83m_2014_(1).jpg">Wikimedia Commons</a>)</figcaption></figure>
+
+<p><strong>Lễ vía diễn ra từ ngày 22 hoặc 23 đến ngày 27 tháng 4 âm lịch hằng năm tuỳ cách tính, chính vía là ngày 25 tháng 4 âm lịch.</strong> Địa điểm là khu di tích miếu Bà Chúa Xứ, dưới chân núi Sam. Trước khi sắp xếp đơn vị hành chính năm 2025, khu này thuộc phường Núi Sam, thành phố Châu Đốc; nay thuộc phường Vĩnh Tế, tỉnh An Giang. Ngày 25 là trung tâm của cả đợt lễ, nên nhiều người chọn đến quanh ngày này, nhưng các ngày đầu và cuối cũng có nghi lễ riêng.</p>
+<table>
+<thead><tr><th>Thời điểm</th><th>Nghi lễ</th></tr></thead>
+<tbody>
+<tr><td>Đêm 23 rạng ngày 24 tháng 4 âm lịch</td><td>Lễ tắm Bà</td></tr>
+<tr><td>Chiều ngày 25 tháng 4 âm lịch</td><td>Lễ thỉnh sắc, rước bài vị từ lăng Thoại Ngọc Hầu về miếu</td></tr>
+<tr><td>Đêm 25 rạng ngày 26 tháng 4 âm lịch</td><td>Lễ túc yết và xây chầu</td></tr>
+<tr><td>Rạng sáng ngày 27 tháng 4 âm lịch</td><td>Lễ chánh tế</td></tr>
+<tr><td>Chiều ngày 27 tháng 4 âm lịch</td><td>Lễ hồi sắc, kết thúc lễ vía</td></tr>
+</tbody>
+</table>
+<p>Giờ và trình tự có thể khác nhau theo từng năm, và một số nguồn ghi thỉnh sắc vào ngày 24. Trước khi đi, nên xem thông báo của ban tổ chức.</p>
+
+## Nguồn gốc và truyền thuyết
+
+<p><strong>Lịch sử pho tượng Bà và ngôi miếu chưa có tài liệu nào xác định rõ.</strong> Theo lời các cụ cao tuổi, ngôi miếu đầu tiên được dựng bằng tre lá vào khoảng những năm 1820 đến 1825. Xuất xứ và niên đại của pho tượng đá vẫn là câu hỏi mở. Dân gian kể nhiều câu chuyện khác nhau, tương truyền có các dị bản sau:</p>
+<ul>
+<li>Dân làng vào rừng đốn củi và thấy tượng Bà nằm giữa rừng, rồi đưa về lập miếu thờ.</li>
+<li>Một vị thần báo mộng, bảo dân chọn chín cô gái đồng trinh lên núi tìm tượng. Họ gặp pho tượng đá ngồi và rước về miếu.</li>
+<li>Dị bản gắn với Thoại Ngọc Hầu: tương truyền vợ ông thường khấn Bà khi ông ra trận, sau đó cho xây lại miếu khang trang hơn, khánh thành trong ba ngày 24 đến 26 tháng 4 âm lịch.</li>
+</ul>
+<p>Các dị bản này khác nhau và chưa được kiểm chứng; cách kể có thể thay đổi theo từng làng và từng người kể. Lễ hội cũng từ một hội làng nhỏ dần thành lễ hội đông khách của cả vùng.</p>
+
+## Phần lễ
+
+<ul>
+<li><strong>Lễ tắm Bà</strong> diễn ra đêm 23 rạng 24 tháng 4 âm lịch. Những người phụ nữ được chọn lau tượng bằng nước thơm, thay bộ đồ mới, rồi màn che được kéo lên để khách vào lễ.</li>
+<li><strong>Lễ túc yết và xây chầu</strong> diễn ra đêm 25 rạng 26 tháng 4 âm lịch. Lễ vật gồm heo, trái cây, trầu cau, trà. Sau phần cúng tế là phần hát bội.</li>
+<li><strong>Lễ chánh tế</strong> diễn ra vào rạng sáng ngày 27 tháng 4 âm lịch, là phần cúng tế chính trong đợt lễ.</li>
+<li><strong>Lễ hồi sắc</strong> diễn ra chiều ngày 27 tháng 4 âm lịch, khi các bài vị được đưa về vị trí thờ cũ, đánh dấu kết thúc lễ vía.</li>
+</ul>
+<p>Ngày nay, lộc Bà thường là một bông hoa hay một quả trái cây dâng trên bệ thờ. </p>
+
+## Phần hội và sinh hoạt
+
+<p>Bên cạnh phần lễ, lễ vía có các hoạt động dân gian. Trong đoàn rước, đội múa lân và các học trò lễ cầm cờ, phướn đi hai bên chiếc kiệu long đình. Đoàn rước đến lăng Thoại Ngọc Hầu làm lễ thỉnh sắc rồi đưa kiệu trở về miếu. Chương trình hát bội diễn trên sân khấu trước miếu.</p>
+<p>Nhiều khách đến để chụp ảnh và ngắm cảnh núi Sam, kết hợp tham quan chùa Tây An cổ, miếu Sơn Thần và lăng Thoại Ngọc Hầu.</p>
+
+## Kinh nghiệm đi hội
+
+<figure><img src="/assets/le-hoi/le-via-ba-chua-xu-4.webp" alt="Đường vào miếu Bà Chúa Xứ núi Sam" width="1400" height="1050" loading="lazy" /><figcaption>Lối vào miếu Bà Chúa Xứ núi Sam, ảnh chụp ngày 1 tháng 4 năm 2014. · Ảnh: Phương Huy, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%C6%B0%E1%BB%9Dng_v%C3%A0o_Mi%E1%BA%BFu_b%C3%A0_Ch%C3%BAa_X%E1%BB%A9_N%C3%BAi_Sam,_ng%C3%A0y_01_th%C3%A1ng_4_n%C4%83m_2014_(1).jpg">Wikimedia Commons</a>)</figcaption></figure>
+
+<ul>
+<li><strong>Đường đi:</strong> từ trung tâm Châu Đốc, đường bộ lên núi Sam khoảng 7 km; có thể đi bằng đường thủy từ các tỉnh miền Tây. Ngày lễ đường rất đông xe, nên tính thời gian dư ra và xem trước đường đi.</li>
+<li><strong>Thời gian:</strong> đêm lễ tắm Bà và đêm chánh lễ là lúc đông nhất. Nếu muốn tránh đông, nên đến sớm trong ngày.</li>
+<li><strong>Trang phục và thái độ:</strong> mặc gọn gàng, kín đáo, giữ trật tự khi vào chánh điện, không chen lấn.</li>
+<li><strong>Lễ vật:</strong> hương, hoa và trái cây là lễ vật thường thấy. Mang theo đồ đủ dùng và giữ đồ đạc cẩn thận.</li>
+<li><strong>Đi cùng nhau:</strong> người lớn tuổi và trẻ nhỏ nên đi cùng người thân và hẹn trước nơi gặp nhau, vì đông người dễ thất lạc.</li>
+<li><strong>Tiền và sức khoẻ:</strong> mang tiền lẻ để mua lễ vật và đồ uống, chuẩn bị nước uống, mũ và áo mưa vì phải đi bộ trên đường đông và chờ lâu.</li>
+</ul>

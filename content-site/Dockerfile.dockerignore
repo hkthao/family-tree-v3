@@ -1,0 +1,9 @@
+*
+!content-site
+!landing
+!scripts/build-landing-guides.mjs
+content-site/node_modules
+content-site/dist
+content-site/.astro
+content-site/src/generated
+content-site/public/assets

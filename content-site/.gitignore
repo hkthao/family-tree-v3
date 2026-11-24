@@ -1,0 +1,6 @@
+src/generated
+public/assets
+dist
+node_modules
+.astro
+.export

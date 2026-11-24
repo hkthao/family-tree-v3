@@ -1,0 +1,71 @@
+---
+import "../generated/style.css";
+import themeScript from "../generated/theme.html?raw";
+import sprite from "../generated/sprite.html?raw";
+import umami from "../generated/umami.html?raw";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  ld?: unknown;
+  image?: string;
+  noindex?: boolean;
+}
+const { title, description, path, ld, image, noindex } = Astro.props;
+const SITE = "https://donghoviet.thaohk.com";
+const APP = "https://giapha.thaohk.com";
+const url = `${SITE}${path}`;
+const og = image ? `${SITE}${image}` : `${SITE}/assets/og-banner.png`;
+---
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#7A2230" />
+    <link rel="icon" type="image/svg+xml" href="/assets/app-icon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/app-icon-180.png" />
+    <Fragment set:html={umami} />
+    <title>{title} | Dòng Họ Việt</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={url} />
+    <meta property="og:site_name" content="Dòng Họ Việt" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={og} />
+    <meta property="og:locale" content="vi_VN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <Fragment set:html={themeScript} />
+    {ld && <script type="application/ld+json" set:html={JSON.stringify(ld)} />}
+  </head>
+  <body>
+    <Fragment set:html={sprite} />
+    <header>
+      <div class="wrap nav">
+        <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
+        <nav class="nav-links">
+          <a href="/">Giới thiệu</a>
+          <a href="/huong-dan.html">Kiến thức gia phả</a>
+          <a href="/so-tay.html">Sổ tay văn hoá</a>
+          <a href={`${APP}/xem/demo?utm_source=landing&utm_medium=guide&utm_campaign=nav_demo`}>Xem thử</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="btn btn-primary" data-cta="guide-nav" href={`${APP}/signup?utm_source=landing&utm_medium=guide&utm_campaign=guide_nav`}><svg class="ico"><use href="#i-tree"></use></svg>Tạo gia phả</a>
+        </div>
+      </div>
+    </header>
+    <main><slot /></main>
+    <footer>
+      <div class="wrap">
+        <div class="foot-bottom">© Dòng Họ Việt · <a href="/">Giới thiệu</a> · <a href="/huong-dan.html">Kiến thức gia phả</a> · <a href="/so-tay.html">Sổ tay văn hoá</a> · <a href="mailto:support@thaohk.com">support@thaohk.com</a> · <a href={`${APP}/chinh-sach-rieng-tu`}>Chính sách riêng tư</a></div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,96 @@
+# Cấu hình Sveltia CMS cho Sổ tay Văn hoá. Schema phải khớp src/content.config.ts (Zod) — sửa một nơi thì sửa cả hai.
+backend:
+  name: github
+  repo: hkthao/family-tree-v3
+  branch: main
+
+# Chạy local: mở /admin/ bằng Chrome/Edge, chọn "Work with Local Repository" và trỏ vào thư mục repo (không cần đăng nhập).
+
+site_url: https://donghoviet.thaohk.com
+display_url: https://donghoviet.thaohk.com/so-tay.html
+media_folder: landing/assets/le-hoi
+public_folder: /assets/le-hoi
+
+collections:
+  - name: so_tay
+    label: Sổ tay văn hoá
+    label_singular: Bài Sổ tay
+    folder: content-site/content/so-tay
+    extension: md
+    format: yaml-frontmatter
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}} · {{category}} · {{status}}"
+    sortable_fields: [title, updated, status]
+    view_filters:
+      - { label: Đã đăng, field: status, pattern: published }
+      - { label: Chờ duyệt, field: status, pattern: needs_review }
+      - { label: Nháp, field: status, pattern: draft }
+    view_groups:
+      - { label: Chủ đề, field: category }
+    fields:
+      - { name: status, label: Trạng thái, widget: select, default: needs_review, options: [{ label: Nháp, value: draft }, { label: Chờ duyệt, value: needs_review }, { label: Đăng (hiện ra web và app), value: published }] }
+      - { name: title, label: Tiêu đề, widget: string }
+      - { name: short, label: "Tên ngắn (breadcrumb, thẻ liên kết)", widget: string, required: false }
+      - { name: description, label: "Mô tả ngắn (danh sách, Google; nên 140–160 ký tự)", widget: text }
+      - { name: updated, label: Ngày cập nhật, widget: datetime, date_format: YYYY-MM-DD, time_format: false, picker_utc: true }
+      - name: category
+        label: Chủ đề
+        widget: select
+        options:
+          - { label: Thờ cúng & tín ngưỡng, value: tho_cung }
+          - { label: Nghi lễ vòng đời, value: vong_doi }
+          - { label: Lễ Tết theo mùa, value: le_tet }
+          - { label: Lễ hội cộng đồng, value: le_hoi }
+          - { label: Phong tục sinh hoạt, value: sinh_hoat }
+          - { label: Văn khấn & văn tế, value: van_khan }
+      - { name: tags, label: "Thẻ (vùng, tỉnh, nhân vật thờ, tháng âm lịch…)", widget: list, default: [] }
+      - { name: aliases, label: "Tên gọi khác / tình huống (để tìm: nhà mới, có em bé…)", widget: list, default: [] }
+      - { name: regions, label: "Vùng (Miền Bắc, Miền Trung, Miền Nam)", widget: list, default: [] }
+      - { name: lunar_month, label: Tháng âm lịch (1–12), widget: number, value_type: int, min: 1, max: 12, required: false }
+      - { name: timing, label: Thời điểm, widget: string, required: false }
+      - { name: scope, label: Phạm vi, widget: select, required: false, options: [{ label: Gia đình, value: gia_dinh }, { label: Dòng họ, value: dong_ho }, { label: Làng xã, value: lang_xa }, { label: Tôn giáo, value: ton_giao }] }
+      - { name: mandatory_level, label: Mức độ, widget: select, required: false, options: [{ label: Bắt buộc, value: bat_buoc }, { label: Khuyến khích, value: khuyen_khich }, { label: Theo phong tục địa phương, value: dia_phuong }] }
+      - { name: reliability, label: "Độ tin cậy (1–5, phải khớp nguồn)", widget: number, value_type: int, min: 1, max: 5, required: false }
+      - { name: applicable_to, label: Áp dụng cho, widget: string, required: false }
+      - { name: cover_image_url, label: "Ảnh bìa (https, tuỳ chọn)", widget: string, required: false }
+      # Riêng bài lễ hội (tuỳ chọn)
+      - { name: minutes, label: Số phút đọc, widget: number, value_type: int, min: 1, required: false }
+      - { name: when, label: "Thời gian lễ hội (hiện ở thẻ danh sách)", widget: string, required: false }
+      - { name: where, label: "Địa điểm (tên hành chính hiện hành)", widget: string, required: false }
+      - { name: lead, label: "Mở bài — câu trả lời trực tiếp (cho phép HTML <strong>)", widget: text, required: false }
+      - name: infobox
+        label: Thông tin nhanh
+        widget: list
+        required: false
+        fields:
+          - { name: label, label: Nhãn, widget: string }
+          - { name: value, label: Giá trị, widget: string }
+      - name: images
+        label: Ảnh (ảnh đầu tiên là ảnh đầu bài)
+        widget: list
+        required: false
+        fields:
+          - { name: file, label: Tên tệp trong landing/assets/le-hoi, widget: string }
+          - { name: alt, label: Mô tả (alt), widget: string }
+          - { name: caption, label: Chú thích, widget: string }
+          - { name: credit, label: "Ghi công (tác giả, giấy phép, link)", widget: text }
+          - { name: w, label: Rộng (px), widget: number, value_type: int }
+          - { name: h, label: Cao (px), widget: number, value_type: int }
+      - name: faq
+        label: Câu hỏi thường gặp
+        widget: list
+        required: false
+        fields:
+          - { name: q, label: Câu hỏi, widget: string }
+          - { name: a, label: Trả lời (văn bản thuần), widget: text }
+      - { name: heritage, label: "Liên hệ với tổ tiên, dòng họ", widget: text, required: false }
+      - { name: related, label: "Bài liên quan (tên tệp, không đuôi .md)", widget: list, default: [] }
+      - name: sources
+        label: Nguồn tham khảo
+        widget: list
+        required: false
+        fields:
+          - { name: name, label: Tên nguồn, widget: string }
+          - { name: url, label: Đường dẫn, widget: string, required: false }
+      - { name: body, label: "Nội dung (mỗi mục bắt đầu bằng ## Tiêu đề)", widget: markdown }

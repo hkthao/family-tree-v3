@@ -1,0 +1,121 @@
+---
+status: published
+title: "Lễ hội Đền Hùng: Giỗ Tổ mùng 10 tháng 3 âm lịch ở Phú Thọ"
+short: Lễ hội Đền Hùng
+description: "Lễ hội Đền Hùng (Giỗ Tổ Hùng Vương) diễn ra vào mùng 10 tháng 3 âm lịch ở núi Nghĩa Lĩnh, Phú Thọ: ý nghĩa, phần lễ, phần hội, đi lại và lưu ý."
+updated: 2026-11-24
+category: le_hoi
+tags:
+  - Miền Bắc
+  - Phú Thọ
+  - Vua Hùng
+  - Tháng Ba âm lịch
+  - Di tích quốc gia đặc biệt
+aliases:
+  - giỗ tổ hùng vương
+  - giỗ tổ
+  - vua hùng
+  - đền hùng
+regions:
+  - Miền Bắc
+lunar_month: 3
+timing: Mùng 10 tháng 3 âm lịch (chính hội)
+minutes: 6
+when: Mùng 10 tháng 3 âm lịch (chính hội)
+where: Xã Hy Cương, Phú Thọ
+lead: <strong>Lễ hội Đền Hùng là lễ Giỗ Tổ Hùng Vương, tổ chức hằng năm vào mùng 10 tháng 3 âm lịch tại Khu di tích Đền Hùng, trên núi Nghĩa Lĩnh, xã Hy Cương, tỉnh Phú Thọ.</strong> Đây là dịp cả nước hướng về đất Tổ để tưởng nhớ các vua Hùng, những người được coi là vua mở nước và dựng nước của dân tộc.
+infobox:
+  - label: Thời gian
+    value: Chính hội mùng 10 tháng 3 âm lịch; các hoạt động (Tuần Văn hoá – Du lịch Đất Tổ…) diễn ra từ khoảng mùng 1 tháng 3 âm lịch, tuỳ năm
+  - label: Địa điểm
+    value: Núi Nghĩa Lĩnh, xã Hy Cương, tỉnh Phú Thọ
+  - label: Thờ
+    value: Các vua Hùng, người có công mở nước và dựng nước
+  - label: Hoạt động chính
+    value: Dâng hương tưởng niệm, rước kiệu, hát Xoan, các trò chơi dân gian
+images:
+  - file: hoi-den-hung-1.webp
+    alt: Cổng dẫn lên khu vực Đền Hùng, Phú Thọ
+    caption: Cổng dẫn lên khu di tích Đền Hùng.
+    credit: Bùi Thụy Đào Nguyên, CC BY-SA 3.0 (<a href="https://commons.wikimedia.org/wiki/File:C%E1%BB%95ng_%C4%91%E1%BB%81n_H%C3%B9ng_(Ph%C3%BA_Th%E1%BB%8D).jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 1867
+  - file: hoi-den-hung-2.webp
+    alt: Lăng vua Hùng trong khu Đền Hùng
+    caption: Lăng vua Hùng nằm trong khu di tích Đền Hùng.
+    credit: Viethavvh, Public domain (<a href="https://commons.wikimedia.org/wiki/File:Mausoleum_of_Hung_King.JPG">Wikimedia Commons</a>)
+    w: 1400
+    h: 1867
+  - file: hoi-den-hung-3.webp
+    alt: Đền Thượng trên núi Nghĩa Lĩnh
+    caption: Đền Thượng, nơi dâng hương tưởng niệm các vua Hùng.
+    credit: Thang Nguyen, CC BY-SA 2.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%E1%BB%81n_H%C3%B9ng,_%C4%91%E1%BB%81n_Th%C6%B0%E1%BB%A3ng.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 788
+  - file: hoi-den-hung-4.webp
+    alt: Khu trung tâm lễ hội Đền Hùng, Phú Thọ
+    caption: Khu trung tâm lễ hội Đền Hùng.
+    credit: Hoài Hương, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:Trung_t%C3%A2m_l%E1%BB%85_h%E1%BB%99i_%C4%91%E1%BB%81n_H%C3%B9ng_18-09-2015_1.jpg">Wikimedia Commons</a>)
+    w: 1400
+    h: 1050
+faq:
+  - q: Giỗ Tổ Hùng Vương là ngày nào?
+    a: Mùng 10 tháng 3 âm lịch. Ngày dương lịch thay đổi mỗi năm; năm 2026 là ngày 26/4.
+  - q: Đền Hùng ở đâu?
+    a: Trên núi Nghĩa Lĩnh, xã Hy Cương, tỉnh Phú Thọ, cách trung tâm Việt Trì khoảng 10 km.
+  - q: Vì sao gọi là Giỗ Tổ Hùng Vương?
+    a: Vì đây là ngày tưởng nhớ các vua Hùng, những người được coi là tổ tiên chung của dân tộc.
+  - q: Giỗ Tổ Hùng Vương có giống giỗ Tổ dòng họ không?
+    a: Không. Giỗ Tổ Hùng Vương là lễ chung của cả nước; giỗ Tổ dòng họ là ngày giỗ thuỷ tổ riêng, do mỗi họ tự xác định.
+  - q: Nên kiểm tra thông tin lễ hội ở đâu trước khi đi?
+    a: Thông báo chính thức của ban tổ chức lễ hội và Ban quản lý Khu di tích lịch sử Đền Hùng, vì lịch và chương trình có thể khác từng năm.
+heritage: Giỗ Tổ Hùng Vương nhắc mỗi người nhớ đến cội nguồn chung của dân tộc, và cũng là lúc nhiều gia đình nhớ đến tổ tiên của chính dòng họ mình. Nếu dòng họ bạn có ngày giỗ Tổ riêng, bạn có thể ghi lại trong gia phả để các đời sau cùng nhớ.
+related:
+  - le-hoi-thanh-giong
+  - le-vu-lan
+  - tet-nguyen-dan
+sources:
+  - name: Đền Hùng, Wikipedia tiếng Việt
+    url: https://vi.wikipedia.org/wiki/%C4%90%E1%BB%81n_H%C3%B9ng
+  - name: Nhân Dân, Du khách thích thú chứng kiến nghi lễ rước kiệu về Đền Hùng
+    url: https://nhandan.vn/du-khach-thich-thu-chung-kien-nghi-le-ruoc-kieu-ve-den-hung-post957866.html
+  - name: Baomoi.com, Giỗ Tổ Hùng Vương và Tuần Văn hóa - Du lịch Đất Tổ năm 2026
+    url: https://baomoi.com/gio-to-hung-vuong-tuan-van-hoa-du-lich-Dat-to-nam-2026-c54718368.epi
+  - name: Thư Viện Pháp Luật, Lễ hội Đền Hùng 2026 diễn ra vào ngày nào, ở đâu?
+    url: https://thuvienphapluat.vn/hoi-dap-phap-luat/le-hoi-den-hung-2026-dien-ra-vao-ngay-nao-o-dau-138085396.html
+  - name: Thạch Phương, Lê Trung Vũ (chủ biên), 60 lễ hội truyền thống Việt Nam, NXB Khoa học xã hội
+---
+
+## Lễ hội Đền Hùng là gì và có ý nghĩa gì?
+
+<p><strong>Lễ hội Đền Hùng là ngày giỗ Tổ của cả dân tộc.</strong> Một câu ca dao quen thuộc nhắc rằng ngày mùng 10 tháng Ba là ngày nhớ giỗ Tổ, nên dù ở xa đến đâu nhiều người vẫn tìm về Phú Thọ mỗi năm.</p><p>Lễ hội gắn với đạo lý “uống nước nhớ nguồn”. Với nhiều người, chuyến đi hội không chỉ là đi chơi mà còn là lúc nhắc con cháu về cội nguồn chung của đất nước.</p><p>Cách ghi nhớ đơn giản nhất là nhớ về cội nguồn không chỉ ở đền Hùng mà còn ở gia đình và dòng họ. Nhiều người đi hội rồi về nhà thắp hương, kể lại cho con cháu nghe về nguồn gốc của dân tộc và của chính mình.</p>
+
+## Thời gian và địa điểm
+
+<figure><img src="/assets/le-hoi/hoi-den-hung-2.webp" alt="Lăng vua Hùng trong khu Đền Hùng" width="1400" height="1867" loading="lazy" /><figcaption>Lăng vua Hùng nằm trong khu di tích Đền Hùng. · Ảnh: Viethavvh, Public domain (<a href="https://commons.wikimedia.org/wiki/File:Mausoleum_of_Hung_King.JPG">Wikimedia Commons</a>)</figcaption></figure>
+
+<p><strong>Chính hội diễn ra vào mùng 10 tháng 3 âm lịch.</strong> Các hoạt động của lễ hội, như Tuần Văn hoá – Du lịch Đất Tổ, diễn ra từ khoảng mùng 1 tháng 3 âm lịch, tuỳ năm. Ngày dương lịch thay đổi mỗi năm: năm 2026, lễ giỗ Tổ rơi vào ngày 26/4. Trước ngày chính thường có lễ khai hội và các hoạt động văn nghệ, tuỳ năm.</p><p>Khu di tích nằm trên núi Nghĩa Lĩnh, thuộc xã Hy Cương, tỉnh Phú Thọ, cách trung tâm Việt Trì khoảng 10 km. Khu di tích được xếp hạng di tích quốc gia đặc biệt năm 2009. Lịch và chương trình cụ thể do ban tổ chức công bố từng năm, nên kiểm tra thông báo trước khi đi.</p>
+
+## Nguồn gốc và truyền thuyết
+
+<p><strong>Theo truyền thuyết, các vua Hùng thuộc dòng dõi dựng nước đầu tiên của người Việt.</strong> Tương truyền bà Âu Cơ sinh một bọc trăm trứng ở đền Hạ, nở thành trăm người con trai. Năm mươi người theo cha Lạc Long Quân xuống biển, bốn mươi chín người theo mẹ lên núi. Người con trưởng ở lại làm vua, xưng là Hùng Vương, đóng đô ở vùng Phong Châu, nay thuộc Phú Thọ.</p><p>Đây là một cách kể trong dân gian; các bản kể có chi tiết khác nhau, nên xem đây là truyền thuyết chứ không phải biên niên sử.</p><p>Khu đền có ba đền chính. Đền Hạ gắn với chuyện bọc trăm trứng; đền Trung là nơi các vua Hùng xưa thường bàn việc nước cùng các lạc tướng; đền Thượng là nơi tế trời đất và cầu thần lúa.</p>
+
+## Phần lễ
+
+<figure><img src="/assets/le-hoi/hoi-den-hung-3.webp" alt="Đền Thượng trên núi Nghĩa Lĩnh" width="1400" height="788" loading="lazy" /><figcaption>Đền Thượng, nơi dâng hương tưởng niệm các vua Hùng. · Ảnh: Thang Nguyen, CC BY-SA 2.0 (<a href="https://commons.wikimedia.org/wiki/File:%C4%90%E1%BB%81n_H%C3%B9ng,_%C4%91%E1%BB%81n_Th%C6%B0%E1%BB%A3ng.jpg">Wikimedia Commons</a>)</figcaption></figure>
+
+<p><strong>Phần lễ mở đầu bằng buổi quốc lễ sáng mùng 10</strong>, với lễ dâng hương tưởng niệm các vua Hùng tại Đền Thượng, trên đỉnh núi Nghĩa Lĩnh. Lãnh đạo Đảng và Nhà nước thường dâng hương tại đây trong dịp lễ.</p><ul><li>Đám rước có kiệu, cờ, trống, chiêng và các đoàn rước từ các làng quanh chân núi.</li><li>Lễ vật gồm bánh chưng, bánh giầy, xôi, cỗ chay và mâm ngũ quả.</li><li>Bánh chưng, bánh giầy nhắc đến truyền thuyết Lang Liêu dâng bánh lên vua cha, và công đức các vua Hùng dạy dân trồng lúa.</li></ul><p>Ngoài đền Thượng, khu vực này còn có lăng vua Hùng, tương truyền là mộ vua Hùng thứ sáu, ở phía đông đền Thượng, nên nhiều người lên đền cũng ghé thăm lăng.</p>
+
+## Phần hội và trò chơi dân gian
+
+<figure><img src="/assets/le-hoi/hoi-den-hung-4.webp" alt="Khu trung tâm lễ hội Đền Hùng, Phú Thọ" width="1400" height="1050" loading="lazy" /><figcaption>Khu trung tâm lễ hội Đền Hùng. · Ảnh: Hoài Hương, CC BY-SA 4.0 (<a href="https://commons.wikimedia.org/wiki/File:Trung_t%C3%A2m_l%E1%BB%85_h%E1%BB%99i_%C4%91%E1%BB%81n_H%C3%B9ng_18-09-2015_1.jpg">Wikimedia Commons</a>)</figcaption></figure>
+
+<p><strong>Phần hội có hát Xoan và nhiều trò chơi dân gian.</strong> Có nơi từng tổ chức các trò dân gian như đấu vật, múa rối. Các năm gần đây còn có chương trình nghệ thuật và hoạt động văn hoá quanh khu di tích, tuỳ năm tổ chức.</p><p>Trước ngày chính hội, có lễ rước kiệu từ các xã, phường quanh khu di tích; năm 2026, bốn xã, phường Hy Cương, Lâm Thao, Vân Phú và Xuân Lũng rước kiệu vào sáng mùng 7 tháng 3 âm lịch (23/4), theo báo Nhân Dân. Đi đầu là đội múa sư tử, rồi đến đoàn rước Quốc kỳ, cờ hội, chiêng trống, tàn lọng và kiệu.</p>
+
+## Ẩm thực và đặc sản
+
+<p><strong>Món không thể thiếu trong lễ là bánh chưng, bánh giầy và xôi.</strong> Khi về, khách thường mua bưởi Đoan Hùng và chè Phú Thọ làm quà, cùng các mặt hàng thủ công của địa phương.</p><p>Các quầy hàng thường tập trung quanh chân núi và trong khu lễ hội, nên có thể mua quà ngay trên đường về.</p>
+
+## Kinh nghiệm đi hội
+
+<p><strong>Nên đi sớm và mang giày đế êm.</strong> Ngày chính rất đông, và từ chân núi lên các đền có nhiều bậc.</p><p>Nếu muốn xem rước và quốc lễ sáng mùng 10, nên có mặt từ sáng sớm vì lối vào đông. Nếu chỉ muốn thăm đền, có thể đi trước hoặc sau ngày chính để tránh đông.</p><ul><li><strong>Đi lại:</strong> khu đền cách trung tâm Việt Trì khoảng 10 km. Nên đặt xe trước và tính thêm thời gian chờ.</li><li><strong>Lên đền:</strong> đi chậm, mang nước, và đỡ người lớn tuổi nếu cần.</li><li><strong>Trang phục:</strong> chọn quần áo gọn gàng, lịch sự, nhất là khi vào khu thờ tự.</li><li><strong>Lưu ý:</strong> giữ trật tự khi rước và dâng hương, không chen lấn; xem thông báo chính thức của ban tổ chức trước khi đi.</li></ul>

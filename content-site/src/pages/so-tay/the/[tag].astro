@@ -1,0 +1,35 @@
+---
+import Base from "../../../layouts/Base.astro";
+import Cards from "../../../components/Cards.astro";
+import Cta from "../../../components/Cta.astro";
+import { published, tagIndex } from "../../../lib";
+
+export async function getStaticPaths() {
+  const all = await published();
+  return tagIndex(all).map((t) => ({ params: { tag: t.slug }, props: { tag: t } }));
+}
+const { tag } = Astro.props;
+const SITE = "https://donghoviet.thaohk.com";
+const path = `/so-tay/the/${tag.slug}.html`;
+const title = `Phong tục và lễ hội: ${tag.name}`;
+const description = `Các bài gắn thẻ ${tag.name} trong Sổ tay văn hoá: phong tục, nghi lễ, thời gian âm lịch, địa điểm và kinh nghiệm thực hiện.`;
+const ld = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "CollectionPage", name: title, description, inLanguage: "vi", url: `${SITE}${path}` },
+    { "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Dòng Họ Việt", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: "Sổ tay văn hoá", item: `${SITE}/so-tay.html` },
+      { "@type": "ListItem", position: 3, name: tag.name, item: `${SITE}${path}` } ] },
+  ],
+};
+// Thẻ chỉ có 1 bài là trang mỏng: noindex cho đến khi có ≥ 2 bài.
+---
+<Base title={title} description={description} path={path} ld={ld} noindex={tag.items.length < 2}>
+  <section class="article">
+    <nav class="crumbs" aria-label="Đường dẫn"><a href="/">Dòng Họ Việt</a> › <a href="/so-tay.html">Sổ tay văn hoá</a> › Thẻ: {tag.name}</nav>
+    <h1>{tag.name}</h1>
+    <Cards items={tag.items} />
+    <Cta campaign={`the_${tag.slug}`} />
+  </section>
+</Base>
