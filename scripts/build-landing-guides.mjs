@@ -90,9 +90,11 @@ ${JSON.stringify(ld, null, 2)}
       <div class="wrap nav">
         <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
         <nav class="nav-links">
-          <a href="/">Giới thiệu</a>
-          <a href="/huong-dan.html">Kiến thức gia phả</a>
-          <a href="${APP}/xem/demo?utm_source=landing&utm_medium=guide&utm_campaign=nav_demo">Xem thử</a>
+          <a href="/#cach-dung">Cách dùng</a>
+          <a href="/#tinh-nang">Tính năng</a>
+          <a href="/#an-toan">An toàn</a>
+          <a href="/#cau-hoi">Hỏi đáp</a>
+          <a class="active" href="/blog.html">Blog</a>
         </nav>
         <div class="nav-actions">
           <a class="btn btn-primary" data-cta="guide-nav" href="${utm("guide_nav")}"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
