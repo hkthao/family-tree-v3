@@ -1,4 +1,4 @@
-import { published } from "../../lib";
+import { forApp as published } from "../../lib";
 import { sectionsOf, unaccent } from "../../data";
 
 /** Văn bản không dấu của từng bài, chỉ tải khi người dùng gõ tìm (tránh nặng mục lục). */

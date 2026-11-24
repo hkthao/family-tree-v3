@@ -1,0 +1,21 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base title="Tìm kiếm trên Blog Dòng Họ Việt" description="Tìm bài viết về phong tục, lễ hội, di sản và kiến thức gia phả theo tên, địa điểm, nhân vật hay tháng âm lịch. Gõ có dấu hoặc không dấu đều được." path="/blog/tim-kiem.html" noindex>
+  <div class="blog-wrap">
+    <div class="blog-hero">
+      <nav class="crumbs" aria-label="Đường dẫn" style="margin-bottom:.8rem;font-size:.85rem"><a href="/">Dòng Họ Việt</a> › <a href="/blog.html">Blog</a> › Tìm kiếm</nav>
+      <p class="eyebrow">Tìm kiếm</p>
+      <h1>Tìm bài viết</h1>
+      <p class="sub">Gõ tên phong tục, lễ hội, địa điểm hay chủ đề. Có dấu hay không dấu đều được.</p>
+    </div>
+    <div id="search" style="max-width:760px;margin:0 auto 4rem"></div>
+  </div>
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
+  <script is:inline>
+    window.addEventListener("DOMContentLoaded", function () {
+      new PagefindUI({ element: "#search", showSubResults: false, showImages: true, translations: { placeholder: "Ví dụ: chua huong, gio to, tet" } });
+    });
+  </script>
+</Base>

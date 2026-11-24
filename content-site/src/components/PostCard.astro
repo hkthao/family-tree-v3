@@ -1,0 +1,22 @@
+---
+import type { Article } from "../lib";
+import { coverOf, dateVi, readingMinutes, shortName, postHref } from "../lib";
+import { categoryName } from "../taxonomy";
+const { post } = Astro.props as { post: Article };
+const cover = coverOf(post);
+const g = post.data;
+---
+<a class="post-card" href={postHref(post)}>
+  <span class="cover" data-cat={g.category}>
+    {cover ? <img src={cover.src} alt={cover.alt} loading="lazy" decoding="async" /> : <span class="ph">{shortName(post)}</span>}
+  </span>
+  <span class="body">
+    <span><span class="chip">{categoryName(g.category)}</span></span>
+    <h3>{g.title}</h3>
+    <p>{g.description}</p>
+    <span class="post-meta">
+      <span>{dateVi(post)}</span>
+      <span class="dot">{readingMinutes(post)} phút đọc</span>
+    </span>
+  </span>
+</a>

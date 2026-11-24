@@ -1,0 +1,125 @@
+---
+/**
+ * Mọi trang động của Blog trong MỘT tuyến:
+ *   bài        /<chuyên-mục>/<bài>.html                     (so-tay, le-hoi, di-san, phan-mem, huong-dan)
+ *   chuyên mục /<chuyên-mục>.html và /<chuyên-mục>/trang-n.html
+ *   danh mục   /<chuyên-mục>/danh-muc/<danh-mục>.html (+ /trang-n.html)
+ *   thẻ        /blog/the/<thẻ>.html (+ /trang-n.html), thẻ dùng xuyên chuyên mục
+ * Trang tĩnh riêng (blog.astro, blog/tim-kiem.astro) được ưu tiên trước tuyến này.
+ */
+import PostPage from "../components/PostPage.astro";
+import ListPage from "../components/ListPage.astro";
+import { published, tagIndex, paginate, pageHref, channelOf, byNewest, coverOf, PAGE_SIZE, type Article } from "../lib";
+import { CATEGORIES, CHANNELS, TAG_BASE, categoryBase, categoryName } from "../taxonomy";
+
+export async function getStaticPaths() {
+  const trim = (p: string) => p.replace(/^\//, "");
+  const pageParam = (base: string, i: number) => trim(i === 0 ? base : `${base}/trang-${i + 1}`);
+  const all = await published();
+  const out: { params: { path: string }; props: Record<string, unknown> }[] = [];
+
+  for (const a of all) out.push({ params: { path: trim(`${channelOf(a).base}/${a.id}`) }, props: { kind: "post", entry: a, all } });
+
+  // Trang chủ Blog: khối nổi bật (3 bài mới nhất, ưu tiên bài có ảnh) + lưới các bài còn lại, phân trang.
+  const newest = byNewest(all);
+  const withImg = newest.filter((a) => coverOf(a));
+  const leadMain = withImg[0] ?? newest[0];
+  const leadSide = withImg.filter((a) => a !== leadMain).slice(0, 2);
+  const hubRest = newest.filter((a) => a !== leadMain && !leadSide.includes(a));
+  const hubPages = paginate(hubRest);
+  hubPages.forEach((slice, i, arr) =>
+    out.push({ params: { path: pageParam("/blog", i) }, props: { kind: "hub", lead: leadMain ? { main: leadMain, side: leadSide } : undefined, slice, total: hubRest.length, page: i + 1, pages: arr.length, all } }),
+  );
+
+  for (const ch of CHANNELS) {
+    const items = all.filter((a) => channelOf(a).slug === ch.slug);
+    if (items.length === 0) continue; // chuyên mục chưa có bài thì chưa dựng trang (tránh trang rỗng)
+    paginate(items).forEach((slice, i, arr) =>
+      out.push({ params: { path: pageParam(ch.base, i) }, props: { kind: "channel", ch, items, slice, page: i + 1, pages: arr.length, all } }),
+    );
+    for (const c of CATEGORIES.filter((c) => c.channel === ch.slug)) {
+      const ci = items.filter((a) => a.data.category === c.slug);
+      if (ci.length === 0) continue;
+      paginate(ci).forEach((slice, i, arr) =>
+        out.push({ params: { path: pageParam(categoryBase(c.slug), i) }, props: { kind: "category", ch, cat: c, items: ci, slice, page: i + 1, pages: arr.length, all } }),
+      );
+    }
+  }
+
+  for (const t of tagIndex(all))
+    paginate(t.items).forEach((slice, i, arr) =>
+      out.push({ params: { path: pageParam(`${TAG_BASE}/${t.slug}`, i) }, props: { kind: "tag", tag: t, items: t.items, slice, page: i + 1, pages: arr.length, all } }),
+    );
+  return out;
+}
+
+const SITE = "https://donghoviet.thaohk.com";
+const p = Astro.props as any;
+const crumbLd = (names: [string, string][]) => ({
+  "@type": "BreadcrumbList",
+  itemListElement: names.map(([name, item], i) => ({ "@type": "ListItem", position: i + 1, name, item: `${SITE}${item}` })),
+});
+const collection = (name: string, description: string, path: string, names: [string, string][]) => ({
+  "@context": "https://schema.org",
+  "@graph": [{ "@type": "CollectionPage", name, description, inLanguage: "vi", url: `${SITE}${path}` }, crumbLd(names)],
+});
+const suffix = (page: number) => (page > 1 ? ` (trang ${page})` : "");
+
+let list: Record<string, unknown> | null = null;
+if (p.kind === "hub") {
+  const { slice, total, page, pages, lead } = p;
+  const path = pageHref("/blog", page);
+  const seoTitle = `Blog Dòng Họ Việt: phong tục, lễ hội, di sản và kiến thức gia phả${suffix(page)}`;
+  const description = "Blog Dòng Họ Việt: bài viết về phong tục, nghi lễ, lễ hội truyền thống, di sản Việt, kiến thức lập gia phả và hướng dẫn sử dụng phần mềm gia phả.";
+  list = {
+    all: p.all, title: "Blog Dòng Họ Việt", sub: "Phong tục, lễ hội, di sản và kiến thức gia phả của người Việt. Mỗi bài trả lời thẳng vào việc cần làm.",
+    lead, slice, total, page, pages, base: "/blog", path, seoTitle, description,
+    ld: {
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "Blog", name: "Blog Dòng Họ Việt", description, inLanguage: "vi", url: `${SITE}${path}`, publisher: { "@type": "Organization", name: "Dòng Họ Việt", url: `${SITE}/` } },
+        crumbLd([["Dòng Họ Việt", "/"], ["Blog", "/blog.html"]]),
+        { "@type": "ItemList", itemListElement: byNewest(p.all).map((a: Article, i: number) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}${channelOf(a).base}/${a.id}.html`, name: a.data.title })) },
+      ],
+    },
+  };
+} else if (p.kind === "channel") {
+  const { ch, items, slice, page, pages } = p;
+  const path = pageHref(ch.base, page);
+  const seoTitle = `${ch.name}: bài viết mới nhất${suffix(page)}`;
+  list = {
+    all: p.all, title: ch.name, sub: `${items.length} bài viết. ${ch.blurb}`,
+    crumbs: [{ label: "Dòng Họ Việt", href: "/" }, { label: "Blog", href: "/blog.html" }, { label: ch.name }],
+    slice, total: items.length, page, pages, base: ch.base, path, seoTitle, description: ch.blurb,
+    ld: collection(seoTitle, ch.blurb, path, [["Dòng Họ Việt", "/"], ["Blog", "/blog.html"], [ch.name, pageHref(ch.base, 1)]]),
+  };
+} else if (p.kind === "category") {
+  const { ch, cat, items, slice, page, pages } = p;
+  const base = categoryBase(cat.slug);
+  const path = pageHref(base, page);
+  const seoTitle = `${cat.name}: bài viết${suffix(page)}`;
+  const description = `Các bài thuộc ${cat.name.toLowerCase()} trong mục ${ch.name}: ${ch.blurb}`;
+  list = {
+    all: p.all, title: cat.name, sub: `${items.length} bài viết trong ${ch.name}.`,
+    crumbs: [{ label: "Dòng Họ Việt", href: "/" }, { label: "Blog", href: "/blog.html" }, { label: ch.name, href: `${ch.base}.html` }, { label: cat.name }],
+    slice, total: items.length, page, pages, base, path, seoTitle, description,
+    ld: collection(seoTitle, description, path, [["Dòng Họ Việt", "/"], ["Blog", "/blog.html"], [ch.name, `${ch.base}.html`], [cat.name, pageHref(base, 1)]]),
+  };
+} else if (p.kind === "tag") {
+  const { tag, items, slice, page, pages } = p;
+  const base = `${TAG_BASE}/${tag.slug}`;
+  const path = pageHref(base, page);
+  const seoTitle = `Bài viết gắn thẻ ${tag.name}${suffix(page)}`;
+  const description = `Các bài gắn thẻ ${tag.name} trên Blog Dòng Họ Việt: phong tục, lễ hội, di sản và kiến thức gia phả liên quan.`;
+  list = {
+    all: p.all, title: `Thẻ: ${tag.name}`, sub: `${items.length} bài viết gắn thẻ này.`,
+    crumbs: [{ label: "Dòng Họ Việt", href: "/" }, { label: "Blog", href: "/blog.html" }, { label: `Thẻ: ${tag.name}` }],
+    slice, total: items.length, page, pages, base, path, seoTitle, description,
+    // Thẻ chỉ có 1 bài là trang mỏng: noindex cho đến khi có ≥ 2 bài.
+    noindex: items.length < 2,
+    ld: collection(seoTitle, description, path, [["Dòng Họ Việt", "/"], ["Blog", "/blog.html"], [tag.name, pageHref(base, 1)]]),
+  };
+}
+void categoryName; void CATEGORIES; void categoryBase; void PAGE_SIZE;
+---
+{p.kind === "post" ? <PostPage entry={p.entry} all={p.all} /> : <ListPage {...(list as any)} />}

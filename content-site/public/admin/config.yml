@@ -7,7 +7,7 @@ backend:
 # Chạy local: mở /admin/ bằng Chrome/Edge, chọn "Work with Local Repository" và trỏ vào thư mục repo (không cần đăng nhập).
 
 site_url: https://donghoviet.thaohk.com
-display_url: https://donghoviet.thaohk.com/so-tay.html
+display_url: https://donghoviet.thaohk.com/blog.html
 media_folder: landing/assets/le-hoi
 public_folder: /assets/le-hoi
 
@@ -35,15 +35,21 @@ collections:
       - { name: description, label: "Mô tả ngắn (danh sách, Google; nên 140–160 ký tự)", widget: text }
       - { name: updated, label: Ngày cập nhật, widget: datetime, date_format: YYYY-MM-DD, time_format: false, picker_utc: true }
       - name: category
-        label: Chủ đề
+        label: Danh mục (quyết định bài nằm ở chuyên mục nào của Blog)
         widget: select
         options:
-          - { label: Thờ cúng & tín ngưỡng, value: tho_cung }
-          - { label: Nghi lễ vòng đời, value: vong_doi }
-          - { label: Lễ Tết theo mùa, value: le_tet }
-          - { label: Lễ hội cộng đồng, value: le_hoi }
-          - { label: Phong tục sinh hoạt, value: sinh_hoat }
-          - { label: Văn khấn & văn tế, value: van_khan }
+          - { label: "Sổ tay văn hoá · Thờ cúng & tín ngưỡng", value: tho_cung }
+          - { label: "Sổ tay văn hoá · Nghi lễ vòng đời", value: vong_doi }
+          - { label: "Sổ tay văn hoá · Phong tục sinh hoạt", value: sinh_hoat }
+          - { label: "Sổ tay văn hoá · Văn khấn & văn tế", value: van_khan }
+          - { label: "Lễ hội & Phong tục · Lễ Tết theo mùa", value: le_tet }
+          - { label: "Lễ hội & Phong tục · Lễ hội cộng đồng", value: le_hoi }
+          - { label: "Di sản Việt · Di tích & di sản vật thể", value: di_san_vat_the }
+          - { label: "Di sản Việt · Di sản phi vật thể", value: di_san_phi_vat_the }
+          - { label: "Hướng dẫn sử dụng · Bắt đầu", value: bat_dau }
+          - { label: "Hướng dẫn sử dụng · Tính năng", value: tinh_nang }
+          - { label: "Kiến thức gia phả · Lập gia phả", value: lap_gia_pha }
+          - { label: "Kiến thức gia phả · Họ hàng & dòng họ", value: dong_ho_hoc }
       - { name: tags, label: "Thẻ (vùng, tỉnh, nhân vật thờ, tháng âm lịch…)", widget: list, default: [] }
       - { name: aliases, label: "Tên gọi khác / tình huống (để tìm: nhà mới, có em bé…)", widget: list, default: [] }
       - { name: regions, label: "Vùng (Miền Bắc, Miền Trung, Miền Nam)", widget: list, default: [] }

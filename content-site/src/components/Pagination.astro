@@ -1,0 +1,17 @@
+---
+import { pageHref } from "../lib";
+const { base, page, total } = Astro.props as { base: string; page: number; total: number };
+// Hiện: 1 … (page-1) page (page+1) … total
+const nums: (number | "…")[] = [];
+for (let i = 1; i <= total; i++) {
+  if (i === 1 || i === total || Math.abs(i - page) <= 1) nums.push(i);
+  else if (nums[nums.length - 1] !== "…") nums.push("…");
+}
+---
+{total > 1 && (
+  <nav class="pagination" aria-label="Phân trang">
+    {page > 1 ? <a class="pg" rel="prev" href={pageHref(base, page - 1)}>← Trước</a> : <span class="pg off">← Trước</span>}
+    {nums.map((n) => n === "…" ? <span class="pg gap">…</span> : n === page ? <span class="pg on" aria-current="page">{n}</span> : <a class="pg" href={pageHref(base, n)}>{n}</a>)}
+    {page < total ? <a class="pg" rel="next" href={pageHref(base, page + 1)}>Sau →</a> : <span class="pg off">Sau →</span>}
+  </nav>
+)}

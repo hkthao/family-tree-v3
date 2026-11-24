@@ -1,0 +1,55 @@
+---
+/** Thanh bên: banner mời lập gia phả, bài mới, chuyên mục, gợi ý, danh mục, cộng đồng. */
+import Cover from "./Cover.astro";
+import { byNewest, suggested, channelOf, postHref, shortName, type Article } from "../lib";
+import { CATEGORIES, CHANNELS, categoryBase } from "../taxonomy";
+const { all, exclude = [] } = Astro.props as { all: Article[]; exclude?: Article[] };
+const APP = "https://giapha.thaohk.com";
+const recent = byNewest(all).filter((a) => !exclude.includes(a)).slice(0, 3);
+const picks = suggested(all, 3, [...exclude, ...recent], "side");
+const cats = CATEGORIES.map((c) => ({ ...c, n: all.filter((a) => a.data.category === c.slug).length })).filter((c) => c.n > 0);
+---
+<aside class="side" aria-label="Thanh bên">
+  <div class="widget promo">
+    <b>Lập gia phả cho dòng họ của bạn</b>
+    <span>Cây nhiều đời, nhớ ngày giỗ âm lịch, lưu câu chuyện của ông bà. Bắt đầu miễn phí.</span>
+    <a class="btn" data-cta="blog-side" href={`${APP}/signup?utm_source=landing&utm_medium=blog&utm_campaign=sidebar`}>Tạo gia phả</a>
+  </div>
+
+  {recent.length > 0 && (
+    <div class="widget panel">
+      <h2 class="widget-title"><span>Bài mới</span></h2>
+      {recent.map((p) => (<a class="big" href={postHref(p)}><Cover post={p} /><b>{p.data.title}</b></a>))}
+    </div>
+  )}
+
+  <div class="widget panel">
+    <h2 class="widget-title"><span>Chuyên mục</span></h2>
+    <ul class="chan-list">
+      {CHANNELS.map((c) => {
+        const n = all.filter((a) => channelOf(a).slug === c.slug).length;
+        return <li>{n > 0 ? <a href={`${c.base}.html`}>{c.name}<em>{n}</em></a> : <span class="soon">{c.name}<em>Sắp có</em></span>}</li>;
+      })}
+    </ul>
+  </div>
+
+  {picks.length > 0 && (
+    <div class="widget panel">
+      <h2 class="widget-title"><span>Gợi ý cho bạn</span></h2>
+      {picks.map((p) => (<a class="thumbrow" href={postHref(p)}><Cover post={p} /><b>{p.data.title}</b></a>))}
+    </div>
+  )}
+
+  <div class="widget panel">
+    <h2 class="widget-title"><span>Danh mục</span></h2>
+    <div class="tag-cloud">
+      {cats.map((c) => <a class="chip soft" href={`${categoryBase(c.slug)}.html`}>{c.name} ({c.n})</a>)}
+    </div>
+  </div>
+
+  <div class="widget panel">
+    <h2 class="widget-title"><span>Cộng đồng</span></h2>
+    <p class="fine">Cùng trao đổi về gia phả, phong tục và cách giữ gìn cội nguồn trong nhóm Facebook Dòng Họ Việt.</p>
+    <a class="btn btn-ghost" href="https://www.facebook.com/donghoviet2026" target="_blank" rel="noopener"><svg class="ico"><use href="#i-facebook"></use></svg>Tham gia nhóm</a>
+  </div>
+</aside>

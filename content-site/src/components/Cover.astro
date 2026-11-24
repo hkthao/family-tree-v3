@@ -1,0 +1,10 @@
+---
+/** Ảnh bìa của một bài, hoặc nền màu theo danh mục khi chưa có ảnh. */
+import type { Article } from "../lib";
+import { coverOf, shortName } from "../lib";
+const { post, eager = false } = Astro.props as { post: Article; eager?: boolean };
+const cover = coverOf(post);
+---
+<span class="cover" data-cat={post.data.category}>
+  {cover ? <img src={cover.src} alt={cover.alt} loading={eager ? "eager" : "lazy"} decoding="async" /> : <span class="ph">{shortName(post)}</span>}
+</span>

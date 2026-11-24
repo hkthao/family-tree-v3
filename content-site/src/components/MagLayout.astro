@@ -1,0 +1,19 @@
+---
+/** Khung bố cục tạp chí cho mọi trang danh sách: cột bài viết (slot) + thanh bên, dải 3 cột cuối trang. Menu đầu trang do Base lo, giữ nguyên. */
+import Base from "../layouts/Base.astro";
+import Sidebar from "./Sidebar.astro";
+import BlogFooter from "./BlogFooter.astro";
+import type { Article } from "../lib";
+const { all, exclude = [], title, description, path, ld, image, noindex = false } = Astro.props as {
+  all: Article[]; exclude?: Article[]; title: string; description: string; path: string; ld?: unknown; image?: string; noindex?: boolean;
+};
+---
+<Base title={title} description={description} path={path} ld={ld} image={image} noindex={noindex}>
+  <div class="blog-wrap">
+    <div class="mag">
+      <main class="mag-main"><slot /></main>
+      <Sidebar all={all} exclude={exclude} />
+    </div>
+    <BlogFooter all={all} />
+  </div>
+</Base>

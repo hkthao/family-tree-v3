@@ -1,0 +1,206 @@
+---
+import { render } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Cta from "./Cta.astro";
+import PostCard from "./PostCard.astro";
+import { shortName, isoDate, coverOf, dateVi, readingMinutes, channelOf, postHref, type Article } from "../lib";
+import { categoryName, categoryBase, slugify, TAG_BASE } from "../taxonomy";
+
+const { entry, all } = Astro.props as { entry: Article; all: Article[] };
+const ch = channelOf(entry);
+const g = entry.data;
+const { Content, headings } = await render(entry);
+const SITE = "https://donghoviet.thaohk.com";
+const path = postHref(entry);
+const url = `${SITE}${path}`;
+const cover = coverOf(entry);
+const hero = g.images[0];
+const iso = isoDate(entry);
+const org = { "@type": "Organization", name: "Dòng Họ Việt", url: `${SITE}/`, logo: `${SITE}/assets/app-icon-180.png` };
+const ogImage = cover ? (cover.src.startsWith("http") ? cover.src : cover.src) : undefined;
+const ld = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "Article", headline: g.title, description: g.description, inLanguage: "vi", datePublished: iso, dateModified: iso, mainEntityOfPage: url, image: cover ? (cover.src.startsWith("http") ? cover.src : `${SITE}${cover.src}`) : `${SITE}/assets/og-banner.png`, keywords: g.tags.join(", "), author: org, publisher: org },
+    { "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Dòng Họ Việt", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE}/blog.html` },
+      { "@type": "ListItem", position: 3, name: ch.name, item: `${SITE}${ch.base}.html` },
+      { "@type": "ListItem", position: 4, name: categoryName(g.category), item: `${SITE}${categoryBase(g.category)}.html` },
+      { "@type": "ListItem", position: 5, name: shortName(entry), item: url } ] },
+    ...(g.faq.length ? [{ "@type": "FAQPage", mainEntity: g.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }] : []),
+  ],
+};
+
+// Bài liên quan: bài khai báo trước, thiếu thì bù bằng bài cùng chủ đề / cùng thẻ (tối đa 3).
+const picked = g.related.map((s) => all.find((x) => x.id === s)).filter((x): x is typeof entry => !!x);
+const score = (a: typeof entry) => (a.data.category === g.category ? 2 : 0) + a.data.tags.filter((t) => g.tags.includes(t)).length;
+const filler = all.filter((a) => a !== entry && !picked.includes(a)).sort((a, b) => score(b) - score(a)).filter((a) => score(a) > 0);
+const related = [...picked, ...filler].slice(0, 3);
+
+// Bài trước / sau trong cùng chủ đề (xếp theo tiêu đề).
+const siblings = all.filter((a) => a.data.category === g.category);
+const idx = siblings.indexOf(entry);
+const prev = siblings.length > 1 ? siblings[(idx - 1 + siblings.length) % siblings.length] : undefined;
+const next = siblings.length > 1 ? siblings[(idx + 1) % siblings.length] : undefined;
+
+const toc = [
+  ...headings.filter((h) => h.depth === 2).map((h) => ({ id: h.slug, text: h.text })),
+  ...(g.faq.length ? [{ id: "faq", text: "Câu hỏi thường gặp" }] : []),
+  ...(g.heritage ? [{ id: "coi-nguon", text: "Phong tục và cội nguồn dòng họ" }] : []),
+];
+const facts = g.infobox.length ? g.infobox : [
+  ...(g.timing ? [{ label: "Thời gian", value: g.timing }] : []),
+  ...(g.regions.length ? [{ label: "Vùng", value: g.regions.join(", ") }] : []),
+  ...(g.applicable_to ? [{ label: "Áp dụng cho", value: g.applicable_to }] : []),
+];
+const APP = "https://giapha.thaohk.com";
+---
+<Base title={g.title} description={g.description} path={path} ld={ld} image={ogImage}>
+  <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+
+  <div class="post-crumbs">
+    <nav class="crumbs" aria-label="Đường dẫn">
+    <a href="/">Dòng Họ Việt</a> › <a href="/blog.html">Blog</a> › <a href={`${ch.base}.html`}>{ch.name}</a> › <a href={`${categoryBase(g.category)}.html`}>{categoryName(g.category)}</a>
+  </nav>
+  </div>
+
+  <div class="post-head">
+    <h1>{g.title}</h1>
+    <p class="deck" set:html={g.lead ?? g.description}></p>
+    <p class="post-meta">
+      <span>Cập nhật {dateVi(entry)}</span>
+      <span class="dot">{readingMinutes(entry)} phút đọc</span>
+      {g.where && <span class="dot">{g.where}</span>}
+    </p>
+  </div>
+
+  {cover && (
+    <figure class="post-cover">
+      <span class="cover" data-cat={g.category}><img src={cover.src} alt={cover.alt} width={hero?.w} height={hero?.h} fetchpriority="high" /></span>
+      {hero && <figcaption set:html={`${hero.caption} · Ảnh: ${hero.credit}`}></figcaption>}
+    </figure>
+  )}
+
+  <div class="post-layout" data-pagefind-body>
+    {toc.length > 1 && (
+      <aside class="toc" data-pagefind-ignore>
+        <details open>
+          <summary>Trong bài này</summary>
+          <h2>Trong bài này</h2>
+          <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.text}</a></li>)}</ol>
+        </details>
+      </aside>
+    )}
+
+    <article class="post-body">
+      <span data-pagefind-meta="title" hidden>{g.title}</span>
+      {facts.length > 0 && (
+        <dl class="facts">
+          {facts.map((r) => (<div><dt>{r.label}</dt><dd set:html={r.value}></dd></div>))}
+        </dl>
+      )}
+
+      <Content />
+
+      {g.faq.length > 0 && (<>
+        <h2 id="faq">Câu hỏi thường gặp</h2>
+        <div class="faq">
+          {g.faq.map((f, i) => (<details open={i === 0}><summary>{f.q}<svg class="ico"><use href="#i-plus"></use></svg></summary><div class="ans">{f.a}</div></details>))}
+        </div>
+      </>)}
+
+      {g.heritage && (
+        <div class="callout" id="coi-nguon">
+          <h2>Phong tục và cội nguồn dòng họ</h2>
+          <p set:html={g.heritage}></p>
+        </div>
+      )}
+
+      <p class="post-tags" data-pagefind-ignore>
+        <a class="chip" href={`${categoryBase(g.category)}.html`}>{categoryName(g.category)}</a>
+        {g.tags.map((t) => <a class="chip soft" href={`${TAG_BASE}/${slugify(t)}.html`}>{t}</a>)}
+      </p>
+
+      <div class="share" data-pagefind-ignore>
+        <b>Chia sẻ bài viết</b>
+        <button class="btn btn-ghost" type="button" id="share-native" data-url={url} data-title={g.title}><svg class="ico"><use href="#i-link"></use></svg><span>Chia sẻ</span></button>
+        <button class="btn btn-ghost" type="button" id="share-copy" data-url={url}><svg class="ico"><use href="#i-link"></use></svg><span>Sao chép liên kết</span></button>
+        <a class="btn btn-ghost" target="_blank" rel="noopener" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}><svg class="ico"><use href="#i-facebook"></use></svg><span>Facebook</span></a>
+      </div>
+
+      <div data-pagefind-ignore><Cta campaign={entry.id} title="Giữ gìn cội nguồn của dòng họ bạn" /></div>
+
+      {g.sources.length > 0 && (
+        <div class="post-sources">
+          <h2>Nguồn tham khảo</h2>
+          <ul>{g.sources.map((s) => (<li>{s.url ? <a href={s.url} rel="noopener nofollow" target="_blank">{s.name}</a> : s.name}</li>))}</ul>
+        </div>
+      )}
+    </article>
+  </div>
+
+  <section class="more" data-pagefind-ignore>
+    {related.length > 0 && (<>
+      <div class="section-title" style="margin-top:0"><h2>Đọc tiếp</h2><a href={`${ch.base}.html`}>Xem tất cả: {ch.name}</a></div>
+      <div class="post-grid">{related.map((r) => <PostCard post={r} />)}</div>
+    </>)}
+    {prev && next && (
+      <nav class="pager" aria-label="Bài trước và sau">
+        <a class="prev" href={postHref(prev)}><small>← Bài trước</small><b>{prev.data.title}</b></a>
+        <a class="next" href={postHref(next)}><small>Bài sau →</small><b>{next.data.title}</b></a>
+      </nav>
+    )}
+  </section>
+
+  <span data-pagefind-filter="danh mục" hidden>{categoryName(g.category)}</span>
+  {g.tags.map((t) => <span data-pagefind-filter="thẻ" hidden>{t}</span>)}
+
+  <script is:inline>
+    (function () {
+      var bar = document.getElementById("bar");
+      var post = document.querySelector(".post-body");
+      function onScroll() {
+        if (!post || !bar) return;
+        var r = post.getBoundingClientRect();
+        var total = r.height - window.innerHeight * 0.6;
+        var done = Math.min(1, Math.max(0, (-r.top + window.innerHeight * 0.2) / Math.max(total, 1)));
+        bar.style.width = (done * 100).toFixed(1) + "%";
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+
+      // Mục lục: đánh dấu mục đang đọc.
+      var links = Array.prototype.slice.call(document.querySelectorAll(".toc a"));
+      var map = {};
+      links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+      if ("IntersectionObserver" in window && links.length) {
+        var io = new IntersectionObserver(function (es) {
+          es.forEach(function (e) {
+            if (e.isIntersecting) {
+              links.forEach(function (a) { a.classList.remove("on"); });
+              var a = map[e.target.id];
+              if (a) a.classList.add("on");
+            }
+          });
+        }, { rootMargin: "-90px 0px -65% 0px" });
+        Object.keys(map).forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
+      }
+
+      // Chia sẻ: Web Share (điện thoại, có Zalo) hoặc sao chép liên kết.
+      function copy(url, btn) {
+        var label = btn.querySelector("span");
+        var done = function () { var old = label.textContent; label.textContent = "Đã chép liên kết"; setTimeout(function () { label.textContent = old; }, 2000); };
+        if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, function () { window.prompt("Sao chép liên kết:", url); });
+        else window.prompt("Sao chép liên kết:", url);
+      }
+      var nat = document.getElementById("share-native");
+      if (nat) {
+        if (navigator.share) nat.addEventListener("click", function () { navigator.share({ title: nat.dataset.title, url: nat.dataset.url }).catch(function () {}); });
+        else nat.style.display = "none";
+      }
+      var cp = document.getElementById("share-copy");
+      if (cp) cp.addEventListener("click", function () { copy(cp.dataset.url, cp); });
+    })();
+  </script>
+</Base>

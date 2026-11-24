@@ -1,6 +1,7 @@
 import { marked } from "marked";
 import type { Article } from "./lib";
 import { categoryName, slugify } from "./taxonomy";
+import { postHref } from "./lib";
 
 export const SITE = "https://donghoviet.thaohk.com";
 
@@ -53,6 +54,6 @@ export function metaOf(a: Article) {
     tags: g.tags.map((t) => ({ slug: slugify(t), name: t })),
     cover_image_url: img,
     updated_at: g.updated.toISOString().slice(0, 10),
-    page_url: `${SITE}/so-tay/${a.id}.html`,
+    page_url: `${SITE}${postHref(a)}`,
   };
 }

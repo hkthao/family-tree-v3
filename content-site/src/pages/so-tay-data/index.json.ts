@@ -1,4 +1,4 @@
-import { published } from "../../lib";
+import { forApp as published } from "../../lib";
 import { metaOf } from "../../data";
 
 /** Mục lục cho app (không kèm thân bài). Tải một lần, lọc/tìm ở client. */

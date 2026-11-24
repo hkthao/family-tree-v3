@@ -1,8 +1,11 @@
 ---
 import "../generated/style.css";
+import "../styles/blog.css";
 import themeScript from "../generated/theme.html?raw";
 import sprite from "../generated/sprite.html?raw";
 import umami from "../generated/umami.html?raw";
+import footer from "../generated/footer.html?raw";
+import header from "../generated/header.html?raw";
 
 interface Props {
   title: string;
@@ -45,27 +48,32 @@ const og = image ? `${SITE}${image}` : `${SITE}/assets/og-banner.png`;
     <Fragment set:html={themeScript} />
     {ld && <script type="application/ld+json" set:html={JSON.stringify(ld)} />}
   </head>
-  <body>
+  <body class="past-hero">
     <Fragment set:html={sprite} />
-    <header>
-      <div class="wrap nav">
-        <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
-        <nav class="nav-links">
-          <a href="/">Giới thiệu</a>
-          <a href="/huong-dan.html">Kiến thức gia phả</a>
-          <a href="/so-tay.html">Sổ tay văn hoá</a>
-          <a href={`${APP}/xem/demo?utm_source=landing&utm_medium=guide&utm_campaign=nav_demo`}>Xem thử</a>
-        </nav>
-        <div class="nav-actions">
-          <a class="btn btn-primary" data-cta="guide-nav" href={`${APP}/signup?utm_source=landing&utm_medium=guide&utm_campaign=guide_nav`}><svg class="ico"><use href="#i-tree"></use></svg>Tạo gia phả</a>
-        </div>
-      </div>
-    </header>
+    <Fragment set:html={header} />
     <main><slot /></main>
-    <footer>
-      <div class="wrap">
-        <div class="foot-bottom">© Dòng Họ Việt · <a href="/">Giới thiệu</a> · <a href="/huong-dan.html">Kiến thức gia phả</a> · <a href="/so-tay.html">Sổ tay văn hoá</a> · <a href="mailto:support@thaohk.com">support@thaohk.com</a> · <a href={`${APP}/chinh-sach-rieng-tu`}>Chính sách riêng tư</a></div>
-      </div>
-    </footer>
+    <Fragment set:html={footer} />
+    <script is:inline>
+      (function () {
+        var root = document.documentElement, toggle = document.getElementById("themeToggle");
+        var sprite = document.querySelector('svg[aria-hidden="true"]');
+        if (sprite) sprite.insertAdjacentHTML("beforeend", '<symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>');
+        function syncIcon() { if (toggle) toggle.querySelector("use").setAttribute("href", root.classList.contains("dark") ? "#i-sun" : "#i-moon"); }
+        syncIcon();
+        if (toggle) toggle.addEventListener("click", function () {
+          var dark = root.classList.toggle("dark"); root.style.colorScheme = dark ? "dark" : "light";
+          try { localStorage.setItem("family-tree:theme", dark ? "dark" : "light"); } catch (e) {}
+          var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", dark ? "#1A1612" : "#7A2230");
+          syncIcon();
+        });
+        var btn = document.getElementById("menuBtn"), menu = document.getElementById("mobileMenu");
+        if (btn && menu) {
+          var setOpen = function (o) { menu.classList.toggle("open", o); btn.setAttribute("aria-expanded", o); btn.querySelector("use").setAttribute("href", o ? "#i-close" : "#i-menu"); };
+          btn.addEventListener("click", function () { setOpen(!menu.classList.contains("open")); });
+          Array.prototype.forEach.call(menu.querySelectorAll("a"), function (a) { a.addEventListener("click", function () { setOpen(false); }); });
+        }
+      })();
+    </script>
+    <script is:inline>document.getElementById("year") && (document.getElementById("year").textContent = new Date().getFullYear());</script>
   </body>
 </html>

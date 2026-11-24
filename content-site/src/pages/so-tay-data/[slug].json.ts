@@ -1,4 +1,4 @@
-import { published } from "../../lib";
+import { forApp as published } from "../../lib";
 import { metaOf, sectionsOf } from "../../data";
 
 export async function getStaticPaths() {

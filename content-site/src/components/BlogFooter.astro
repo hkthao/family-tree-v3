@@ -1,0 +1,24 @@
+---
+/** Dải 3 cột cuối trang blog: gợi ý, thẻ, mới cập nhật. */
+import { byNewest, suggested, postHref, tagIndex, type Article } from "../lib";
+import { slugify, TAG_BASE } from "../taxonomy";
+import Cover from "./Cover.astro";
+const { all } = Astro.props as { all: Article[] };
+const pick = suggested(all, 3, [], "foot");
+const recent = byNewest(all).slice(0, 3);
+const tags = tagIndex(all).slice(0, 24);
+---
+<section class="mag-foot" aria-label="Gợi ý thêm">
+  <div class="widget">
+    <h2 class="widget-title"><span>Có thể bạn quan tâm</span></h2>
+    {pick.map((p) => (<a class="thumbrow" href={postHref(p)}><Cover post={p} /><b>{p.data.title}</b></a>))}
+  </div>
+  <div class="widget">
+    <h2 class="widget-title"><span>Thẻ</span></h2>
+    <div class="tag-cloud">{tags.map((t) => <a class="chip soft" href={`${TAG_BASE}/${slugify(t.name)}.html`}>{t.name}</a>)}</div>
+  </div>
+  <div class="widget">
+    <h2 class="widget-title"><span>Mới cập nhật</span></h2>
+    {recent.map((p) => (<a class="thumbrow" href={postHref(p)}><Cover post={p} /><b>{p.data.title}</b></a>))}
+  </div>
+</section>

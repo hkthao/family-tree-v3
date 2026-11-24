@@ -1,0 +1,28 @@
+---
+/** Khối nổi bật đầu trang: 1 bài lớn bên trái + 2 bài nhỏ xếp dọc bên phải; mỗi bài là MỘT thẻ riêng để dễ phân biệt. */
+import Cover from "./Cover.astro";
+import { dateVi, readingMinutes, postHref, channelOf, type Article } from "../lib";
+import { categoryName } from "../taxonomy";
+const { main, side } = Astro.props as { main: Article; side: Article[] };
+---
+<section class="lead-grid">
+  <a class="lead-main panel" href={postHref(main)}>
+    <Cover post={main} eager />
+    <span class="chip">{categoryName(main.data.category)}</span>
+    <h2>{main.data.title}</h2>
+    <span class="post-meta"><span>{channelOf(main).name}</span><span class="dot">{dateVi(main)}</span><span class="dot">{readingMinutes(main)} phút đọc</span></span>
+    <p>{main.data.description}</p>
+  </a>
+  {side.length > 0 && (
+    <div class="lead-side">
+      {side.map((p) => (
+        <a class="mini panel" href={postHref(p)}>
+          <Cover post={p} />
+          <span class="chip soft">{categoryName(p.data.category)}</span>
+          <h3>{p.data.title}</h3>
+          <span class="post-meta"><span>{dateVi(p)}</span><span class="dot">{readingMinutes(p)} phút đọc</span></span>
+        </a>
+      ))}
+    </div>
+  )}
+</section>

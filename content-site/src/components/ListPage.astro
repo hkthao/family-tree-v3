@@ -1,0 +1,31 @@
+---
+/** Trang danh sách (trang chủ Blog, chuyên mục, danh mục, thẻ): tiêu đề, (tuỳ chọn) khối nổi bật, lưới thẻ bài 2 cột, phân trang. */
+import MagLayout from "./MagLayout.astro";
+import LeadBlock from "./LeadBlock.astro";
+import PostCard from "./PostCard.astro";
+import Pagination from "./Pagination.astro";
+import { coverOf, type Article } from "../lib";
+
+interface Crumb { label: string; href?: string }
+const { all, title, sub, crumbs = [], lead, slice, total, page, pages, base, path, seoTitle, description, ld, noindex = false } = Astro.props as {
+  all: Article[]; title: string; sub: string; crumbs?: Crumb[]; lead?: { main: Article; side: Article[] }; slice: Article[]; total: number; page: number; pages: number;
+  base: string; path: string; seoTitle: string; description: string; ld: unknown; noindex?: boolean;
+};
+const showLead = !!lead && page === 1;
+const exclude = showLead ? [lead!.main, ...lead!.side] : [];
+const image = lead ? coverOf(lead.main)?.src : slice[0] ? coverOf(slice[0])?.src : undefined;
+---
+<MagLayout all={all} exclude={exclude} title={seoTitle} description={description} path={path} ld={ld} image={image} noindex={noindex}>
+  <div class="mag-head">
+    {crumbs.length > 0 && (
+      <nav class="crumbs" aria-label="Đường dẫn">
+        {crumbs.map((c, i) => (<>{c.href ? <a href={c.href}>{c.label}</a> : c.label}{i < crumbs.length - 1 ? " › " : ""}</>))}
+      </nav>
+    )}
+    <h1>{title}</h1>
+    <p>{sub}{pages > 1 ? ` Trang ${page}/${pages}.` : ""}</p>
+  </div>
+  {showLead && <LeadBlock main={lead!.main} side={lead!.side} />}
+  {total ? <div class="mag-grid">{slice.map((a) => <PostCard post={a} />)}</div> : <p class="empty">Chưa có bài trong mục này.</p>}
+  <Pagination base={base} page={page} total={pages} />
+</MagLayout>
