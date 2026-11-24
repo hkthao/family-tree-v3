@@ -4,6 +4,8 @@
 > vì chưa đạt yêu cầu bảo mật/vận hành. Hàm `supabase/functions/publish-so-tay` (và test của nó) vẫn nằm trong repo để dùng lại cho
 > kế hoạch **MCP**, nhưng **chưa triển khai lên prod, chưa cấu hình token GitHub**. Không có đường nào trong app gọi tới hàm này.
 > Hiện bài Sổ tay/Blog được thêm bằng cách sửa tệp `content-site/content/so-tay/*.md` (hoặc skill `so-tay-viet-bai`), commit rồi deploy.
+> **Cập nhật (24/11/2026):** lõi của hàm (`core.ts`) nay được **MCP admin** dùng lại qua `admin_publish_article` / `admin_list_articles` /
+> `admin_get_article` (xem `docs/mcp-ket-noi-ai.md`) — máy chủ MCP cần `GITHUB_TOKEN`/`GITHUB_REPO` riêng. Hàm edge `publish-so-tay` vẫn chưa triển khai.
 > Phần dưới mô tả thiết kế cũ của hàm, giữ để tham khảo.
 
 ## Luồng

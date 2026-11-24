@@ -8,6 +8,14 @@
 
 export class UserError extends Error {}
 
+/** Thao tác nguy hiểm / công khai: bắt buộc confirm=true và lý do (ghi vào nhật ký admin). Trả lý do đã làm sạch. */
+export function requireConfirm(a: Record<string, unknown>): string {
+  if (a.confirm !== true) throw new UserError("Thao tác này cần confirm=true — chỉ đặt sau khi người dùng đã yêu cầu rõ ràng đúng việc này.");
+  const reason = typeof a.reason === "string" ? a.reason.trim() : "";
+  if (reason.length < 5 || reason.length > 500) throw new UserError("Cần reason (5–500 ký tự) giải thích vì sao làm việc này.");
+  return reason;
+}
+
 type Kind = "text" | "bool" | "int" | "date" | "gender" | "uuid";
 
 interface FieldDef {

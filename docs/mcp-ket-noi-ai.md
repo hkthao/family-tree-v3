@@ -106,8 +106,19 @@ dòng họ (`api_tokens.clan_id` null): mỗi lệnh theo dòng họ truyền th
 - **Tool quản trị (`admin_*`):** `platform_stats`, `list_users` / `set_user_limits` / `user_action` (suspend, unsuspend,
   signout), `list_clans` / `set_clan_limits`, `list_contributions` /
   `review_contribution` (duyệt/từ chối/cần thêm thông tin trên MỌI dòng họ), `list_feedback` / `update_feedback`,
-  `list/create/update/delete_announcement`, `get_settings` (chỉ đọc), `list_failed_notifications` /
+  `list/create/update/delete_announcement` (create nhận `publish_now: true` để đăng ngay),
+  `list_articles` / `get_article` / `publish_article` (bài Sổ tay/Blog, xem mục dưới), `get_settings` (chỉ đọc), `list_failed_notifications` /
   `clear_failed_notification`, `list_api_tokens` / `revoke_api_token`, `audit_log`.
+- **Viết & đăng bài Sổ tay/Blog (`admin_publish_article`):** AI soạn bài Markdown rồi đăng thay admin. Bài nằm ở kho tệp
+  `content-site/content/so-tay/*.md` nên tool commit tệp qua GitHub API (chung lõi với hàm `publish-so-tay`), và chỉ khi đăng công
+  khai mới chạy workflow `deploy-vps`.
+  - `status` mặc định `needs_review`: chỉ lưu, KHÔNG hiện ra web/app, KHÔNG deploy. `status: "published"` = công khai + deploy đầy đủ,
+    bắt buộc `confirm: true` + `reason` (ghi vào `mcp_admin_log`) — chỉ đặt sau khi người dùng đã bảo đăng đúng bài đó.
+  - Chỉ ghi vào đúng thư mục bài; slug kiểm chặt; chặn `<script>`/`<iframe>`/`onclick`/`javascript:`. Bài đã có cần `overwrite: true`;
+    bài có infobox/ảnh/FAQ/nguồn/bài liên quan không bao giờ bị ghi đè (sửa trực tiếp trong tệp).
+  - **Cấu hình của máy chủ MCP** (biến môi trường, không đưa giá trị thật vào repo): `GITHUB_TOKEN` (fine-grained, chỉ repo này:
+    Contents + Actions đọc/ghi), `GITHUB_REPO`, tuỳ chọn `GITHUB_BRANCH`, `GITHUB_DEPLOY_WORKFLOW`. Chưa cấu hình thì tool báo rõ và
+    không ảnh hưởng phần còn lại. Lưu ý: đây là quyền ghi lên repo nằm NGOÀI "quyền của admin UI" — token GitHub nên chỉ cấp tối thiểu.
 - **Chốt an toàn:** khoá tài khoản, xoá thông báo, thu hồi token bắt buộc
   `confirm: true` + `reason` (5–500 ký tự). Không tự khoá chính mình, không thu hồi token đang dùng. Cố ý
   KHÔNG có tool xoá dòng họ, xoá sạch danh mục, xoá tài khoản, cấp/thu quyền admin hệ thống hay đổi cấu hình nền tảng:

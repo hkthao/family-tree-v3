@@ -126,7 +126,7 @@ export interface GithubConfig {
 
 type Fetch = typeof fetch;
 
-const gh = (cfg: GithubConfig, path: string, init: RequestInit, f: Fetch) =>
+export const gh = (cfg: GithubConfig, path: string, init: RequestInit, f: Fetch) =>
   f(`https://api.github.com/repos/${cfg.repo}${path}`, {
     ...init,
     headers: {

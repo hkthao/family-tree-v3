@@ -5,6 +5,7 @@
  * (Claude, ChatGPT…), không phải cụ lớn tuổi; nhưng dữ liệu trả về giữ tiếng Việt.
  */
 
+import { CATEGORIES } from "../../supabase/functions/publish-so-tay/core.ts";
 import { personProperties } from "./fields.ts";
 import { EXTRA_SPECS, resourceSpecs } from "./resourceDefs.ts";
 
@@ -616,6 +617,41 @@ export const MCP_ADMIN_TOOLS: McpToolSpec[] = [
       ["feedback_id"],
     ),
   },
+  {
+    name: "admin_list_articles",
+    needs: "admin",
+    description: "List Sổ tay / Blog articles stored as files in the content repo: slug · status · category · title. Optional q filters slugs.",
+    inputSchema: obj({ q: { type: "string", description: "Text to match in the slug" } }),
+  },
+  {
+    name: "admin_get_article",
+    needs: "admin",
+    description: "Read one article's Markdown file (frontmatter + body) by slug, e.g. to review or revise it before overwriting.",
+    inputSchema: obj({ slug: { type: "string", description: "Article slug (from admin_list_articles)" } }, ["slug"]),
+  },
+  {
+    name: "admin_publish_article",
+    needs: "admin",
+    description:
+      "Write a Sổ tay / Blog article (Markdown body) into the content repo as the platform admin. status=needs_review (default) only saves it, nothing goes public. status=published makes it public and triggers a full site deploy — requires confirm=true + reason, only after the human explicitly asked to publish. Existing slugs need overwrite=true; articles with infobox/images/faq/sources cannot be overwritten (edit the file directly). Body is plain Markdown: no HTML script/iframe/onclick.",
+    inputSchema: obj(
+      {
+        title: { type: "string", description: "1-140 chars" },
+        description: { type: "string", description: "20-320 chars, shown in search results and cards" },
+        category: { type: "string", enum: [...CATEGORIES] },
+        body: { type: "string", description: "Markdown article body" },
+        status: { type: "string", enum: ["needs_review", "published"], description: "default needs_review" },
+        slug: { type: "string", description: "Optional; derived from the title when omitted" },
+        tags: { type: "array", items: { type: "string" } },
+        aliases: { type: "array", items: { type: "string" } },
+        regions: { type: "array", items: { type: "string" } },
+        timing: { type: "string" },
+        overwrite: { type: "boolean", description: "Replace an existing article with the same slug" },
+        ...dangerous,
+      },
+      ["title", "description", "category", "body"],
+    ),
+  },
   { name: "admin_list_announcements", needs: "admin", description: "All announcements including drafts and expired ones.", inputSchema: obj({}) },
   {
     name: "admin_create_announcement",
@@ -628,6 +664,7 @@ export const MCP_ADMIN_TOOLS: McpToolSpec[] = [
         level: { type: "string", enum: ["info", "update", "warning", "critical"] },
         is_public: { type: "boolean" },
         published_at: { type: ["string", "null"], description: "ISO datetime; null = draft" },
+        publish_now: { type: "boolean", description: "true = publish immediately (published_at = now) when published_at is not given" },
         expires_at: { type: ["string", "null"], description: "ISO datetime; null = never" },
       },
       ["title", "body"],

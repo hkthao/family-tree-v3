@@ -11,7 +11,8 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { UserError, UUID_RE } from "./fields.ts";
+import { requireConfirm, UserError, UUID_RE } from "./fields.ts";
+import { getArticle, listArticles, publishArticle } from "./articles.ts";
 
 export interface AdminCtx {
   db: SupabaseClient;
@@ -31,13 +32,6 @@ const uuid = (v: unknown, name: string): string => {
 const clampInt = (v: unknown, d: number, lo: number, hi: number) => Math.min(Math.max(Number.isInteger(v) ? (v as number) : d, lo), hi);
 const day = (iso: unknown) => (typeof iso === "string" ? iso.slice(0, 10) : "—");
 
-/** Thao tác nguy hiểm: bắt buộc confirm=true và lý do. Trả lý do đã làm sạch. */
-function requireConfirm(a: Args): string {
-  if (a.confirm !== true) throw new UserError("Thao tác này cần confirm=true — chỉ đặt sau khi người dùng đã yêu cầu rõ ràng đúng việc này.");
-  const reason = typeof a.reason === "string" ? a.reason.trim() : "";
-  if (reason.length < 5 || reason.length > 500) throw new UserError("Cần reason (5–500 ký tự) giải thích vì sao làm việc này.");
-  return reason;
-}
 const optStr = (v: unknown, name: string, max: number): string | null => {
   if (v === null) return null;
   if (typeof v !== "string") throw new UserError(`${name} phải là chuỗi.`);
@@ -275,6 +269,7 @@ function announcementPatch(a: Args, creating: boolean): Record<string, unknown> 
     out.is_public = a.is_public;
   }
   if (a.published_at !== undefined) out.published_at = isoOrNull(a.published_at, "published_at");
+  else if (a.publish_now === true) out.published_at = new Date().toISOString();
   if (a.expires_at !== undefined) out.expires_at = isoOrNull(a.expires_at, "expires_at");
   if (!Object.keys(out).length) throw new UserError("Không có trường nào để ghi.");
   return out;
@@ -373,6 +368,9 @@ export const ADMIN_OPS: Record<string, (c: AdminCtx, a: Args) => Promise<string>
   admin_create_announcement: createAnnouncement,
   admin_update_announcement: updateAnnouncement,
   admin_delete_announcement: deleteAnnouncement,
+  admin_list_articles: listArticles,
+  admin_get_article: getArticle,
+  admin_publish_article: publishArticle,
   admin_get_settings: getSettings,
   admin_list_failed_notifications: (c) => listFailedNotifications(c),
   admin_clear_failed_notification: clearFailedNotification,

@@ -250,10 +250,11 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
             </span>
           )}
           <span
-            className="ml-auto inline-flex shrink-0 items-center gap-1"
+            className="ml-auto shrink-0 whitespace-nowrap pt-[2px]"
             title={t`Cập nhật`}
           >
-            <IconCalendar className="h-3.5 w-3.5" />
+            {/* Không dùng flex: icon cỡ theo chữ (em) và canh theo đường chữ, nên luôn khớp với số ngày. */}
+            <IconCalendar className="mr-1 inline-block h-[1em] w-[1em] align-[-0.125em]" />
             {created}
           </span>
         </div>
