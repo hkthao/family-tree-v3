@@ -257,3 +257,19 @@ a.channel-tile:hover { transform: translateY(-3px); border-color: hsl(var(--prim
 .post-head { padding-top: 1.2rem; }
 .post-head h1 { margin-top: .4rem; }
 .post-head .crumbs { display: none; }
+
+/* Sửa bố cục trên điện thoại */
+@media (max-width: 639px) {
+  /* "Đọc tiếp" + "Xem tất cả": xếp dọc, tiêu đề không bị bóp thành 2 dòng */
+  .section-title { flex-direction: column; align-items: flex-start; gap: .35rem; }
+  .section-title h2 { white-space: nowrap; }
+  /* Hàng chia sẻ: nhãn một dòng, 2 nút đầu cạnh nhau */
+  .share b { flex: 0 0 100%; margin: 0; }
+  .share .btn { flex: 1 1 calc(50% - .3rem); min-width: 0; }
+  /* Bài trước / sau cùng căn trái cho dễ đọc */
+  .pager .next { text-align: left; }
+}
+/* Khối CTA cuối bài: có khoảng cách giữa đoạn chữ và nút, nút đầy chiều ngang trên điện thoại */
+.cta-box p { margin-bottom: 1.2rem; }
+.cta-row { display: flex; flex-wrap: wrap; gap: .75rem; }
+@media (max-width: 639px) { .cta-row .btn { flex: 1 1 100%; } }
