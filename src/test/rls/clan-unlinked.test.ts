@@ -44,7 +44,7 @@ describe("RLS + logic: clan_unlinked_*", () => {
     };
 
     const to = await add("Thuỷ Tổ", { is_root: true });
-    const wife = await add("Lê Thị Dậu", { gender: "F" });
+    const wife = await add("Nguyễn Thị Hoa", { gender: "F" });
     await add("Người Rời Thật");
 
     // Vợ của thuỷ tổ: KHÔNG có cha mẹ, nhưng có mặt trong cây.

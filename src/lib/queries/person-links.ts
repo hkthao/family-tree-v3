@@ -540,10 +540,10 @@ export async function getInlawGhostSpouses(
 
   // Build the "already mirrored locally" set so we never ghost a
   // peer-clan person who ALSO has a local-clan twin via another
-  // confirmed link. Example: Kim Hương (Trần) ↔ Kim Hương (Huỳnh)
-  // AND Kim Thảo (Trần) ↔ Kim Thảo (Huỳnh). When peeking Kim Hương's
-  // peer (Huỳnh), her spouse there is Kim Thảo (Huỳnh) — but that
-  // person is ALREADY on this clan's tree as Kim Thảo (Trần). The
+  // confirmed link. Example: A (Trần) ↔ A (Huỳnh)
+  // AND B (Trần) ↔ B (Huỳnh). When peeking A's
+  // peer (Huỳnh), her spouse there is B (Huỳnh) — but that
+  // person is ALREADY on this clan's tree as B (Trần). The
   // ghost would duplicate him. Skip when (peerClanId, peerPersonId)
   // already appears as the peer side of some other confirmed link.
   const mirroredPeers = new Set<string>();

@@ -28,38 +28,3 @@ Cập nhật ngày 21/11:
 • AI VIẾT TIỂU SỬ TỪ ĐÓNG GÓP — AI kết nối qua MCP đọc được các đóng góp đã duyệt để soạn tiểu sử có ghi nguồn. AI chỉ gửi đề xuất, quản trị duyệt rồi mới vào gia phả.
 
 Gặp chỗ nào chưa ổn, bấm "Góp ý / báo lỗi" trong menu.
-
----
-
-# Bài đăng Facebook
-
-Việc làm gia phả không phải việc của một người, hay của riêng một gia đình. Đó là việc của cả họ. 🌳
-
-Ông bà mình còn nhớ chuyện ngày xưa. Cô chú giữ những tấm ảnh cũ. Anh em ở xa biết ngày giỗ, nơi an táng. Mỗi người giữ một mảnh. Ghép lại mới thành câu chuyện của cả dòng họ.
-
-Dòng Họ Việt vừa cập nhật để cả họ cùng góp:
-
-✅ Mời người thân góp bằng một đường link. Không cần đăng ký, mở ra là viết được.
-✅ Hỏi ông bà mỗi tuần một câu. Ông bà bấm 🎤 trên bàn phím để nói thay vì gõ.
-✅ Ai còn thiếu thông tin thì tạo ngay ảnh "Hồ sơ còn thiếu" để nhờ cả nhà bổ sung.
-✅ Ảnh mời góp có mã QR, đẹp sẵn để đăng Facebook, Zalo.
-✅ Trang chia sẻ mới: xem cây, bảng tin, mộ phần, di sản… ngay trên điện thoại.
-
-👉 Bạn cần làm gì?
-
-Nếu bạn quản lý gia phả:
-1. Vào dòng họ → mục **Đóng góp nội dung** → bấm nút ➕ → **Mời người thân góp**.
-2. Bấm **Tạo link mời** → **Tạo ảnh để đăng** → chọn mẫu → **Chia sẻ** vào nhóm gia đình.
-3. Có người góp, app báo cho bạn. Bạn duyệt, rồi bấm **Đưa vào gia phả**.
-
-Nếu bạn là thành viên trong họ:
-• Vào **Danh bạ**, thấy người nào có nút ✈ là người đó còn thiếu thông tin. Bấm để nhờ cả nhà góp.
-
-Nếu bạn nhận được link:
-• Mở link → bấm **Cùng góp** → chọn người mình biết → viết vài câu → **Gửi**. Vậy thôi.
-
-Mỗi người góp một chút, gia phả nhà mình sẽ đầy đủ hơn. ❤️
-
-🔗 https://giapha.thaohk.com
-
-#DongHoViet #GiaPha #CaHoCungGop

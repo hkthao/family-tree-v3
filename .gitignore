@@ -16,6 +16,10 @@ dev-dist
 *.sln
 *.sw?
 
+# Python
+__pycache__/
+*.pyc
+
 # Env
 .env
 .env.local

@@ -4,7 +4,7 @@
 // Chạy: node scripts/wrap-pattern-textures.mjs
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-const SRC = "/Users/USER/Downloads";
+const SRC = process.env.TEXTURE_SRC ?? "./textures-src"; // thư mục chứa ảnh nguồn (đặt TEXTURE_SRC nếu để chỗ khác)
 const OUT = "public/textures";
 mkdirSync(OUT, { recursive: true });
 

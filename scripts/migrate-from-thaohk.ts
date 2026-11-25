@@ -14,7 +14,7 @@
  *     photo_path (if avatar present))
  *   families (one row per unique (fatherId, motherId) pair AND
  *     per unique (husbandId, wifeId) marriage pair)
- *   clans (one row, owner = owner@example.com)
+ *   clans (one row, owner = MIGRATE_OWNER_EMAIL)
  *
  * Usage:
  *   1. Fill OLD_API_TOKEN env (token from browser DevTools) +
@@ -39,7 +39,8 @@ const OLD_FAMILY_ID = process.env.OLD_FAMILY_ID ?? "e4757d91-509b-4ac0-8807-8d0b
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const OWNER_EMAIL = process.env.MIGRATE_OWNER_EMAIL ?? "owner@example.com";
+const OWNER_EMAIL = process.env.MIGRATE_OWNER_EMAIL ?? "";
+if (!OWNER_EMAIL) throw new Error("Đặt MIGRATE_OWNER_EMAIL (email chủ dòng họ sau khi chuyển).");
 
 const MIGRATE_PHOTOS = process.env.MIGRATE_PHOTOS !== "false"; // default true
 

@@ -1,7 +1,7 @@
 /**
  * Quick SMTP diagnostic — only verifies the connection + auth,
  * then sends one minimal email. Run with:
- *   SMTP_PASSWORD='...' TEST_TO=owner@example.com npx tsx scripts/smtp-test.ts
+ *   SMTP_PASSWORD='...' TEST_TO=<email nhận thử> npx tsx scripts/smtp-test.ts
  */
 import { createTransport } from "nodemailer";
 import { config } from "dotenv";

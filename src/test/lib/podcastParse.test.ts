@@ -10,8 +10,8 @@ import {
 /**
  * Đổi video Facebook → tập podcast.
  *
- * Dữ liệu trong test này là DỮ LIỆU THẬT, lấy từ Graph API của Trang
- * Trang Facebook thử nghiệm ngày 14/09/2026 — không phải mẫu tự nghĩ ra. Chính nhờ gọi
+ * Dữ liệu trong test này là DỮ LIỆU THẬT, lấy từ Graph API của một Trang
+ * thử nghiệm ngày 14/09/2026 — không phải mẫu tự nghĩ ra. Chính nhờ gọi
  * thật mới biết ba điều mà tài liệu Meta không nói:
  *   1. reel nằm trong `/{page-id}/videos` (còn `/video_reels` chỉ để đăng),
  *   2. không có trường `title` — chỉ có `description` dài cả đoạn,
@@ -21,7 +21,7 @@ import {
 const REAL = {
   id: "1356331553352275",
   description:
-    "Nếu bạn biến mất hôm nay...\nTheo bạn, điều gì sẽ còn lại?\nKý ức? \nMột bức ảnh? \nHay chỉ là sự im lặng?\nĐôi khi điều đáng sợ nhất không phải là cái chết.\n\n#bytecast #triethoc #tamlyhoc #loneliness",
+    "Nếu bạn biến mất hôm nay...\nTheo bạn, điều gì sẽ còn lại?\nKý ức? \nMột bức ảnh? \nHay chỉ là sự im lặng?\nĐôi khi điều đáng sợ nhất không phải là cái chết.\n\n#podcast #triethoc #tamlyhoc #loneliness",
   created_time: "2026-09-01T12:01:56+0000",
   permalink_url: "/reel/1356331553352275/",
   picture: "https://scontent.fsgn5-2.fna.fbcdn.net/v/t15.5256-10/792404228.jpg",
@@ -39,7 +39,7 @@ describe("titleFromDescription", () => {
 
   it("bỏ qua dòng chỉ toàn hashtag", () => {
     expect(
-      titleFromDescription("#bytecast #triethoc\nCâu chuyện thật", "2026-09-01T00:00:00+0000"),
+      titleFromDescription("#podcast #triethoc\nCâu chuyện thật", "2026-09-01T00:00:00+0000"),
     ).toBe("Câu chuyện thật");
   });
 

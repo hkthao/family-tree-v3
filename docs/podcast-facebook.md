@@ -12,7 +12,7 @@ app — đúng trường hợp miễn duyệt.
 
 ## Những gì đã ĐO được (không phải đoán)
 
-Gọi thật vào Trang Trang Facebook thử nghiệm ngày 14/09/2026:
+Gọi thật vào một Trang Facebook thử nghiệm ngày 14/09/2026:
 
 | Câu hỏi | Kết quả |
 |---|---|
@@ -75,7 +75,7 @@ thành rác). Có bản ghi trong `fb_page_credentials` thì nó được ưu ti
 
 | Biến | Ý nghĩa |
 |---|---|
-| `FB_PAGE_ID` | ID Trang, ví dụ `FB_PAGE_ID_EXAMPLE` (Trang Facebook thử nghiệm) |
+| `FB_PAGE_ID` | ID Trang (dãy số, lấy trong phần giới thiệu của Trang) |
 | `FB_PAGE_TOKEN` | Page token dài hạn |
 | `AI_KEY_ENCRYPTION_KEY` | KEK để mã hoá/giải mã token đã lưu (đã có sẵn cho khoá AI) |
 | `FB_API_VERSION` | mặc định `v21.0` |

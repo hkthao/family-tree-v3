@@ -1903,7 +1903,7 @@ function TreeDiagramPage({
 
   // Ô vợ/chồng vẽ cạnh = bạn đời KHÔNG xuất hiện như một node dòng máu trên
   // trang này: dâu/rể cưới vào, HOẶC người trong họ nhưng nhánh cha mẹ ở
-  // trang khác (vd lấy người cùng họ — Đặng Thị Tần là vợ Huỳnh Văn Hiếu
+  // trang khác (vd lấy người cùng họ — bà A là vợ ông B
   // nhưng có cha mẹ ở nhánh khác). Tối đa 2 ô.
   const spousesToShow = (id: string): PersonDetail[] =>
     (spousesByPerson.get(id) ?? [])
@@ -2205,7 +2205,7 @@ function TreeDiagramPage({
           const x = c.cx - CARD_W / 2;
           // Kiểu ô theo VỊ TRÍ: ô đứng ở chỗ vợ/chồng (kind="spouse") tô nhạt
           // + viền đứt = "kết hôn vào nhánh này" — kể cả khi người đó là con
-          // gái trong họ lấy người cùng họ (vd Đặng Thị Tần bên nhánh chồng).
+          // gái trong họ lấy người cùng họ (vd bà A bên nhánh chồng).
           // Ở trang nhánh cha mẹ của họ, họ là node chính → tô đặc bình thường.
           const isSpouse = c.kind === "spouse";
           const fill = isSpouse

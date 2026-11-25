@@ -1789,7 +1789,7 @@ Edge Function `notify-events` đọc bảng này bằng service_role (vượt RL
 Sinh 1 lần bằng `npx web-push generate-vapid-keys`:
 - `VITE_VAPID_PUBLIC_KEY` — public, nhúng frontend. An toàn để lộ.
 - `VAPID_PRIVATE_KEY` — secret của Edge Function `notify-events`. KHÔNG commit, KHÔNG frontend.
-- `VAPID_SUBJECT` — `mailto:contact@example.com` (yêu cầu giao thức).
+- `VAPID_SUBJECT` — `mailto:<email liên hệ của bạn>` (yêu cầu giao thức).
 
 Set qua `npx supabase secrets set` cho Edge Function (giống `RESEND_API_KEY`, `CRON_TOKEN`).
 
