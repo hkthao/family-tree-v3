@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  CardStepFooter,
+  CardStepper,
+  type CardStep,
+} from "@/components/cards/CardSteps";
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
 import {
@@ -116,6 +121,7 @@ export function InviteCardBody({
   const [photo, setPhoto] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState<CardStep>(1);
   // Chữ trên ảnh người dùng tự sửa, nhớ riêng cho từng mẫu (mỗi mẫu có chữ khác nhau).
   const [customByVariant, setCustomByVariant] = useState<
     Partial<Record<InviteVariant, InviteCustomText>>
@@ -417,194 +423,232 @@ export function InviteCardBody({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5 [scrollbar-gutter:stable]">
-          <div className="grid grid-cols-2 gap-x-2 gap-y-3 sm:gap-x-3">
-            <div className="min-w-0 space-y-1.5">
-              <Label htmlFor="inv-format">{t`Khổ ảnh`}</Label>
-              <Select
-                id="inv-format"
-                icon={<IconCamera />}
-                value={format}
-                onChange={(e) => setFormat(e.target.value as CardFormat)}
-              >
-                <option value="square">{t`Vuông (FB, Zalo)`}</option>
-                <option value="vertical">{t`Dọc (Story)`}</option>
-              </Select>
-            </div>
-            <div className="min-w-0 space-y-1.5">
-              <Label htmlFor="inv-aud">{t`Người đọc`}</Label>
-              <Select
-                id="inv-aud"
-                icon={<IconUsers />}
-                value={audience}
-                onChange={(e) => setAudience(e.target.value as InviteAudience)}
-              >
-                <option value="young">{t`Người trẻ`}</option>
-                <option value="old">{t`Người lớn tuổi`}</option>
-              </Select>
-            </div>
-            <div className="min-w-0 space-y-1.5">
-              <Label htmlFor="inv-xh">{t`Xưng hô`}</Label>
-              <Select
-                id="inv-xh"
-                icon={<IconUser />}
-                value={xungHo}
-                onChange={(e) => setXungHo(e.target.value)}
-              >
-                {["con", "cháu", "em", "mình"].map((x) => (
-                  <option key={x} value={x}>
-                    {x}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="min-w-0 space-y-1.5">
-              <Label htmlFor="inv-link">{t`Link nằm ở đâu`}</Label>
-              <Select
-                id="inv-link"
-                icon={<IconLink />}
-                value={linkPlace}
-                onChange={(e) =>
-                  setLinkPlace(e.target.value as InviteLinkPlace)
-                }
-              >
-                <option value="post">{t`Link trong bài viết`}</option>
-                <option value="comment">{t`Link ở bình luận`}</option>
-                {format === "vertical" && (
-                  <option value="sticker">{t`Nhãn dán link (Story)`}</option>
-                )}
-              </Select>
-            </div>
-            <div className="col-span-2 min-w-0 space-y-1.5">
-              <Label htmlFor="inv-preset">{t`Mẫu chữ trên ảnh`}</Label>
-              <Select
-                id="inv-preset"
-                icon={<IconPencil />}
-                value={presetId}
-                onChange={(e) => applyPreset(e.target.value)}
-              >
-                <option value="auto">{t`Mặc định (theo lựa chọn ở trên)`}</option>
-                {INVITE_TEXT_PRESETS[variant].map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {PRESET_LABEL[p.id] ?? p.label}
-                  </option>
-                ))}
-                {presetId === "custom" && (
-                  <option value="custom">{t`Đã sửa tay`}</option>
-                )}
-              </Select>
-            </div>
-            <label className="col-span-2 flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-primary"
-                checked={showGuide}
-                onChange={(e) => setShowGuide(e.target.checked)}
-              />
-              {t`Hiện hướng dẫn 3 bước`}
-            </label>
-          </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 [scrollbar-gutter:stable]">
+          <div className="space-y-4">
+            <CardStepper step={step} onStep={setStep} />
 
-          <details className="rounded-lg border bg-muted/30 px-3 py-2">
-            <summary className="cursor-pointer text-sm font-medium">{t`Sửa chữ trên ảnh`}</summary>
-            <div className="mt-3 space-y-3">
-              <p className="text-xs text-muted-foreground">
-                {t`Sửa trực tiếp, ảnh đổi ngay. Chữ đã sửa chỉ áp cho mẫu đang chọn. Đổi người đọc, xưng hô hay chỗ đặt link sẽ không ghi đè chỗ bạn đã sửa.`}
-              </p>
-              {(
-                [
-                  ["kicker", t`Dòng nhỏ trên cùng`],
-                  ...(variant === "hoso" || variant === "hoi"
-                    ? [["lead", t`Dòng dẫn`]]
-                    : []),
-                  ["title", t`Tiêu đề lớn`],
-                  ["cta", t`Lời kêu gọi`],
-                ] as [
-                  keyof Pick<
-                    InviteCustomText,
-                    "kicker" | "lead" | "title" | "cta"
-                  >,
-                  string,
-                ][]
-              ).map(([key, label]) => (
-                <div key={key} className="space-y-1.5">
-                  <Label htmlFor={`inv-t-${key}`}>{label}</Label>
-                  <Input
-                    id={`inv-t-${key}`}
-                    value={custom?.[key] ?? autoCopy[key]}
-                    onChange={(e) => editCustom({ [key]: e.target.value })}
-                  />
-                </div>
-              ))}
-              {showGuide &&
-                autoCopy.steps.map((auto, i) => (
-                  <div key={i} className="space-y-1.5">
-                    <Label htmlFor={`inv-s-${i}`}>{t`Bước ${i + 1}`}</Label>
-                    <Input
-                      id={`inv-s-${i}`}
-                      value={custom?.steps?.[i] ?? auto}
-                      onChange={(e) => editStep(i, e.target.value)}
-                    />
+            {step === 1 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-3 sm:gap-x-3">
+                  <div className="min-w-0 space-y-1.5">
+                    <Label htmlFor="inv-format">{t`Khổ ảnh`}</Label>
+                    <Select
+                      id="inv-format"
+                      icon={<IconCamera />}
+                      value={format}
+                      onChange={(e) => setFormat(e.target.value as CardFormat)}
+                    >
+                      <option value="square">{t`Vuông (FB, Zalo)`}</option>
+                      <option value="vertical">{t`Dọc (Story)`}</option>
+                    </Select>
                   </div>
-                ))}
-              {custom && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => applyPreset("auto")}
-                >
-                  {t`Khôi phục chữ gốc`}
-                </Button>
-              )}
-            </div>
-          </details>
+                  <div className="min-w-0 space-y-1.5">
+                    <Label htmlFor="inv-aud">{t`Người đọc`}</Label>
+                    <Select
+                      id="inv-aud"
+                      icon={<IconUsers />}
+                      value={audience}
+                      onChange={(e) =>
+                        setAudience(e.target.value as InviteAudience)
+                      }
+                    >
+                      <option value="young">{t`Người trẻ`}</option>
+                      <option value="old">{t`Người lớn tuổi`}</option>
+                    </Select>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t`Chọn mẫu ở cột ảnh thu nhỏ bên cạnh ảnh xem trước.`}
+                </p>
+              </div>
+            )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="inv-msg">{t`Tin nhắn đăng kèm (sửa thoải mái)`}</Label>
-            <Textarea
-              id="inv-msg"
-              rows={4}
-              value={message}
-              onChange={(e) => {
-                setEdited(true);
-                setMessage(e.target.value);
-              }}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t`Ảnh trên mạng xã hội không bấm được — nhớ dán link ở chỗ đã chọn. Mẹo: để link ở bình luận đầu tiên.`}
-            </p>
+            {step === 2 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-3 sm:gap-x-3">
+                  <div className="min-w-0 space-y-1.5">
+                    <Label htmlFor="inv-xh">{t`Xưng hô`}</Label>
+                    <Select
+                      id="inv-xh"
+                      icon={<IconUser />}
+                      value={xungHo}
+                      onChange={(e) => setXungHo(e.target.value)}
+                    >
+                      {["con", "cháu", "em", "mình"].map((x) => (
+                        <option key={x} value={x}>
+                          {x}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="col-span-2 min-w-0 space-y-1.5">
+                    <Label htmlFor="inv-preset">{t`Mẫu chữ trên ảnh`}</Label>
+                    <Select
+                      id="inv-preset"
+                      icon={<IconPencil />}
+                      value={presetId}
+                      onChange={(e) => applyPreset(e.target.value)}
+                    >
+                      <option value="auto">{t`Mặc định (theo lựa chọn ở trên)`}</option>
+                      {INVITE_TEXT_PRESETS[variant].map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {PRESET_LABEL[p.id] ?? p.label}
+                        </option>
+                      ))}
+                      {presetId === "custom" && (
+                        <option value="custom">{t`Đã sửa tay`}</option>
+                      )}
+                    </Select>
+                  </div>
+                  <label className="col-span-2 flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-primary"
+                      checked={showGuide}
+                      onChange={(e) => setShowGuide(e.target.checked)}
+                    />
+                    {t`Hiện hướng dẫn 3 bước`}
+                  </label>
+                </div>
+                <details className="rounded-lg border bg-muted/30 px-3 py-2">
+                  <summary className="cursor-pointer text-sm font-medium">{t`Sửa chữ trên ảnh`}</summary>
+                  <div className="mt-3 space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      {t`Sửa trực tiếp, ảnh đổi ngay. Chữ đã sửa chỉ áp cho mẫu đang chọn. Đổi người đọc, xưng hô hay chỗ đặt link sẽ không ghi đè chỗ bạn đã sửa.`}
+                    </p>
+                    {(
+                      [
+                        ["kicker", t`Dòng nhỏ trên cùng`],
+                        ...(variant === "hoso" || variant === "hoi"
+                          ? [["lead", t`Dòng dẫn`]]
+                          : []),
+                        ["title", t`Tiêu đề lớn`],
+                        ["cta", t`Lời kêu gọi`],
+                      ] as [
+                        keyof Pick<
+                          InviteCustomText,
+                          "kicker" | "lead" | "title" | "cta"
+                        >,
+                        string,
+                      ][]
+                    ).map(([key, label]) => (
+                      <div key={key} className="space-y-1.5">
+                        <Label htmlFor={`inv-t-${key}`}>{label}</Label>
+                        <Input
+                          id={`inv-t-${key}`}
+                          value={custom?.[key] ?? autoCopy[key]}
+                          onChange={(e) =>
+                            editCustom({ [key]: e.target.value })
+                          }
+                        />
+                      </div>
+                    ))}
+                    {showGuide &&
+                      autoCopy.steps.map((auto, i) => (
+                        <div key={i} className="space-y-1.5">
+                          <Label
+                            htmlFor={`inv-s-${i}`}
+                          >{t`Bước ${i + 1}`}</Label>
+                          <Input
+                            id={`inv-s-${i}`}
+                            value={custom?.steps?.[i] ?? auto}
+                            onChange={(e) => editStep(i, e.target.value)}
+                          />
+                        </div>
+                      ))}
+                    {custom && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => applyPreset("auto")}
+                      >
+                        {t`Khôi phục chữ gốc`}
+                      </Button>
+                    )}
+                  </div>
+                </details>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4">
+                <div className="min-w-0 space-y-1.5">
+                  <Label htmlFor="inv-link">{t`Link nằm ở đâu`}</Label>
+                  <Select
+                    id="inv-link"
+                    icon={<IconLink />}
+                    value={linkPlace}
+                    onChange={(e) =>
+                      setLinkPlace(e.target.value as InviteLinkPlace)
+                    }
+                  >
+                    <option value="post">{t`Link trong bài viết`}</option>
+                    <option value="comment">{t`Link ở bình luận`}</option>
+                    {format === "vertical" && (
+                      <option value="sticker">{t`Nhãn dán link (Story)`}</option>
+                    )}
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="inv-msg">{t`Tin nhắn đăng kèm (sửa thoải mái)`}</Label>
+                  <Textarea
+                    id="inv-msg"
+                    rows={4}
+                    value={message}
+                    onChange={(e) => {
+                      setEdited(true);
+                      setMessage(e.target.value);
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t`Ảnh trên mạng xã hội không bấm được — nhớ dán link ở chỗ đã chọn. Mẹo: để link ở bình luận đầu tiên.`}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="w-full px-3 text-sm"
+                    onClick={() => {
+                      void navigator.clipboard
+                        .writeText(message)
+                        .then(() => toast.success(t`Đã sao chép tin nhắn`));
+                    }}
+                  >
+                    <IconCopy className="mr-1.5 h-4 w-4" />
+                    <span className="sm:hidden">{t`Chép tin`}</span>
+                    <span className="hidden sm:inline">{t`Sao chép tin nhắn`}</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="w-full px-3 text-sm"
+                    disabled={busy}
+                    onClick={() => void onDownload()}
+                  >
+                    <IconDownload className="mr-1.5 h-4 w-4" />
+                    {t`Tải ảnh`}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="w-full px-3 text-sm"
+                    disabled={busy}
+                    onClick={() => void onShare()}
+                  >
+                    <IconShare2 className="mr-1.5 h-4 w-4" />
+                    {busy ? t`Đang tạo…` : t`Chia sẻ`}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-row items-center justify-end gap-2 border-t bg-background px-4 py-3 sm:px-5 max-sm:flex-nowrap max-sm:[&>*]:flex-[1_0_auto] max-sm:[&>*]:px-2.5 [&>*]:h-10 [&>*]:px-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              void navigator.clipboard
-                .writeText(message)
-                .then(() => toast.success(t`Đã sao chép tin nhắn`));
-            }}
-          >
-            <IconCopy className="mr-1.5 h-4 w-4" />
-            <span className="sm:hidden">{t`Chép tin`}</span>
-            <span className="hidden sm:inline">{t`Sao chép tin nhắn`}</span>
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={busy}
-            onClick={() => void onDownload()}
-          >
-            <IconDownload className="mr-1.5 h-4 w-4" />
-            {t`Tải ảnh`}
-          </Button>
-          <Button type="button" disabled={busy} onClick={() => void onShare()}>
-            <IconShare2 className="mr-1.5 h-4 w-4" />
-            {busy ? t`Đang tạo…` : t`Chia sẻ`}
-          </Button>
-        </div>
+        <CardStepFooter step={step} onStep={setStep} />
       </div>
 
       {/* Bản đủ kích thước để xuất PNG (ngoài màn hình). */}

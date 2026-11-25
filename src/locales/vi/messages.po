@@ -1231,7 +1231,6 @@ msgid "Ảnh"
 msgstr "Ảnh"
 
 #: src/components/community/InviteCardDialog.tsx
-#: src/components/ShareCardDialog.tsx
 msgid "Ảnh + tin nhắn mời người thân góp"
 msgstr "Ảnh + tin nhắn mời người thân góp"
 
@@ -2331,7 +2330,7 @@ msgstr "Cả xóm kéo đến xem chung chiếc ti vi đầu tiên của nhà."
 msgid "Các bài đã đăng mới nhất (tin vui, thông báo)."
 msgstr "Các bài đã đăng mới nhất (tin vui, thông báo)."
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Các bước"
 msgstr "Các bước"
 
@@ -3162,8 +3161,8 @@ msgstr "Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng 
 msgid "Chia cắt ở vĩ tuyến 17"
 msgstr "Chia cắt ở vĩ tuyến 17"
 
+#: src/components/cards/CardSteps.tsx
 #: src/components/community/InviteCardDialog.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
@@ -3407,7 +3406,7 @@ msgstr "Chọn hình từ thư viện, dán link ảnh hoặc dùng biểu tư�
 msgid "Chọn khổ giấy"
 msgstr "Chọn khổ giấy"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Chọn kiểu"
 msgstr "Chọn kiểu"
 
@@ -3438,6 +3437,7 @@ msgstr "Chọn loại, đích và thời hạn"
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
+#: src/components/ShareCardDialog.tsx
 msgid "Chọn mẫu"
 msgstr "Chọn mẫu"
 
@@ -3453,6 +3453,11 @@ msgstr "Chọn màu bất kỳ"
 #: src/pages/clan/TimelineDetail.tsx
 msgid "Chọn mẫu nền"
 msgstr "Chọn mẫu nền"
+
+#: src/components/community/InviteCardDialog.tsx
+#: src/components/ShareCardDialog.tsx
+msgid "Chọn mẫu ở cột ảnh thu nhỏ bên cạnh ảnh xem trước."
+msgstr "Chọn mẫu ở cột ảnh thu nhỏ bên cạnh ảnh xem trước."
 
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Chọn mẫu rồi chỉ cần nhập năm. Bạn vẫn sửa được chữ và hình bên dưới."
@@ -13792,9 +13797,9 @@ msgstr "Quang Trung đại phá quân Thanh (1789)"
 #: src/components/AppHeader.tsx
 #: src/components/AppHeader.tsx
 #: src/components/BackLink.tsx
+#: src/components/cards/CardSteps.tsx
 #: src/components/ClanLayout.tsx
 #: src/components/ClanLayout.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/pages/Contact.tsx
 msgid "Quay lại"
 msgstr "Quay lại"
@@ -16392,11 +16397,11 @@ msgstr "Tiếp tục với {label}"
 msgid "Tiếp tục với Google"
 msgstr "Tiếp tục với Google"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Tiếp: Chia sẻ"
 msgstr "Tiếp: Chia sẻ"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Tiếp: Tuỳ chỉnh"
 msgstr "Tiếp: Tuỳ chỉnh"
 
@@ -17675,7 +17680,7 @@ msgstr "Tưởng nhớ"
 msgid "Tưởng nhớ những người đã khuất"
 msgstr "Tưởng nhớ những người đã khuất"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Tuỳ chỉnh"

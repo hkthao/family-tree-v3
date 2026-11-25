@@ -7,6 +7,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -139,15 +140,39 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("Hộp thoại tạo thiệp — 3 bước", () => {
-  it("mở ở bước 1 (Chọn kiểu): có thể loại, mẫu, khổ thiệp; CHƯA có nút chia sẻ / ô chữ", () => {
+  it("mở ở bước 1 (Chọn kiểu): chọn thể loại + khổ thiệp bằng ô chọn; CHƯA có nút chia sẻ / ô chữ", () => {
     renderDlg();
-    expect(screen.getByText("Bạn muốn khoe điều gì?")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Vuông/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Dọc/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Mẫu A/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("Bạn muốn khoe điều gì?")).toBeInTheDocument();
+    expect(screen.getByLabelText("Khổ thiệp")).toHaveValue("square");
     expect(screen.queryByRole("button", { name: "Chia sẻ" })).toBeNull();
     expect(screen.queryByLabelText("Tiêu đề")).toBeNull();
     expect(screen.queryByRole("button", { name: /Quay lại/ })).toBeNull();
+  });
+
+  it("chọn mẫu ở cột ảnh thu nhỏ cạnh ảnh xem trước (luôn thấy ở mọi bước); bấm mẫu là ảnh đổi ngay", () => {
+    renderDlg();
+    const list = screen.getByRole("listbox", { name: "Chọn mẫu" });
+    const options = within(list).getAllByRole("option");
+    expect(options.map((o) => o.getAttribute("aria-selected"))).toEqual(["true", "false"]);
+    expect(within(screen.getByTestId("card-preview")).getByText("RENDER-A")).toBeInTheDocument();
+    fireEvent.click(within(list).getByRole("option", { name: /Mẫu B/ }));
+    expect(within(screen.getByTestId("card-preview")).getByText("RENDER-B")).toBeInTheDocument();
+    // sang bước khác cột mẫu vẫn còn, lựa chọn giữ nguyên
+    fireEvent.click(screen.getByRole("button", { name: /3\s*Chia sẻ/ }));
+    expect(screen.getByRole("option", { name: /Mẫu B/ })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("đổi khổ thiệp bằng ô chọn", () => {
+    renderDlg();
+    fireEvent.change(screen.getByLabelText("Khổ thiệp"), { target: { value: "vertical" } });
+    expect(screen.getByLabelText("Khổ thiệp")).toHaveValue("vertical");
+  });
+
+  it("tiêu đề ngăn kéo không đổi khi chuyển tab (không làm bố cục nhảy)", () => {
+    renderDlg({ clanId: "c1" });
+    expect(screen.getByRole("complementary", { name: "panel:Tạo thiệp chia sẻ" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: "Mời người thân góp" }));
+    expect(screen.getByRole("complementary", { name: "panel:Tạo thiệp chia sẻ" })).toBeInTheDocument();
   });
 
   it("bước 2 (Tuỳ chỉnh): sửa chữ, kiểu chữ; giá trị giữ nguyên khi quay lại bước 1 rồi tới lại", () => {

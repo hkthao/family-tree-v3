@@ -1231,7 +1231,6 @@ msgid "Ảnh"
 msgstr "Photo"
 
 #: src/components/community/InviteCardDialog.tsx
-#: src/components/ShareCardDialog.tsx
 msgid "Ảnh + tin nhắn mời người thân góp"
 msgstr "Image + message inviting relatives to contribute"
 
@@ -2331,7 +2330,7 @@ msgstr "The whole neighbourhood gathers to watch the family's first television."
 msgid "Các bài đã đăng mới nhất (tin vui, thông báo)."
 msgstr "The latest published posts (good news, announcements)."
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Các bước"
 msgstr "Steps"
 
@@ -3162,8 +3161,8 @@ msgstr "Only provinces with no communes / wards and not used as an address can b
 msgid "Chia cắt ở vĩ tuyến 17"
 msgstr "Partition at the 17th parallel"
 
+#: src/components/cards/CardSteps.tsx
 #: src/components/community/InviteCardDialog.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
@@ -3407,7 +3406,7 @@ msgstr "Pick an image from the library, paste an image link, or use an icon."
 msgid "Chọn khổ giấy"
 msgstr "Choose paper size"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Chọn kiểu"
 msgstr "Choose a style"
 
@@ -3438,6 +3437,7 @@ msgstr "Choose the type, target and expiry"
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
+#: src/components/ShareCardDialog.tsx
 msgid "Chọn mẫu"
 msgstr "Choose a template"
 
@@ -3453,6 +3453,11 @@ msgstr "Choose any color"
 #: src/pages/clan/TimelineDetail.tsx
 msgid "Chọn mẫu nền"
 msgstr "Choose a background"
+
+#: src/components/community/InviteCardDialog.tsx
+#: src/components/ShareCardDialog.tsx
+msgid "Chọn mẫu ở cột ảnh thu nhỏ bên cạnh ảnh xem trước."
+msgstr "Pick a template from the thumbnail column next to the preview."
 
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Chọn mẫu rồi chỉ cần nhập năm. Bạn vẫn sửa được chữ và hình bên dưới."
@@ -13792,9 +13797,9 @@ msgstr "Quang Trung routs the Qing army (1789)"
 #: src/components/AppHeader.tsx
 #: src/components/AppHeader.tsx
 #: src/components/BackLink.tsx
+#: src/components/cards/CardSteps.tsx
 #: src/components/ClanLayout.tsx
 #: src/components/ClanLayout.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/pages/Contact.tsx
 msgid "Quay lại"
 msgstr "Back"
@@ -16392,11 +16397,11 @@ msgstr "Continue with {label}"
 msgid "Tiếp tục với Google"
 msgstr "Continue with Google"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Tiếp: Chia sẻ"
 msgstr "Next: Share"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 msgid "Tiếp: Tuỳ chỉnh"
 msgstr "Next: Customize"
 
@@ -17675,7 +17680,7 @@ msgstr "Remembrance"
 msgid "Tưởng nhớ những người đã khuất"
 msgstr "Remembering those who have passed"
 
-#: src/components/ShareCardDialog.tsx
+#: src/components/cards/CardSteps.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Tuỳ chỉnh"

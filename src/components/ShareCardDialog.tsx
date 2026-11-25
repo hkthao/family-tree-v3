@@ -1,14 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { InviteCardBody } from "@/components/community/InviteCardDialog";
 import { getOrCreateGeneralInviteUrl } from "@/components/community/inviteLink";
+import {
+  CardStepFooter,
+  CardStepper,
+  type CardStep,
+} from "@/components/cards/CardSteps";
 import { KhoeOgImage } from "@/components/cards/KhoeOgImage";
 import { SidePanel } from "@/components/SidePanel";
 import { Callout } from "@/components/ui/callout";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  IconArrowLeft,
-  IconArrowRight,
+  IconCamera,
   IconCopy,
   IconDownload,
   IconScroll,
@@ -17,6 +21,8 @@ import {
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/Toast";
 import {
@@ -85,11 +91,9 @@ export interface ShareCardDialogProps {
 
 const GENRES = Object.keys(CARD_GENRE_LABEL) as CardGenre[];
 const PREVIEW_W = 340;
-const STEPS = [
-  { n: 1 as const, label: () => t`Chọn kiểu` },
-  { n: 2 as const, label: () => t`Tuỳ chỉnh` },
-  { n: 3 as const, label: () => t`Chia sẻ` },
-];
+const THUMB_W = 84;
+/** Viền + đệm nút (12) + đệm cột (16) + thanh cuộn dọc (~14). */
+const COL_EXTRA = 42;
 
 function ShareCardBody(props: ShareCardDialogProps) {
   const { open } = props;
@@ -113,7 +117,7 @@ function ShareCardBody(props: ShareCardDialogProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [titleFont, setTitleFont] = useState<string>(DEFAULT_CARD_FONT);
   const [busy, setBusy] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<CardStep>(1);
   // Chế độ khoe: token cố định 1 lần/mở dialog (để QR khớp ảnh lưu) +
   // hạn link do user chọn (≤ 90 ngày = 3 tháng).
   const publish = props.publish;
@@ -236,7 +240,18 @@ function ShareCardBody(props: ShareCardDialogProps) {
     typeof window === "undefined"
       ? 340
       : Math.max(200, Math.min(360, window.innerHeight * 0.36));
-  const previewW = Math.min(PREVIEW_W, (maxH * dim.w) / dim.h);
+  // Màn hẹp (điện thoại): cột mẫu nằm NGANG dưới ảnh; màn rộng: cột dọc bên phải ảnh (chừa chỗ cho cột).
+  const narrow = typeof window !== "undefined" && window.innerWidth < 640;
+  const widthCap =
+    typeof window === "undefined"
+      ? PREVIEW_W
+      : narrow
+        ? window.innerWidth - 56
+        : Math.min(
+            PREVIEW_W,
+            Math.max(180, window.innerWidth * 0.4 - THUMB_W - COL_EXTRA),
+          );
+  const previewW = Math.min(widthCap, PREVIEW_W, (maxH * dim.w) / dim.h);
   const previewScale = previewW / dim.w;
 
   async function exportPng(): Promise<Blob | null> {
@@ -305,22 +320,77 @@ function ShareCardBody(props: ShareCardDialogProps) {
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Ảnh xem trước CỐ ĐỊNH ở trên: đổi gì cũng thấy ngay, không phải kéo lên kéo xuống. */}
         <div className="shrink-0 border-b px-4 py-3 sm:px-5">
-          <div className="flex justify-center rounded-lg border bg-muted/40 p-2 sm:p-3">
-            <div
-              className="overflow-hidden rounded-md border shadow-sm"
-              style={{ width: previewW, height: dim.h * previewScale }}
-              data-testid="card-preview"
-            >
+          <div
+            className={`flex gap-2 rounded-lg border bg-muted/40 p-2 sm:gap-3 sm:p-3 ${narrow ? "flex-col" : ""}`}
+          >
+            <div className="flex min-w-0 flex-1 justify-center">
               <div
-                style={{
-                  width: dim.w,
-                  height: dim.h,
-                  transform: `scale(${previewScale})`,
-                  transformOrigin: "top left",
-                }}
+                className="overflow-hidden rounded-md border shadow-sm"
+                style={{ width: previewW, height: dim.h * previewScale }}
+                data-testid="card-preview"
               >
-                {tpl.render({ data, format })}
+                <div
+                  style={{
+                    width: dim.w,
+                    height: dim.h,
+                    transform: `scale(${previewScale})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  {tpl.render({ data, format })}
+                </div>
               </div>
+            </div>
+            <div
+              role="listbox"
+              aria-label={t`Chọn mẫu`}
+              className={
+                narrow
+                  ? "flex snap-x gap-1.5 overflow-x-auto border-t pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  : "flex shrink-0 snap-y flex-col gap-1.5 overflow-y-auto overflow-x-hidden border-l pl-2 pr-1 sm:pl-3"
+              }
+              style={
+                narrow
+                  ? undefined
+                  : { height: dim.h * previewScale, width: THUMB_W + COL_EXTRA }
+              }
+            >
+              {templatesByGenre(genre).map((tp) => {
+                const sc = THUMB_W / dim.w;
+                const active = tp.id === tpl.id;
+                return (
+                  <button
+                    key={tp.id}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    onClick={() => setTemplateId(tp.id)}
+                    title={tp.name}
+                    style={narrow ? { width: THUMB_W + 12 } : undefined}
+                    className={`shrink-0 snap-start rounded-lg border-2 p-1 text-left transition-colors ${active ? "border-primary bg-background" : "border-transparent hover:border-muted-foreground/40"}`}
+                  >
+                    <div
+                      className="overflow-hidden rounded-md"
+                      style={{ width: THUMB_W, height: dim.h * sc }}
+                    >
+                      <div
+                        style={{
+                          transform: `scale(${sc})`,
+                          transformOrigin: "top left",
+                          width: dim.w,
+                          height: dim.h,
+                          pointerEvents: "none",
+                        }}
+                      >
+                        {tp.render({ data, format })}
+                      </div>
+                    </div>
+                    <div className="mt-1 truncate text-[11px] font-medium leading-tight">
+                      {tp.name}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -328,100 +398,43 @@ function ShareCardBody(props: ShareCardDialogProps) {
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 [scrollbar-gutter:stable]">
           {/* Các bước: ① Chọn kiểu → ② Tuỳ chỉnh → ③ Chia sẻ */}
           <div className="space-y-4">
-            <ol
-              aria-label={t`Các bước`}
-              className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"
-            >
-              {STEPS.map((s) => (
-                <li key={s.n}>
-                  <button
-                    type="button"
-                    onClick={() => setStep(s.n)}
-                    aria-current={step === s.n ? "step" : undefined}
-                    className="inline-flex min-h-11 items-center gap-2"
-                  >
-                    <span
-                      className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold ${step >= s.n ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}
-                    >
-                      {s.n}
-                    </span>
-                    <span
-                      className={
-                        step === s.n ? "font-semibold" : "text-muted-foreground"
-                      }
-                    >
-                      {s.label()}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ol>
+            <CardStepper step={step} onStep={setStep} />
 
             {step === 1 && (
               <div className="space-y-4">
-                <p className="text-sm font-medium">{t`Bạn muốn khoe điều gì?`}</p>
-                {/* Thể loại */}
-                <div className="flex flex-wrap gap-2">
-                  {GENRES.map((g) => (
-                    <button
-                      key={g}
-                      type="button"
-                      onClick={() => setGenre(g)}
-                      className={`rounded-full border px-3 py-1.5 text-sm ${genre === g ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
+                {/* Mẫu chọn ở cột ảnh thu nhỏ bên cạnh ảnh xem trước (luôn thấy, đổi là ảnh đổi ngay). */}
+                <div className="grid grid-cols-1 gap-x-3 gap-y-3 sm:grid-cols-2">
+                  <div className="min-w-0 space-y-1.5">
+                    <Label htmlFor="card-genre">{t`Bạn muốn khoe điều gì?`}</Label>
+                    <Select
+                      id="card-genre"
+                      icon={<IconTag />}
+                      value={genre}
+                      onChange={(e) => setGenre(e.target.value as CardGenre)}
                     >
-                      {CARD_GENRE_LABEL[g]}
-                    </button>
-                  ))}
-                </div>
-                {/* Mẫu trong thể loại */}
-                <div className="grid grid-cols-3 gap-2">
-                  {templatesByGenre(genre).map((t) => {
-                    const s = 88 / dim.w;
-                    const active = t.id === templateId;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setTemplateId(t.id)}
-                        className={`rounded-md border p-1 text-left ${active ? "border-primary ring-2 ring-primary" : "hover:border-primary"}`}
-                      >
-                        <div
-                          className="mx-auto overflow-hidden rounded bg-muted"
-                          style={{ width: 88, height: dim.h * s }}
-                        >
-                          <div
-                            style={{
-                              width: dim.w,
-                              height: dim.h,
-                              transform: `scale(${s})`,
-                              transformOrigin: "top left",
-                              pointerEvents: "none",
-                            }}
-                          >
-                            {t.render({ data, format })}
-                          </div>
-                        </div>
-                        <span className="block mt-1 text-[11px] leading-tight text-muted-foreground">
-                          {t.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-sm font-medium">{t`Khổ thiệp`}</p>
-                {/* Định dạng */}
-                <div className="flex gap-2">
-                  {(["square", "vertical"] as CardFormat[]).map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => setFormat(f)}
-                      className={`rounded-full border px-4 py-1.5 text-sm ${format === f ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
+                      {GENRES.map((g) => (
+                        <option key={g} value={g}>
+                          {CARD_GENRE_LABEL[g]}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="min-w-0 space-y-1.5">
+                    <Label htmlFor="card-format">{t`Khổ thiệp`}</Label>
+                    <Select
+                      id="card-format"
+                      icon={<IconCamera />}
+                      value={format}
+                      onChange={(e) => setFormat(e.target.value as CardFormat)}
                     >
-                      {f === "square" ? t`Vuông (đăng tường)` : t`Dọc (story)`}
-                    </button>
-                  ))}
+                      <option value="square">{t`Vuông (đăng tường)`}</option>
+                      <option value="vertical">{t`Dọc (story)`}</option>
+                    </Select>
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  {t`Chọn mẫu ở cột ảnh thu nhỏ bên cạnh ảnh xem trước.`}
+                </p>
               </div>
             )}
 
@@ -722,34 +735,7 @@ function ShareCardBody(props: ShareCardDialogProps) {
           </div>
         </div>
 
-        {/* Chân cố định: điều hướng giữa các bước */}
-        <div className="flex shrink-0 items-center justify-between gap-2 border-t bg-background px-4 py-3 sm:px-5">
-          <>
-            {step > 1 ? (
-              <Button
-                size="sm"
-                variant="outline"
-                className="px-3 text-sm"
-                onClick={() => setStep((step - 1) as 1 | 2)}
-              >
-                <IconArrowLeft className="mr-1.5 h-4 w-4" />
-                {t`Quay lại`}
-              </Button>
-            ) : (
-              <span />
-            )}
-            {step < 3 && (
-              <Button
-                size="sm"
-                className="px-3 text-sm"
-                onClick={() => setStep((step + 1) as 2 | 3)}
-              >
-                {step === 1 ? t`Tiếp: Tuỳ chỉnh` : t`Tiếp: Chia sẻ`}
-                <IconArrowRight className="ml-1.5 h-4 w-4" />
-              </Button>
-            )}
-          </>
-        </div>
+        <CardStepFooter step={step} onStep={setStep} />
       </div>
 
       {/* Node ẩn full-size để xuất PNG đúng cỡ */}
@@ -811,9 +797,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
       onClose={props.onClose}
       size="lg"
       title={t`Tạo thiệp chia sẻ`}
-      subtitle={
-        kind === "invite" ? t`Ảnh + tin nhắn mời người thân góp` : undefined
-      }
+      // Không đặt phụ đề theo tab: tiêu đề đổi chiều cao khi chuyển tab làm cả bố cục nhảy.
       guard={false}
       bare
     >
