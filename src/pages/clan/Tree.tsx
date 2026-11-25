@@ -60,6 +60,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { listClanMembers } from "@/lib/queries/members";
 import {
   canEditClan,
   effectiveRole,
@@ -413,6 +414,24 @@ export default function Tree() {
     }
     return set;
   }, [clanLinks, clan.id]);
+
+  // "Tôi" trên cây: người mà tài khoản này đã nhận là mình VÀ quản trị đã xác thực. Chưa xác thực thì chưa đánh dấu
+  // (tránh ai cũng tự nhận là một người bất kỳ trên cây).
+  const { data: clanMembers } = useQuery({
+    queryKey: queryKeys.clanMembers(clan.id, userId),
+    queryFn: () => listClanMembers(clan.id),
+    enabled: !!userId,
+  });
+  const myPersonId = useMemo(() => {
+    const mine = clanMembers?.find((m) => m.user_id === userId);
+    return mine?.self_person_id && mine.self_person_verified
+      ? mine.self_person_id
+      : null;
+  }, [clanMembers, userId]);
+  const myPersonIdRef = useRef<string | null>(myPersonId);
+  useEffect(() => {
+    myPersonIdRef.current = myPersonId;
+  }, [myPersonId]);
 
   // Badge dialog state. The card-update closure runs inside
   // family-chart's d3 render — refs let it read the latest values
@@ -1077,6 +1096,29 @@ export default function Tree() {
               this.querySelector(".card-body")?.appendChild(inlaw);
             }
 
+            // Thẻ của CHÍNH người đang đăng nhập (đã được xác thực): viền vàng + nhãn "Tôi".
+            this.querySelector(".me-mark")?.remove();
+            if (personId && myPersonIdRef.current === personId) {
+              const me = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g",
+              );
+              me.setAttribute("class", "me-mark");
+              me.setAttribute("pointer-events", "none");
+              const hasInlawBadge = linkedIdsRef.current.has(personId);
+              const mx = tall ? (hasInlawBadge ? 28 : 6) : 10;
+              const my = tall ? 6 : cardH - 15;
+              me.innerHTML = `
+                <rect x="1.5" y="1.5" width="${cardW - 3}" height="${cardH - 3}"
+                      rx="8" fill="none" stroke="#C8962E" stroke-width="3" />
+                <rect x="${mx}" y="${my}" width="30" height="15" rx="7.5"
+                      fill="#C8962E" stroke="#FBF7F0" stroke-width="1" />
+                <text x="${mx + 15}" y="${my + 11}" text-anchor="middle"
+                      fill="#FFFFFF" font-size="10.5" font-weight="700">${t`Tôi`}</text>
+                <title>${t`Đây là bạn`}</title>`;
+              this.querySelector(".card-body")?.appendChild(me);
+            }
+
             // Quick actions: pencil = edit, plus = open detail (where
             // add-spouse / add-child / etc. live). Visible only when the
             // viewer can edit (admin/editor incl. platform admin); hidden
@@ -1306,6 +1348,7 @@ export default function Tree() {
   }, [
     f3Data,
     focal,
+    myPersonId,
     orientation,
     clan.generation_offset,
     clan.display_death_details,
@@ -1466,8 +1509,22 @@ export default function Tree() {
           </div>
           {/* Hàng dưới ô tìm kiếm (điện thoại: chỉ còn nút Về Thuỷ tổ khi cần, các nút còn lại ở ngăn kéo Tuỳ chọn). */}
           <div
-            className={`flex items-center justify-end gap-2 ${defaultFocal && focal !== defaultFocal ? "" : "max-sm:hidden"}`}
+            className={`flex items-center justify-end gap-2 ${(defaultFocal && focal !== defaultFocal) || (myPersonId && focal !== myPersonId) ? "" : "max-sm:hidden"}`}
           >
+            {myPersonId && focal !== myPersonId && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0 sm:w-auto px-3"
+                onClick={() => setFocal(myPersonId)}
+                aria-label={t`Tôi làm trung tâm`}
+                title={t`Đặt tôi làm trung tâm của cây`}
+              >
+                <IconUser className="h-4 w-4 mr-1.5 shrink-0" />
+                {t`Tôi làm trung tâm`}
+              </Button>
+            )}
             {defaultFocal && focal !== defaultFocal && (
               <Button
                 type="button"

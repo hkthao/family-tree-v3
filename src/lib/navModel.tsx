@@ -16,6 +16,7 @@ import {
   IconHome,
   IconLink,
   IconList,
+  IconLock,
   IconMail,
   IconMapPin,
   IconPuzzle,
@@ -344,6 +345,19 @@ export function buildSections(
       label: t`Góp ý / báo lỗi`,
       hint: t`Gửi ý kiến hoặc báo lỗi cho chúng tôi.`,
       icon: <IconMail className={ic} />,
+    },
+    // Chính sách + điều khoản: trước ở dòng chữ nhỏ cuối menu, ít ai đọc; để cuối nhóm Chung cho gọn chân menu.
+    {
+      to: "/chinh-sach-rieng-tu",
+      label: t`Chính sách riêng tư`,
+      hint: t`Chúng tôi dùng và bảo vệ dữ liệu thế nào.`,
+      icon: <IconLock className={ic} />,
+    },
+    {
+      to: "/dieu-khoan-su-dung",
+      label: t`Điều khoản sử dụng`,
+      hint: t`Quy định khi dùng Dòng Họ Việt.`,
+      icon: <IconScroll className={ic} />,
     },
   ];
   sections.push({

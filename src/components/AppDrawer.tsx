@@ -10,12 +10,10 @@ import {
   IconChevronDown,
   IconFacebook,
   IconGlobe,
-  IconLock,
   IconLogOut,
   IconSearch,
   IconX,
 } from "@/components/icons";
-import { CheckUpdateButton } from "@/components/CheckUpdateButton";
 import { ForceRefreshButton } from "@/components/ForceRefreshButton";
 import {
   isItemActive,
@@ -267,20 +265,13 @@ export function AppDrawer({ open, onClose }: Props) {
             nav body roomy. Logout is icon-only with a tooltip; the row
             itself is the visible "I'm signed in as X" cue. */}
         <footer className="border-t p-3 space-y-3">
-          {/* All four utility actions share one row so the drawer
-              footer doesn't waste vertical space — buttons are
-              `flex-1 min-w-0` and labels short-form ("QR" not "Chia
-              sẻ QR") so 3-4 fit on the 288-wide drawer without
-              clipping. InstallAppButton self-hides when not
-              installable, so on most desktop browsers this is just
-              QR / Cập nhật. Góp ý ĐÃ CHUYỂN LÊN MENU — ở đây nó lẫn giữa
-              mấy nút tiện ích, chỉ ai đi tìm mới thấy. */}
+          {/* Một hàng tiện ích gọn: cài app (tự ẩn khi không cài được), QR, tải lại dữ liệu. Bỏ nút "Cập nhật": app
+              đã tự kiểm tra và báo bản mới (UpdateBanner). */}
           <div className="flex gap-2">
             <InstallAppButton />
             <ShareAppQrButton />
-            <CheckUpdateButton compact />
+            <ForceRefreshButton compact />
           </div>
-          <ForceRefreshButton />
           {profile ? (
             <div className="flex items-center gap-3">
               <Link
@@ -340,24 +331,6 @@ export function AppDrawer({ open, onClose }: Props) {
           )}
           {/* Website + liên hệ hỗ trợ — meta links cuối sidebar */}
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            {/* Chính sách riêng tư để ở đây chứ không chôn trong Trợ giúp:
-                người ta đi tìm nó đúng lúc đang nghi ngại, mà lúc nghi
-                ngại thì không ai chịu khó lục ba lớp menu. */}
-            <Link
-              to="/chinh-sach-rieng-tu"
-              onClick={pick}
-              className="inline-flex items-center gap-1 hover:text-primary"
-            >
-              <IconLock className="h-3.5 w-3.5" />
-              {t`Riêng tư`}
-            </Link>
-            <Link
-              to="/dieu-khoan-su-dung"
-              onClick={pick}
-              className="inline-flex items-center gap-1 hover:text-primary"
-            >
-              {t`Điều khoản`}
-            </Link>
             <a
               href="https://donghoviet.thaohk.com"
               target="_blank"
