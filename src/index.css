@@ -633,17 +633,19 @@ html[data-bg="on"] aside.bg-background {
   .site-prose .wmde-markdown li { text-align: justify; }
 }
 
-/* Tiêu đề mục của trang dòng họ công khai: gạch chân ngắn màu chính dưới tiêu đề. */
+/* Tiêu đề mục của trang dòng họ công khai: gạch chân màu chính dài đúng bằng chữ (khối co theo nội dung). */
 .site-heading {
   position: relative;
-  padding-bottom: 0.6rem;
+  width: fit-content;
+  max-width: 100%;
+  padding-bottom: 0.45rem;
 }
 .site-heading::after {
   content: "";
   position: absolute;
   left: 0;
+  right: 0;
   bottom: 0;
-  width: 2.75rem;
   height: 3px;
   border-radius: 2px;
   background: hsl(var(--primary));
