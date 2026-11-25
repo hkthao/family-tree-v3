@@ -130,7 +130,8 @@ Cách làm:
 
 Còn thiếu / chưa làm:
 - Triển khai prod (bước 7) và bật mặc định: migration gộp cờ, edge function `share-view` + `og-post` (+ `SITE_ORIGIN`), nginx; hiện website tắt mặc định (`?site=1`), màn Share cũ chạy song song.
-- Màn cũ có mà website chưa có: thông báo "Thông tin nhạy cảm đã được ẩn", thanh "Đăng nhập để xem đầy đủ" ở trang công khai (hiện chỉ có link Đăng nhập ở footer), bình luận dưới bài, loại đóng góp "Sửa thông tin" cho khách (form thật chỉ có Câu chuyện / Ảnh cũ).
+- Màn cũ có mà website chưa có: thông báo "Thông tin nhạy cảm đã được ẩn", thanh "Đăng nhập để xem đầy đủ" ở trang công khai (hiện chỉ có link Đăng nhập ở footer).
+- **Đã quyết BỎ (25/11/2026):** bình luận dưới bài viết và loại đóng góp "Sửa thông tin" riêng cho khách. Khách muốn sửa / bổ sung thông tin thì viết thẳng vào **Câu chuyện** (form Cùng góp có dòng gợi ý này), người quản lý xem và cập nhật; không nhập form có cấu trúc.
 - Chưa kiểm: link token giới hạn cây con, dòng họ rất đông người, cỡ tablet (768–1024), sitemap cho các trang con công khai, ESLint (cấu hình của repo đang lỗi).
 
 ## 6d. Trang hồ sơ người — thiết kế lại thành tiểu sử cá nhân (25/11/2026)

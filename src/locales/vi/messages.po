@@ -15483,6 +15483,10 @@ msgstr "Thay nội dung đang có bằng mẫu?"
 msgid "Thấy thông tin trong gia phả bị sai hoặc thiếu? Sửa ô cần sửa — người quản lý dòng họ sẽ đối chiếu rồi mới cập nhật."
 msgstr "Thấy thông tin trong gia phả bị sai hoặc thiếu? Sửa ô cần sửa — người quản lý dòng họ sẽ đối chiếu rồi mới cập nhật."
 
+#: src/components/community/MemoryForm.tsx
+msgid "Thấy thông tin trong gia phả chưa đúng hoặc còn thiếu (ngày sinh, nơi ở, tên…)? Cứ viết vào đây, người quản lý họ sẽ xem và cập nhật."
+msgstr "Thấy thông tin trong gia phả chưa đúng hoặc còn thiếu (ngày sinh, nơi ở, tên…)? Cứ viết vào đây, người quản lý họ sẽ xem và cập nhật."
+
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/People.tsx
 msgid "Thẻ"

@@ -15483,6 +15483,10 @@ msgstr "Replace the existing text with the template?"
 msgid "Thấy thông tin trong gia phả bị sai hoặc thiếu? Sửa ô cần sửa — người quản lý dòng họ sẽ đối chiếu rồi mới cập nhật."
 msgstr "See something wrong or missing in the family tree? Fix the fields that need it — the clan admins will verify before updating."
 
+#: src/components/community/MemoryForm.tsx
+msgid "Thấy thông tin trong gia phả chưa đúng hoặc còn thiếu (ngày sinh, nơi ở, tên…)? Cứ viết vào đây, người quản lý họ sẽ xem và cập nhật."
+msgstr "See something in the family tree that is wrong or missing (birth date, residence, name…)? Just write it here and the clan manager will review and update it."
+
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/People.tsx
 msgid "Thẻ"
