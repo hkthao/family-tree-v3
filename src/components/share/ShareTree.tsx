@@ -716,9 +716,9 @@ export function ShareTree({
       </FilterDrawer>
 
       {/* Điện thoại: cây tràn mép cho rộng; từ sm: nằm trong khung có viền, cùng bề rộng với phần trên. */}
-      <div className="container flex min-h-0 max-w-6xl flex-1 flex-col px-0 sm:px-4 sm:pb-3">
+      <div className="container flex min-h-0 max-w-6xl flex-1 flex-col pb-3">
         {treeMode === "3d" && tree3dData ? (
-          <div className="relative min-h-0 w-full flex-1 overflow-hidden border-y sm:rounded-lg sm:border">
+          <div className="relative min-h-0 w-full flex-1 overflow-hidden rounded-lg border">
             <Suspense
               fallback={
                 <p className="p-8 text-center text-muted-foreground">
@@ -743,7 +743,7 @@ export function ShareTree({
               className={
                 isFullscreen
                   ? "fixed inset-0 z-[60] bg-background p-2"
-                  : "relative min-h-0 w-full flex-1 overflow-hidden border-y sm:rounded-lg sm:border"
+                  : "relative min-h-0 w-full flex-1 overflow-hidden rounded-lg border"
               }
             >
               <TreeBackdrop backdrop={backdrop} />
