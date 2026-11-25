@@ -29,8 +29,6 @@ export interface OgParams {
   id: string | null;
   /** "person": hồ sơ một người (`id` là id người); "clan": trang chủ dòng họ (không cần id); mặc định là bài Bảng tin. */
   kind?: string | null;
-  /** "1": địa chỉ ngắn /s/<mã> (link dành cho Facebook, tránh đường dẫn /share/ mà Facebook đã nhớ là bị robots.txt chặn): og:url trỏ về chính nó. */
-  alias?: string | null;
 }
 
 export type OgResult = { status: 200; html: string; noindex: boolean } | { status: 404 };
@@ -127,8 +125,7 @@ async function renderOgPerson(sb: Sb, params: OgParams, env: OgEnv): Promise<OgR
 }
 
 /** Địa chỉ trang chủ dòng họ trong ứng dụng. */
-export function clanPageUrl(origin: string, p: { token: string | null; clan: string | null; alias?: boolean }): string {
-  if (p.alias && p.token) return `${origin.replace(/\/+$/, "")}/s/${encodeURIComponent(p.token)}`;
+export function clanPageUrl(origin: string, p: { token: string | null; clan: string | null }): string {
   const base = p.token ? `/share/${encodeURIComponent(p.token)}` : `/xem/clans/${encodeURIComponent(p.clan ?? "")}`;
   return `${origin.replace(/\/+$/, "")}${base}`;
 }
@@ -144,7 +141,7 @@ async function renderOgClan(sb: Sb, params: OgParams, env: OgEnv): Promise<OgRes
   if (!access.ok || !SITE_SCOPES.includes(access.link.scope)) return { status: 404 };
   const { data: c } = await sb.from("clans").select("name, description, share_og_path, share_og_updated_at").eq("id", access.link.clan_id).maybeSingle();
   const path = (c?.share_og_path as string | null) ?? null;
-  const url = clanPageUrl(env.siteOrigin, { token, clan, alias: params.alias === "1" });
+  const url = clanPageUrl(env.siteOrigin, { token, clan });
   if (!c || !path || !env.cardImageBase) {
     return {
       status: 200,

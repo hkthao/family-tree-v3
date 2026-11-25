@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
   const r = await renderOgPost(
     sb,
-    { token: url.searchParams.get("token"), clan: url.searchParams.get("clan"), id: url.searchParams.get("id"), kind: url.searchParams.get("kind"), alias: url.searchParams.get("alias") },
+    { token: url.searchParams.get("token"), clan: url.searchParams.get("clan"), id: url.searchParams.get("id"), kind: url.searchParams.get("kind") },
     {
       siteOrigin,
       defaultImage: Deno.env.get("OG_IMAGE") ?? `${siteOrigin}/icons/og-banner.png`,

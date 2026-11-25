@@ -468,9 +468,6 @@ function Detail({
   const confirm = useConfirm();
   const st = hubStatus(item.expiresAt, item.revoked);
   const url = hubItemUrl(origin, item);
-  const fbUrl = hubItemUrl(origin, {
-    path: item.path.replace(/^\/share\//, "/s/"),
-  });
   const [qr, setQr] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
@@ -562,33 +559,6 @@ function Detail({
           </Button>
         </div>
       </div>
-
-      {item.kind === "tree" && item.path.startsWith("/share/") && (
-        <div className="space-y-1">
-          <div className="text-sm font-semibold">{t`Link ngắn cho Facebook`}</div>
-          <p className="text-xs text-muted-foreground">
-            {t`Dùng khi đăng lên Facebook nếu link thường không hiện ảnh. Người mở vẫn vào đúng trang này.`}
-          </p>
-          <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
-            <code className="min-w-0 flex-1 truncate text-sm" title={fbUrl}>
-              {fbUrl}
-            </code>
-            <Button
-              size="icon-sm"
-              variant="outline"
-              aria-label={t`Sao chép link cho Facebook`}
-              onClick={() =>
-                void navigator.clipboard
-                  .writeText(fbUrl)
-                  .then(() => toast.success(t`Đã sao chép link cho Facebook.`))
-                  .catch(() => toast.error(t`Không sao chép được liên kết.`))
-              }
-            >
-              <IconCopy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
 
       {canExtend && (
         <div className="space-y-1.5">

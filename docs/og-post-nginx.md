@@ -125,17 +125,3 @@ location ~ "^/xem/clans/(?<cid>[0-9a-fA-F-]{36})/?$" {
     proxy_set_header Authorization "Bearer <SUPABASE_ANON_KEY>";
 }
 ```
-
-### Link ngắn `/s/<mã>` cho Facebook
-
-Facebook giữ `robots.txt` cũ rất lâu: nếu từng chặn `/share/` thì dù đã sửa, Debugger vẫn báo 403 mà KHÔNG gửi yêu cầu nào tới máy chủ. Đường dẫn
-ngắn `/s/<mã>` không nằm trong `robots.txt` cũ nên quét được ngay. Bot → `og-post?kind=clan&alias=1` (og:url trỏ `/s/<mã>`); người thật → 302 sang `/share/<mã>`.
-Trung tâm chia sẻ → chi tiết link cây → "Link ngắn cho Facebook" sao chép địa chỉ này.
-
-```nginx
-location ~ "^/s/(?<ref>[A-Za-z0-9_-]+)/?$" {
-    if ($is_share_bot) { rewrite ^ /__og/clan/a/$ref/- last; }
-    return 302 /share/$ref;
-}
-# trong location ~ "^/__og/..." : mode (t|c|a); với a: set $og_q "$og_q&token=$ref&alias=1";
-```
