@@ -38,7 +38,7 @@ describe("buildHubItems", () => {
     expect(by["link:b"]).toMatchObject({ kind: "grave", title: "Thọ Lăng", path: "/share/tok1/mo-phan/g1" });
     expect(by["link:c"]).toMatchObject({ kind: "heritage", title: "Hịch tướng sĩ", path: "/share/tok1/di-san/h1" });
     expect(by["link:d"]).toMatchObject({ kind: "contribute", title: "Cô Ba", path: "/share/tok1/cung-gop" });
-    expect(by["link:e"]).toMatchObject({ kind: "tree", title: "Cây", path: "/s/tok1" });
+    expect(by["link:e"]).toMatchObject({ kind: "tree", title: "Cây", path: "/share/tok1" });
     expect(by["card:c1"]).toMatchObject({ kind: "card", views: 128, path: "/khoe/ctok", subtitle: "Thiệp khoe" });
   });
 
