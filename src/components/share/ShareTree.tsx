@@ -26,9 +26,7 @@ import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
 import { useTreeViewPrefs } from "@/lib/tree/viewPrefs";
 import { nameFontFamily as fontFamilyOf } from "@/lib/tree/nameFonts";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
-import {
-  type ShareViewPayload,
-} from "@/lib/queries/share-view";
+import { type ShareViewPayload } from "@/lib/queries/share-view";
 
 import "family-chart/styles/family-chart.css";
 import {
@@ -90,7 +88,6 @@ async function loadF3(): Promise<typeof import("family-chart")> {
   return f3Module;
 }
 
-
 export interface ShareTreeProps {
   data: ShareViewPayload;
   /** false: ẩn bằng CSS nhưng giữ cây đã dựng (đổi tab không phải dựng lại). */
@@ -109,7 +106,15 @@ export interface ShareTreeProps {
  * Khối cây gia phả chỉ-xem dùng chung cho màn Share (tab Cây) và trang dòng họ: thanh chọn người trung tâm + ngăn
  * Tuỳ chọn cây, khung cây 2D (family-chart) / 3D, hướng dẫn, xuất ảnh, toàn màn hình. Tách nguyên văn khỏi Share.tsx.
  */
-export function ShareTree({ data, visible = true, className, onFocalChange, onFullscreenChange, initialFocal, toolbarExtra }: ShareTreeProps) {
+export function ShareTree({
+  data,
+  visible = true,
+  className,
+  onFocalChange,
+  onFullscreenChange,
+  initialFocal,
+  toolbarExtra,
+}: ShareTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const shareWrapRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
@@ -140,7 +145,9 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
   // picked from the data) once we have it. We don't gate the chart on
   // it — family-chart picks its own default main when none is set.
   const [focal, setFocal] = useState<string | null>(() =>
-    initialFocal && data.persons.some((p) => p.id === initialFocal) ? initialFocal : null,
+    initialFocal && data.persons.some((p) => p.id === initialFocal)
+      ? initialFocal
+      : null,
   );
   const toast = useToast();
   // Xuất ảnh cây đang xem (PNG) — dùng chung helper với trang Cây chính.
@@ -178,7 +185,6 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
   const prefs = useTreeViewPrefs();
   const { cardLayout, cardAvatar, cardFrame, nameFont, backdrop, avatarStyle } =
     prefs;
-
 
   // Pick a default focal synchronously the moment data lands — using
   // a setState-inside-render guard (only fires once) instead of an
@@ -544,16 +550,24 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
           const { zoomTransform } = await import("d3-zoom");
           return zoomTransform(listener).k;
         };
-        const READABLE_K = 0.85;
-        if ((await currentK()) < READABLE_K) {
+        // Điện thoại (khung hẹp): 0,7 để thấy được nhiều thế hệ hơn mà chữ vẫn đọc được; máy tính: 0,85.
+        const READABLE_K =
+          node.getBoundingClientRect().width < 520 ? 0.7 : 0.85;
+        // Dùng cả sau mỗi lần co giãn khung (điện thoại: đổi hướng màn hình, thanh địa chỉ co lại…): refit của family-chart có thể
+        // thu cả cây về chữ li ti, nên phải kéo lại mức đọc được quanh người đang chọn.
+        const ensureReadable = async () => {
           if (disposed) return;
-          built.updateTree({
-            initial: false,
-            tree_position: "main_to_middle",
-            scale: READABLE_K,
-            transition_time: 0,
-          });
-        }
+          if ((await currentK()) < READABLE_K) {
+            if (disposed) return;
+            built.updateTree({
+              initial: false,
+              tree_position: "main_to_middle",
+              scale: READABLE_K,
+              transition_time: 0,
+            });
+          }
+        };
+        await ensureReadable();
         colorLinks();
         requestAnimationFrame(colorLinks);
         requestAnimationFrame(() => requestAnimationFrame(colorLinks));
@@ -565,6 +579,7 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
             if (Math.abs(next - last) < 1) return;
             last = next;
             chartRef.current?.updateTree({ initial: false });
+            requestAnimationFrame(() => void ensureReadable());
           });
           resizeObserver.observe(node);
         }
@@ -630,7 +645,8 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
 
   // Đổi `initialFocal` khi đang xem cây (bấm kết quả tìm kiếm khác) → chuyển tâm sang người đó.
   useEffect(() => {
-    if (initialFocal && data.persons.some((p) => p.id === initialFocal)) setFocal(initialFocal);
+    if (initialFocal && data.persons.some((p) => p.id === initialFocal))
+      setFocal(initialFocal);
   }, [initialFocal, data.persons]);
   useEffect(() => {
     if (focal) onFocalChange?.(focal);
@@ -641,7 +657,9 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
   // Hiện lại sau khi ẩn (đổi tab) → vừa khít lại khung.
   useEffect(() => {
     if (!visible) return;
-    const r = requestAnimationFrame(() => chartRef.current?.updateTree({ initial: false }));
+    const r = requestAnimationFrame(() =>
+      chartRef.current?.updateTree({ initial: false }),
+    );
     return () => cancelAnimationFrame(r);
   }, [visible]);
 
@@ -755,9 +773,7 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
                   disabled={savingImg}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
                   aria-label={t`Xuất ảnh cây đang hiển thị (PNG)`}
-                  title={
-                    savingImg ? t`Đang xuất…` : t`Xuất ảnh cây (PNG)`
-                  }
+                  title={savingImg ? t`Đang xuất…` : t`Xuất ảnh cây (PNG)`}
                 >
                   <IconDownload className="h-4 w-4" />
                 </button>
@@ -766,14 +782,10 @@ export function ShareTree({ data, visible = true, className, onFocalChange, onFu
                   onClick={toggleFullscreen}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
                   aria-label={
-                    isFullscreen
-                      ? t`Thoát toàn màn hình`
-                      : t`Xem toàn màn hình`
+                    isFullscreen ? t`Thoát toàn màn hình` : t`Xem toàn màn hình`
                   }
                   title={
-                    isFullscreen
-                      ? t`Thoát toàn màn hình`
-                      : t`Xem toàn màn hình`
+                    isFullscreen ? t`Thoát toàn màn hình` : t`Xem toàn màn hình`
                   }
                 >
                   {isFullscreen ? (

@@ -5935,6 +5935,10 @@ msgstr "Đăng nhập bằng liên kết qua email"
 msgid "Đăng nhập để xác nhận"
 msgstr "Đăng nhập để xác nhận"
 
+#: src/pages/site/SiteNotices.tsx
+msgid "Đăng nhập để xem đầy đủ"
+msgstr "Đăng nhập để xem đầy đủ"
+
 #: src/pages/Share.tsx
 #: src/pages/site/SiteNotices.tsx
 msgid "Đăng nhập để xem đầy đủ & cùng vun đắp"

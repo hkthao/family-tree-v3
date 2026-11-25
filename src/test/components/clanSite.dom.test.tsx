@@ -214,6 +214,13 @@ describe("lưu ý quyền riêng tư + lời mời đăng nhập", () => {
     expect(screen.queryByRole("link", { name: /Đăng nhập để xem đầy đủ/ })).toBeNull();
   });
 
+  it("trang Cây không hiện hai khối này (khung cây chiếm trọn màn hình, không để trang phải cuộn)", async () => {
+    renderAt("/xem/clans/c1/cay?site=1");
+    await screen.findByTestId("tree");
+    expect(screen.queryByText("Thông tin nhạy cảm đã được ẩn")).toBeNull();
+    expect(screen.queryByRole("link", { name: /Đăng nhập để xem đầy đủ/ })).toBeNull();
+  });
+
   it("link tập trung (QR người) không hiện hai khối này", async () => {
     fetchShareView.mockResolvedValue(payload({ scope: "single_person", root_person_id: "b" }));
     renderAt("/share/tok?site=1");

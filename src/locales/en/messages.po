@@ -5935,6 +5935,10 @@ msgstr "Sign in with an email link"
 msgid "Đăng nhập để xác nhận"
 msgstr "Sign in to confirm"
 
+#: src/pages/site/SiteNotices.tsx
+msgid "Đăng nhập để xem đầy đủ"
+msgstr "Sign in to see everything"
+
 #: src/pages/Share.tsx
 #: src/pages/site/SiteNotices.tsx
 msgid "Đăng nhập để xem đầy đủ & cùng vun đắp"
