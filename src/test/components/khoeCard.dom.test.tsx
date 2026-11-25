@@ -86,7 +86,8 @@ describe("trang /khoe/:token", () => {
     const d = await screen.findByTestId("khoe-default-card");
     expect(d).toHaveTextContent("Tin vui");
     expect(d).toHaveTextContent("Đời 32");
-    expect(document.querySelector("img")).toBeNull();
+    // không còn ảnh thiệp vỡ (logo app ở đầu trang vẫn là <img>, nên chỉ xét ảnh thiệp)
+    expect(document.querySelector('img[src*="st.example"]')).toBeNull();
   });
 
   it("không có thẻ mời ở cuối trang; họ công khai cây có nút Xem cây gia phả cạnh các nút chính", async () => {

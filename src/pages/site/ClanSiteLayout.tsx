@@ -2,7 +2,8 @@ import { t } from "@lingui/core/macro";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-import { IconChevronDown, IconPlus, IconTree, IconX } from "@/components/icons";
+import { AppLogo } from "@/components/AppLogo";
+import { IconChevronDown, IconPlus, IconX } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { ScrollTopButton } from "@/components/site/ScrollTopButton";
@@ -142,7 +143,7 @@ export function ClanSiteLayout({ children }: { children: ReactNode }) {
         <div className="container max-w-6xl">
           <div className="flex min-h-16 items-center gap-x-6">
             <Link to={base} className="clan-name flex min-w-0 max-w-[min(20rem,60vw)] shrink items-center gap-2.5 text-lg font-bold" title={name}>
-              <IconTree className="h-6 w-6 shrink-0 text-primary" />
+              <AppLogo size={28} className="shrink-0 rounded" />
               <span className="truncate">{name}</span>
             </Link>
 
@@ -243,7 +244,7 @@ function SiteFooter({ name }: { name: string }) {
       <div className="container grid max-w-6xl grid-cols-1 gap-x-12 gap-y-8 py-10 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.4fr)_minmax(0,1fr)]">
         <div className="min-w-0">
           <Link to={base} className="clan-name inline-flex max-w-full items-center gap-2.5 text-lg font-bold">
-            <IconTree className="h-6 w-6 shrink-0 text-primary" />
+            <AppLogo size={28} className="shrink-0 rounded" />
             <span className="break-words">{name}</span>
           </Link>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">{t`Gia phả, bảng tin và những câu chuyện của dòng họ — để con cháu ở xa vẫn biết đường về.`}</p>
