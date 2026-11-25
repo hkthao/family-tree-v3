@@ -359,9 +359,9 @@ export function buildSections(
     const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
     const isMember = clan.myRole !== null || clan.isPlatformAdmin;
     const canTree = isMember || clan.public_show_tree;
-    const canEvents = isMember || clan.public_show_events;
-    const canGraves = isMember || clan.public_show_graves;
-    const canHeritage = isMember || clan.public_show_heritage;
+    const canEvents = isMember || clan.share_sections.includes("events");
+    const canGraves = isMember || clan.share_sections.includes("graves");
+    const canHeritage = isMember || clan.share_sections.includes("heritage");
     const feat = (k: ClanFeatureKey) =>
       isFeatureEnabled(clan.disabled_features, k);
 

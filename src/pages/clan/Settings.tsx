@@ -77,9 +77,6 @@ export default function Settings() {
         display_death_details: values.display_death_details,
         display_living_full_dob: values.display_living_full_dob,
         public_show_tree: values.public_show_tree,
-        public_show_heritage: values.public_show_heritage,
-        public_show_graves: values.public_show_graves,
-        public_show_events: values.public_show_events,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({

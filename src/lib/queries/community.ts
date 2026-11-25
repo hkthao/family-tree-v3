@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { contributeUrl, questionUrl } from "@/lib/shareUrls";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
@@ -460,8 +461,7 @@ export async function revokeContributeLink(id: string, client: Client = defaultC
 }
 
 export function contributeLinkUrl(token: string, personId?: string | null): string {
-  const base = `${window.location.origin}/share/${token}?tab=gop`;
-  return personId ? `${base}&p=${personId}` : base;
+  return contributeUrl(window.location.origin, token, personId);
 }
 
 // ─── Khách góp qua link (edge function) ─────────────────────────
@@ -671,7 +671,7 @@ export async function deleteQuestion(id: string, client: Client = defaultClient)
 
 /** Link trả lời một câu hỏi: trang chia sẻ mở thẳng tab Cùng góp với câu hỏi đó. */
 export function questionLinkUrl(token: string, questionId: string): string {
-  return `${window.location.origin}/share/${token}?tab=gop&q=${questionId}`;
+  return questionUrl(window.location.origin, token, questionId);
 }
 
 // ─── P2: Ảnh "đây là ai?" ───────────────────────────────────────

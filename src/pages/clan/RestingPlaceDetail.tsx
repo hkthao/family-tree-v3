@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { shareLinkUrl } from "@/lib/shareUrls";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -225,7 +226,7 @@ export default function RestingPlaceDetail({
       toast.error(t`Không tạo được QR`, { description: (e as Error).message }),
   });
   const qrUrl = qrM.data
-    ? `${window.location.origin}/share/${qrM.data.token}`
+    ? shareLinkUrl(window.location.origin, qrM.data)
     : "";
 
   if (isLoading) return <p className="text-muted-foreground">{t`Đang tải…`}</p>;

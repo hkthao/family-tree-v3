@@ -16,9 +16,6 @@ export interface ClanFormValues {
   avatar_frame: string | null;
   visibility: "private" | "public";
   public_show_tree: boolean;
-  public_show_heritage: boolean;
-  public_show_graves: boolean;
-  public_show_events: boolean;
   root_is_gen_zero: boolean;
   display_death_details: boolean;
   display_living_full_dob: boolean;
@@ -31,9 +28,6 @@ export const DEFAULT_CLAN_FORM: ClanFormValues = {
   avatar_frame: null,
   visibility: "private",
   public_show_tree: true,
-  public_show_heritage: true,
-  public_show_graves: true,
-  public_show_events: true,
   root_is_gen_zero: false,
   display_death_details: false,
   display_living_full_dob: false,
@@ -47,9 +41,6 @@ export function clanFormFromClan(clan: ClanDetail): ClanFormValues {
     avatar_frame: clan.avatar_frame ?? null,
     visibility: clan.visibility as "private" | "public",
     public_show_tree: clan.public_show_tree,
-    public_show_heritage: clan.public_show_heritage,
-    public_show_graves: clan.public_show_graves,
-    public_show_events: clan.public_show_events,
     root_is_gen_zero: clan.generation_offset === 1,
     display_death_details: clan.display_death_details,
     display_living_full_dob: clan.display_living_full_dob,
@@ -71,9 +62,6 @@ export function clanFormToColumns(
     display_death_details: v.display_death_details,
     display_living_full_dob: v.display_living_full_dob,
     public_show_tree: v.public_show_tree,
-    public_show_heritage: v.public_show_heritage,
-    public_show_graves: v.public_show_graves,
-    public_show_events: v.public_show_events,
   };
 }
 
@@ -149,21 +137,6 @@ const PUBLIC_OPTIONS = lazyMessages([
     key: "public_show_tree" as const,
     label: msg`Cây gia phả & Danh bạ`,
     desc: msg`Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn).`,
-  },
-  {
-    key: "public_show_heritage" as const,
-    label: msg`Di sản dòng họ`,
-    desc: msg`Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh.`,
-  },
-  {
-    key: "public_show_graves" as const,
-    label: msg`Mộ phần & tro cốt`,
-    desc: msg`Xem nơi an nghỉ, người an nghỉ và ảnh mộ.`,
-  },
-  {
-    key: "public_show_events" as const,
-    label: msg`Sự kiện`,
-    desc: msg`Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết).`,
   },
 ]);
 
@@ -246,6 +219,9 @@ export function ClanDisplayFields({
             <p className="text-sm text-muted-foreground">
               {t`Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem được.`}
               {isPrivate ? t` Cần chọn chế độ Công khai ở trên trước.` : ""}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t`Di sản, Mộ phần, Sự kiện, Bảng tin… chọn ở thẻ "Trang dòng họ hiển thị gì" trong Cài đặt dòng họ (áp cho cả người xem công khai lẫn link chia sẻ).`}
             </p>
             <div
               className={

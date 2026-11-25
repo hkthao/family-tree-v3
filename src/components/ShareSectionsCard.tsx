@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 
 import { t } from "@lingui/core/macro";
 
-export const SHARE_SECTIONS = ["info", "board", "map", "heritage", "graves", "honor", "mosaic"] as const;
+export const SHARE_SECTIONS = ["info", "board", "events", "map", "heritage", "graves", "honor", "mosaic", "profiles"] as const;
 export type ShareSection = (typeof SHARE_SECTIONS)[number];
 
 function sectionLabel(k: ShareSection): { title: string; hint: string } {
@@ -18,6 +18,10 @@ function sectionLabel(k: ShareSection): { title: string; hint: string } {
       return { title: t`Thông tin dòng họ`, hint: t`Mô tả, thuỷ tổ, số đời / người, quê gốc, từ đường, giỗ tổ, trưởng họ.` };
     case "board":
       return { title: t`Bảng tin`, hint: t`Các bài đã đăng mới nhất (tin vui, thông báo).` };
+    case "events":
+      return { title: t`Sự kiện & giỗ`, hint: t`Lịch giỗ và các dịp chung của dòng họ (họp họ, lễ tiết).` };
+    case "profiles":
+      return { title: t`Hồ sơ người đã mất`, hint: t`Tiểu sử, tên hiệu, ngày âm, nơi sinh / an táng và dấu mốc cuộc đời của người đã mất (người còn sống luôn được ẩn).` };
     case "map":
       return { title: t`Bản đồ`, hint: t`Chỉ số người theo tỉnh — không lộ địa chỉ hay tên.` };
     case "heritage":
@@ -127,9 +131,9 @@ export function ShareSectionsCard({ clanId }: { clanId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t`Link chia sẻ hiển thị gì`}</CardTitle>
+        <CardTitle>{t`Trang dòng họ hiển thị gì`}</CardTitle>
         <CardDescription>
-          {t`Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt "Hiển thị & quyền xem" riêng.`}
+          {t`Ngoài cây gia phả, chọn các phần cho người ngoài họ xem. Áp cho link chia sẻ (/share/…) và, với dòng họ ở chế độ Công khai, cả người xem công khai: Di sản, Mộ phần, Sự kiện bỏ tick là ẩn với mọi người ngoài họ. Mặc định không chia sẻ thêm gì.`}
         </CardDescription>
       </CardHeader>
       <CardContent>

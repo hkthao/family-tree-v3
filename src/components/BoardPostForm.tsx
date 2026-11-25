@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DatePicker } from "@/components/ui/date-picker";
-import { useContext, useState } from "react";
+import { lazy, Suspense, useContext, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { FilterableSelect } from "@/components/FilterableSelect";
@@ -20,7 +20,6 @@ import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin } from "@/hooks/useClanContext";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
@@ -31,10 +30,15 @@ import {
   type ClanPostType,
 } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
+import { normalizePostMarkdown, postExcerpt } from "@/lib/postMarkdown";
 
 import { Trans } from "@lingui/react/macro";
 import { t, msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
+// Trình soạn / hiển thị Markdown kéo theo thư viện lớn → chỉ nạp khi mở form hoặc đọc bài.
+const MarkdownEditor = lazy(() => import("@/components/markdown/MarkdownEditor"));
+const MarkdownView = lazy(() => import("@/components/markdown/MarkdownView"));
+
 const TYPE_OPTIONS: Array<{ value: ClanPostType; label: string }> =
   lazyMessages([
     { value: "news", label: msg`Tin` },
@@ -115,7 +119,7 @@ export function BoardPostForm({
           : admin
             ? t`Đã đăng bài`
             : t`Đã gửi — chờ admin duyệt`,
-        { description: title.trim() || body.slice(0, 60) },
+        { description: title.trim() || postExcerpt(body, 60) },
       );
       qc.invalidateQueries({ queryKey: queryKeys.clanPosts(clan.id) });
       qc.invalidateQueries({ queryKey: queryKeys.clanPostsPending(clan.id) });
@@ -171,10 +175,12 @@ export function BoardPostForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="post-title">{t`Tiêu đề (tuỳ chọn)`}</Label>
+          <Label htmlFor="post-title">{isEdit && !post?.title ? t`Tiêu đề (tuỳ chọn)` : t`Tiêu đề`}</Label>
           <Input
             id="post-title"
             icon={<IconScroll />}
+            // Bài mới phải có tiêu đề (trang dòng họ hiển thị theo tiêu đề); bài cũ chưa có thì không ép.
+            required={!isEdit || !!post?.title}
             maxLength={200}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -182,18 +188,28 @@ export function BoardPostForm({
           />
         </div>
 
-        <Textarea
-          id="post-body"
-          label={t`Nội dung`}
-          icon={<IconBook />}
-          required
-          maxLength={20000}
-          rows={4}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder={t`Viết tin cho cả họ đọc…`}
-          className="text-sm"
-        />
+        <div className="space-y-2">
+          <Label htmlFor="post-body" className="inline-flex items-center gap-1.5">
+            <IconBook className="h-4 w-4" />
+            {t`Nội dung`}
+          </Label>
+          <Suspense fallback={<p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>}>
+            {readOnly ? (
+              <MarkdownView source={normalizePostMarkdown(body)} />
+            ) : (
+              <MarkdownEditor
+                value={body}
+                onChange={setBody}
+                height={inPanel ? 320 : 380}
+                preview={inPanel ? "edit" : "live"}
+                placeholder={t`Viết tin cho cả họ đọc… (hỗ trợ Markdown: ## tiêu đề, - danh sách, > trích dẫn, ![ảnh](https://…))`}
+              />
+            )}
+          </Suspense>
+          <p className="text-xs text-muted-foreground">
+            {t`Ảnh đầu tiên (dán địa chỉ https) sẽ làm ảnh bìa bài trên trang dòng họ.`}
+          </p>
+        </div>
 
         {(type === "event" || type === "notice") && (
           <div className="space-y-2">

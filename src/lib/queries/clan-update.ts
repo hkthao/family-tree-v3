@@ -19,9 +19,6 @@ export interface UpdateClanInput {
   generation_offset?: number;
   /** Người xem công khai được xem phần nào (chỉ hiệu lực khi public). */
   public_show_tree?: boolean;
-  public_show_heritage?: boolean;
-  public_show_graves?: boolean;
-  public_show_events?: boolean;
   /** Key tính năng phụ đang TẮT (feature-flags theo dòng họ). */
   disabled_features?: string[];
 }

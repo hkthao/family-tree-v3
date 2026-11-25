@@ -5,6 +5,7 @@ import {
   PersonQrSinglePdf,
   type QrCardItem,
 } from "@/lib/pdf/QrCardPdf";
+import { shareLinkUrl } from "@/lib/shareUrls";
 import { getOrCreatePersonShareLink } from "@/lib/queries/share-links";
 
 /**
@@ -51,7 +52,7 @@ async function buildQrCardItem(
   origin: string,
 ): Promise<QrCardItem> {
   const link = await getOrCreatePersonShareLink(input.clanId, input.personId);
-  const url = `${origin}/share/${link.token}`;
+  const url = shareLinkUrl(origin, link);
   // Lazy import so the qrcode dependency only loads when exporting.
   const QR = (await import("qrcode")).default;
   const qrDataUrl = await QR.toDataURL(url, {

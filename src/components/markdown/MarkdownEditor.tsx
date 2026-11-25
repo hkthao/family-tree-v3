@@ -39,11 +39,14 @@ export default function MarkdownEditor({
   onChange,
   height = 520,
   placeholder,
+  preview = "live",
 }: {
   value: string;
   onChange: (v: string) => void;
   height?: number;
   placeholder?: string;
+  /** "live": soạn + xem trước cạnh nhau; "edit": chỉ soạn (chỗ hẹp như ngăn kéo — vẫn có nút bật xem trước). */
+  preview?: "live" | "edit";
 }) {
   return (
     <div data-color-mode={isDark() ? "dark" : "light"} className="big-md rounded-lg border">
@@ -51,7 +54,7 @@ export default function MarkdownEditor({
         value={value}
         onChange={(v) => onChange(v ?? "")}
         height={height}
-        preview="live"
+        preview={preview}
         commands={TOOLBAR}
         visibleDragbar={false}
         textareaProps={{ placeholder }}

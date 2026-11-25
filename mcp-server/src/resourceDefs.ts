@@ -185,8 +185,8 @@ export const RESOURCES: ResourceDef[] = [
     customDelete: true,
     fields: {
       type: { k: "enum", v: ["news", "event", "birth", "death", "notice"], req: true },
-      title: { k: "str", max: 200 },
-      body: { k: "str", max: 20000, req: true },
+      title: { k: "str", max: 200, d: "Post title. Recommended: if empty, the first line of the body is shown as the title" },
+      body: { k: "str", max: 20000, req: true, d: "Post body in Markdown (## headings, - lists, > quotes, **bold**, ![alt](https://…) images; no HTML). The first https image is used as the cover. Plain text still works." },
       person_id: { k: "person", d: "Related person (optional)" },
       event_id: { k: "uuid", d: "Related event id from list_events (optional)" },
       event_date: { k: "date", d: "YYYY-MM-DD, for event posts" },
@@ -363,7 +363,7 @@ export const EXTRA_SPECS: McpToolSpec[] = [
     name: "create_post",
     needs: "write",
     description:
-      "Publish a bulletin post. Clan admins publish immediately; other members' posts go to the moderation queue (status pending) until an admin publishes them.",
+      "Publish a bulletin post (body is Markdown; give it a title). Clan admins publish immediately; other members' posts go to the moderation queue (status pending) until an admin publishes them.",
     inputSchema: obj(
       Object.fromEntries(Object.entries(RESOURCES.find((r) => r.key === "post")!.fields).map(([k, f]) => [k, jsonType(f)])),
       ["type", "body"],

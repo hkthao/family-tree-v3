@@ -11,6 +11,8 @@ interface Props {
   clanId: string;
   /** Sự kiện của họ (có eventId) → bấm mở chi tiết thay vì sang trang người. */
   onOpenEvent?: (eventId: string) => void;
+  /** Trang dòng họ công khai: không dẫn sang trang người trong app. */
+  readOnly?: boolean;
 }
 
 const VN_MONTHS = [
@@ -75,7 +77,7 @@ function kindLabel(k: UpcomingEvent["kind"]): string {
   }
 }
 
-export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
+export function EventsCalendar({ events, clanId, onOpenEvent, readOnly }: Props) {
   const today = useMemo(() => new Date(), []);
   const todayIso = isoOf(today);
 
@@ -263,7 +265,7 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
                 );
                 return (
                   <li key={e.key}>
-                    {e.eventId && onOpenEvent ? (
+                    {e.eventId && onOpenEvent && !readOnly ? (
                       <button
                         type="button"
                         onClick={() => onOpenEvent(e.eventId!)}
@@ -271,7 +273,7 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
                       >
                         {inner}
                       </button>
-                    ) : e.personId ? (
+                    ) : e.personId && !readOnly ? (
                       <Link
                         to={`/clans/${clanId}/people/${e.personId}`}
                         className="block"

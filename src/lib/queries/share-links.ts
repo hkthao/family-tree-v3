@@ -10,6 +10,8 @@ export interface ShareLink {
   clan_id: string;
   token: string;
   root_person_id: string | null;
+  root_resting_place_id: string | null;
+  root_heritage_item_id: string | null;
   scope: string;
   expires_at: string;
   is_revoked: boolean;
@@ -22,7 +24,7 @@ export async function listShareLinks(
 ): Promise<ShareLink[]> {
   const { data, error } = await client
     .from("share_links")
-    .select("id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at")
+    .select("id, clan_id, token, root_person_id, root_resting_place_id, root_heritage_item_id, scope, expires_at, is_revoked, created_at")
     .eq("clan_id", clanId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -44,7 +46,7 @@ export async function listShareLinksPage(
   const { data, error, count } = await client
     .from("share_links")
     .select(
-      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+      "id, clan_id, token, root_person_id, root_resting_place_id, root_heritage_item_id, scope, expires_at, is_revoked, created_at",
       { count: "exact" },
     )
     .eq("clan_id", clanId)
@@ -96,7 +98,7 @@ export async function createShareLink(
       scope: input.scope ?? "tree_view",
       expires_at: expires,
     })
-    .select("id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at")
+    .select("id, clan_id, token, root_person_id, root_resting_place_id, root_heritage_item_id, scope, expires_at, is_revoked, created_at")
     .single();
   if (error) throw new Error(error.message);
   return data as ShareLink;
@@ -119,7 +121,7 @@ export async function getOrCreatePersonShareLink(
   const nowIso = new Date().toISOString();
   const { data: existing, error: selErr } = await client
     .from("share_links")
-    .select("id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at")
+    .select("id, clan_id, token, root_person_id, root_resting_place_id, root_heritage_item_id, scope, expires_at, is_revoked, created_at")
     .eq("clan_id", clanId)
     .eq("root_person_id", personId)
     .eq("scope", PERSON_SCOPE)
@@ -158,7 +160,7 @@ export async function getOrCreateRestingPlaceShareLink(
   const { data: existing, error: selErr } = await client
     .from("share_links")
     .select(
-      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+      "id, clan_id, token, root_person_id, root_resting_place_id, root_heritage_item_id, scope, expires_at, is_revoked, created_at",
     )
     .eq("clan_id", clanId)
     .eq("root_resting_place_id", restingPlaceId)
@@ -198,7 +200,7 @@ export async function getOrCreateHeritageShareLink(
   const { data: existing, error: selErr } = await client
     .from("share_links")
     .select(
-      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+      "id, clan_id, token, root_person_id, root_resting_place_id, root_heritage_item_id, scope, expires_at, is_revoked, created_at",
     )
     .eq("clan_id", clanId)
     .eq("root_heritage_item_id", heritageItemId)
@@ -241,7 +243,7 @@ export async function getOrCreateTreeShareLink(
   const { data: existing, error: selErr } = await client
     .from("share_links")
     .select(
-      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+      "id, clan_id, token, root_person_id, root_resting_place_id, root_heritage_item_id, scope, expires_at, is_revoked, created_at",
     )
     .eq("clan_id", clanId)
     .is("root_person_id", null)

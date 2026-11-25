@@ -35,6 +35,11 @@ const VENDORED: VendorFile[] = [
     ],
   },
   {
+    source: "src/lib/postMarkdown.ts",
+    vendor: "supabase/functions/_shared/vendor/postMarkdown.ts",
+    marker: "// ─── nguyên văn src/lib/postMarkdown.ts ─",
+  },
+  {
     source: "src/lib/icalBuild.ts",
     vendor: "supabase/functions/_shared/vendor/icalBuild.ts",
     marker: "// ─── nguyên văn src/lib/icalBuild.ts ─",

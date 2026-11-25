@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -11,6 +11,7 @@ import {
   ArticleSection,
 } from "@/components/Article";
 import { usePanel } from "@/components/panel/usePanel";
+import { normalizePostMarkdown } from "@/lib/postMarkdown";
 import { Button } from "@/components/ui/button";
 import { DrawerViewActions } from "@/components/ui/form-actions";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -58,6 +59,9 @@ export interface EmbeddedBoardPost {
   id: string;
   onClose: () => void;
 }
+
+// Trình hiển thị Markdown kéo theo thư viện lớn → nạp khi mở bài.
+const MarkdownView = lazy(() => import("@/components/markdown/MarkdownView"));
 
 export default function BoardPostDetail({
   embedded,
@@ -145,7 +149,9 @@ export default function BoardPostDetail({
             />
 
             <ArticleSection>
-              <ArticleProse>{post.body}</ArticleProse>
+              <Suspense fallback={<ArticleProse>{t`Đang tải…`}</ArticleProse>}>
+                <MarkdownView source={normalizePostMarkdown(post.body)} />
+              </Suspense>
             </ArticleSection>
 
             <ArticleFactBox

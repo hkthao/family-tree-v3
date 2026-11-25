@@ -291,9 +291,6 @@ export interface CreateClanInput {
   display_death_details?: boolean;
   display_living_full_dob?: boolean;
   public_show_tree?: boolean;
-  public_show_heritage?: boolean;
-  public_show_graves?: boolean;
-  public_show_events?: boolean;
 }
 
 export async function createClan(
@@ -314,9 +311,6 @@ export async function createClan(
       ...(input.display_death_details !== undefined && { display_death_details: input.display_death_details }),
       ...(input.display_living_full_dob !== undefined && { display_living_full_dob: input.display_living_full_dob }),
       ...(input.public_show_tree !== undefined && { public_show_tree: input.public_show_tree }),
-      ...(input.public_show_heritage !== undefined && { public_show_heritage: input.public_show_heritage }),
-      ...(input.public_show_graves !== undefined && { public_show_graves: input.public_show_graves }),
-      ...(input.public_show_events !== undefined && { public_show_events: input.public_show_events }),
     })
     .select("id")
     .single();

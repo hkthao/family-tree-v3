@@ -34,6 +34,182 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_messages: {
+        Row: {
+          clan_id: string
+          content: string
+          created_at: string
+          id: string
+          kind: string
+          owner_id: string
+          role: string
+        }
+        Insert: {
+          clan_id: string
+          content: string
+          created_at?: string
+          id?: string
+          kind?: string
+          owner_id: string
+          role: string
+        }
+        Update: {
+          clan_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          owner_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_messages_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_provider_keys: {
+        Row: {
+          ciphertext: string
+          hint: string
+          last_test_at: string | null
+          last_test_error: string | null
+          last_test_model: string | null
+          last_test_ms: number | null
+          last_test_ok: boolean | null
+          provider: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          ciphertext: string
+          hint: string
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_model?: string | null
+          last_test_ms?: number | null
+          last_test_ok?: boolean | null
+          provider: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          ciphertext?: string
+          hint?: string
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_model?: string | null
+          last_test_ms?: number | null
+          last_test_ok?: boolean | null
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_provider_keys_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_usage: {
+        Row: {
+          at: string
+          attempts: number
+          cached_input_tokens: number
+          clan_id: string | null
+          cost_usd: number
+          error_kind: string | null
+          id: string
+          input_tokens: number
+          ip_hash: string | null
+          kind: string
+          latency_ms: number | null
+          model_id: string
+          ok: boolean
+          output_tokens: number
+          rated_at: string | null
+          rating: number | null
+          raw_model: string | null
+          tool_calls: number
+          turn_ref: string | null
+          user_id: string | null
+        }
+        Insert: {
+          at?: string
+          attempts?: number
+          cached_input_tokens?: number
+          clan_id?: string | null
+          cost_usd?: number
+          error_kind?: string | null
+          id?: string
+          input_tokens?: number
+          ip_hash?: string | null
+          kind: string
+          latency_ms?: number | null
+          model_id: string
+          ok?: boolean
+          output_tokens?: number
+          rated_at?: string | null
+          rating?: number | null
+          raw_model?: string | null
+          tool_calls?: number
+          turn_ref?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          at?: string
+          attempts?: number
+          cached_input_tokens?: number
+          clan_id?: string | null
+          cost_usd?: number
+          error_kind?: string | null
+          id?: string
+          input_tokens?: number
+          ip_hash?: string | null
+          kind?: string
+          latency_ms?: number | null
+          model_id?: string
+          ok?: boolean
+          output_tokens?: number
+          rated_at?: string | null
+          rating?: number | null
+          raw_model?: string | null
+          tool_calls?: number
+          turn_ref?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcement_reads: {
         Row: {
           announcement_id: string
@@ -338,10 +514,13 @@ export type Database = {
           expires_at: string
           id: string
           image_path: string
+          last_viewed_at: string | null
+          og_image_path: string | null
           person_id: string | null
           subtitle: string | null
           title: string
           token: string
+          view_count: number
         }
         Insert: {
           clan_id: string
@@ -350,10 +529,13 @@ export type Database = {
           expires_at: string
           id?: string
           image_path: string
+          last_viewed_at?: string | null
+          og_image_path?: string | null
           person_id?: string | null
           subtitle?: string | null
           title: string
           token: string
+          view_count?: number
         }
         Update: {
           clan_id?: string
@@ -362,10 +544,13 @@ export type Database = {
           expires_at?: string
           id?: string
           image_path?: string
+          last_viewed_at?: string | null
+          og_image_path?: string | null
           person_id?: string | null
           subtitle?: string | null
           title?: string
           token?: string
+          view_count?: number
         }
         Relationships: [
           {
@@ -1041,6 +1226,8 @@ export type Database = {
       }
       clans: {
         Row: {
+          ai_daily_limit: number | null
+          ai_monthly_limit: number | null
           avatar_frame: string | null
           created_at: string
           data_version: number
@@ -1072,6 +1259,8 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          ai_daily_limit?: number | null
+          ai_monthly_limit?: number | null
           avatar_frame?: string | null
           created_at?: string
           data_version?: number
@@ -1103,6 +1292,8 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          ai_daily_limit?: number | null
+          ai_monthly_limit?: number | null
           avatar_frame?: string | null
           created_at?: string
           data_version?: number
@@ -1254,6 +1445,60 @@ export type Database = {
           },
         ]
       }
+      credit_ledger: {
+        Row: {
+          actor_id: string | null
+          at: string
+          delta: number
+          expires_at: string | null
+          id: string
+          order_id: string | null
+          owner_id: string
+          reason: string
+          ref: string | null
+          resource: string
+        }
+        Insert: {
+          actor_id?: string | null
+          at?: string
+          delta: number
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          owner_id: string
+          reason: string
+          ref?: string | null
+          resource: string
+        }
+        Update: {
+          actor_id?: string | null
+          at?: string
+          delta?: number
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          owner_id?: string
+          reason?: string
+          ref?: string | null
+          resource?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ledger_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_ledger_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_bookmarks: {
         Row: {
           created_at: string
@@ -1271,13 +1516,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "custom_bookmarks_entry_id_fkey"
-            columns: ["entry_id"]
-            isOneToOne: false
-            referencedRelation: "custom_entries"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "custom_bookmarks_user_id_fkey"
             columns: ["user_id"]
@@ -4412,6 +4650,22 @@ export type Database = {
       }
     }
     Views: {
+      credit_balance: {
+        Row: {
+          balance: number | null
+          owner_id: string | null
+          resource: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ledger_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       families_public_safe: {
         Row: {
           clan_id: string | null
@@ -4655,6 +4909,56 @@ export type Database = {
         Returns: undefined
       }
       admin_wipe_clan_directory: { Args: { p_clan_id: string }; Returns: Json }
+      ai_admin_guard: { Args: never; Returns: undefined }
+      ai_messages_purge_expired: { Args: never; Returns: number }
+      ai_provider_keys_status: {
+        Args: never
+        Returns: {
+          hint: string
+          last_test_at: string
+          last_test_error: string
+          last_test_model: string
+          last_test_ms: number
+          last_test_ok: boolean
+          provider: string
+          updated_at: string
+        }[]
+      }
+      ai_rate_turn: {
+        Args: { p_rating: number; p_ref: string }
+        Returns: undefined
+      }
+      ai_spend_today: { Args: never; Returns: number }
+      ai_usage_by_clan: {
+        Args: { p_days?: number }
+        Returns: {
+          clan_id: string
+          clan_name: string
+          cost_usd: number
+          requests: number
+          users: number
+        }[]
+      }
+      ai_usage_by_model: {
+        Args: { p_days?: number }
+        Returns: {
+          avg_latency_ms: number
+          cached_ratio: number
+          cost_usd: number
+          model_id: string
+          requests: number
+        }[]
+      }
+      ai_usage_daily: {
+        Args: { p_days?: number }
+        Returns: {
+          cost_usd: number
+          day: string
+          failed: number
+          requests: number
+        }[]
+      }
+      ai_usage_overview: { Args: { p_days?: number }; Returns: Json }
       announcements_mark_all_read: { Args: never; Returns: number }
       announcements_unread_count: { Args: never; Returns: number }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
@@ -4773,6 +5077,35 @@ export type Database = {
         Args: { p_clan: string; p_options?: Json }
         Returns: Json
       }
+      credit_consume: {
+        Args: {
+          p_amount: number
+          p_owner: string
+          p_ref: string
+          p_resource: string
+        }
+        Returns: number
+      }
+      credit_ensure_monthly_free: {
+        Args: { p_owner: string; p_resource?: string }
+        Returns: undefined
+      }
+      credit_grant: {
+        Args: {
+          p_actor_id?: string
+          p_amount: number
+          p_expires_at?: string
+          p_order_id?: string
+          p_owner: string
+          p_reason: string
+          p_ref?: string
+          p_resource: string
+        }
+        Returns: number
+      }
+      credit_monthly_free_amount: { Args: never; Returns: number }
+      credit_my_quota: { Args: { p_resource?: string }; Returns: Json }
+      credit_overview: { Args: never; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       delete_my_push_subscription: {
         Args: { p_endpoint: string }
@@ -4949,6 +5282,7 @@ export type Database = {
         Args: { p_clan_id: string }
         Returns: boolean
       }
+      khoe_register_view: { Args: { p_token: string }; Returns: undefined }
       mark_memory_applied: {
         Args: { p_memory_id: string; p_target: Json }
         Returns: undefined

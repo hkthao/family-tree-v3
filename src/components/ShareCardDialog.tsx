@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
+  IconCopy,
   IconDownload,
-  IconLink,
   IconScroll,
   IconShare2,
   IconTag,
@@ -354,13 +354,17 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                     </Trans>
                   </Trans>
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  {t`Ảnh và tên trên thiệp sẽ công khai tới khi hết hạn; bạn có thể gỡ sớm.`}
+                </p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-2">
               <Button
+                size="sm"
                 variant="outline"
-                className="w-full"
+                className="w-full px-3 text-sm"
                 onClick={onShare}
                 disabled={busy}
               >
@@ -368,8 +372,9 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 {busy ? t`Đang tạo…` : t`Chia sẻ`}
               </Button>
               <Button
+                size="sm"
                 variant="outline"
-                className="w-full"
+                className="w-full px-3 text-sm"
                 disabled={busy}
                 onClick={async () => {
                   setBusy(true);
@@ -416,14 +421,17 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
             {/* Chép link công khai để dán vào Zalo/Facebook. Ở chế độ
                 khoe phải lưu ảnh trước (publish) để link /khoe mở được. */}
             {effectiveShareUrl && (
-              <div className="flex items-center gap-2">
+              <div className="space-y-1.5">
                 <span className="text-sm text-muted-foreground">
-                  {publish ? t`Chép link khoe:` : t`Gửi đường dẫn trang:`}
+                  {publish
+                    ? t`Link khoe để dán vào Zalo/Facebook:`
+                    : t`Đường dẫn trang để gửi người thân:`}
                 </span>
-                <Button size="icon-sm"
+                <Button
+                  size="sm"
                   variant="outline"
+                  className="w-full px-3 text-sm"
                   disabled={busy}
-                  aria-label={t`Chép link`}
                   title={t`Chép link để dán vào Zalo/Facebook`}
                   onClick={async () => {
                     setBusy(true);
@@ -445,7 +453,8 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                     }
                   }}
                 >
-                  <IconLink className="h-4 w-4" />
+                  <IconCopy className="mr-1.5 h-4 w-4 shrink-0" />
+                  {t`Sao chép link`}
                 </Button>
               </div>
             )}

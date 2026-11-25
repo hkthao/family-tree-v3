@@ -399,6 +399,14 @@ verify_jwt = false
 # Anonymous tree viewer — no JWT required (plan §9).
 verify_jwt = false
 
+[functions.og-post]
+# Thẻ Open Graph cho trình quét Zalo/Facebook — không có JWT; gating nằm trong function (docs/og-post-nginx.md).
+verify_jwt = false
+
+[functions.og-khoe]
+# Thẻ Open Graph cho thiệp /khoe/:token — không có JWT; gating (còn hạn) nằm trong function.
+verify_jwt = false
+
 [functions.admin-action]
 # Caller's JWT is required and we verify platform-admin inside the
 # function (plan §8). verify_jwt=true gives us the extra gateway layer.

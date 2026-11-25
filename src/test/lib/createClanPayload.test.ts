@@ -36,9 +36,6 @@ describe("form tạo dòng họ gửi đủ thông tin", () => {
       avatar_frame: "gold",
       visibility: "public" as const,
       public_show_tree: false,
-      public_show_heritage: false,
-      public_show_graves: true,
-      public_show_events: false,
       root_is_gen_zero: true,
       display_death_details: true,
       display_living_full_dob: true,
@@ -57,9 +54,6 @@ describe("form tạo dòng họ gửi đủ thông tin", () => {
       display_death_details: true,
       display_living_full_dob: true,
       public_show_tree: false,
-      public_show_heritage: false,
-      public_show_graves: true,
-      public_show_events: false,
     });
   });
 
@@ -67,6 +61,14 @@ describe("form tạo dòng họ gửi đủ thông tin", () => {
     const { client, calls } = fakeClient();
     await createClan(clanFormToColumns({ ...DEFAULT_CLAN_FORM, name: "A" }), "u1", client);
     expect(calls[0].payload).toMatchObject({ generation_offset: 0, visibility: "private" });
+  });
+
+  it("không còn gửi 3 cờ công khai cũ (đã gộp vào share_sections)", async () => {
+    const { client, calls } = fakeClient();
+    await createClan(clanFormToColumns({ ...DEFAULT_CLAN_FORM, name: "A", visibility: "public" }), "u1", client);
+    for (const k of ["public_show_heritage", "public_show_graves", "public_show_events"]) {
+      expect(calls[0].payload).not.toHaveProperty(k);
+    }
   });
 
   it("clanFormFromClan đọc lại đúng những gì clanFormToColumns ghi", () => {

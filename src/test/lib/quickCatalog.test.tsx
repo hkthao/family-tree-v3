@@ -12,9 +12,7 @@ const clan = {
   isPlatformAdmin: false,
   disabled_features: [],
   public_show_tree: true,
-  public_show_events: true,
-  public_show_graves: true,
-  public_show_heritage: true,
+  share_sections: ["events", "graves", "heritage"],
 } as unknown as ClanDetail;
 const profile = { is_platform_admin: false } as unknown as MyProfile;
 const sections = (c = clan) => buildSections("c1", c, profile, 0, 0, 0);

@@ -10,7 +10,7 @@
 // deno-lint-ignore no-explicit-any
 type Sb = any;
 
-export const SHARE_SECTION_KEYS = ["info", "board", "map", "heritage", "graves", "honor", "mosaic"] as const;
+export const SHARE_SECTION_KEYS = ["info", "board", "events", "map", "heritage", "graves", "honor", "mosaic", "profiles"] as const;
 export type ShareSectionKey = (typeof SHARE_SECTION_KEYS)[number];
 
 interface Ctx {
