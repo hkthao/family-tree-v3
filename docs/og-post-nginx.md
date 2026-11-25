@@ -98,3 +98,7 @@ và **bỏ/sửa khối nginx cũ** đang chuyển `/khoe/:token` sang `khoe-og.
 3. Thêm hai `location` ở trên vào nginx của máy chủ web, `nginx -t`, reload.
 4. Thử: `curl -A facebookexternalhit/1.1 <địa chỉ bài>` ra thẻ OG; `curl <địa chỉ bài>` ra ứng dụng như cũ.
 5. Dán link bài vào công cụ gỡ lỗi chia sẻ của Facebook và gửi thử trong Zalo.
+
+## robots.txt phải cho bot xem trước link vào /share/ và /khoe/
+
+Facebook (và vài mạng khác) tôn trọng `robots.txt`: nếu `User-agent: *` chặn `/share/` thì bài đăng link chỉ hiện **mỗi tên miền**, không ảnh, không tiêu đề — kể cả khi nginx/og-post trả OG đúng. `public/robots.txt` có nhóm riêng cho các bot xem trước link (facebookexternalhit, Facebot, Twitterbot, Slackbot, TelegramBot, LinkedInBot, WhatsApp, Discordbot, ZaloBot) cho phép `/share/` và `/khoe/`; công cụ tìm kiếm vẫn bị chặn. Sau khi deploy, dán lại link vào https://developers.facebook.com/tools/debug/ → "Scrape Again" để Facebook bỏ bản đã nhớ.

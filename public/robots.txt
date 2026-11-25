@@ -47,5 +47,31 @@ Disallow: /forgot-password
 Disallow: /so-tay/new
 Disallow: /so-tay/import
 
+# Trình quét xem trước link của mạng xã hội / chat: PHẢI đọc được /share/ và /khoe/ thì bài đăng link mới hiện ảnh + tiêu đề
+# (Facebook tôn trọng robots.txt: chặn ở đây thì chỉ hiện mỗi tên miền, không có ảnh). Các bot này chỉ nhận thẻ OG; nginx
+# trả OG theo từng link và các trang đó đều noindex, nên không đưa dữ liệu dòng họ vào công cụ tìm kiếm.
+User-agent: facebookexternalhit
+User-agent: Facebot
+User-agent: Twitterbot
+User-agent: Slackbot
+User-agent: Slack-ImgProxy
+User-agent: TelegramBot
+User-agent: LinkedInBot
+User-agent: WhatsApp
+User-agent: Discordbot
+User-agent: ZaloBot
+Allow: /
+Disallow: /clans
+Disallow: /admin
+Disallow: /account
+Disallow: /announcements
+Disallow: /gop-y
+Disallow: /join/
+Disallow: /inlaws/
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /so-tay/new
+Disallow: /so-tay/import
+
 Sitemap: https://giapha.thaohk.com/sitemap.xml
 Sitemap: https://giapha.thaohk.com/sitemap-dong-ho.xml
