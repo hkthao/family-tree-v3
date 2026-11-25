@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { getCaptchaToken } from "@/lib/recaptcha";
 import { contributeUrl, questionUrl } from "@/lib/shareUrls";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
@@ -545,6 +546,8 @@ export async function submitGuestMemory(
   fd.set("guest_key", guestKey());
   fd.set("website", input.website ?? "");
   fd.set("elapsed_ms", String(Math.round(input.elapsed_ms)));
+  const captcha = await getCaptchaToken(input.question_id ? "guest_answer" : "guest_memory");
+  if (captcha) fd.set("captcha_token", captcha);
   if (input.question_id) fd.set("question_id", input.question_id);
   if (input.external_url) fd.set("external_url", input.external_url);
   else if (input.file) fd.set("file", input.file, input.file_name ?? "file");
@@ -795,6 +798,8 @@ export async function submitGuestFace(
   fd.set("guest_key", guestKey());
   fd.set("website", input.website ?? "");
   fd.set("elapsed_ms", String(Math.round(input.elapsed_ms)));
+  const captcha = await getCaptchaToken("guest_face");
+  if (captcha) fd.set("captcha_token", captcha);
   const base = import.meta.env.VITE_SUPABASE_URL;
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const res = await fetch(`${base}/functions/v1/community-submit`, {

@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { CaptchaNotice } from "@/components/CaptchaNotice";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useToast } from "@/components/Toast";
@@ -754,6 +755,7 @@ export function MemoryForm(props: Props) {
         </Alert>
       )}
 
+      {isGuest && <CaptchaNotice />}
       <FormActions>
         {props.onCancel && (
           <Button type="button" variant="outline" onClick={props.onCancel}>

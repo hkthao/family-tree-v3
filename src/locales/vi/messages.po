@@ -3240,6 +3240,10 @@ msgstr "Chiến trận"
 msgid "Chỉnh hiện vật 3D"
 msgstr "Chỉnh hiện vật 3D"
 
+#: src/components/CaptchaNotice.tsx
+msgid "Chính sách quyền riêng tư"
+msgstr "Chính sách quyền riêng tư"
+
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Chỉnh sửa thông tin dòng họ"
@@ -4479,6 +4483,10 @@ msgstr "Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
 #: src/pages/clan/Heritage.tsx
 msgid "Của dòng họ"
 msgstr "Của dòng họ"
+
+#: src/components/CaptchaNotice.tsx
+msgid "của Google."
+msgstr "của Google."
 
 #: src/pages/Clans.tsx
 msgid "Của tôi"
@@ -6707,6 +6715,10 @@ msgstr "Điều hướng chính"
 #: src/components/AppDrawer.tsx
 msgid "Điều khoản"
 msgstr "Điều khoản"
+
+#: src/components/CaptchaNotice.tsx
+msgid "Điều khoản dịch vụ"
+msgstr "Điều khoản dịch vụ"
 
 #: src/pages/clan/Import.tsx
 msgid "Định dạng .xlsx hoặc .csv. Các cột:"
@@ -17339,6 +17351,10 @@ msgstr "Trang dòng họ hiển thị gì"
 msgid "Trang này chỉ hiện thông tin công khai của người đã mất. Người còn sống chỉ hiện tên và đời, các thông tin khác được ẩn."
 msgstr "Trang này chỉ hiện thông tin công khai của người đã mất. Người còn sống chỉ hiện tên và đời, các thông tin khác được ẩn."
 
+#: src/components/CaptchaNotice.tsx
+msgid "Trang này được bảo vệ bởi reCAPTCHA; áp dụng"
+msgstr "Trang này được bảo vệ bởi reCAPTCHA; áp dụng"
+
 #: src/components/Pagination.tsx
 #: src/components/share/ShareOverview.tsx
 #: src/pages/site/SiteBoard.tsx
@@ -17799,6 +17815,10 @@ msgstr "user này"
 #: src/components/QuickAddSheet.tsx
 msgid "Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
 msgstr "Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+
+#: src/components/CaptchaNotice.tsx
+msgid "và"
+msgstr "và"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"

@@ -3240,6 +3240,10 @@ msgstr "Battle"
 msgid "Chỉnh hiện vật 3D"
 msgstr "Adjust the 3D object"
 
+#: src/components/CaptchaNotice.tsx
+msgid "Chính sách quyền riêng tư"
+msgstr "Privacy Policy"
+
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Chỉnh sửa thông tin dòng họ"
@@ -4479,6 +4483,10 @@ msgstr "Served as village head of X from 1932 to 1945…"
 #: src/pages/clan/Heritage.tsx
 msgid "Của dòng họ"
 msgstr "Clan's own"
+
+#: src/components/CaptchaNotice.tsx
+msgid "của Google."
+msgstr "apply."
 
 #: src/pages/Clans.tsx
 msgid "Của tôi"
@@ -6707,6 +6715,10 @@ msgstr "Main navigation"
 #: src/components/AppDrawer.tsx
 msgid "Điều khoản"
 msgstr "Terms"
+
+#: src/components/CaptchaNotice.tsx
+msgid "Điều khoản dịch vụ"
+msgstr "Terms of Service"
 
 #: src/pages/clan/Import.tsx
 msgid "Định dạng .xlsx hoặc .csv. Các cột:"
@@ -17339,6 +17351,10 @@ msgstr "What the clan site shows"
 msgid "Trang này chỉ hiện thông tin công khai của người đã mất. Người còn sống chỉ hiện tên và đời, các thông tin khác được ẩn."
 msgstr "This page only shows public information of the deceased. Living people only show name and generation; everything else is hidden."
 
+#: src/components/CaptchaNotice.tsx
+msgid "Trang này được bảo vệ bởi reCAPTCHA; áp dụng"
+msgstr "This site is protected by reCAPTCHA; the Google"
+
 #: src/components/Pagination.tsx
 #: src/components/share/ShareOverview.tsx
 #: src/pages/site/SiteBoard.tsx
@@ -17799,6 +17815,10 @@ msgstr "this user"
 #: src/components/QuickAddSheet.tsx
 msgid "Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
 msgstr "Lunar date preferred. Only the anniversary (month/day) is needed; the year can be left blank."
+
+#: src/components/CaptchaNotice.tsx
+msgid "và"
+msgstr "and"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"

@@ -629,3 +629,8 @@ html[data-bg="on"] aside.bg-background {
 /* Bài viết dài trên trang dòng họ: căn đều hai bên cho gọn (chỉ đoạn văn và mục danh sách; tiêu đề, bảng, trích dẫn giữ nguyên). */
 .site-prose .wmde-markdown p,
 .site-prose .wmde-markdown li { text-align: justify; }
+
+/* Huy hiệu reCAPTCHA ẩn đi vì mỗi biểu mẫu của khách đã có dòng thông báo bắt buộc của Google (components/CaptchaNotice). */
+.grecaptcha-badge {
+  visibility: hidden;
+}
