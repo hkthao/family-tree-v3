@@ -48,3 +48,4 @@ Disallow: /so-tay/new
 Disallow: /so-tay/import
 
 Sitemap: https://giapha.thaohk.com/sitemap.xml
+Sitemap: https://giapha.thaohk.com/sitemap-dong-ho.xml
