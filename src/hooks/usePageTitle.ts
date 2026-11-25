@@ -19,6 +19,7 @@ import { applyDocumentMeta, metaForPath } from "../lib/pageTitle";
 export function usePageTitle(
   title: string | null | undefined,
   description?: string | null,
+  image?: string | null,
 ): void {
   const { pathname } = useLocation();
 
@@ -29,6 +30,7 @@ export function usePageTitle(
       title,
       description: description ?? route?.description ?? null,
       noindex: route?.noindex,
+      image,
     });
-  }, [title, description, pathname]);
+  }, [title, description, image, pathname]);
 }

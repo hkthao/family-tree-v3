@@ -158,3 +158,16 @@ describe("renderOgPost kind=clan&alias=1 (link ngắn /s/<mã> cho Facebook)", (
     expect(n.status === 200 && n.html).toContain('property="og:url" content="https://app.example/share/tok"');
   });
 });
+
+import { buildShareCard } from "../../../supabase/functions/share-view/shareCard";
+
+describe("buildShareCard (share-view → thẻ og của trang dựng bằng JS)", () => {
+  it("đã thiết kế: ảnh công khai có ?v= + mô tả cắt; chưa thiết kế hoặc thiếu gốc URL → undefined", () => {
+    const row = { description: "**Họ** Huỳnh ở Bình Định.", share_og_path: "c1/a.jpg", share_og_updated_at: "2026-11-25T10:00:00Z" };
+    const c = buildShareCard(row, "https://files.example/card-shares/");
+    expect(c?.image).toMatch(/^https:\/\/files\.example\/card-shares\/c1\/a\.jpg\?v=\d+$/);
+    expect(c?.description).toBe("Họ Huỳnh ở Bình Định.");
+    expect(buildShareCard({ ...row, share_og_path: null }, "https://x")).toBeUndefined();
+    expect(buildShareCard(row, null)).toBeUndefined();
+  });
+});

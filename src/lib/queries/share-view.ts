@@ -221,6 +221,8 @@ export interface ShareViewPayload {
   clan_id: string;
   /** Tên dòng họ — hiển thị tiêu đề + CTA "tạo gia phả họ bạn". */
   clan_name?: string | null;
+  /** Ảnh + mô tả chia sẻ admin đã thiết kế cho trang chủ dòng họ (chỉ có khi đã lưu ảnh); dùng cho thẻ og của trang. */
+  share_card?: { image: string; description: string | null };
   root_person_id: string | null;
   /** 'tree_view' (default) or 'single_person'. Drives client rendering. */
   scope: string;

@@ -22,6 +22,7 @@ import { fetchAllRows } from "./paging.ts";
 import { clientIp, isPrivateIp } from "../_shared/clientIp.ts";
 import { handlePart, loadHeritageItem } from "./parts.ts";
 import { buildShareSections } from "./sections.ts";
+import { buildShareCard } from "./shareCard.ts";
 
 /**
  * Ảnh là link ngoài (vd ảnh Wikimedia Commons của dòng họ lịch sử) — photo_path
@@ -38,6 +39,8 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 /** Scope của link xem được cả cây (trang dòng họ dùng được): xem cây thường và link mời góp. */
 const SITE_SCOPES = ["tree_view", "contribute"];
+const CARD_IMAGE_BASE = Deno.env.get("CARD_IMAGE_BASE") ?? `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/card-shares`;
+const shareCard = (clanRow: unknown) => buildShareCard(clanRow, CARD_IMAGE_BASE);
 
 const RATE_PER_MINUTE = 60;
 /** Hệ số nhân trần khi IP khách không định danh được (bộ đếm dùng chung toàn hệ thống). */
@@ -182,7 +185,7 @@ Deno.serve(async (req) => {
   // ---- 2b. Fetch clan-level toggles that affect masking + display ----
   const { data: clanRow } = await sb
     .from("clans")
-    .select("name, hide_photos_in_share, generation_offset, share_sections")
+    .select("name, description, hide_photos_in_share, generation_offset, share_sections, share_og_path, share_og_updated_at")
     .eq("id", link.clan_id)
     .maybeSingle();
   const hidePhotos = !!clanRow?.hide_photos_in_share;
@@ -745,6 +748,7 @@ Deno.serve(async (req) => {
   return json({
     clan_id: link.clan_id,
     clan_name: clanName,
+    share_card: SITE_SCOPES.includes(link.scope) ? shareCard(clanRow) : undefined,
     root_person_id: link.root_person_id,
     sections: shareSections,
     community: {

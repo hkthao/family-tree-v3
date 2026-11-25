@@ -229,6 +229,8 @@ export function applyDocumentMeta(meta: {
   title?: string | null;
   description?: string | null;
   noindex?: boolean;
+  /** Ảnh chia sẻ riêng (1200×630) thay ảnh chung — vd ảnh admin thiết kế cho trang chủ dòng họ. */
+  image?: string | null;
 }): void {
   if (typeof document === "undefined") return;
 
@@ -240,6 +242,14 @@ export function applyDocumentMeta(meta: {
     "og:description",
     meta.description || DEFAULT_DESCRIPTION,
   );
+
+  if (meta.image) {
+    setMetaTag("property", "og:image", meta.image);
+    setMetaTag("name", "twitter:image", meta.image);
+    setMetaTag("property", "og:image:type", "image/jpeg");
+    setMetaTag("property", "og:image:width", "1200");
+    setMetaTag("property", "og:image:height", "630");
+  }
 
   // Canonical + og:url THEO TỪNG TRANG (index.html chỉ có canonical của trang chủ): nếu không, mọi trang công
   // khai (Sổ tay, Hướng dẫn…) bị công cụ tìm kiếm / AI coi là bản sao của trang chủ. Trang noindex không cần.

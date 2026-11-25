@@ -155,7 +155,11 @@ export function ClanSiteLayout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => setMobileOpen(false), [pathname]);
   const name = data.clan_name ?? t`Dòng họ`;
-  usePageTitle(data.clan_name ? t`Gia phả ${data.clan_name}` : null);
+  usePageTitle(
+    data.clan_name ? t`Gia phả ${data.clan_name}` : null,
+    data.share_card?.description,
+    data.share_card?.image,
+  );
 
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
@@ -168,7 +172,9 @@ export function ClanSiteLayout({ children }: { children: ReactNode }) {
               title={name}
             >
               <AppLogo size={28} className="shrink-0 rounded" />
-              <span className="line-clamp-2 break-words text-left leading-tight max-sm:text-base">{name}</span>
+              <span className="line-clamp-2 break-words text-left leading-tight max-sm:text-base">
+                {name}
+              </span>
             </Link>
 
             <nav
