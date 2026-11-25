@@ -1,6 +1,18 @@
 # Dòng Họ Việt
 
-> Phần mềm gia phả bằng tiếng Việt cho dòng họ Việt Nam: cả họ cùng dựng cây gia phả nhiều đời, ghi ngày giỗ âm lịch và được nhắc, lưu giọng kể và di sản của ông bà, xuất sổ gia phả PDF. Bắt đầu miễn phí; chạy trên web, Android, iOS.
+> Dòng Họ Việt là ứng dụng gia phả online bằng tiếng Việt cho dòng họ và gia đình Việt Nam: cả họ cùng dựng cây gia phả nhiều đời, được nhắc ngày giỗ theo âm lịch, lưu giữ giọng kể và di sản của ông bà. Bắt đầu miễn phí; chạy trên web, Android, iOS (cài như ứng dụng, không cần cửa hàng).
+
+## Dành cho ai
+- Dòng họ, gia đình Việt Nam muốn lập và giữ gia phả số, kể cả họ có người ở nhiều tỉnh và nước ngoài.
+- Người lớn tuổi: giao diện chữ to, ít thao tác, tiếng Việt thuần, có video hướng dẫn ngắn.
+- Người trẻ trong họ muốn giúp ông bà, cha mẹ số hoá gia phả và cùng nhập nhánh nhà mình.
+
+## 5 tính năng cốt lõi
+1. Cây gia phả nhiều đời, nhiều chi nhánh; mời cả họ cùng nhập qua một đường link.
+2. Nhắc ngày giỗ và sự kiện theo âm lịch (giỗ đầu, giỗ hết, tháng nhuận), tra cứu cách xưng hô họ hàng.
+3. Lưu giữ giọng kể, ảnh, kỷ niệm và di sản của ông bà; quản lý mộ phần có mã QR.
+4. Dòng thời gian dòng họ và xuất sổ gia phả PDF, poster PNG/PDF để in.
+5. Sổ tay văn hoá: phong tục, nghi lễ, lễ hội truyền thống Việt Nam.
 
 ## Ứng dụng
 - [Xem thử gia phả mẫu, không cần đăng nhập](https://giapha.thaohk.com/xem/demo)
@@ -18,5 +30,6 @@
 
 ## Khác
 - [Giới thiệu và hỏi đáp](https://donghoviet.thaohk.com/)
+- [Blog: lễ hội, phong tục, sổ tay văn hoá](https://donghoviet.thaohk.com/blog.html)
 - [Sổ tay Văn hoá: phong tục, nghi lễ, tín ngưỡng](https://giapha.thaohk.com/so-tay)
 - Liên hệ: support@thaohk.com
