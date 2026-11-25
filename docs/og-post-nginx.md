@@ -88,7 +88,7 @@ location ~ "^/khoe/(?<tok>[A-Za-z0-9_-]+)/?$" {
 
 Khi triển khai: copy thêm thư mục `og-khoe`, kiểm bằng `curl -H "apikey: <ANON>" "<base>/functions/v1/og-khoe?token=<token>"`,
 và **bỏ/sửa khối nginx cũ** đang chuyển `/khoe/:token` sang `khoe-og.html` (nếu không, trình quét vẫn nhận ảnh chung).
-Chưa có: ảnh OG 1200×630 riêng (mẫu T6) — hiện dùng ảnh thiệp gốc, khổ Vuông/Dọc có thể bị Facebook cắt; làm ở bước xuất bản (cột `og_image_path`).
+**Ảnh OG 1200×630 riêng (mẫu T6):** lúc xuất bản (chia sẻ / tải / sao chép link khoe) trình duyệt dựng thêm một JPEG ~50–150 KB (thiệp thu nhỏ bên trái + tên họ, tiêu đề chữ lớn bên phải), lưu `<clan>/<token>-og.jpg` và ghi `card_shares.og_image_path` (migration `20261126120000`). `og-khoe` ưu tiên ảnh này (kèm `og:image:width/height`), không có thì rơi về ảnh thiệp gốc; function `cleanup-card-shares` dọn cả ảnh OG khi hết hạn — nhớ copy lại cả hai function khi deploy. Lỗi dựng ảnh OG không làm hỏng chia sẻ.
 
 ## Triển khai (chỉ khi đã bảo deploy)
 

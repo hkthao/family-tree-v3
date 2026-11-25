@@ -27,7 +27,7 @@ function fakeSb(tables: Tables, calls: { table: string; gt?: unknown[] }[] = [])
     },
   };
 }
-const card = { title: "Chào đón <b>bé</b>", subtitle: "Đời 32 · Họ Trần", image_path: "c1/tok.png", clan_id: "c1", expires_at: "2999-01-01" };
+const card: Record<string, unknown> = { title: "Chào đón <b>bé</b>", subtitle: "Đời 32 · Họ Trần", image_path: "c1/tok.png", clan_id: "c1", expires_at: "2999-01-01" };
 
 describe("renderOgKhoe", () => {
   it("thiệp còn hạn: og:image là ảnh thiệp thật, noindex, chữ được thoát", async () => {
@@ -39,6 +39,18 @@ describe("renderOgKhoe", () => {
     expect(r.html).toContain("noindex");
     expect(r.html).toContain("Chào đón &lt;b&gt;bé&lt;/b&gt; — Nhà Trần");
     expect(r.html).not.toContain("<b>bé</b>");
+  });
+
+  it("có ảnh OG riêng: og:image là ảnh OG kèm kích thước 1200×630; không có thì ảnh thiệp gốc, không khai kích thước", async () => {
+    const withOg = await renderOgKhoe(fakeSb({ card_shares: { single: { ...card, og_image_path: "c1/tok-og.jpg" } }, clans: { single: { name: "Nhà Trần" } } }), TOKEN, ENV);
+    expect(withOg.status === 200 && withOg.html).toContain('property="og:image" content="https://st.example/storage/v1/object/public/card-shares/c1/tok-og.jpg"');
+    expect(withOg.status === 200 && withOg.html).toContain('property="og:image:width" content="1200"');
+    expect(withOg.status === 200 && withOg.html).toContain('property="og:image:height" content="630"');
+    const noOg = await renderOgKhoe(fakeSb({ card_shares: { single: { ...card, og_image_path: null } }, clans: { single: { name: "Nhà Trần" } } }), TOKEN, ENV);
+    expect(noOg.status === 200 && noOg.html).toContain("card-shares/c1/tok.png");
+    expect(noOg.status === 200 && noOg.html).not.toContain("og:image:width");
+    const badOg = await renderOgKhoe(fakeSb({ card_shares: { single: { ...card, og_image_path: "../x.jpg" } }, clans: { single: { name: "Nhà Trần" } } }), TOKEN, ENV);
+    expect(badOg.status === 200 && badOg.html).toContain("card-shares/c1/tok.png");
   });
 
   it("hết hạn / không có thiệp → 404; truy vấn có lọc expires_at > now", async () => {

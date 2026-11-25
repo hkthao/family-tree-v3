@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { InviteCardBody } from "@/components/community/InviteCardDialog";
 import { getOrCreateGeneralInviteUrl } from "@/components/community/inviteLink";
+import { KhoeOgImage } from "@/components/cards/KhoeOgImage";
 import { SidePanel } from "@/components/SidePanel";
 import { Callout } from "@/components/ui/callout";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -21,6 +22,7 @@ import { useToast } from "@/components/Toast";
 import {
   imageUrlToDataUrl,
   makeQrDataUrl,
+  nodeToJpegBlob,
   nodeToPngBlob,
   sharePngBlob,
 } from "@/lib/cards/exportCard";
@@ -121,6 +123,7 @@ function ShareCardBody(props: ShareCardDialogProps) {
   const effectiveShareUrl = publish ? khoeUrl : props.shareUrl;
 
   const exportRef = useRef<HTMLDivElement>(null);
+  const ogRef = useRef<HTMLDivElement>(null);
 
   // Reset nội dung khi mở dialog mới.
   useEffect(() => {
@@ -250,11 +253,24 @@ function ShareCardBody(props: ShareCardDialogProps) {
   // không ở chế độ publish.
   async function ensurePublished(blob: Blob) {
     if (!publish) return;
+    // Ảnh xem trước 1200×630 cho Zalo/Facebook: lỗi dựng thì bỏ qua, thiệp vẫn lưu (og-khoe dùng ảnh gốc).
+    let ogBlob: Blob | null = null;
+    try {
+      if (ogRef.current)
+        ogBlob = await nodeToJpegBlob(
+          ogRef.current.firstElementChild as HTMLElement,
+          1200,
+          630,
+        );
+    } catch {
+      ogBlob = null;
+    }
     await publishKhoeCard({
       token,
       clanId: publish.clanId,
       personId: publish.personId ?? null,
       blob,
+      ogBlob,
       title: data.title,
       subtitle: publish.subtitle ?? props.dateText ?? null,
       ttlDays,
@@ -748,6 +764,28 @@ function ShareCardBody(props: ShareCardDialogProps) {
       >
         <div ref={exportRef}>{tpl.render({ data, format })}</div>
       </div>
+      {publish && (
+        <div
+          style={{
+            position: "fixed",
+            left: -100000,
+            top: 0,
+            pointerEvents: "none",
+          }}
+          aria-hidden="true"
+        >
+          <div ref={ogRef}>
+            <KhoeOgImage
+              card={tpl.render({ data, format })}
+              cardW={dim.w}
+              cardH={dim.h}
+              clanName={data.clanName}
+              title={data.title}
+              subtitle={publish.subtitle ?? props.dateText ?? null}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

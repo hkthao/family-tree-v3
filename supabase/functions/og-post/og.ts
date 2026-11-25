@@ -44,7 +44,7 @@ export function postPageUrl(origin: string, p: { token: string | null; clan: str
   return `${origin.replace(/\/+$/, "")}${base}/bang-tin/${postId}`;
 }
 
-export function buildOgHtml(o: { title: string; description: string; image: string; url: string; siteName: string; noindex: boolean; type?: string }): string {
+export function buildOgHtml(o: { title: string; description: string; image: string; url: string; siteName: string; noindex: boolean; type?: string; imageSize?: { w: number; h: number } }): string {
   const t = escapeHtml(o.title);
   const d = escapeHtml(o.description);
   const img = escapeHtml(o.image);
@@ -60,6 +60,9 @@ ${o.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ""}<meta pr
 <meta property="og:title" content="${t}">
 <meta property="og:description" content="${d}">
 <meta property="og:image" content="${img}">
+${o.imageSize ? `<meta property="og:image:width" content="${o.imageSize.w}">
+<meta property="og:image:height" content="${o.imageSize.h}">
+` : ""}
 <meta property="og:url" content="${url}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">

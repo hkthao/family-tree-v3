@@ -33,7 +33,7 @@ export async function renderOgKhoe(sb: Sb, token: string | null, env: OgKhoeEnv)
   if (!token || !TOKEN.test(token)) return { status: 404 };
   const { data: row } = await sb
     .from("card_shares")
-    .select("title, subtitle, image_path, clan_id, expires_at")
+    .select("title, subtitle, image_path, og_image_path, clan_id, expires_at")
     .eq("token", token)
     .gt("expires_at", new Date().toISOString())
     .maybeSingle();
@@ -41,7 +41,9 @@ export async function renderOgKhoe(sb: Sb, token: string | null, env: OgKhoeEnv)
 
   const { data: clan } = await sb.from("clans").select("name").eq("id", row.clan_id).maybeSingle();
   const clanName = (clan?.name as string | null) ?? env.siteName;
-  const image = cardImageUrl(env.cardImageBase, String(row.image_path ?? "")) ?? env.defaultImage;
+  // Ảnh OG 1200×630 riêng (dựng lúc xuất bản) nếu có; không thì ảnh thiệp gốc (khổ vuông / dọc có thể bị cắt); không nữa thì ảnh chung.
+  const ogImage = row.og_image_path ? cardImageUrl(env.cardImageBase, String(row.og_image_path)) : null;
+  const image = ogImage ?? cardImageUrl(env.cardImageBase, String(row.image_path ?? "")) ?? env.defaultImage;
   const title = String(row.title ?? "").trim() || `Thiệp từ ${clanName}`;
   return {
     status: 200,
@@ -52,6 +54,7 @@ export async function renderOgKhoe(sb: Sb, token: string | null, env: OgKhoeEnv)
       url: `${env.siteOrigin.replace(/\/+$/, "")}/khoe/${token}`,
       siteName: env.siteName,
       noindex: true,
+      imageSize: ogImage ? { w: 1200, h: 630 } : undefined,
     }),
   };
 }

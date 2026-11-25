@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
 
   const { data: expired, error: selErr } = await supabase
     .from("card_shares")
-    .select("id, image_path")
+    .select("id, image_path, og_image_path")
     .lte("expires_at", cutoff);
   if (selErr) return json({ error: selErr.message }, { status: 500 });
 
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
 
   // 1) Xoá FILE qua Storage API (chunk để tránh payload quá lớn).
   const paths = rows
-    .map((r) => r.image_path as string | null)
+    .flatMap((r) => [r.image_path, r.og_image_path] as (string | null)[])
     .filter((p): p is string => !!p);
   let filesRemoved = 0;
   const CHUNK = 100;
