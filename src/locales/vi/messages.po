@@ -1820,6 +1820,10 @@ msgstr "Bạn là gì của {who}?"
 msgid "Bạn muốn đóng góp về ai?"
 msgstr "Bạn muốn đóng góp về ai?"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Bạn muốn khoe điều gì?"
+msgstr "Bạn muốn khoe điều gì?"
+
 #: src/pages/Contact.tsx
 msgid "Bạn muốn nói gì?"
 msgstr "Bạn muốn nói gì?"
@@ -2325,6 +2329,10 @@ msgstr "Cả xóm kéo đến xem chung chiếc ti vi đầu tiên của nhà."
 #: src/components/ShareSectionsCard.tsx
 msgid "Các bài đã đăng mới nhất (tin vui, thông báo)."
 msgstr "Các bài đã đăng mới nhất (tin vui, thông báo)."
+
+#: src/components/ShareCardDialog.tsx
+msgid "Các bước"
+msgstr "Các bước"
 
 #: src/components/community/CommunitySharePanel.tsx
 msgid "Các câu trả lời"
@@ -3156,6 +3164,7 @@ msgstr "Chia cắt ở vĩ tuyến 17"
 #: src/components/community/InviteCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
+#: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
 #: src/lib/navModel.tsx
 #: src/lib/quickCatalog.tsx
@@ -3396,6 +3405,10 @@ msgstr "Chọn hình từ thư viện, dán link ảnh hoặc dùng biểu tư�
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Chọn khổ giấy"
 msgstr "Chọn khổ giấy"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Chọn kiểu"
+msgstr "Chọn kiểu"
 
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó."
@@ -9202,6 +9215,10 @@ msgstr "Khổ giấy"
 msgid "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
 msgstr "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
 
+#: src/components/ShareCardDialog.tsx
+msgid "Khổ thiệp"
+msgstr "Khổ thiệp"
+
 #: src/lib/timeline/eras.ts
 msgid "Khoa cử, bia tiến sĩ"
 msgstr "Khoa cử, bia tiến sĩ"
@@ -13764,6 +13781,7 @@ msgstr "Quang Trung đại phá quân Thanh (1789)"
 #: src/components/BackLink.tsx
 #: src/components/ClanLayout.tsx
 #: src/components/ClanLayout.tsx
+#: src/components/ShareCardDialog.tsx
 #: src/pages/Contact.tsx
 msgid "Quay lại"
 msgstr "Quay lại"
@@ -16357,6 +16375,14 @@ msgstr "Tiếp tục với {label}"
 msgid "Tiếp tục với Google"
 msgstr "Tiếp tục với Google"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Tiếp: Chia sẻ"
+msgstr "Tiếp: Chia sẻ"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Tiếp: Tuỳ chỉnh"
+msgstr "Tiếp: Tuỳ chỉnh"
+
 #. placeholder {0}: day.tietKhi
 #. placeholder {0}: info.tietKhi
 #: src/components/TodayHubCard.tsx
@@ -17632,6 +17658,7 @@ msgstr "Tưởng nhớ"
 msgid "Tưởng nhớ những người đã khuất"
 msgstr "Tưởng nhớ những người đã khuất"
 
+#: src/components/ShareCardDialog.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Tuỳ chỉnh"

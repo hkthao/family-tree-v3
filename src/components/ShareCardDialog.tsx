@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
+  IconArrowLeft,
+  IconArrowRight,
   IconCopy,
   IconDownload,
   IconScroll,
@@ -78,6 +80,11 @@ export interface ShareCardDialogProps {
 
 const GENRES = Object.keys(CARD_GENRE_LABEL) as CardGenre[];
 const PREVIEW_W = 300;
+const STEPS = [
+  { n: 1 as const, label: () => t`Chọn kiểu` },
+  { n: 2 as const, label: () => t`Tuỳ chỉnh` },
+  { n: 3 as const, label: () => t`Chia sẻ` },
+];
 
 export function ShareCardDialog(props: ShareCardDialogProps) {
   const { open } = props;
@@ -101,6 +108,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [titleFont, setTitleFont] = useState<string>(DEFAULT_CARD_FONT);
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   // Chế độ khoe: token cố định 1 lần/mở dialog (để QR khớp ảnh lưu) +
   // hạn link do user chọn (≤ 90 ngày = 3 tháng).
   const publish = props.publish;
@@ -322,360 +330,427 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 {tpl.render({ data, format })}
               </div>
             </div>
-            {/* Khoe: chọn hạn link công khai (tối đa 3 tháng). */}
-            {publish && (
-              <div className="space-y-1.5">
-                <span className="text-sm font-medium">{t`Link khoe có hạn`}</span>
-                <div className="flex gap-2">
-                  {[
-                    { d: 7, label: t`1 tuần` },
-                    { d: 30, label: t`1 tháng` },
-                    { d: 90, label: t`3 tháng` },
-                  ].map((o) => (
-                    <button
-                      key={o.d}
-                      type="button"
-                      onClick={() => setTtlDays(o.d)}
-                      className={`flex-1 rounded-full border px-2 py-1.5 text-sm ${
-                        ttlDays === o.d
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card hover:border-primary"
-                      }`}
+          </div>
+
+          {/* Các bước: ① Chọn kiểu → ② Tuỳ chỉnh → ③ Chia sẻ */}
+          <div className="space-y-4 lg:pl-5 lg:border-l lg:border-divider">
+            <ol
+              aria-label={t`Các bước`}
+              className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"
+            >
+              {STEPS.map((s) => (
+                <li key={s.n}>
+                  <button
+                    type="button"
+                    onClick={() => setStep(s.n)}
+                    aria-current={step === s.n ? "step" : undefined}
+                    className="inline-flex min-h-11 items-center gap-2"
+                  >
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold ${step >= s.n ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}
                     >
-                      {o.label}
+                      {s.n}
+                    </span>
+                    <span
+                      className={
+                        step === s.n ? "font-semibold" : "text-muted-foreground"
+                      }
+                    >
+                      {s.label()}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+
+            {step === 1 && (
+              <div className="space-y-4">
+                <p className="text-sm font-medium">{t`Bạn muốn khoe điều gì?`}</p>
+                {/* Thể loại */}
+                <div className="flex flex-wrap gap-2">
+                  {GENRES.map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGenre(g)}
+                      className={`rounded-full border px-3 py-1.5 text-sm ${genre === g ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
+                    >
+                      {CARD_GENRE_LABEL[g]}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  <Trans>
-                    <Trans>
-                      Quét mã QR trên thiệp sẽ mở trang khoe này. Hết hạn link
-                      tự xoá.
-                    </Trans>
-                  </Trans>
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t`Ảnh và tên trên thiệp sẽ công khai tới khi hết hạn; bạn có thể gỡ sớm.`}
-                </p>
+                {/* Mẫu trong thể loại */}
+                <div className="grid grid-cols-3 gap-2">
+                  {templatesByGenre(genre).map((t) => {
+                    const s = 88 / dim.w;
+                    const active = t.id === templateId;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setTemplateId(t.id)}
+                        className={`rounded-md border p-1 text-left ${active ? "border-primary ring-2 ring-primary" : "hover:border-primary"}`}
+                      >
+                        <div
+                          className="mx-auto overflow-hidden rounded bg-muted"
+                          style={{ width: 88, height: dim.h * s }}
+                        >
+                          <div
+                            style={{
+                              width: dim.w,
+                              height: dim.h,
+                              transform: `scale(${s})`,
+                              transformOrigin: "top left",
+                              pointerEvents: "none",
+                            }}
+                          >
+                            {t.render({ data, format })}
+                          </div>
+                        </div>
+                        <span className="block mt-1 text-[11px] leading-tight text-muted-foreground">
+                          {t.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-sm font-medium">{t`Khổ thiệp`}</p>
+                {/* Định dạng */}
+                <div className="flex gap-2">
+                  {(["square", "vertical"] as CardFormat[]).map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setFormat(f)}
+                      className={`rounded-full border px-4 py-1.5 text-sm ${format === f ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
+                    >
+                      {f === "square" ? t`Vuông (đăng tường)` : t`Dọc (story)`}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full px-3 text-sm"
-                onClick={onShare}
-                disabled={busy}
-              >
-                <IconShare2 className="h-4 w-4 mr-1.5 shrink-0" />
-                {busy ? t`Đang tạo…` : t`Chia sẻ`}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full px-3 text-sm"
-                disabled={busy}
-                onClick={async () => {
-                  setBusy(true);
-                  try {
-                    const blob = await exportPng();
-                    if (blob) {
-                      await ensurePublished(blob);
-                      const { downloadBlob } =
-                        await import("@/lib/cards/exportCard");
-                      downloadBlob(blob, `thiep-${tpl.id}.png`);
-                      toast.success(t`Đã tải ảnh thiệp`);
-                    }
-                  } catch (e) {
-                    toast.error(t`Không tải được`, {
-                      description: (e as Error).message,
-                    });
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                <IconDownload className="h-4 w-4 mr-1.5" />
-                {t`Tải ảnh`}
-              </Button>
-            </div>
+            {step === 2 && (
+              <div className="space-y-4">
+                {/* Chọn thành viên → lấy ảnh làm nền thiệp */}
+                {props.members && props.members.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      {t`Thành viên (lấy ảnh làm nền)`}
+                    </label>
+                    {pickedMemberId ? (
+                      <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                        <span className="truncate">
+                          {props.members.find((m) => m.id === pickedMemberId)
+                            ?.full_name ?? "—"}
+                          {!props.members.find((m) => m.id === pickedMemberId)
+                            ?.photo_path && (
+                            <span className="text-muted-foreground">
+                              <Trans> (chưa có ảnh)</Trans>
+                            </span>
+                          )}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setPickedMemberId(null)}
+                          className="text-primary hover:underline shrink-0"
+                        >
+                          {t`Bỏ chọn`}
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <input
+                          value={memberSearch}
+                          onChange={(e) => setMemberSearch(e.target.value)}
+                          placeholder={t`Gõ tên để tìm thành viên…`}
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        />
+                        {memberSearch.trim() && (
+                          <ul className="max-h-40 overflow-y-auto rounded-md border divide-y">
+                            {props.members
+                              .filter((m) =>
+                                unaccent(m.full_name).includes(
+                                  unaccent(memberSearch),
+                                ),
+                              )
+                              .slice(0, 30)
+                              .map((m) => (
+                                <li key={m.id}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setPickedMemberId(m.id);
+                                      setMemberSearch("");
+                                    }}
+                                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50"
+                                  >
+                                    {m.full_name}
+                                    {!m.photo_path && (
+                                      <span className="text-muted-foreground">
+                                        <Trans> · chưa có ảnh</Trans>
+                                      </span>
+                                    )}
+                                  </button>
+                                </li>
+                              ))}
+                          </ul>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+                {/* Sửa chữ */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    {t`Dòng nhãn (vd "Tin vui dòng họ")`}
+                  </label>
+                  <Input
+                    icon={<IconTag />}
+                    value={kicker}
+                    onChange={(e) => setKicker(e.target.value)}
+                    className="h-10 text-sm"
+                    maxLength={60}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t`Tiêu đề`}</label>
+                  <Input
+                    icon={<IconScroll />}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="h-10 text-sm"
+                    maxLength={120}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t`Lời trích / mô tả`}</label>
+                  <Textarea
+                    value={excerpt}
+                    onChange={(e) => setExcerpt(e.target.value)}
+                    rows={3}
+                    className="text-sm"
+                    maxLength={400}
+                  />
+                </div>
+                {/* Chọn ảnh */}
+                {props.photoUrls && props.photoUrls.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">{t`Ảnh trên thiệp`}</label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPhotoIdx(-1)}
+                        className={`h-14 w-14 rounded-md border grid place-items-center text-xs ${photoIdx === -1 ? "border-primary ring-2 ring-primary" : "hover:border-primary"}`}
+                      >
+                        {t`Không`}
+                      </button>
+                      {props.photoUrls.map((u, i) => (
+                        <button
+                          key={u}
+                          type="button"
+                          onClick={() => setPhotoIdx(i)}
+                          className={`h-14 w-14 overflow-hidden rounded-md border ${photoIdx === i ? "border-primary ring-2 ring-primary" : "hover:border-primary"}`}
+                        >
+                          <img
+                            src={u}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Font chữ (đặc biệt: thư pháp) */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">{t`Kiểu chữ tiêu đề`}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CARD_FONTS.map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setTitleFont(f.family)}
+                        style={{ fontFamily: f.family }}
+                        className={`rounded-md border px-3 py-1.5 text-base ${titleFont === f.family ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
-            {/* Hướng dẫn đăng ẢNH thiệp. Facebook web không cho gắn ảnh
+            {step === 3 && (
+              <div className="space-y-4">
+                {/* Khoe: chọn hạn link công khai (tối đa 3 tháng). */}
+                {publish && (
+                  <div className="space-y-1.5">
+                    <span className="text-sm font-medium">{t`Link khoe có hạn`}</span>
+                    <div className="flex gap-2">
+                      {[
+                        { d: 7, label: t`1 tuần` },
+                        { d: 30, label: t`1 tháng` },
+                        { d: 90, label: t`3 tháng` },
+                      ].map((o) => (
+                        <button
+                          key={o.d}
+                          type="button"
+                          onClick={() => setTtlDays(o.d)}
+                          className={`flex-1 rounded-full border px-2 py-1.5 text-sm ${
+                            ttlDays === o.d
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card hover:border-primary"
+                          }`}
+                        >
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      <Trans>
+                        <Trans>
+                          Quét mã QR trên thiệp sẽ mở trang khoe này. Hết hạn
+                          link tự xoá.
+                        </Trans>
+                      </Trans>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t`Ảnh và tên trên thiệp sẽ công khai tới khi hết hạn; bạn có thể gỡ sớm.`}
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full px-3 text-sm"
+                    onClick={onShare}
+                    disabled={busy}
+                  >
+                    <IconShare2 className="h-4 w-4 mr-1.5 shrink-0" />
+                    {busy ? t`Đang tạo…` : t`Chia sẻ`}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full px-3 text-sm"
+                    disabled={busy}
+                    onClick={async () => {
+                      setBusy(true);
+                      try {
+                        const blob = await exportPng();
+                        if (blob) {
+                          await ensurePublished(blob);
+                          const { downloadBlob } =
+                            await import("@/lib/cards/exportCard");
+                          downloadBlob(blob, `thiep-${tpl.id}.png`);
+                          toast.success(t`Đã tải ảnh thiệp`);
+                        }
+                      } catch (e) {
+                        toast.error(t`Không tải được`, {
+                          description: (e as Error).message,
+                        });
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    <IconDownload className="h-4 w-4 mr-1.5" />
+                    {t`Tải ảnh`}
+                  </Button>
+                </div>
+
+                {/* Hướng dẫn đăng ẢNH thiệp. Facebook web không cho gắn ảnh
                 qua nút chia sẻ link → trên máy tính phải tải ảnh rồi đăng
                 như ảnh thường. */}
-            <Callout className="[&_p]:leading-relaxed">
-              <p>
-                <span className="font-medium text-foreground">{t`Điện thoại:`}</span>{" "}
-                bấm <span className="font-medium">{t`Chia sẻ`}</span> để gửi
-                thẳng tấm thiệp (ảnh) sang Zalo/Facebook.
-              </p>
-              <p>
-                <span className="font-medium text-foreground">{t`Máy tính:`}</span>{" "}
-                bấm <span className="font-medium">{t`Tải ảnh`}</span> rồi đăng
-                lên Facebook như đăng ảnh thường (Facebook không cho gắn ảnh qua
-                nút chia sẻ nhanh).
-              </p>
-            </Callout>
+                <Callout className="[&_p]:leading-relaxed">
+                  <p>
+                    <span className="font-medium text-foreground">{t`Điện thoại:`}</span>{" "}
+                    bấm <span className="font-medium">{t`Chia sẻ`}</span> để gửi
+                    thẳng tấm thiệp (ảnh) sang Zalo/Facebook.
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">{t`Máy tính:`}</span>{" "}
+                    bấm <span className="font-medium">{t`Tải ảnh`}</span> rồi
+                    đăng lên Facebook như đăng ảnh thường (Facebook không cho
+                    gắn ảnh qua nút chia sẻ nhanh).
+                  </p>
+                </Callout>
 
-            {/* Chép link công khai để dán vào Zalo/Facebook. Ở chế độ
+                {/* Chép link công khai để dán vào Zalo/Facebook. Ở chế độ
                 khoe phải lưu ảnh trước (publish) để link /khoe mở được. */}
-            {effectiveShareUrl && (
-              <div className="space-y-1.5">
-                <span className="text-sm text-muted-foreground">
-                  {publish
-                    ? t`Link khoe để dán vào Zalo/Facebook:`
-                    : t`Đường dẫn trang để gửi người thân:`}
-                </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full px-3 text-sm"
-                  disabled={busy}
-                  title={t`Chép link để dán vào Zalo/Facebook`}
-                  onClick={async () => {
-                    setBusy(true);
-                    try {
-                      if (publish) {
-                        const blob = await exportPng();
-                        if (blob) await ensurePublished(blob);
-                      }
-                      await navigator.clipboard.writeText(effectiveShareUrl);
-                      toast.success(
-                        t`Đã chép link — dán vào Zalo/Facebook để chia sẻ.`,
-                      );
-                    } catch (e) {
-                      toast.error(t`Không chép được link`, {
-                        description: (e as Error).message,
-                      });
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                >
-                  <IconCopy className="mr-1.5 h-4 w-4 shrink-0" />
-                  {t`Sao chép link`}
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Controls */}
-          <div className="space-y-4 lg:pl-5 lg:border-l lg:border-divider">
-            {/* Định dạng */}
-            <div className="flex gap-2">
-              {(["square", "vertical"] as CardFormat[]).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setFormat(f)}
-                  className={`rounded-full border px-4 py-1.5 text-sm ${format === f ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
-                >
-                  {f === "square" ? t`Vuông (đăng tường)` : t`Dọc (story)`}
-                </button>
-              ))}
-            </div>
-
-            {/* Thể loại */}
-            <div className="flex flex-wrap gap-2">
-              {GENRES.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setGenre(g)}
-                  className={`rounded-full border px-3 py-1.5 text-sm ${genre === g ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
-                >
-                  {CARD_GENRE_LABEL[g]}
-                </button>
-              ))}
-            </div>
-
-            {/* Mẫu trong thể loại */}
-            <div className="grid grid-cols-3 gap-2">
-              {templatesByGenre(genre).map((t) => {
-                const s = 88 / dim.w;
-                const active = t.id === templateId;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setTemplateId(t.id)}
-                    className={`rounded-md border p-1 text-left ${active ? "border-primary ring-2 ring-primary" : "hover:border-primary"}`}
-                  >
-                    <div
-                      className="mx-auto overflow-hidden rounded bg-muted"
-                      style={{ width: 88, height: dim.h * s }}
-                    >
-                      <div
-                        style={{
-                          width: dim.w,
-                          height: dim.h,
-                          transform: `scale(${s})`,
-                          transformOrigin: "top left",
-                          pointerEvents: "none",
-                        }}
-                      >
-                        {t.render({ data, format })}
-                      </div>
-                    </div>
-                    <span className="block mt-1 text-[11px] leading-tight text-muted-foreground">
-                      {t.name}
+                {effectiveShareUrl && (
+                  <div className="space-y-1.5">
+                    <span className="text-sm text-muted-foreground">
+                      {publish
+                        ? t`Link khoe để dán vào Zalo/Facebook:`
+                        : t`Đường dẫn trang để gửi người thân:`}
                     </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Font chữ (đặc biệt: thư pháp) */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">{t`Kiểu chữ tiêu đề`}</label>
-              <div className="flex flex-wrap gap-2">
-                {CARD_FONTS.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setTitleFont(f.family)}
-                    style={{ fontFamily: f.family }}
-                    className={`rounded-md border px-3 py-1.5 text-base ${titleFont === f.family ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Chọn thành viên → lấy ảnh làm nền thiệp */}
-            {props.members && props.members.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {t`Thành viên (lấy ảnh làm nền)`}
-                </label>
-                {pickedMemberId ? (
-                  <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
-                    <span className="truncate">
-                      {props.members.find((m) => m.id === pickedMemberId)
-                        ?.full_name ?? "—"}
-                      {!props.members.find((m) => m.id === pickedMemberId)
-                        ?.photo_path && (
-                        <span className="text-muted-foreground">
-                          <Trans> (chưa có ảnh)</Trans>
-                        </span>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setPickedMemberId(null)}
-                      className="text-primary hover:underline shrink-0"
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full px-3 text-sm"
+                      disabled={busy}
+                      title={t`Chép link để dán vào Zalo/Facebook`}
+                      onClick={async () => {
+                        setBusy(true);
+                        try {
+                          if (publish) {
+                            const blob = await exportPng();
+                            if (blob) await ensurePublished(blob);
+                          }
+                          await navigator.clipboard.writeText(
+                            effectiveShareUrl,
+                          );
+                          toast.success(
+                            t`Đã chép link — dán vào Zalo/Facebook để chia sẻ.`,
+                          );
+                        } catch (e) {
+                          toast.error(t`Không chép được link`, {
+                            description: (e as Error).message,
+                          });
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
                     >
-                      {t`Bỏ chọn`}
-                    </button>
+                      <IconCopy className="mr-1.5 h-4 w-4 shrink-0" />
+                      {t`Sao chép link`}
+                    </Button>
                   </div>
-                ) : (
-                  <>
-                    <input
-                      value={memberSearch}
-                      onChange={(e) => setMemberSearch(e.target.value)}
-                      placeholder={t`Gõ tên để tìm thành viên…`}
-                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    />
-                    {memberSearch.trim() && (
-                      <ul className="max-h-40 overflow-y-auto rounded-md border divide-y">
-                        {props.members
-                          .filter((m) =>
-                            unaccent(m.full_name).includes(
-                              unaccent(memberSearch),
-                            ),
-                          )
-                          .slice(0, 30)
-                          .map((m) => (
-                            <li key={m.id}>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setPickedMemberId(m.id);
-                                  setMemberSearch("");
-                                }}
-                                className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50"
-                              >
-                                {m.full_name}
-                                {!m.photo_path && (
-                                  <span className="text-muted-foreground">
-                                    <Trans> · chưa có ảnh</Trans>
-                                  </span>
-                                )}
-                              </button>
-                            </li>
-                          ))}
-                      </ul>
-                    )}
-                  </>
                 )}
               </div>
             )}
 
-            {/* Sửa chữ */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                {t`Dòng nhãn (vd "Tin vui dòng họ")`}
-              </label>
-              <Input
-                icon={<IconTag />}
-                value={kicker}
-                onChange={(e) => setKicker(e.target.value)}
-                className="h-10 text-sm"
-                maxLength={60}
-              />
+            <div className="flex justify-between gap-2 border-t pt-3">
+              {step > 1 ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="px-3 text-sm"
+                  onClick={() => setStep((step - 1) as 1 | 2)}
+                >
+                  <IconArrowLeft className="mr-1.5 h-4 w-4" />
+                  {t`Quay lại`}
+                </Button>
+              ) : (
+                <span />
+              )}
+              {step < 3 && (
+                <Button
+                  size="sm"
+                  className="px-3 text-sm"
+                  onClick={() => setStep((step + 1) as 2 | 3)}
+                >
+                  {step === 1 ? t`Tiếp: Tuỳ chỉnh` : t`Tiếp: Chia sẻ`}
+                  <IconArrowRight className="ml-1.5 h-4 w-4" />
+                </Button>
+              )}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t`Tiêu đề`}</label>
-              <Input
-                icon={<IconScroll />}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="h-10 text-sm"
-                maxLength={120}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t`Lời trích / mô tả`}</label>
-              <Textarea
-                value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
-                rows={3}
-                className="text-sm"
-                maxLength={400}
-              />
-            </div>
-
-            {/* Chọn ảnh */}
-            {props.photoUrls && props.photoUrls.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t`Ảnh trên thiệp`}</label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPhotoIdx(-1)}
-                    className={`h-14 w-14 rounded-md border grid place-items-center text-xs ${photoIdx === -1 ? "border-primary ring-2 ring-primary" : "hover:border-primary"}`}
-                  >
-                    {t`Không`}
-                  </button>
-                  {props.photoUrls.map((u, i) => (
-                    <button
-                      key={u}
-                      type="button"
-                      onClick={() => setPhotoIdx(i)}
-                      className={`h-14 w-14 overflow-hidden rounded-md border ${photoIdx === i ? "border-primary ring-2 ring-primary" : "hover:border-primary"}`}
-                    >
-                      <img
-                        src={u}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
