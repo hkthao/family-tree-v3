@@ -45,7 +45,7 @@ Gộp nhánh vào `main` → workflow `deploy-vps` dựng + chạy image mới. 
 - Kiểm: `curl -A facebookexternalhit/1.1 <địa chỉ bài>` ra thẻ OG; `curl <địa chỉ bài>` ra ứng dụng như thường; dán link khoe vào công cụ gỡ lỗi chia sẻ của Facebook / gửi thử Zalo.
 
 ## 8. Bật giao diện mới mặc định (khi đã yên tâm)
-Đặt GitHub secret `VITE_CLAN_SITE=1`, chạy lại workflow. Lùi: xoá secret, chạy lại workflow (hoặc người dùng thêm `?site=0`).
+Đặt GitHub **variable** (Settings › Variables, KHÔNG phải secret — secret giá trị `1` làm GitHub bỏ output `sha7` của job build) `VITE_CLAN_SITE=1`, chạy lại workflow. Lùi: xoá biến, chạy lại workflow (hoặc người dùng thêm `?site=0`).
 
 ## 9. reCAPTCHA: log → enforce
 Sau vài ngày `RECAPTCHA_MODE=log`, xem log function (`{"evt":"captcha",…}`): điểm người thật thường ≥ 0,5. Rồi chuyển `enforce`. Sự cố → hạ về `log` / `off`, khởi động lại function.
