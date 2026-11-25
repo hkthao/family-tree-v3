@@ -281,8 +281,16 @@ export const MCP_TOOLS: McpToolSpec[] = [
   {
     name: "get_clan_info",
     needs: "read",
-    description: "Clan name, description, visibility, headcount and display settings.",
+    description:
+      "Clan name, description, visibility, headcount and display settings, plus what is shown publicly: public_show_tree (the public page shows the tree) and share_sections (info, board, events, map, heritage, graves, honor, mosaic, profiles — the sections visible to outsiders; profiles = biographies of deceased people). Read-only: change these in the app.",
     inputSchema: obj({}),
+  },
+  {
+    name: "list_share_links",
+    needs: "write",
+    description:
+      "Overview of what the clan has shared outside (tree links, per-person / grave / heritage QR codes, contribution invitations, showcase cards): kind, target, status (active / expiring / expired / revoked), expiry and card views. Read-only and deliberately WITHOUT tokens or URLs — share links are secrets; create, extend and revoke them in the app (Tất cả tính năng › Chia sẻ). Only clan admins see share links.",
+    inputSchema: obj({ active_only: { type: "boolean", description: "Only links still usable (active or expiring soon)" } }),
   },
   {
     name: "get_book_texts",

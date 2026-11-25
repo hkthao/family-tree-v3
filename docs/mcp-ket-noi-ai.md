@@ -26,7 +26,7 @@ của app áp dụng nguyên vẹn, không có bản luật thứ hai để lệ
 
 **Tra cứu (mọi gói):** `clan_stats`, `search_person`, `list_persons` (lọc + phân trang), `get_person`, `get_relatives`,
 `get_tree` (cây hậu duệ/tổ tiên dạng chữ), `get_kinship` (xưng hô), `upcoming_anniversaries`, `search_book`,
-`list_branches`, `list_events`, `get_clan_info`, `get_book_texts`, `list_my_proposals`, **`export_clan_book`** (PDF).
+`list_branches`, `list_events`, `get_clan_info` (kèm phần hiển thị công khai: `public_show_tree`, `share_sections`), `get_book_texts`, `list_my_proposals`, **`export_clan_book`** (PDF).
 
 **Đề xuất (gói propose):** `propose_add_person`, `propose_edit_person`, `propose_add_note` — vào hàng chờ Đóng góp.
 
@@ -37,6 +37,7 @@ của app áp dụng nguyên vẹn, không có bản luật thứ hai để lệ
   `set_spouse_order`.
 - Ảnh đại diện: `set_person_photo` (https URL hoặc base64; nén 512px JPEG như app; chống SSRF), `remove_person_photo`.
 - Chi: `create_branch`, `update_branch`, `delete_branch`. Sự kiện: `create_event`, `update_event`, `delete_event`.
+- Chia sẻ (CHỈ ĐỌC): `list_share_links` — tổng quan link cây / QR / mời góp / thiệp khoe (loại, đích, trạng thái, hạn, lượt xem thiệp), CỐ Ý không trả token hay đường dẫn và không có tool tạo / gia hạn / thu hồi (link là bí mật; làm trong app, mục Chia sẻ). Cần gói write; chỉ admin dòng họ thấy link chia sẻ (RLS).
 - Dòng họ & sổ: `update_clan_info` (chỉ tên, mô tả, offset đời — CỐ Ý không đổi được chế độ công khai/giới hạn/tính năng),
   `update_book_texts`.
 
@@ -48,7 +49,7 @@ Mỗi mục có `list_*` (đọc, mọi gói; truyền `id` để đọc một m
 
 | Mục | Tool |
 |---|---|
-| Bảng tin | `list_posts`, `create_post`, `update_post`, `moderate_post` (đăng/ẩn/ghim…), `delete_post` (ẩn bài) |
+| Bảng tin | `list_posts`, `create_post`, `update_post`, `moderate_post` (đăng/ẩn/ghim…), `delete_post` (ẩn bài). **Nội dung bài viết là Markdown** (tiêu đề `##`, danh sách, trích dẫn, in đậm, ảnh `![](https://…)` — ảnh https đầu tiên là ảnh bìa; không HTML); bài đã đăng hiện trên trang dòng họ công khai (mục Bảng tin) |
 | Phòng ký ức | `list/create/update/delete_memory_room(s)`, `list_memory_room_items`, `add_memory_room_item`, `update_memory_room_item`, `remove_memory_room_item` |
 | Ảnh ghép | `list/create/update/delete_mosaic(s)`, `set_mosaic_dashboard`, `list_mosaic_tiles`, `set_mosaic_tile_status`, `delete_mosaic_tile` |
 | Di sản | `list/create/update/delete_heritage_item(s)`, `add_heritage_person`, `remove_heritage_person` |
@@ -80,7 +81,7 @@ trả **link tải có hạn 30 phút** (signed URL). Không tạo link chia s�
 - **Cache:** khoá = băm của dữ liệu sổ + thông tin dòng họ + tuỳ chọn + mã dựng sổ + mốc cập nhật từng người. Không có gì
   đổi thì trả lại file đã dựng (~30 ms thay vì vài chục giây). Đổi ảnh/dữ liệu/tuỳ chọn/bố cục sổ → tự dựng mới.
 - **Dọn:** giữ tối đa 3 bản gần nhất mỗi (người, dòng họ); `sweepExports` chạy mỗi giờ xoá bản `mcp-*` quá
-  `MCP_EXPORT_KEEP_HOURS` (mặc định 72) giờ; không đụng file của Mini App Zalo.
+  `MCP_EXPORT_KEEP_HOURS` (mặc định 72) giờ.
 - **Tài nguyên:** chạy từng cái một; trần 1000 người (cao hơn thì báo lỗi, hãy xuất trong app); container giới hạn 1 GB RAM, V8 heap 600 MB. Đo thực tế (máy dev):
   50 người ≈ 1 s, 500 người ≈ 23 s, 800 người ≈ 56 s (RAM đỉnh ~0,8 GB). Dòng họ rất lớn nên xuất trong app.
 - **Số trang mục lục:** dàn trang cả cuốn MỘT lần rồi dàn lại riêng trang mục lục với số trang thật (trước đây dựng cả
