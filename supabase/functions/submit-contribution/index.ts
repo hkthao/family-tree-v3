@@ -21,6 +21,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 import { guardGuestSubmission, tooLarge } from "../_shared/spamGuard.ts";
+import { captchaLogLine, configFromEnv, verifyCaptcha } from "../_shared/recaptcha.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -61,6 +62,8 @@ interface Body {
   submitter_contact?: string;
   submitter_relation: string;
   submitter_note?: string;
+  /** Mã reCAPTCHA v3 (action guest_contribution); chỉ bắt buộc khi RECAPTCHA_MODE=enforce. */
+  captcha_token?: string;
 }
 
 Deno.serve(async (req) => {
@@ -105,6 +108,11 @@ Deno.serve(async (req) => {
   if (!body.proposed_data) {
     return err("Thiếu nội dung đề xuất", 400);
   }
+
+  // ─── reCAPTCHA v3 (docs/plan-recaptcha-public.md): trước mọi truy vấn DB ───
+  const captcha = await verifyCaptcha(typeof body.captcha_token === "string" ? body.captcha_token.slice(0, 4000) : null, "guest_contribution", configFromEnv((k) => Deno.env.get(k)), { ip });
+  if (captcha.mode !== "off") console.log(captchaLogLine("guest_contribution", captcha));
+  if (!captcha.allow) return err("Chưa xác minh được bạn là người thật, hãy thử lại.", 403);
 
   // ─── Validate share link ────────────────────────────────────────
   const { data: link, error: linkErr } = await sb

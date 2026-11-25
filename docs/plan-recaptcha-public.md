@@ -1,6 +1,11 @@
 # Plan: Google reCAPTCHA cho các trang public để chống spam
 
-Trạng thái: **plan, chưa có code.** Soạn ngày 25/11/2026. Hiện **chưa có captcha nào** trong repo (đã grep). Mục tiêu: chặn bot gửi rác vào những nơi
+Trạng thái (25/11/2026): **bước 2–3 đã code ở local, chạy ở chế độ TẮT mặc định** — `supabase/functions/_shared/recaptcha.ts` (+ test `recaptcha.test.ts`) đã gắn vào `community-submit`
+(action `guest_face` / `guest_answer` / `guest_memory`, trường form `captcha_token`) và `submit-contribution` (action `guest_contribution`, trường JSON `captcha_token`), đặt TRƯỚC mọi truy vấn DB.
+Biến môi trường của function: `RECAPTCHA_MODE=off|log|enforce` (mặc định off), `RECAPTCHA_SECRET`, `RECAPTCHA_MIN_SCORE` (0,5), `RECAPTCHA_BLOCK_SCORE` (0,3), `RECAPTCHA_HOSTNAMES` (csv),
+`RECAPTCHA_FAIL_OPEN` (mặc định mở; `0` = đóng), `RECAPTCHA_TIMEOUT_MS` (3000). Mỗi lần xác minh in một dòng log JSON `{"evt":"captcha",…}` (không có mã thông báo / IP). Đã dùng các mặc định đề xuất cho
+câu hỏi mở 3 (mở có kiểm soát) và 4 (ngưỡng 0,5 / 0,3, chỉ ghi log, chưa có bảng `captcha_events`); câu 1, 2, 5 vẫn chờ bạn. **Chưa làm:** hook `useRecaptcha` + gắn biểu mẫu (bước 4 — cần khoá site key
+để bật `log`; hiện form chưa gửi `captcha_token` nên KHÔNG được bật `enforce`), `feedback-submit` (bước 5), Auth (bước 7), chính sách riêng tư (bước 8). Soạn ngày 25/11/2026. Hiện **chưa có captcha nào** trong repo (đã grep). Mục tiêu: chặn bot gửi rác vào những nơi
 **khách chưa đăng nhập ghi được dữ liệu**, mà không làm khó người lớn tuổi.
 
 ## 1. Kiểm kê bề mặt public (đã đọc code / cấu hình)

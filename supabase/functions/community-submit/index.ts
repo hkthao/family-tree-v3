@@ -29,6 +29,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 import { guardGuestSubmission, memorySubmissions24h, tooLarge } from "../_shared/spamGuard.ts";
+import { captchaLogLine, configFromEnv, verifyCaptcha } from "../_shared/recaptcha.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -166,6 +167,14 @@ Deno.serve(async (req) => {
     if (!Number.isInteger(y) || y < 1000 || y > 2200) return err("Năm không hợp lệ", 400);
     yearApprox = y;
   }
+
+  // ─── reCAPTCHA v3 (docs/plan-recaptcha-public.md): trước mọi truy vấn DB để bot rẻ tiền không tốn tài nguyên ───
+  const captchaAction = kind === "face" ? "guest_face" : questionId ? "guest_answer" : "guest_memory";
+  const captcha = await verifyCaptcha(str(form, "captcha_token", 4000), captchaAction, configFromEnv((k) => Deno.env.get(k)), {
+    ip: req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("x-real-ip") ?? undefined,
+  });
+  if (captcha.mode !== "off") console.log(captchaLogLine(captchaAction, captcha));
+  if (!captcha.allow) return err("Chưa xác minh được bạn là người thật, hãy thử lại.", 403);
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
