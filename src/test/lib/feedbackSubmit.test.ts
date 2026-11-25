@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { GUEST_GLOBAL_HOUR, MIN_FILL_MS, PER_IP_DAY, PER_IP_HOUR, processFeedback, type FeedbackBody } from "../../../supabase/functions/feedback-submit/core";
+import {
+  GUEST_GLOBAL_HOUR,
+  MIN_FILL_MS,
+  PER_IP_DAY,
+  PER_IP_HOUR,
+  processFeedback,
+  type FeedbackBody,
+} from "../../../supabase/functions/feedback-submit/core";
 
 /**
  * feedback-submit (docs/plan-recaptcha-public.md, bước 5): khách đi qua cổng phía máy chủ — bẫy bot, thời gian điền, trần theo IP / chung,
@@ -15,25 +22,54 @@ function fakeSb(opts: { counts?: number[]; insertError?: boolean } = {}) {
     from() {
       const b: Record<string, unknown> = {};
       for (const m of ["select", "eq", "gte", "not"]) b[m] = () => b;
-      b.then = (res: (v: unknown) => unknown) => Promise.resolve({ count: queue.shift() ?? 0, error: null }).then(res);
+      b.then = (res: (v: unknown) => unknown) =>
+        Promise.resolve({ count: queue.shift() ?? 0, error: null }).then(res);
       b.insert = (row: Record<string, unknown>) => {
         inserts.push(row);
-        return Promise.resolve({ error: opts.insertError ? { message: "db" } : null });
+        return Promise.resolve({
+          error: opts.insertError ? { message: "db" } : null,
+        });
       };
       return b;
     },
   };
 }
-const ok = (over: FeedbackBody = {}): FeedbackBody => ({ message: "App hay quá", category: "idea", contact: "a@b.c", elapsed_ms: MIN_FILL_MS + 500, ...over });
-const run = (sb: ReturnType<typeof fakeSb>, body: FeedbackBody, userId: string | null = null) =>
+const ok = (over: FeedbackBody = {}): FeedbackBody => ({
+  message: "App hay quá",
+  category: "idea",
+  contact: "a@b.c",
+  elapsed_ms: MIN_FILL_MS + 500,
+  ...over,
+});
+const run = (
+  sb: ReturnType<typeof fakeSb>,
+  body: FeedbackBody,
+  userId: string | null = null,
+) =>
   processFeedback({ sb, body, userId, ipHash: "iphash", userAgent: "UA/1.0" });
 
 describe("khách (chưa đăng nhập)", () => {
   it("hợp lệ: ghi một dòng, user_id null, kèm băm IP + user-agent do MÁY CHỦ lấy; không lưu IP thô", async () => {
     const sb = fakeSb();
-    const r = await run(sb, ok({ clan_id: "11111111-1111-4111-8111-111111111111", page_url: "https://x/y", app_version: "0.1+abc" }));
+    const r = await run(
+      sb,
+      ok({
+        clan_id: "11111111-1111-4111-8111-111111111111",
+        page_url: "https://x/y",
+        app_version: "0.1+abc",
+      }),
+    );
     expect(r).toEqual({ status: 200, body: { ok: true } });
-    expect(sb.inserts[0]).toMatchObject({ user_id: null, message: "App hay quá", category: "idea", contact: "a@b.c", clan_id: "11111111-1111-4111-8111-111111111111", user_agent: "UA/1.0", submitter_ip_hash: "iphash", app_version: "0.1+abc" });
+    expect(sb.inserts[0]).toMatchObject({
+      user_id: null,
+      message: "App hay quá",
+      category: "idea",
+      contact: "a@b.c",
+      clan_id: "11111111-1111-4111-8111-111111111111",
+      user_agent: "UA/1.0",
+      submitter_ip_hash: "iphash",
+      app_version: "0.1+abc",
+    });
     expect(JSON.stringify(sb.inserts[0])).not.toMatch(/\d+\.\d+\.\d+\.\d+/);
   });
 
@@ -45,7 +81,9 @@ describe("khách (chưa đăng nhập)", () => {
 
   it("gửi quá nhanh (bot) hoặc thiếu elapsed → 400", async () => {
     expect((await run(fakeSb(), ok({ elapsed_ms: 100 }))).status).toBe(400);
-    expect((await run(fakeSb(), ok({ elapsed_ms: undefined }))).status).toBe(400);
+    expect((await run(fakeSb(), ok({ elapsed_ms: undefined }))).status).toBe(
+      400,
+    );
     expect((await run(fakeSb(), ok({ elapsed_ms: "abc" }))).status).toBe(400);
   });
 
@@ -54,24 +92,72 @@ describe("khách (chưa đăng nhập)", () => {
     const sb = fakeSb();
     await run(sb, ok({ message: "x".repeat(6000) }));
     expect((sb.inserts[0].message as string).length).toBe(5000);
-    expect((await run(fakeSb(), ok({ message: "http://a http://b https://c www.d" }))).status).toBe(400);
-    expect((await run(fakeSb(), ok({ message: "xem https://a.vn nhé" }))).status).toBe(200);
+    expect(
+      (
+        await run(
+          fakeSb(),
+          ok({ message: "http://a http://b https://c www.d" }),
+        )
+      ).status,
+    ).toBe(400);
+    expect(
+      (await run(fakeSb(), ok({ message: "xem https://a.vn nhé" }))).status,
+    ).toBe(200);
   });
 
   it("lọc trường: category lạ → other, clan_id không phải UUID → null, liên hệ cắt 200", async () => {
     const sb = fakeSb();
-    await run(sb, ok({ category: "hack", clan_id: "'; drop table", contact: "c".repeat(500) }));
+    await run(
+      sb,
+      ok({
+        category: "hack",
+        clan_id: "'; drop table",
+        contact: "c".repeat(500),
+      }),
+    );
     expect(sb.inserts[0]).toMatchObject({ category: "other", clan_id: null });
     expect((sb.inserts[0].contact as string).length).toBe(200);
   });
 
   it("trần theo IP mỗi giờ / mỗi ngày và trần chung cho khách → 429, không ghi", async () => {
-    for (const counts of [[PER_IP_HOUR], [0, PER_IP_DAY], [0, 0, GUEST_GLOBAL_HOUR]]) {
+    for (const counts of [
+      [PER_IP_HOUR],
+      [0, PER_IP_DAY],
+      [0, 0, GUEST_GLOBAL_HOUR],
+    ]) {
       const sb = fakeSb({ counts });
       expect((await run(sb, ok())).status).toBe(429);
       expect(sb.inserts).toHaveLength(0);
     }
-    expect((await run(fakeSb({ counts: [PER_IP_HOUR - 1, PER_IP_DAY - 1, GUEST_GLOBAL_HOUR - 1] }), ok())).status).toBe(200);
+    expect(
+      (
+        await run(
+          fakeSb({
+            counts: [PER_IP_HOUR - 1, PER_IP_DAY - 1, GUEST_GLOBAL_HOUR - 1],
+          }),
+          ok(),
+        )
+      ).status,
+    ).toBe(200);
+  });
+
+  it("không định danh được khách (IP nội bộ sau proxy): bỏ trần theo IP nhưng VẪN giữ trần chung", async () => {
+    const run2 = (sb: ReturnType<typeof fakeSb>) =>
+      processFeedback({
+        sb,
+        body: ok(),
+        userId: null,
+        ipHash: "iphash",
+        ipKnown: false,
+        userAgent: "UA",
+      });
+    // counts chỉ còn 1 truy vấn (trần chung): vượt PER_IP_HOUR / PER_IP_DAY cũng không chặn
+    expect(
+      (await run2(fakeSb({ counts: [GUEST_GLOBAL_HOUR - 1] }))).status,
+    ).toBe(200);
+    const blocked = fakeSb({ counts: [GUEST_GLOBAL_HOUR] });
+    expect((await run2(blocked)).status).toBe(429);
+    expect(blocked.inserts).toHaveLength(0);
   });
 
   it("lỗi cơ sở dữ liệu → 500 thông báo chung, không lộ chi tiết", async () => {
@@ -86,6 +172,9 @@ describe("người đã đăng nhập", () => {
     const sb = fakeSb({ counts: [999, 999, 999] });
     const r = await run(sb, ok({ elapsed_ms: 0 }), "user-1");
     expect(r.status).toBe(200);
-    expect(sb.inserts[0]).toMatchObject({ user_id: "user-1", submitter_ip_hash: null });
+    expect(sb.inserts[0]).toMatchObject({
+      user_id: "user-1",
+      submitter_ip_hash: null,
+    });
   });
 });

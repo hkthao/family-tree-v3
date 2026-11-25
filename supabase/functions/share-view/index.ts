@@ -19,6 +19,7 @@ import { resolveShareAccess } from "./access.ts";
 import { subtreeScope } from "./scope.ts";
 import { loadKhoe } from "./khoe.ts";
 import { fetchAllRows } from "./paging.ts";
+import { clientIp, isPrivateIp } from "../_shared/clientIp.ts";
 import { handlePart, loadHeritageItem } from "./parts.ts";
 import { buildShareSections } from "./sections.ts";
 
@@ -39,6 +40,8 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SITE_SCOPES = ["tree_view", "contribute"];
 
 const RATE_PER_MINUTE = 60;
+/** Hệ số nhân trần khi IP khách không định danh được (bộ đếm dùng chung toàn hệ thống). */
+const SHARED_BUCKET_FACTOR = 25;
 /** Các lần gọi `part=` (duyệt nhiều trang) có bộ đếm riêng, nới hơn. */
 const RATE_PER_MINUTE_PARTS = 240;
 
@@ -118,13 +121,13 @@ Deno.serve(async (req) => {
   if (!token && !clanParam && !khoeToken) return err("Missing token", 400);
 
   const part = url.searchParams.get("part") ?? (khoeToken ? "khoe" : null);
-  const ipRaw =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown";
+  const ipRaw = clientIp(req.headers);
   // Bộ đếm riêng cho `part=` để duyệt trang không ăn vào hạn mức của lần tải cây.
   const ip = part ? `${ipRaw}|part` : ipRaw;
-  const rateLimit = part ? RATE_PER_MINUTE_PARTS : RATE_PER_MINUTE;
+  // Không định danh được khách (IP nội bộ sau proxy Docker) → mọi người chung MỘT bộ đếm: nới trần để không khoá cả hệ thống (_shared/clientIp.ts).
+  const rateLimit =
+    (part ? RATE_PER_MINUTE_PARTS : RATE_PER_MINUTE) *
+    (isPrivateIp(ipRaw) ? SHARED_BUCKET_FACTOR : 1);
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },

@@ -21,7 +21,12 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 import { guardGuestSubmission, tooLarge } from "../_shared/spamGuard.ts";
-import { captchaLogLine, configFromEnv, verifyCaptcha } from "../_shared/recaptcha.ts";
+import { clientIp, isPrivateIp } from "../_shared/clientIp.ts";
+import {
+  captchaLogLine,
+  configFromEnv,
+  verifyCaptcha,
+} from "../_shared/recaptcha.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -71,10 +76,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return err("Method not allowed", 405);
   if (tooLarge(req)) return err("Dữ liệu gửi lên quá lớn", 413);
 
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown";
+  const ip = clientIp(req.headers);
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -110,14 +112,25 @@ Deno.serve(async (req) => {
   }
 
   // ─── reCAPTCHA v3 (docs/plan-recaptcha-public.md): trước mọi truy vấn DB ───
-  const captcha = await verifyCaptcha(typeof body.captcha_token === "string" ? body.captcha_token.slice(0, 4000) : null, "guest_contribution", configFromEnv((k) => Deno.env.get(k)), { ip });
-  if (captcha.mode !== "off") console.log(captchaLogLine("guest_contribution", captcha));
-  if (!captcha.allow) return err("Chưa xác minh được bạn là người thật, hãy thử lại.", 403);
+  const captcha = await verifyCaptcha(
+    typeof body.captcha_token === "string"
+      ? body.captcha_token.slice(0, 4000)
+      : null,
+    "guest_contribution",
+    configFromEnv((k) => Deno.env.get(k)),
+    { ip },
+  );
+  if (captcha.mode !== "off")
+    console.log(captchaLogLine("guest_contribution", captcha));
+  if (!captcha.allow)
+    return err("Chưa xác minh được bạn là người thật, hãy thử lại.", 403);
 
   // ─── Validate share link ────────────────────────────────────────
   const { data: link, error: linkErr } = await sb
     .from("share_links")
-    .select("id, clan_id, root_person_id, expires_at, is_revoked, scope, contrib_paused_at")
+    .select(
+      "id, clan_id, root_person_id, expires_at, is_revoked, scope, contrib_paused_at",
+    )
     .eq("token", body.token)
     .maybeSingle();
   if (linkErr) return err(linkErr.message, 500);
@@ -147,11 +160,14 @@ Deno.serve(async (req) => {
   const windowStart = new Date(
     Date.now() - RATE_WINDOW_MIN * 60_000,
   ).toISOString();
-  const { count: recentCount } = await sb
-    .from("contributions")
-    .select("id", { count: "exact", head: true })
-    .eq("submitter_ip", ip)
-    .gt("created_at", windowStart);
+  // IP nội bộ sau proxy = mọi khách chung một IP → trần theo IP vô nghĩa (còn trần theo họ / theo ngày bên dưới).
+  const { count: recentCount } = isPrivateIp(ip)
+    ? { count: 0 }
+    : await sb
+        .from("contributions")
+        .select("id", { count: "exact", head: true })
+        .eq("submitter_ip", ip)
+        .gt("created_at", windowStart);
   if ((recentCount ?? 0) >= RATE_PER_WINDOW) {
     return err(
       `Bạn đã gửi nhiều đóng góp trong ${RATE_WINDOW_MIN} phút qua. Vui lòng thử lại sau.`,
@@ -204,7 +220,9 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${SERVICE_KEY}`,
       },
       body: JSON.stringify({ contribution_id: row.id }),
-    }).catch(() => {/* ignore — see notify-contribution */});
+    }).catch(() => {
+      /* ignore — see notify-contribution */
+    });
     // Giữ isolate sống tới khi gọi xong — fetch bắn-rồi-quên sau khi trả lời có thể bị runtime cắt.
     // deno-lint-ignore no-explicit-any
     const er = (globalThis as any).EdgeRuntime;

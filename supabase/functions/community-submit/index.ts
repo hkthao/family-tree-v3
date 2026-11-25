@@ -28,8 +28,17 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-import { guardGuestSubmission, memorySubmissions24h, tooLarge } from "../_shared/spamGuard.ts";
-import { captchaLogLine, configFromEnv, verifyCaptcha } from "../_shared/recaptcha.ts";
+import {
+  guardGuestSubmission,
+  memorySubmissions24h,
+  tooLarge,
+} from "../_shared/spamGuard.ts";
+import { clientIp, isPrivateIp } from "../_shared/clientIp.ts";
+import {
+  captchaLogLine,
+  configFromEnv,
+  verifyCaptcha,
+} from "../_shared/recaptcha.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -62,14 +71,19 @@ const AUDIO_EXT: Record<string, string> = {
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 function json(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), {
     ...init,
-    headers: { ...CORS, "Content-Type": "application/json", ...(init.headers ?? {}) },
+    headers: {
+      ...CORS,
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
   });
 }
 
@@ -78,11 +92,17 @@ function err(message: string, status: number): Response {
 }
 
 async function sha256(s: string): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(s),
+  );
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-const LINK_RE = /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|vn|info|xyz|top|ru)\b)/i;
+const LINK_RE =
+  /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|vn|info|xyz|top|ru)\b)/i;
 
 const str = (f: FormData, k: string, max: number): string | null => {
   const v = f.get(k);
@@ -126,7 +146,9 @@ Deno.serve(async (req) => {
   const memoryId = str(form, "memory_id", 40);
   const suggestedName = str(form, "suggested_name", 120);
   const suggestedNote = str(form, "suggested_note", 200);
-  const box = ["box_x", "box_y", "box_w", "box_h"].map((k) => Number(form.get(k)));
+  const box = ["box_x", "box_y", "box_w", "box_h"].map((k) =>
+    Number(form.get(k)),
+  );
   const externalRaw = str(form, "external_url", 1000);
   let externalUrl: string | null = null;
   if (externalRaw) {
@@ -140,41 +162,75 @@ Deno.serve(async (req) => {
   }
 
   if (!token) return err("Thiếu link", 400);
-  if (!kind || !["story", "photo", "audio", "face"].includes(kind)) return err("Loại đóng góp không hợp lệ", 400);
+  if (!kind || !["story", "photo", "audio", "face"].includes(kind))
+    return err("Loại đóng góp không hợp lệ", 400);
   if (!authorName) return err("Cho biết tên của bạn nhé", 400);
-  if (body && body.length > MAX_GUEST_BODY) return err(`Nội dung tối đa ${MAX_GUEST_BODY} chữ`, 400);
+  if (body && body.length > MAX_GUEST_BODY)
+    return err(`Nội dung tối đa ${MAX_GUEST_BODY} chữ`, 400);
   if (kind === "story" && !body) return err("Bạn chưa kể gì", 400);
   if (kind === "face") {
     if (!memoryId) return err("Thiếu ảnh", 400);
     const [bx, by, bw, bh] = box;
     if (
       ![bx, by, bw, bh].every((v) => Number.isFinite(v)) ||
-      bx < 0 || by < 0 || bw <= 0 || bh <= 0 || bx + bw > 1.001 || by + bh > 1.001
+      bx < 0 ||
+      by < 0 ||
+      bw <= 0 ||
+      bh <= 0 ||
+      bx + bw > 1.001 ||
+      by + bh > 1.001
     ) {
       return err("Khung khuôn mặt không hợp lệ", 400);
     }
-    if (!personId && !suggestedName) return err("Chọn người trong gia phả hoặc ghi tên", 400);
+    if (!personId && !suggestedName)
+      return err("Chọn người trong gia phả hoặc ghi tên", 400);
   }
-  if ((kind === "photo" || kind === "audio") && !(file instanceof File) && !externalUrl) {
+  if (
+    (kind === "photo" || kind === "audio") &&
+    !(file instanceof File) &&
+    !externalUrl
+  ) {
     return err("Chọn tệp hoặc dán link", 400);
   }
-  for (const t of [body, authorName, authorRelation, place, source, suggestedName, suggestedNote]) {
-    if (t && LINK_RE.test(t)) return err("Vui lòng không dán đường link vào nội dung", 400);
+  for (const t of [
+    body,
+    authorName,
+    authorRelation,
+    place,
+    source,
+    suggestedName,
+    suggestedNote,
+  ]) {
+    if (t && LINK_RE.test(t))
+      return err("Vui lòng không dán đường link vào nội dung", 400);
   }
   let yearApprox: number | null = null;
   if (yearRaw) {
     const y = Number(yearRaw);
-    if (!Number.isInteger(y) || y < 1000 || y > 2200) return err("Năm không hợp lệ", 400);
+    if (!Number.isInteger(y) || y < 1000 || y > 2200)
+      return err("Năm không hợp lệ", 400);
     yearApprox = y;
   }
 
   // ─── reCAPTCHA v3 (docs/plan-recaptcha-public.md): trước mọi truy vấn DB để bot rẻ tiền không tốn tài nguyên ───
-  const captchaAction = kind === "face" ? "guest_face" : questionId ? "guest_answer" : "guest_memory";
-  const captcha = await verifyCaptcha(str(form, "captcha_token", 4000), captchaAction, configFromEnv((k) => Deno.env.get(k)), {
-    ip: req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("x-real-ip") ?? undefined,
-  });
-  if (captcha.mode !== "off") console.log(captchaLogLine(captchaAction, captcha));
-  if (!captcha.allow) return err("Chưa xác minh được bạn là người thật, hãy thử lại.", 403);
+  const captchaAction =
+    kind === "face"
+      ? "guest_face"
+      : questionId
+        ? "guest_answer"
+        : "guest_memory";
+  const captcha = await verifyCaptcha(
+    str(form, "captcha_token", 4000),
+    captchaAction,
+    configFromEnv((k) => Deno.env.get(k)),
+    {
+      ip: clientIp(req.headers),
+    },
+  );
+  if (captcha.mode !== "off")
+    console.log(captchaLogLine(captchaAction, captcha));
+  if (!captcha.allow)
+    return err("Chưa xác minh được bạn là người thật, hãy thử lại.", 403);
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -183,13 +239,16 @@ Deno.serve(async (req) => {
   // ─── Link ───────────────────────────────────────────────────────
   const { data: link, error: linkErr } = await sb
     .from("share_links")
-    .select("id, clan_id, scope, expires_at, is_revoked, allow, use_count, contrib_paused_at")
+    .select(
+      "id, clan_id, scope, expires_at, is_revoked, allow, use_count, contrib_paused_at",
+    )
     .eq("token", token)
     .maybeSingle();
   if (linkErr) return err(linkErr.message, 500);
   if (!link) return err("Link không tồn tại", 404);
   if (link.is_revoked) return err("Link đã bị thu hồi", 410);
-  if (new Date(link.expires_at) < new Date()) return err("Link đã hết hạn", 410);
+  if (new Date(link.expires_at) < new Date())
+    return err("Link đã hết hạn", 410);
   if (link.scope === "resting_place" || link.scope === "heritage_item") {
     return err("Link này không nhận đóng góp", 403);
   }
@@ -203,22 +262,35 @@ Deno.serve(async (req) => {
       .select("clan_id, deleted_at")
       .eq("id", personId)
       .maybeSingle();
-    if (!person || person.deleted_at) return err("Không tìm thấy người này", 404);
-    if (person.clan_id !== link.clan_id) return err("Người này không thuộc dòng họ", 403);
+    if (!person || person.deleted_at)
+      return err("Không tìm thấy người này", 404);
+    if (person.clan_id !== link.clan_id)
+      return err("Người này không thuộc dòng họ", 403);
   }
 
   // ─── Giới hạn tần suất ─────────────────────────────────────────
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown";
+  const ip = clientIp(req.headers);
   const ipHash = await sha256(`community:${ip}`);
-  const { data: ipHits } = await sb.rpc("bump_community_submit_rate", { p_bucket: `ip:${ipHash}` });
-  if ((ipHits ?? 0) > IP_PER_HOUR) return err("Bạn gửi nhiều quá, nghỉ một lát rồi gửi tiếp nhé", 429);
-  const { data: linkHits } = await sb.rpc("bump_community_submit_rate", { p_bucket: `link:${link.id}` });
-  if ((linkHits ?? 0) > LINK_PER_HOUR) return err("Link này đang nhận quá nhiều đóng góp, vui lòng thử lại sau", 429);
+  // Trần theo IP chỉ có nghĩa khi định danh được khách; IP nội bộ sau proxy = cả hệ thống chung một bộ đếm (bỏ, còn trần theo link + theo ngày).
+  if (!isPrivateIp(ip)) {
+    const { data: ipHits } = await sb.rpc("bump_community_submit_rate", {
+      p_bucket: `ip:${ipHash}`,
+    });
+    if ((ipHits ?? 0) > IP_PER_HOUR)
+      return err("Bạn gửi nhiều quá, nghỉ một lát rồi gửi tiếp nhé", 429);
+  }
+  const { data: linkHits } = await sb.rpc("bump_community_submit_rate", {
+    p_bucket: `link:${link.id}`,
+  });
+  if ((linkHits ?? 0) > LINK_PER_HOUR)
+    return err(
+      "Link này đang nhận quá nhiều đóng góp, vui lòng thử lại sau",
+      429,
+    );
 
-  const guestKey = guestKeyRaw ? await sha256(`${link.clan_id}:${guestKeyRaw}`) : null;
+  const guestKey = guestKeyRaw
+    ? await sha256(`${link.clan_id}:${guestKeyRaw}`)
+    : null;
 
   // ─── Trần theo ngày khi link bị lộ (_shared/spamGuard.ts) ─────
   const guard = await guardGuestSubmission(sb, link, {
@@ -237,7 +309,8 @@ Deno.serve(async (req) => {
       .eq("guest_key", guestKey)
       .eq("body", body)
       .gt("created_at", new Date(Date.now() - 24 * 3600_000).toISOString());
-    if ((dup ?? 0) > 0) return err("Bạn đã gửi nội dung này rồi, cảm ơn bạn!", 409);
+    if ((dup ?? 0) > 0)
+      return err("Bạn đã gửi nội dung này rồi, cảm ơn bạn!", 409);
   }
 
   // ─── kind=face: khoanh một khuôn mặt trên ảnh "nhờ nhận diện" ──
@@ -247,7 +320,12 @@ Deno.serve(async (req) => {
       .select("clan_id, identify, status")
       .eq("id", memoryId!)
       .maybeSingle();
-    if (!mem || mem.clan_id !== link.clan_id || !mem.identify || mem.status !== "visible") {
+    if (
+      !mem ||
+      mem.clan_id !== link.clan_id ||
+      !mem.identify ||
+      mem.status !== "visible"
+    ) {
       return err("Ảnh này không nhận nhận diện", 404);
     }
     const [bx, by, bw, bh] = box;
@@ -269,7 +347,10 @@ Deno.serve(async (req) => {
       .select("id")
       .single();
     if (faceErr) return err(faceErr.message, 500);
-    await sb.from("share_links").update({ use_count: (link.use_count ?? 0) + 1 }).eq("id", link.id);
+    await sb
+      .from("share_links")
+      .update({ use_count: (link.use_count ?? 0) + 1 })
+      .eq("id", link.id);
     return json({ ok: true, id: face.id, status: "pending" });
   }
 
@@ -280,24 +361,40 @@ Deno.serve(async (req) => {
       .select("clan_id, status")
       .eq("id", questionId)
       .maybeSingle();
-    if (!q || q.clan_id !== link.clan_id || q.status === "closed") return err("Câu hỏi không còn nhận trả lời", 404);
+    if (!q || q.clan_id !== link.clan_id || q.status === "closed")
+      return err("Câu hỏi không còn nhận trả lời", 404);
   }
 
   // ─── Tệp ────────────────────────────────────────────────────────
   let mediaPath: string | null = null;
   let mediaMime: string | null = null;
-  if (!externalUrl && file instanceof File && (kind === "photo" || kind === "audio")) {
+  if (
+    !externalUrl &&
+    file instanceof File &&
+    (kind === "photo" || kind === "audio")
+  ) {
     const mime = file.type.split(";")[0].toLowerCase();
     const ext = kind === "photo" ? PHOTO_EXT[mime] : AUDIO_EXT[mime];
-    if (!ext) return err(kind === "photo" ? "Chỉ nhận ảnh JPG, PNG, WEBP" : "Định dạng ghi âm không hỗ trợ", 400);
+    if (!ext)
+      return err(
+        kind === "photo"
+          ? "Chỉ nhận ảnh JPG, PNG, WEBP"
+          : "Định dạng ghi âm không hỗ trợ",
+        400,
+      );
     const max = kind === "photo" ? MAX_PHOTO_BYTES : MAX_AUDIO_BYTES;
-    if (file.size > max) return err(`Tệp quá lớn (tối đa ${Math.round(max / 1024 / 1024)} MB)`, 400);
+    if (file.size > max)
+      return err(
+        `Tệp quá lớn (tối đa ${Math.round(max / 1024 / 1024)} MB)`,
+        400,
+      );
     const { count: mediaCount } = await sb
       .from("person_memories")
       .select("id", { count: "exact", head: true })
       .eq("via_link_id", link.id)
       .not("media_path", "is", null);
-    if ((mediaCount ?? 0) >= MEDIA_PER_LINK) return err("Link này đã nhận đủ số ảnh / ghi âm", 429);
+    if ((mediaCount ?? 0) >= MEDIA_PER_LINK)
+      return err("Link này đã nhận đủ số ảnh / ghi âm", 429);
 
     mediaPath = `${link.clan_id}/memories/guest/${crypto.randomUUID()}.${ext}`;
     mediaMime = mime;
@@ -354,16 +451,24 @@ Deno.serve(async (req) => {
     return err(insErr.message, 500);
   }
 
-  await sb.from("share_links").update({ use_count: (link.use_count ?? 0) + 1 }).eq("id", link.id);
+  await sb
+    .from("share_links")
+    .update({ use_count: (link.use_count ?? 0) + 1 })
+    .eq("id", link.id);
 
   // Báo người quản lý (gom tối đa 1 lần / họ / giờ) + người đặt câu hỏi. Không bắt khách chờ, nhưng
   // giữ isolate sống tới khi gọi xong (EdgeRuntime.waitUntil) — fetch "bắn rồi quên" sau khi trả lời
   // có thể bị runtime cắt mất. Lỗi gửi thông báo không làm hỏng lượt gửi.
   const notify = fetch(`${SUPABASE_URL}/functions/v1/notify-contribution`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE_KEY}` },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SERVICE_KEY}`,
+    },
     body: JSON.stringify({ memory_id: row.id }),
-  }).catch(() => {/* xem notify-contribution */});
+  }).catch(() => {
+    /* xem notify-contribution */
+  });
   // deno-lint-ignore no-explicit-any
   const er = (globalThis as any).EdgeRuntime;
   if (er?.waitUntil) er.waitUntil(notify);

@@ -46,6 +46,8 @@ export interface CoreInput {
   userId: string | null;
   /** Băm IP (không lưu IP thô). */
   ipHash: string;
+  /** false = không định danh được khách (IP nội bộ sau proxy): bỏ trần theo IP vì mọi người chung một IP, còn trần chung. */
+  ipKnown?: boolean;
   userAgent: string | null;
   now?: number;
 }
@@ -86,23 +88,28 @@ export async function processFeedback(i: CoreInput): Promise<CoreResult> {
       if (error) throw new Error(error.message);
       return c ?? 0;
     };
-    if (
-      (await count((b) =>
-        b.eq("submitter_ip_hash", i.ipHash).gte("created_at", since(3_600_000)),
-      )) >= PER_IP_HOUR
-    )
-      return fail(429, "Bạn gửi nhiều quá, hãy thử lại sau ít phút.");
-    if (
-      (await count((b) =>
-        b
-          .eq("submitter_ip_hash", i.ipHash)
-          .gte("created_at", since(86_400_000)),
-      )) >= PER_IP_DAY
-    )
-      return fail(
-        429,
-        "Hôm nay bạn đã gửi nhiều rồi, hãy thử lại vào ngày mai.",
-      );
+    // Trần theo IP chỉ có nghĩa khi định danh được khách; IP nội bộ sau proxy = mọi người chung một IP → bỏ, còn trần chung bên dưới.
+    if (i.ipKnown !== false) {
+      if (
+        (await count((b) =>
+          b
+            .eq("submitter_ip_hash", i.ipHash)
+            .gte("created_at", since(3_600_000)),
+        )) >= PER_IP_HOUR
+      )
+        return fail(429, "Bạn gửi nhiều quá, hãy thử lại sau ít phút.");
+      if (
+        (await count((b) =>
+          b
+            .eq("submitter_ip_hash", i.ipHash)
+            .gte("created_at", since(86_400_000)),
+        )) >= PER_IP_DAY
+      )
+        return fail(
+          429,
+          "Hôm nay bạn đã gửi nhiều rồi, hãy thử lại vào ngày mai.",
+        );
+    }
     if (
       (await count((b) =>
         b

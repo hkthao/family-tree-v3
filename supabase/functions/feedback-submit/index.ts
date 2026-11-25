@@ -10,6 +10,7 @@ import {
   configFromEnv,
   verifyCaptcha,
 } from "../_shared/recaptcha.ts";
+import { clientIp, isPrivateIp } from "../_shared/clientIp.ts";
 import { processFeedback, type FeedbackBody } from "./core.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -52,10 +53,7 @@ Deno.serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
-    "unknown";
+  const ip = clientIp(req.headers);
 
   // Người đăng nhập: JWT thật (khác khoá anon). Chỉ tin người dùng đã được GoTrue xác minh.
   let userId: string | null = null;
@@ -90,6 +88,7 @@ Deno.serve(async (req) => {
       body,
       userId,
       ipHash: await sha256(`feedback:${ip}`),
+      ipKnown: !isPrivateIp(ip),
       userAgent: req.headers.get("user-agent"),
     });
     return json(r.body, r.status);
