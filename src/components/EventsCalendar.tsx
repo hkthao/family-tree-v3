@@ -2,7 +2,11 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { IconArrowLeft, IconArrowRight } from "@/components/icons";
-import { formatCanChiShort, getCanChiForSolarDate } from "@/lib/lunarDate";
+import {
+  formatCanChiShort,
+  getCanChiForSolarDate,
+  solarStringToLunar,
+} from "@/lib/lunarDate";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
 import { t } from "@lingui/core/macro";
@@ -29,7 +33,15 @@ const VN_MONTHS = [
   "Tháng 11",
   "Tháng 12",
 ];
-const VN_WEEKDAYS = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
+const VN_WEEKDAYS = [
+  ["T2", "Thứ hai"],
+  ["T3", "Thứ ba"],
+  ["T4", "Thứ tư"],
+  ["T5", "Thứ năm"],
+  ["T6", "Thứ sáu"],
+  ["T7", "Thứ bảy"],
+  ["CN", "CN"],
+] as const;
 
 function isoOf(d: Date): string {
   const y = d.getFullYear();
@@ -77,7 +89,12 @@ function kindLabel(k: UpcomingEvent["kind"]): string {
   }
 }
 
-export function EventsCalendar({ events, clanId, onOpenEvent, readOnly }: Props) {
+export function EventsCalendar({
+  events,
+  clanId,
+  onOpenEvent,
+  readOnly,
+}: Props) {
   const today = useMemo(() => new Date(), []);
   const todayIso = isoOf(today);
 
@@ -119,98 +136,124 @@ export function EventsCalendar({ events, clanId, onOpenEvent, readOnly }: Props)
 
   return (
     <div className="space-y-4">
-      {/* Month nav */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h3 className="text-lg font-semibold">
-          {VN_MONTHS[view.getMonth()]} {view.getFullYear()}
-        </h3>
-        <div className="inline-flex rounded-xl border bg-card shadow-sm overflow-hidden">
+      {/* Lịch tháng kiểu tờ lịch: thanh tiêu đề tháng (mũi tên + Hôm nay), hàng thứ, ô có ngày dương (to), ngày âm (nhỏ, giữa), can chi ngày. */}
+      <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="flex items-center justify-between gap-2 bg-primary px-2 py-2 text-primary-foreground">
           <button
             type="button"
             onClick={() =>
               setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))
             }
-            className="h-9 px-3 text-sm hover:bg-muted/50 inline-flex items-center gap-1"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-white/15"
             aria-label={t`Tháng trước`}
           >
-            <IconArrowLeft className="h-4 w-4" />
+            <IconArrowLeft className="h-5 w-5" />
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              const t = new Date();
-              t.setDate(1);
-              setView(t);
-              setSelected(todayIso);
-            }}
-            className="h-9 px-3 text-sm border-l hover:bg-muted/50"
-          >
-            {t`Hôm nay`}
-          </button>
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
+            <h3 className="truncate text-center text-sm font-bold uppercase tracking-wide sm:text-base">
+              {VN_MONTHS[view.getMonth()]} {view.getFullYear()}
+            </h3>
+            <button
+              type="button"
+              onClick={() => {
+                const t = new Date();
+                t.setDate(1);
+                setView(t);
+                setSelected(todayIso);
+              }}
+              className="shrink-0 rounded-md border border-white/40 px-2 py-0.5 text-xs hover:bg-white/15"
+            >
+              {t`Hôm nay`}
+            </button>
+          </div>
           <button
             type="button"
             onClick={() =>
               setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))
             }
-            className="h-9 px-3 text-sm border-l hover:bg-muted/50 inline-flex items-center gap-1"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-white/15"
             aria-label={t`Tháng sau`}
           >
-            <IconArrowRight className="h-4 w-4" />
+            <IconArrowRight className="h-5 w-5" />
           </button>
         </div>
-      </div>
-
-      {/* Grid */}
-      <div className="rounded-md border bg-card p-2">
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {VN_WEEKDAYS.map((w) => (
+        <div className="grid grid-cols-7 bg-primary/85 text-primary-foreground">
+          {VN_WEEKDAYS.map(([short, long], i) => (
             <div
-              key={w}
-              className="text-center text-[11px] font-medium text-muted-foreground py-1"
+              key={long}
+              className={`py-1.5 text-center text-[11px] font-bold uppercase tracking-wide sm:text-xs ${i === 6 ? "text-amber-200" : ""}`}
             >
-              {w}
+              <span className="sm:hidden">{short}</span>
+              <span className="hidden sm:inline">{long}</span>
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-px bg-border">
           {cells.map((d, i) => {
             const iso = isoOf(d);
             const isThisMonth = d.getMonth() === view.getMonth();
             const isToday = iso === todayIso;
             const isSelected = iso === selected;
+            const isSunday = i % 7 === 6;
             const dayEvts = eventsByDay.get(iso) ?? [];
+            const lunar = solarStringToLunar(iso);
+            const canChi = getCanChiForSolarDate(iso);
+            const lunarLabel = lunar
+              ? lunar.day === 1
+                ? `${lunar.day}/${lunar.month}${lunar.isLeap ? "n" : ""}`
+                : String(lunar.day)
+              : "";
             return (
               <button
                 key={i}
                 type="button"
                 onClick={() => setSelected(iso)}
                 aria-pressed={isSelected}
-                className={`
-                  relative h-14 rounded-md border text-sm flex flex-col items-stretch
-                  ${isSelected ? "border-primary bg-primary/5" : "border-transparent hover:border-divider hover:bg-muted/40"}
-                  ${isThisMonth ? "" : "opacity-40"}
-                `}
+                aria-label={`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`}
+                className={`relative flex min-h-[3.75rem] flex-col items-center px-1 pb-1 pt-0.5 text-left sm:min-h-[5.25rem] ${
+                  isToday
+                    ? "bg-primary/10"
+                    : isThisMonth
+                      ? "bg-card hover:bg-muted/40"
+                      : "bg-muted/30"
+                } ${isSelected ? "z-10 outline outline-2 -outline-offset-2 outline-primary" : ""} ${isThisMonth ? "" : "opacity-50"}`}
               >
+                <span className="flex w-full items-start justify-between">
+                  <span
+                    className={`text-base font-bold leading-tight sm:text-lg ${
+                      isToday || isSunday ? "text-primary" : ""
+                    }`}
+                  >
+                    {d.getDate()}
+                  </span>
+                  {dayEvts.length > 0 && (
+                    <span className="mt-1 flex items-center gap-0.5">
+                      {dayEvts.slice(0, 3).map((e, ix) => (
+                        <span
+                          key={ix}
+                          className={`h-1.5 w-1.5 rounded-full sm:h-2 sm:w-2 ${kindColor(e.kind)}`}
+                        />
+                      ))}
+                      {dayEvts.length > 3 && (
+                        <span className="text-[9px] leading-none text-muted-foreground">
+                          +{dayEvts.length - 3}
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </span>
                 <span
-                  className={`pt-1 text-center ${
-                    isToday ? "text-primary font-semibold" : ""
+                  className={`text-[11px] leading-tight sm:text-xs ${
+                    lunar?.day === 1
+                      ? "font-semibold text-primary"
+                      : "text-muted-foreground"
                   }`}
                 >
-                  {d.getDate()}
+                  {lunarLabel}
                 </span>
-                {dayEvts.length > 0 && (
-                  <span className="absolute bottom-1 left-1 right-1 flex flex-wrap gap-0.5">
-                    {dayEvts.slice(0, 3).map((e, ix) => (
-                      <span
-                        key={ix}
-                        className={`h-1.5 w-1.5 rounded-full ${kindColor(e.kind)}`}
-                      />
-                    ))}
-                    {dayEvts.length > 3 && (
-                      <span className="text-[9px] text-muted-foreground leading-none">
-                        +{dayEvts.length - 3}
-                      </span>
-                    )}
+                {canChi && (
+                  <span className="mt-auto hidden text-center text-[10px] leading-tight text-muted-foreground sm:block">
+                    {canChi.day}
                   </span>
                 )}
               </button>

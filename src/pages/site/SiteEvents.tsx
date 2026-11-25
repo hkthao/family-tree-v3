@@ -54,8 +54,8 @@ export default function SiteEvents() {
         </Button>
       </div>
       {view === "calendar" ? (
-        // Card bao quanh như các trang khác (Bảng tin, Di sản…): lịch + chú thích + danh sách hôm nay nằm trong một khung.
-        <div className="rounded-2xl border bg-card p-4 md:p-6">
+        // Lịch tự có khung (thanh tháng + lưới ô): không bọc thêm card để khỏi lồng nhiều lớp viền.
+        <div>
           <EventsCalendar events={upcoming} clanId="" readOnly />
         </div>
       ) : upcoming.length === 0 ? (
