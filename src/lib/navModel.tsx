@@ -22,6 +22,7 @@ import {
   IconQrCode,
   IconScroll,
   IconSettings,
+  IconShare2,
   IconShield,
   IconSparkles,
   IconTree,
@@ -559,6 +560,12 @@ export function buildSections(
           icon: <IconDownload className={ic} />,
         },
       );
+      workItems.push({
+        to: `/clans/${clanId}/chia-se`,
+        label: t`Chia sẻ`,
+        hint: t`Mọi liên kết và mã QR của dòng họ: tạo, gia hạn, thu hồi.`,
+        icon: <IconShare2 className={ic} />,
+      });
       workItems.push({
         to: `/clans/${clanId}/settings`,
         label: t`Cài đặt dòng họ`,

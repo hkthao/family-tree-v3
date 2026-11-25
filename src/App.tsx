@@ -96,6 +96,7 @@ const NewPerson = lazy(() => import("@/pages/clan/NewPerson"));
 const People = lazy(() => import("@/pages/clan/People"));
 const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
 const QrExport = lazy(() => import("@/pages/clan/QrExport"));
+const ShareHub = lazy(() => import("@/pages/clan/ShareHub"));
 const Settings = lazy(() => import("@/pages/clan/Settings"));
 const AiConnect = lazy(() => import("@/pages/clan/AiConnect"));
 const BookInfo = lazy(() => import("@/pages/clan/BookInfo"));
@@ -407,6 +408,7 @@ export default function App() {
                 <Route path="merge" element={<Merge />} />
                 <Route path="audit" element={<Audit />} />
                 <Route path="qr-export" element={<QrExport />} />
+                <Route path="chia-se" element={<ShareHub />} />
                 <Route path="my-lineage" element={<MyLineage />} />
                 <Route path="today" element={<TodayRedirect />} />
                 <Route path="xem-ngay" element={<GoodDays />} />
