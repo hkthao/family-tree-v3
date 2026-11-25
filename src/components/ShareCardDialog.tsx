@@ -821,7 +821,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
         <div
           role="tablist"
           aria-label={t`Loại thiệp`}
-          className="flex shrink-0 gap-2 border-b px-4 py-2 sm:px-5"
+          className="flex shrink-0 gap-5 overflow-x-auto border-b px-4 sm:px-5"
         >
           {(
             [
@@ -829,17 +829,16 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
               ["invite", t`Mời người thân góp`],
             ] as const
           ).map(([k, label]) => (
-            <Button
+            <button
               key={k}
+              type="button"
               role="tab"
               aria-selected={kind === k}
-              size="sm"
-              variant={kind === k ? "default" : "outline"}
-              className="px-3 text-sm"
               onClick={() => setKind(k)}
+              className={`min-h-11 whitespace-nowrap border-b-2 px-1 text-sm ${kind === k ? "border-primary font-semibold" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
               {label}
-            </Button>
+            </button>
           ))}
         </div>
       )}

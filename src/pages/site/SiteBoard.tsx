@@ -59,7 +59,8 @@ function Featured({ post, base }: { post: SitePostItem; base: string }) {
       to={sitePagePath(base, "board", post.id)}
       className="flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-primary md:flex-row"
     >
-      <PostCover post={post} className="h-56 md:h-auto md:w-1/2" />
+      {/* Chiều cao CỐ ĐỊNH: ảnh tự co theo tỉ lệ gốc (h-auto) sẽ cao ngất khi là ảnh dọc và chiếm hết trang. */}
+      <PostCover post={post} className="h-56 md:h-72 md:w-1/2 md:shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5 p-6 md:p-8">
         <span className="text-xs font-semibold uppercase tracking-wider text-accent">
           {post.pinned ? `${t`Ghim`} · ` : ""}
