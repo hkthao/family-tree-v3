@@ -1231,6 +1231,7 @@ msgid "Ảnh"
 msgstr "Ảnh"
 
 #: src/components/community/InviteCardDialog.tsx
+#: src/components/ShareCardDialog.tsx
 msgid "Ảnh + tin nhắn mời người thân góp"
 msgstr "Ảnh + tin nhắn mời người thân góp"
 
@@ -5675,6 +5676,10 @@ msgstr "Đang chờ tới lượt…"
 msgid "Đang chọn…"
 msgstr "Đang chọn…"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Đang chuẩn bị link mời góp…"
+msgstr "Đang chuẩn bị link mời góp…"
+
 #: src/pages/Login.tsx
 msgid "Đang chuyển tới Google…"
 msgstr "Đang chuyển tới Google…"
@@ -6986,7 +6991,6 @@ msgstr "Đơn vị này đang được dùng trong địa chỉ thành viên."
 #: src/components/QrScannerModal.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/components/SidePanel.tsx
 #: src/components/SidePanel.tsx
 #: src/components/Toast.tsx
@@ -9903,6 +9907,10 @@ msgstr "Không tạo được link chia sẻ"
 msgid "Không tạo được link mời góp"
 msgstr "Không tạo được link mời góp"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Không tạo được link mời góp. Hãy thử lại sau."
+msgstr "Không tạo được link mời góp. Hãy thử lại sau."
+
 #: src/components/QrSignInButton.tsx
 msgid "Không tạo được mã QR"
 msgstr "Không tạo được mã QR"
@@ -10792,6 +10800,10 @@ msgstr "Loại phản hồi"
 #: src/components/SubscriptionSettings.tsx
 msgid "Loại sự kiện"
 msgstr "Loại sự kiện"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Loại thiệp"
+msgstr "Loại thiệp"
 
 #: src/pages/clan/MapStats.tsx
 msgid "Loại trừ người đã mất"
@@ -11802,6 +11814,7 @@ msgstr "Mời người khác đóng góp (gửi link, không cần tài khoản)
 msgid "Mời người thân đóng góp"
 msgstr "Mời người thân đóng góp"
 
+#: src/components/ShareCardDialog.tsx
 #: src/pages/clan/Memories.tsx
 msgid "Mời người thân góp"
 msgstr "Mời người thân góp"
@@ -15823,6 +15836,10 @@ msgstr "Thiệp gia phả"
 #: src/pages/clan/ShareHub.tsx
 msgid "Thiệp khoe"
 msgstr "Thiệp khoe"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Thiệp khoe / giới thiệu"
+msgstr "Thiệp khoe / giới thiệu"
 
 #: src/pages/clan/ShareHub.tsx
 msgid "Thiệp khoe tối đa 90 ngày kể từ lúc gia hạn."

@@ -1231,6 +1231,7 @@ msgid "Ảnh"
 msgstr "Photo"
 
 #: src/components/community/InviteCardDialog.tsx
+#: src/components/ShareCardDialog.tsx
 msgid "Ảnh + tin nhắn mời người thân góp"
 msgstr "Image + message inviting relatives to contribute"
 
@@ -5675,6 +5676,10 @@ msgstr "Waiting for your turn…"
 msgid "Đang chọn…"
 msgstr "Selecting…"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Đang chuẩn bị link mời góp…"
+msgstr "Preparing the invitation link…"
+
 #: src/pages/Login.tsx
 msgid "Đang chuyển tới Google…"
 msgstr "Redirecting to Google…"
@@ -6986,7 +6991,6 @@ msgstr "This unit is used in member addresses."
 #: src/components/QrScannerModal.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/components/SidePanel.tsx
 #: src/components/SidePanel.tsx
 #: src/components/Toast.tsx
@@ -9903,6 +9907,10 @@ msgstr "Could not create the share link"
 msgid "Không tạo được link mời góp"
 msgstr "Could not create the invite link"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Không tạo được link mời góp. Hãy thử lại sau."
+msgstr "Could not create the invitation link. Please try again later."
+
 #: src/components/QrSignInButton.tsx
 msgid "Không tạo được mã QR"
 msgstr "Could not create the QR code"
@@ -10792,6 +10800,10 @@ msgstr "Type of feedback"
 #: src/components/SubscriptionSettings.tsx
 msgid "Loại sự kiện"
 msgstr "Event types"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Loại thiệp"
+msgstr "Card type"
 
 #: src/pages/clan/MapStats.tsx
 msgid "Loại trừ người đã mất"
@@ -11802,6 +11814,7 @@ msgstr "Invite others to contribute (send a link, no account needed)"
 msgid "Mời người thân đóng góp"
 msgstr "Invite relatives to contribute"
 
+#: src/components/ShareCardDialog.tsx
 #: src/pages/clan/Memories.tsx
 msgid "Mời người thân góp"
 msgstr "Invite relatives"
@@ -15823,6 +15836,10 @@ msgstr "Family tree card"
 #: src/pages/clan/ShareHub.tsx
 msgid "Thiệp khoe"
 msgstr "Showcase card"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Thiệp khoe / giới thiệu"
+msgstr "Showcase / intro card"
 
 #: src/pages/clan/ShareHub.tsx
 msgid "Thiệp khoe tối đa 90 ngày kể từ lúc gia hạn."

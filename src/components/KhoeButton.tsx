@@ -84,6 +84,7 @@ export function KhoeButton({
         onClose={() => setOpen(false)}
         clanName={clanName}
         shareUrl=""
+        clanId={clanId}
         initialTitle={person.full_name}
         initialExcerpt=""
         photoUrls={photoUrl ? [photoUrl] : []}

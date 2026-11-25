@@ -878,6 +878,7 @@ export default function HeritageDetail({
         onClose={() => setCardOpen(false)}
         clanName={clan.name}
         shareUrl={qrUrl}
+        clanId={clan.id}
         initialTitle={item.title}
         initialExcerpt={cardExcerpt}
         photoUrls={cardPhotoUrls}

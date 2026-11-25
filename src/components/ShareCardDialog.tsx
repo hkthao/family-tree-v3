@@ -1,7 +1,9 @@
-import { lockBodyScroll } from "@/lib/scrollLock";
+import { useQuery } from "@tanstack/react-query";
+import { InviteCardBody } from "@/components/community/InviteCardDialog";
+import { getOrCreateGeneralInviteUrl } from "@/components/community/inviteLink";
+import { SidePanel } from "@/components/SidePanel";
 import { Callout } from "@/components/ui/callout";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 
 import {
   IconArrowLeft,
@@ -11,7 +13,6 @@ import {
   IconScroll,
   IconShare2,
   IconTag,
-  IconX,
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,8 @@ export interface ShareCardDialogProps {
     full_name: string;
     photo_path?: string | null;
   }>;
+  /** Có thì ngăn kéo thêm tab "Mời người thân góp" (thiệp mời góp dùng chung khung với thiệp khoe). */
+  clanId?: string;
   dateText?: string | null;
   /** "12 đời · 348 người" cho thể loại mời tham gia. */
   statText?: string | null;
@@ -79,14 +82,14 @@ export interface ShareCardDialogProps {
 }
 
 const GENRES = Object.keys(CARD_GENRE_LABEL) as CardGenre[];
-const PREVIEW_W = 300;
+const PREVIEW_W = 340;
 const STEPS = [
   { n: 1 as const, label: () => t`Chọn kiểu` },
   { n: 2 as const, label: () => t`Tuỳ chỉnh` },
   { n: 3 as const, label: () => t`Chia sẻ` },
 ];
 
-export function ShareCardDialog(props: ShareCardDialogProps) {
+function ShareCardBody(props: ShareCardDialogProps) {
   const { open } = props;
   const toast = useToast();
 
@@ -196,18 +199,6 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     };
   }, [open, photoUrl]);
 
-  // ESC + khoá cuộn nền.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && props.onClose();
-    window.addEventListener("keydown", onKey);
-    const releaseScroll = lockBodyScroll();
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      releaseScroll();
-    };
-  }, [open, props]);
-
   const data: CardData = useMemo(
     () => ({
       clanName: props.clanName,
@@ -237,9 +228,13 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
   const tpl =
     CARD_TEMPLATES.find((t) => t.id === templateId) ?? CARD_TEMPLATES[0];
   const dim = CARD_DIMENSIONS[format];
-  const previewScale = PREVIEW_W / dim.w;
-
-  if (!open) return null;
+  // Ảnh cố định ở đầu ngăn kéo: chặn theo chiều cao màn hình (khổ Story rất cao) để phần chỉnh bên dưới còn chỗ.
+  const maxH =
+    typeof window === "undefined"
+      ? 340
+      : Math.max(200, Math.min(360, window.innerHeight * 0.36));
+  const previewW = Math.min(PREVIEW_W, (maxH * dim.w) / dim.h);
+  const previewScale = previewW / dim.w;
 
   async function exportPng(): Promise<Blob | null> {
     const node = exportRef.current;
@@ -289,35 +284,16 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     }
   }
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/50"
-      role="dialog"
-      aria-modal="true"
-      onClick={props.onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl rounded-lg border bg-card shadow-lg flex flex-col max-h-[92vh]"
-      >
-        <header className="border-b px-5 py-3 flex items-center justify-between shrink-0">
-          <h2 className="font-semibold">{t`Tạo thiệp chia sẻ`}</h2>
-          <button
-            type="button"
-            onClick={props.onClose}
-            aria-label={t`Đóng`}
-            className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
-          >
-            <IconX className="h-4 w-4" />
-          </button>
-        </header>
-
-        <div className="p-5 grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr] overflow-y-auto">
-          {/* Preview */}
-          <div className="space-y-3 self-start lg:sticky lg:top-0">
+  return (
+    <>
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/* Ảnh xem trước CỐ ĐỊNH ở trên: đổi gì cũng thấy ngay, không phải kéo lên kéo xuống. */}
+        <div className="shrink-0 border-b px-4 py-3 sm:px-5">
+          <div className="flex justify-center rounded-lg border bg-muted/40 p-2 sm:p-3">
             <div
-              className="mx-auto rounded-md overflow-hidden border shadow-sm"
-              style={{ width: PREVIEW_W, height: dim.h * previewScale }}
+              className="overflow-hidden rounded-md border shadow-sm"
+              style={{ width: previewW, height: dim.h * previewScale }}
+              data-testid="card-preview"
             >
               <div
                 style={{
@@ -331,9 +307,11 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
               </div>
             </div>
           </div>
+        </div>
 
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 [scrollbar-gutter:stable]">
           {/* Các bước: ① Chọn kiểu → ② Tuỳ chỉnh → ③ Chia sẻ */}
-          <div className="space-y-4 lg:pl-5 lg:border-l lg:border-divider">
+          <div className="space-y-4">
             <ol
               aria-label={t`Các bước`}
               className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm"
@@ -725,33 +703,36 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 )}
               </div>
             )}
-
-            <div className="flex justify-between gap-2 border-t pt-3">
-              {step > 1 ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="px-3 text-sm"
-                  onClick={() => setStep((step - 1) as 1 | 2)}
-                >
-                  <IconArrowLeft className="mr-1.5 h-4 w-4" />
-                  {t`Quay lại`}
-                </Button>
-              ) : (
-                <span />
-              )}
-              {step < 3 && (
-                <Button
-                  size="sm"
-                  className="px-3 text-sm"
-                  onClick={() => setStep((step + 1) as 2 | 3)}
-                >
-                  {step === 1 ? t`Tiếp: Tuỳ chỉnh` : t`Tiếp: Chia sẻ`}
-                  <IconArrowRight className="ml-1.5 h-4 w-4" />
-                </Button>
-              )}
-            </div>
           </div>
+        </div>
+
+        {/* Chân cố định: điều hướng giữa các bước */}
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t bg-background px-4 py-3 sm:px-5">
+          <>
+            {step > 1 ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="px-3 text-sm"
+                onClick={() => setStep((step - 1) as 1 | 2)}
+              >
+                <IconArrowLeft className="mr-1.5 h-4 w-4" />
+                {t`Quay lại`}
+              </Button>
+            ) : (
+              <span />
+            )}
+            {step < 3 && (
+              <Button
+                size="sm"
+                className="px-3 text-sm"
+                onClick={() => setStep((step + 1) as 2 | 3)}
+              >
+                {step === 1 ? t`Tiếp: Tuỳ chỉnh` : t`Tiếp: Chia sẻ`}
+                <IconArrowRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            )}
+          </>
         </div>
       </div>
 
@@ -767,7 +748,81 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
       >
         <div ref={exportRef}>{tpl.render({ data, format })}</div>
       </div>
-    </div>,
-    document.body,
+    </>
+  );
+}
+
+/**
+ * MỘT ngăn kéo cho mọi thiệp: tab "Thiệp khoe / giới thiệu" (nhiều thể loại, khổ, có link khoe) và — khi biết dòng họ —
+ * tab "Mời người thân góp" (infographic + tin nhắn soạn sẵn, tự lấy / tạo link mời góp chung). Ảnh xem trước luôn cố định ở đầu
+ * ngăn kéo; phần chỉnh bên dưới cuộn riêng.
+ */
+export function ShareCardDialog(props: ShareCardDialogProps) {
+  const clanId = props.clanId ?? props.publish?.clanId;
+  const [kind, setKind] = useState<"share" | "invite">("share");
+  const inviteUrl = useQuery({
+    queryKey: ["invite-general-url", clanId],
+    queryFn: () => getOrCreateGeneralInviteUrl(clanId!),
+    enabled: props.open && !!clanId && kind === "invite",
+    staleTime: Infinity,
+    retry: false,
+  });
+  return (
+    <SidePanel
+      open={props.open}
+      onClose={props.onClose}
+      size="lg"
+      title={t`Tạo thiệp chia sẻ`}
+      subtitle={
+        kind === "invite" ? t`Ảnh + tin nhắn mời người thân góp` : undefined
+      }
+      guard={false}
+      bare
+    >
+      {clanId && (
+        <div
+          role="tablist"
+          aria-label={t`Loại thiệp`}
+          className="flex shrink-0 gap-2 border-b px-4 py-2 sm:px-5"
+        >
+          {(
+            [
+              ["share", t`Thiệp khoe / giới thiệu`],
+              ["invite", t`Mời người thân góp`],
+            ] as const
+          ).map(([k, label]) => (
+            <Button
+              key={k}
+              role="tab"
+              aria-selected={kind === k}
+              size="sm"
+              variant={kind === k ? "default" : "outline"}
+              className="px-3 text-sm"
+              onClick={() => setKind(k)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+      )}
+      {kind === "share" && <ShareCardBody {...props} />}
+      {kind === "invite" &&
+        clanId &&
+        (inviteUrl.data ? (
+          <InviteCardBody
+            open
+            clanId={clanId}
+            clanName={props.clanName}
+            url={inviteUrl.data}
+            variants={["chung", "camon"]}
+          />
+        ) : (
+          <p className="p-6 text-center text-muted-foreground">
+            {inviteUrl.isError
+              ? t`Không tạo được link mời góp. Hãy thử lại sau.`
+              : t`Đang chuẩn bị link mời góp…`}
+          </p>
+        ))}
+    </SidePanel>
   );
 }

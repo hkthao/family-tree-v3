@@ -11,7 +11,7 @@ const NOW = Date.parse("2026-11-25T10:00:00Z");
 const cfg = (over: Partial<CaptchaConfig> = {}): CaptchaConfig => ({ mode: "enforce", secret: "sec", minScore: 0.5, blockScore: 0.3, hostnames: ["app.example"], failOpen: true, timeoutMs: 100, maxAgeSec: 300, ...over });
 const google = (reply: Record<string, unknown>, ok = true) => vi.fn(async () => ({ ok, status: ok ? 200 : 500, json: async () => reply }) as Response);
 const good = { success: true, score: 0.9, action: "guest_memory", hostname: "app.example", challenge_ts: new Date(NOW - 5000).toISOString() };
-const run = (token: string | null, c: CaptchaConfig, f: ReturnType<typeof google>, action = "guest_memory") => verifyCaptcha(token, action, c, { fetchImpl: f, now: NOW, ip: "1.2.3.4" });
+const run = (token: string | null, c: CaptchaConfig, f: ReturnType<typeof google>, action = "guest_memory") => verifyCaptcha(token, action, c, { fetchImpl: f, now: NOW, ip: "test-client-ip" });
 
 describe("configFromEnv", () => {
   const env = (o: Record<string, string>) => (k: string) => o[k];
@@ -36,7 +36,7 @@ describe("verifyCaptcha", () => {
     const r = await run("TOK", cfg(), f);
     expect(r).toMatchObject({ allow: true, forceReview: false, verdict: "pass", score: 0.9 });
     const body = (f.mock.calls[0] as unknown as [string, { body: URLSearchParams }])[1].body;
-    expect(Object.fromEntries(body)).toEqual({ secret: "sec", response: "TOK", remoteip: "1.2.3.4" });
+    expect(Object.fromEntries(body)).toEqual({ secret: "sec", response: "TOK", remoteip: "test-client-ip" });
   });
 
   it("điểm lưng chừng (0,3–0,5): cho qua nhưng ép chờ duyệt; dưới 0,3: chặn", async () => {
@@ -74,7 +74,7 @@ describe("verifyCaptcha", () => {
     const r = await run("SECRET-TOKEN", cfg(), google(good));
     const line = captchaLogLine("guest_memory", r);
     expect(line).not.toContain("SECRET-TOKEN");
-    expect(line).not.toContain("1.2.3.4");
+    expect(line).not.toContain("test-client-ip");
     expect(JSON.parse(line)).toMatchObject({ evt: "captcha", action: "guest_memory", verdict: "pass" });
   });
 });
