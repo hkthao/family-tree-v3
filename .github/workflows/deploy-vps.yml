@@ -85,7 +85,8 @@ jobs:
             VITE_UMAMI_WEBSITE_ID=${{ secrets.VITE_UMAMI_WEBSITE_ID }}
             VITE_RECAPTCHA_SITE_KEY=${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
             # "1" = trang dòng họ nhiều trang là mặc định (cờ ?site=1 vẫn ghi đè từng người). Để trống = màn Share cũ.
-            VITE_CLAN_SITE=${{ secrets.VITE_CLAN_SITE }}
+            # DÙNG `vars` (biến), KHÔNG dùng secret: GitHub xoá mọi output job chứa giá trị của một secret — secret "1" khiến output sha7 (có chữ số 1) bị bỏ, bước deploy nhận tag rỗng.
+            VITE_CLAN_SITE=${{ vars.VITE_CLAN_SITE }}
             GITHUB_SHA=${{ github.sha }}
           # Buildx cache via GH Actions registry for warmer
           # subsequent builds (mostly the node_modules layer).
