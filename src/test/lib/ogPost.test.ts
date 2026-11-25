@@ -147,3 +147,14 @@ describe("renderOgPost kind=clan (trang chủ dòng họ)", () => {
     expect((await runClan({}, { token: null, clan: null })).status).toBe(404);
   });
 });
+
+describe("renderOgPost kind=clan&alias=1 (link ngắn /s/<mã> cho Facebook)", () => {
+  it("og:url trỏ về /s/<mã>; không alias thì giữ /share/<mã>", async () => {
+    const env: OgEnv = { ...ENV, cardImageBase: "https://files.example/card-shares" };
+    const t = { share_links: { single: live }, clans: { single: { name: "Họ Huỳnh", description: "x", share_og_path: "c1/a.jpg", share_og_updated_at: "2026-11-25T10:00:00Z" } } };
+    const a = await renderOgPost(fakeSb(t), { token: "tok", clan: null, id: null, kind: "clan", alias: "1" }, env);
+    const n = await renderOgPost(fakeSb(t), { token: "tok", clan: null, id: null, kind: "clan" }, env);
+    expect(a.status === 200 && a.html).toContain('property="og:url" content="https://app.example/s/tok"');
+    expect(n.status === 200 && n.html).toContain('property="og:url" content="https://app.example/share/tok"');
+  });
+});

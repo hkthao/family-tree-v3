@@ -5153,6 +5153,10 @@ msgstr "Link copied."
 msgid "Đã sao chép link"
 msgstr "Link copied"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Đã sao chép link cho Facebook."
+msgstr "Facebook link copied."
+
 #: src/components/community/InviteCardDialog.tsx
 msgid "Đã sao chép tin nhắn"
 msgstr "Message copied"
@@ -7420,6 +7424,10 @@ msgstr "Use this pair"
 #: src/components/ApiTokenPanels.tsx
 msgid "Dùng gần nhất"
 msgstr "Last used"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Dùng khi đăng lên Facebook nếu link thường không hiện ảnh. Người mở vẫn vào đúng trang này."
+msgstr "Use when posting to Facebook if the normal link shows no image. People who open it still land on this same page."
 
 #: src/pages/admin/Health.tsx
 msgid "Dung lượng"
@@ -9908,6 +9916,7 @@ msgid "Không nối được"
 msgstr "Could not connect"
 
 #: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/KhoeCard.tsx
 #: src/pages/site/SitePerson.tsx
 #: src/pages/site/SitePost.tsx
@@ -10780,6 +10789,10 @@ msgstr "Invalid invite link"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Link nằm ở đâu"
 msgstr "Where is the link"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Link ngắn cho Facebook"
+msgstr "Short link for Facebook"
 
 #: src/components/community/InviteCardDialog.tsx
 msgid "Link ở bình luận"
@@ -14088,6 +14101,10 @@ msgstr "Copy link"
 #: src/pages/clan/Memories.tsx
 msgid "Sao chép link"
 msgstr "Copy link"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Sao chép link cho Facebook"
+msgstr "Copy link for Facebook"
 
 #: src/components/panel/PanelHost.tsx
 #: src/pages/clan/NewPerson.tsx
