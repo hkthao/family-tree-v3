@@ -192,7 +192,9 @@ export function FilterableSelect({
         </span>
       )}
       {rightSlot ? (
-        <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+        // pointer-events-none: vùng này nằm đè lên ô chọn, nếu nhận bấm thì bấm vào mũi tên không mở được danh sách.
+        // Chỉ cụm nút nhỏ (rightSlot) bật lại pointer-events.
+        <div className="pointer-events-none absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
           <span
             className={cn(
               "pointer-events-none px-1.5 text-muted-foreground transition-transform",
@@ -202,7 +204,9 @@ export function FilterableSelect({
           >
             <IconChevronDown className="h-4 w-4" />
           </span>
-          {rightSlot}
+          <div className="pointer-events-auto flex items-center gap-0.5">
+            {rightSlot}
+          </div>
         </div>
       ) : (
         <span

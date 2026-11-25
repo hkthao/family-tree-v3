@@ -1428,6 +1428,9 @@ export default function Tree() {
     };
   }, []);
 
+  // Giá trị đặc biệt của dòng "Tôi" đầu danh sách chọn trung tâm (người đã được xác thực là mình).
+  const ME_OPTION = "__me__";
+
   // Danh sách chọn người làm trung tâm: theo đời rồi theo tên; nhãn kèm đời + năm sinh để
   // phân biệt người trùng tên. Ô chọn tự có ô tìm không dấu.
   const personOptions = useMemo(() => {
@@ -1450,6 +1453,15 @@ export default function Tree() {
           .join(" · "),
       }));
   }, [data, clan.generation_offset]);
+  // Dòng "Tôi (tên)" đứng đầu danh sách, ngay dưới "Chọn thuỷ tổ làm trung tâm"; chọn thì lấy mình làm tâm.
+  const focalOptions = useMemo(() => {
+    const me = myPersonId
+      ? data?.persons.find((p) => p.id === myPersonId)
+      : null;
+    return me
+      ? [{ value: ME_OPTION, label: t`Tôi · ${me.full_name}` }, ...personOptions]
+      : personOptions;
+  }, [data, myPersonId, personOptions]);
 
   // Phòng ký ức / Xuất sổ / Chia sẻ không phụ thuộc kiểu vẽ cây (chỉ là đường
   // dẫn / dựng PDF từ dữ liệu) nên luôn có, kể cả 3D. Đứng cùng hàng ô tìm kiếm.
@@ -1477,8 +1489,10 @@ export default function Tree() {
                 id="tree-focal"
                 icon={<IconUser />}
                 value={focal ?? ""}
-                onChange={(v) => v && setFocal(v)}
-                options={personOptions}
+                onChange={(v) =>
+                  v && setFocal(v === ME_OPTION && myPersonId ? myPersonId : v)
+                }
+                options={focalOptions}
                 emptyLabel={t`Chọn thuỷ tổ làm trung tâm`}
                 filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
                 filterLabel={t`Tìm người làm trung tâm`}
@@ -1509,22 +1523,8 @@ export default function Tree() {
           </div>
           {/* Hàng dưới ô tìm kiếm (điện thoại: chỉ còn nút Về Thuỷ tổ khi cần, các nút còn lại ở ngăn kéo Tuỳ chọn). */}
           <div
-            className={`flex items-center justify-end gap-2 ${(defaultFocal && focal !== defaultFocal) || (myPersonId && focal !== myPersonId) ? "" : "max-sm:hidden"}`}
+            className={`flex items-center justify-end gap-2 ${defaultFocal && focal !== defaultFocal ? "" : "max-sm:hidden"}`}
           >
-            {myPersonId && focal !== myPersonId && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0 sm:w-auto px-3"
-                onClick={() => setFocal(myPersonId)}
-                aria-label={t`Tôi làm trung tâm`}
-                title={t`Đặt tôi làm trung tâm của cây`}
-              >
-                <IconUser className="h-4 w-4 mr-1.5 shrink-0" />
-                {t`Tôi làm trung tâm`}
-              </Button>
-            )}
             {defaultFocal && focal !== defaultFocal && (
               <Button
                 type="button"
