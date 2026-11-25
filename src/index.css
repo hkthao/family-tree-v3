@@ -633,6 +633,22 @@ html[data-bg="on"] aside.bg-background {
   .site-prose .wmde-markdown li { text-align: justify; }
 }
 
+/* Tiêu đề mục của trang dòng họ công khai: gạch chân ngắn màu chính dưới tiêu đề. */
+.site-heading {
+  position: relative;
+  padding-bottom: 0.6rem;
+}
+.site-heading::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 2.75rem;
+  height: 3px;
+  border-radius: 2px;
+  background: hsl(var(--primary));
+}
+
 /* Huy hiệu reCAPTCHA ẩn đi vì mỗi biểu mẫu của khách đã có dòng thông báo bắt buộc của Google (components/CaptchaNotice). */
 .grecaptcha-badge {
   visibility: hidden;

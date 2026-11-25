@@ -44,7 +44,7 @@ function Card({ title, children, className }: { title?: string; children: ReactN
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="clan-name mb-3.5 text-2xl font-bold">{title}</h2>
+      <h2 className="clan-name site-heading mb-3.5 text-2xl font-bold">{title}</h2>
       {children}
     </section>
   );

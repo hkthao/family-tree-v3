@@ -442,7 +442,7 @@ function Block({
   return (
     <section>
       <div className="mb-5 flex items-baseline justify-between gap-3">
-        <h2 className="clan-name text-2xl font-bold">{title}</h2>
+        <h2 className="clan-name site-heading text-2xl font-bold">{title}</h2>
         {more && (
           <Link
             to={sitePagePath(base, more.page)}

@@ -95,7 +95,7 @@ export default function SiteHeritageItem() {
 
       {h.photo_urls.length > 1 && (
         <section className="mt-8">
-          <h2 className="clan-name mb-3 text-xl font-bold">{t`Hình ảnh`}</h2>
+          <h2 className="clan-name site-heading mb-3 text-xl font-bold">{t`Hình ảnh`}</h2>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {h.photo_urls.slice(1).map((u, i) => (
               <img
@@ -111,7 +111,7 @@ export default function SiteHeritageItem() {
       )}
       {h.audios.length > 0 && (
         <section className="mt-8">
-          <h2 className="clan-name mb-3 text-xl font-bold">{t`Ghi âm kể chuyện`}</h2>
+          <h2 className="clan-name site-heading mb-3 text-xl font-bold">{t`Ghi âm kể chuyện`}</h2>
           <div className="space-y-2">
             {h.audios.map((a, i) => (
               <audio
@@ -127,7 +127,7 @@ export default function SiteHeritageItem() {
       )}
       {h.videos.length > 0 && (
         <section className="mt-8">
-          <h2 className="clan-name mb-3 text-xl font-bold">{t`Video`}</h2>
+          <h2 className="clan-name site-heading mb-3 text-xl font-bold">{t`Video`}</h2>
           <div className="space-y-3">
             {h.videos.map((v, i) => {
               const embed = videoEmbedUrl(v.url);
@@ -155,7 +155,7 @@ export default function SiteHeritageItem() {
       )}
       {h.people.length > 0 && (
         <section className="mt-8">
-          <h2 className="clan-name mb-3 text-xl font-bold">{t`Người liên quan`}</h2>
+          <h2 className="clan-name site-heading mb-3 text-xl font-bold">{t`Người liên quan`}</h2>
           <ul className="divide-y rounded-2xl border bg-card">
             {h.people.map((p, i) => (
               <li key={i} className="px-4 py-3">

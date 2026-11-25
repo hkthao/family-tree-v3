@@ -147,7 +147,7 @@ export default function SiteBoard() {
 
   return (
     <div className="container max-w-6xl py-8 md:py-10">
-      <h1 className="clan-name text-3xl font-bold md:text-4xl">{t`Bảng tin`}</h1>
+      <h1 className="clan-name site-heading text-3xl font-bold md:text-4xl">{t`Bảng tin`}</h1>
       <p className="mb-6 mt-2 max-w-2xl text-muted-foreground">{t`Chuyện của dòng họ: tin vui, thông báo và những ghi chép do người quản lý họ soạn.`}</p>
 
       <div

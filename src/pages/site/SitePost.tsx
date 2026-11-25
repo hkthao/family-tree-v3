@@ -196,7 +196,7 @@ export default function SitePost() {
       {others.length > 0 && (
         <aside className="w-full min-w-0 flex-[1_1_18rem] lg:max-w-xs">
           <div className="rounded-2xl border bg-card p-5">
-            <h2 className="clan-name mb-2 text-lg font-bold">{t`Đọc tiếp`}</h2>
+            <h2 className="clan-name site-heading mb-3 text-lg font-bold">{t`Đọc tiếp`}</h2>
             {others.map((p) => (
               <Link
                 key={p.id}

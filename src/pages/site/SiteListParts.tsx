@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 export function SitePageHead({ title, intro }: { title: string; intro?: string }) {
   return (
     <>
-      <h1 className="clan-name text-3xl font-bold md:text-4xl">{title}</h1>
+      <h1 className="clan-name site-heading text-3xl font-bold md:text-4xl">{title}</h1>
       {intro && <p className="mb-6 mt-2 max-w-2xl text-muted-foreground">{intro}</p>}
     </>
   );
