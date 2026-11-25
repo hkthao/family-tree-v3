@@ -164,27 +164,29 @@ export default function SitePost() {
             {post.prev && (
               <Link
                 to={sitePagePath(base, "board", post.prev.id)}
-                className="min-w-0 flex-[1_1_14rem] rounded-xl border bg-card px-4 py-3 hover:border-primary"
+                className="flex min-w-0 flex-[1_1_14rem] items-center gap-3 rounded-xl border bg-card px-4 py-3 hover:border-primary"
               >
-                <div className="text-xs text-muted-foreground">
-                  ← {t`Bài trước`}
-                </div>
-                <div className="clan-name line-clamp-1 break-words font-semibold sm:line-clamp-2">
-                  {post.prev.title}
+                <IconArrowLeft className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="text-xs text-muted-foreground">{t`Bài trước`}</div>
+                  <div className="clan-name line-clamp-2 break-words font-semibold">
+                    {post.prev.title}
+                  </div>
                 </div>
               </Link>
             )}
             {post.next && (
               <Link
                 to={sitePagePath(base, "board", post.next.id)}
-                className="min-w-0 flex-[1_1_14rem] rounded-xl border bg-card px-4 py-3 text-right hover:border-primary"
+                className="flex min-w-0 flex-[1_1_14rem] items-center gap-3 rounded-xl border bg-card px-4 py-3 hover:border-primary"
               >
-                <div className="text-xs text-muted-foreground">
-                  {t`Bài sau`} →
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="text-xs text-muted-foreground">{t`Bài sau`}</div>
+                  <div className="clan-name line-clamp-2 break-words font-semibold">
+                    {post.next.title}
+                  </div>
                 </div>
-                <div className="clan-name line-clamp-1 break-words font-semibold sm:line-clamp-2">
-                  {post.next.title}
-                </div>
+                <IconArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
               </Link>
             )}
           </div>
