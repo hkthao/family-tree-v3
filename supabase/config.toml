@@ -491,3 +491,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+[functions.feedback-submit]
+# Phản hồi của khách chưa đăng nhập (captcha + bẫy bot + trần tốc độ trong hàm); người đăng nhập gửi kèm JWT thật.
+verify_jwt = false

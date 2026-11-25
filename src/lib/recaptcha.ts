@@ -21,7 +21,7 @@ export const captchaEnabled = (): boolean => siteKey() !== "";
 
 /** Tên action khớp với máy chủ (supabase/functions/_shared/recaptcha.ts) — sai action là bị từ chối. */
 export type CaptchaAction =
-  "guest_memory" | "guest_answer" | "guest_face" | "guest_contribution";
+  "guest_memory" | "guest_answer" | "guest_face" | "guest_contribution" | "feedback";
 
 let loading: Promise<boolean> | null = null;
 
