@@ -14,14 +14,11 @@ import {
   IconSearch,
   IconX,
 } from "@/components/icons";
-import { ForceRefreshButton } from "@/components/ForceRefreshButton";
 import {
   isItemActive,
   sectionBadge,
   useCollapsedSections,
 } from "@/lib/navModel";
-import { InstallAppButton } from "@/components/InstallAppButton";
-import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavSections } from "@/hooks/useNavSections";
@@ -184,9 +181,7 @@ export function AppDrawer({ open, onClose }: Props) {
         <nav className="flex-1 overflow-y-auto py-2">
           {needle && visibleSections.length === 0 && (
             <p className="px-4 py-3 text-sm text-muted-foreground">
-              <Trans>
-              Không có mục nào khớp "{menuQuery}".
-              </Trans>
+              <Trans>Không có mục nào khớp "{menuQuery}".</Trans>
             </p>
           )}
           {visibleSections.map((section) => {
@@ -235,7 +230,12 @@ export function AppDrawer({ open, onClose }: Props) {
                           className={({ isActive }) =>
                             cn(
                               "flex items-center gap-3 px-4 py-2.5 text-sm",
-                              isItemActive(item.to, location, isActive, item.alsoActive)
+                              isItemActive(
+                                item.to,
+                                location,
+                                isActive,
+                                item.alsoActive,
+                              )
                                 ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
                                 : "text-foreground hover:bg-muted/50 border-l-4 border-transparent pl-3",
                             )
@@ -265,13 +265,6 @@ export function AppDrawer({ open, onClose }: Props) {
             nav body roomy. Logout is icon-only with a tooltip; the row
             itself is the visible "I'm signed in as X" cue. */}
         <footer className="border-t p-3 space-y-3">
-          {/* Một hàng tiện ích gọn: cài app (tự ẩn khi không cài được), QR, tải lại dữ liệu. Bỏ nút "Cập nhật": app
-              đã tự kiểm tra và báo bản mới (UpdateBanner). */}
-          <div className="flex gap-2">
-            <InstallAppButton />
-            <ShareAppQrButton />
-            <ForceRefreshButton compact />
-          </div>
           {profile ? (
             <div className="flex items-center gap-3">
               <Link

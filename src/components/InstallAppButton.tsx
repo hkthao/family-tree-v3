@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
-import { IconPhoneDownload } from "@/components/icons";
 
 import { t } from "@lingui/core/macro";
 /**
@@ -27,7 +26,7 @@ function isIOS(): boolean {
 }
 
 /**
- * "Add to Home Screen" button.
+ * "Add to Home Screen" — hook (mục trong menu ba chấm thanh đầu; gắn ở HeaderActions để bắt sự kiện beforeinstallprompt từ sớm).
  *
  * Browsers split into two camps:
  *   - Chrome / Edge / Android: fire `beforeinstallprompt`. We capture
@@ -41,7 +40,10 @@ function isIOS(): boolean {
  * user already installed it) or when the browser supports neither
  * path (e.g. desktop Safari).
  */
-export function InstallAppButton() {
+export function useInstallApp(): {
+  canInstall: boolean;
+  install: () => Promise<void>;
+} {
   const [event, setEvent] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState<boolean>(() => isStandalone());
   const confirm = useConfirm();
@@ -65,15 +67,10 @@ export function InstallAppButton() {
     };
   }, []);
 
-  // Hide once installed.
-  if (installed) return null;
+  // iOS path: no event will ever fire, but on iOS Safari we still offer the affordance with instructions.
+  const canInstall = !installed && (!!event || isIOS());
 
-  // iOS path: no event will ever fire, but if the user IS on iOS
-  // Safari we still want to show the affordance with instructions.
-  const ios = isIOS();
-  if (!event && !ios) return null;
-
-  const click = async () => {
+  const install = async () => {
     if (event) {
       await event.prompt();
       const choice = await event.userChoice;
@@ -86,22 +83,10 @@ export function InstallAppButton() {
     // iOS Safari — show the manual recipe.
     await confirm({
       title: t`Thêm Dòng Họ Việt vào màn hình chính`,
-      description:
-        t`Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn "Thêm vào Màn hình Chính". App sẽ mở như ứng dụng riêng, không có thanh URL.`,
+      description: t`Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn "Thêm vào Màn hình Chính". App sẽ mở như ứng dụng riêng, không có thanh URL.`,
       confirmLabel: t`Đã hiểu`,
     });
   };
 
-  return (
-    <button
-      type="button"
-      onClick={click}
-      title={t`Cài app lên màn hình chính`}
-      aria-label={t`Cài app`}
-      className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm whitespace-nowrap"
-    >
-      <IconPhoneDownload className="h-4 w-4 shrink-0" />
-      <span className="sr-only">{t`Cài app`}</span>
-    </button>
-  );
+  return { canInstall, install };
 }
