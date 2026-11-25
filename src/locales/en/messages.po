@@ -5936,6 +5936,7 @@ msgid "Đăng nhập để xác nhận"
 msgstr "Sign in to confirm"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đăng nhập để xem đầy đủ & cùng vun đắp"
 msgstr "Sign in to see everything & help build the tree together"
 
@@ -7017,6 +7018,7 @@ msgstr "This unit is used in member addresses."
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đóng"
 msgstr "Close"
 
@@ -7323,6 +7325,7 @@ msgstr "Clan timeline"
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đóng thông báo"
 msgstr "Close notice"
 
@@ -12450,6 +12453,7 @@ msgid "Ngày tham gia"
 msgstr "Joined on"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Ngày tháng, nơi chốn của người còn sống không hiển thị ở bản xem này."
 msgstr "Dates and places of living people are not shown in this view."
 
@@ -16120,6 +16124,7 @@ msgid "Thông tin người"
 msgstr "Person details"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Thông tin nhạy cảm đã được ẩn"
 msgstr "Sensitive information is hidden"
 

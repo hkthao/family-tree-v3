@@ -183,6 +183,45 @@ describe("ClanSiteRoot — cổng bật/tắt", () => {
   });
 });
 
+describe("lưu ý quyền riêng tư + lời mời đăng nhập", () => {
+  beforeEach(() => {
+    try {
+      localStorage.removeItem("family-tree:share-notice-dismissed");
+    } catch {
+      /* jsdom luôn có localStorage */
+    }
+  });
+
+  it("hiện 'Thông tin nhạy cảm đã được ẩn'; đóng được và nhớ theo thiết bị (dùng chung khoá với màn Share cũ)", async () => {
+    renderAt("/share/tok?site=1");
+    expect(await screen.findByText("Thông tin nhạy cảm đã được ẩn")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Đóng thông báo" }));
+    expect(screen.queryByText("Thông tin nhạy cảm đã được ẩn")).toBeNull();
+    expect(localStorage.getItem("family-tree:share-notice-dismissed")).toBe("1");
+    cleanup();
+    renderAt("/share/tok?site=1");
+    await screen.findAllByText("Nhà Trần");
+    expect(screen.queryByText("Thông tin nhạy cảm đã được ẩn")).toBeNull();
+  });
+
+  it("dòng họ CÔNG KHAI có lời mời đăng nhập, đăng nhập xong vào thẳng dòng họ; link riêng (token) thì không", async () => {
+    renderAt("/xem/clans/c1?site=1");
+    const login = await screen.findByRole("link", { name: /Đăng nhập để xem đầy đủ/ });
+    expect(login).toHaveAttribute("href", `/login?next=${encodeURIComponent("/clans/c1")}`);
+    cleanup();
+    renderAt("/share/tok?site=1");
+    await screen.findAllByText("Nhà Trần");
+    expect(screen.queryByRole("link", { name: /Đăng nhập để xem đầy đủ/ })).toBeNull();
+  });
+
+  it("link tập trung (QR người) không hiện hai khối này", async () => {
+    fetchShareView.mockResolvedValue(payload({ scope: "single_person", root_person_id: "b" }));
+    renderAt("/share/tok?site=1");
+    await screen.findByTestId("person-card");
+    expect(screen.queryByText("Thông tin nhạy cảm đã được ẩn")).toBeNull();
+  });
+});
+
 describe("khung website", () => {
   it("menu dựng theo khoá bật: có Bảng tin + nhóm Di sản, không có Sự kiện", async () => {
     renderAt("/share/tok?site=1");

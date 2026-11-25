@@ -5936,6 +5936,7 @@ msgid "Đăng nhập để xác nhận"
 msgstr "Đăng nhập để xác nhận"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đăng nhập để xem đầy đủ & cùng vun đắp"
 msgstr "Đăng nhập để xem đầy đủ & cùng vun đắp"
 
@@ -7017,6 +7018,7 @@ msgstr "Đơn vị này đang được dùng trong địa chỉ thành viên."
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đóng"
 msgstr "Đóng"
 
@@ -7323,6 +7325,7 @@ msgstr "Dòng thời gian dòng họ"
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đóng thông báo"
 msgstr "Đóng thông báo"
 
@@ -12450,6 +12453,7 @@ msgid "Ngày tham gia"
 msgstr "Ngày tham gia"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Ngày tháng, nơi chốn của người còn sống không hiển thị ở bản xem này."
 msgstr "Ngày tháng, nơi chốn của người còn sống không hiển thị ở bản xem này."
 
@@ -16120,6 +16124,7 @@ msgid "Thông tin người"
 msgstr "Thông tin người"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Thông tin nhạy cảm đã được ẩn"
 msgstr "Thông tin nhạy cảm đã được ẩn"
 
