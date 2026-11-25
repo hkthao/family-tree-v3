@@ -9,6 +9,7 @@
 -- ảnh trong thư mục `<clan_id>/` của họ. THỨ TỰ DEPLOY: bản web mới (KhoeCard đọc qua function) + function share-view TRƯỚC.
 
 drop policy if exists card_shares_public_read on public.card_shares;
+drop policy if exists card_shares_manager_read on public.card_shares;
 create policy card_shares_manager_read
   on public.card_shares for select
   to authenticated
@@ -34,6 +35,9 @@ grant execute on function public.card_shares_object_clan_member(text) to authent
 drop policy if exists "card-shares select auth" on storage.objects;
 drop policy if exists "card-shares insert auth" on storage.objects;
 drop policy if exists "card-shares update auth" on storage.objects;
+drop policy if exists "card-shares select member" on storage.objects;
+drop policy if exists "card-shares insert member" on storage.objects;
+drop policy if exists "card-shares update member" on storage.objects;
 create policy "card-shares select member" on storage.objects for select to authenticated
   using (bucket_id = 'card-shares' and public.card_shares_object_clan_member(name));
 create policy "card-shares insert member" on storage.objects for insert to authenticated

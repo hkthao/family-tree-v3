@@ -37,6 +37,7 @@ ARG VITE_VAPID_PUBLIC_KEY=
 ARG VITE_UMAMI_URL=
 ARG VITE_UMAMI_WEBSITE_ID=
 ARG VITE_RECAPTCHA_SITE_KEY=
+ARG VITE_CLAN_SITE=
 # vite.config.ts reads GITHUB_SHA / COMMIT_REF to stamp the
 # drawer footer ("v0.1.0 · <sha>"). The build context has no
 # git binary and .dockerignore drops .git/, so without this
@@ -49,6 +50,7 @@ ENV VITE_VAPID_PUBLIC_KEY=$VITE_VAPID_PUBLIC_KEY
 ENV VITE_UMAMI_URL=$VITE_UMAMI_URL
 ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
 ENV VITE_RECAPTCHA_SITE_KEY=$VITE_RECAPTCHA_SITE_KEY
+ENV VITE_CLAN_SITE=$VITE_CLAN_SITE
 ENV GITHUB_SHA=$GITHUB_SHA
 # Sitemap cho bot tìm kiếm / bot AI: trang tĩnh + bài hướng dẫn + mục Sổ tay (đọc public/so-tay-data/index.json).
 # Lỗi thì bỏ phần Sổ tay, KHÔNG làm hỏng build (script luôn thoát 0).

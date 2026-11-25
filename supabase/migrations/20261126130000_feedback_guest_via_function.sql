@@ -10,6 +10,7 @@ comment on column public.feedback.submitter_ip_hash is 'Băm SHA-256 của IP kh
 create index if not exists feedback_ip_hash_idx on public.feedback (submitter_ip_hash, created_at desc) where submitter_ip_hash is not null;
 
 drop policy if exists feedback_insert_anyone on public.feedback;
+drop policy if exists feedback_insert_authenticated on public.feedback;
 create policy feedback_insert_authenticated
   on public.feedback for insert
   to authenticated
