@@ -1,6 +1,9 @@
 import { QueryClient } from "@tanstack/react-query";
 import { get, set, del } from "idb-keyval";
-import type { PersistedClient, Persister } from "@tanstack/react-query-persist-client";
+import type {
+  PersistedClient,
+  Persister,
+} from "@tanstack/react-query-persist-client";
 
 /**
  * React Query config for this app.
@@ -25,6 +28,23 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+/**
+ * Dữ liệu của trang dòng họ / link chia sẻ chứa URL ảnh KÝ SẴN, sống 1 giờ (share-view ký 3600s). Cache lâu hơn (staleTime 4h,
+ * lưu bền 24h trong IndexedDB) thì mở lại sau >1 giờ là ảnh lỗi "exp claim timestamp check failed". Nên các truy vấn này:
+ * không lưu bền, và coi là cũ sau 30 phút (nhỏ hơn hạn của URL) rồi nạp lại khi mở trang.
+ */
+export const SIGNED_URL_QUERY_ROOTS = ["site", "share-view"] as const;
+export const SIGNED_URL_STALE_MS = 1000 * 60 * 30;
+export const hasSignedUrls = (queryKey: readonly unknown[]): boolean =>
+  (SIGNED_URL_QUERY_ROOTS as readonly unknown[]).includes(queryKey[0]);
+for (const root of SIGNED_URL_QUERY_ROOTS) {
+  queryClient.setQueryDefaults([root], {
+    staleTime: SIGNED_URL_STALE_MS,
+    gcTime: SIGNED_URL_STALE_MS,
+    refetchOnMount: true,
+  });
+}
 
 const IDB_KEY = "family-tree-rq-cache";
 

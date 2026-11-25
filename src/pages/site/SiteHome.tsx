@@ -373,7 +373,7 @@ export default function SiteHome() {
                     alt={tile.caption ?? ""}
                     loading="lazy"
                     referrerPolicy="no-referrer"
-                    className="aspect-square w-full object-cover"
+                    className="aspect-square w-full bg-muted object-cover text-transparent"
                   />
                 ) : (
                   <div key={i} className="aspect-square bg-muted" />

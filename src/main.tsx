@@ -8,7 +8,7 @@ import { activateLocale, detectLocale } from "./lib/i18n";
 import { I18nRoot } from "./lib/i18n/I18nRoot";
 import { initAnalytics } from "./lib/analytics";
 import { initPwa } from "./lib/pwa";
-import { persister, queryClient } from "./lib/queryClient";
+import { hasSignedUrls, persister, queryClient } from "./lib/queryClient";
 import { isStaticCustomsQuery } from "./lib/queries/customs";
 import { initSentry } from "./lib/sentry";
 import { initBackground } from "./lib/background";
@@ -124,10 +124,14 @@ function render() {
             // v11: Sổ tay chuyển từ bảng DB sang tệp tĩnh (id uuid → slug, ảnh bìa đổi đường dẫn). Danh sách cache cũ vẫn trỏ
             //     ảnh về địa chỉ cũ nên hiện ô ảnh vỡ. Bust, và từ nay các truy vấn Sổ tay KHÔNG được lưu bền (xem
             //     dehydrateOptions) vì dữ liệu tĩnh, đã có cache HTTP.
-            buster: "v11",
+            // v12: dữ liệu trang dòng họ / link chia sẻ có URL ảnh ký 1h mà cache bền giữ 24h → mở lại sau 1 giờ ảnh vỡ
+            //     (InvalidJWT). Bust để bỏ bản cũ; từ nay các truy vấn này KHÔNG lưu bền (hasSignedUrls) và hết hạn sau 30 phút.
+            buster: "v12",
             dehydrateOptions: {
               shouldDehydrateQuery: (q) =>
-                q.state.status === "success" && !isStaticCustomsQuery(q.queryKey),
+                q.state.status === "success" &&
+                !isStaticCustomsQuery(q.queryKey) &&
+                !hasSignedUrls(q.queryKey),
             },
           }}
         >

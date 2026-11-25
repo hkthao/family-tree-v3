@@ -37,19 +37,19 @@ Gặp chỗ nào chưa ổn, bấm "Góp ý / báo lỗi" trong menu.
 
 # Bài đăng Facebook
 
-Gia phả nhà mình giờ có hẳn một trang web riêng để cả họ cùng xem. 🌳
+Gia phả nhà mình giờ có hẳn một trang web riêng để cả họ cùng xem.
 
 Gửi một đường link, người thân mở ra là thấy: cây gia phả, ngày giỗ trên lịch âm, bảng tin của họ, di sản, mộ phần… Bấm vào tên từng người để đọc hồ sơ riêng: tiểu sử, các mốc cuộc đời, ký ức. Người còn sống luôn được giữ kín ngày tháng và nơi chốn.
 
 Dòng Họ Việt vừa cập nhật:
 
-✅ Trang dòng họ nhiều mục, đẹp trên điện thoại, bạn chọn phần nào cho xem.
-✅ Hồ sơ riêng cho từng người, có ngày giỗ sắp tới.
-✅ Lịch tháng có cả ngày dương, ngày âm và can chi.
-✅ Dán link vào Zalo, Facebook hiện sẵn tên họ, giới thiệu và ảnh do chính bạn thiết kế.
-✅ Trung tâm chia sẻ: mọi link và mã QR của dòng họ ở một chỗ, gia hạn hay thu hồi chỉ một chạm.
+- Trang dòng họ nhiều mục, đẹp trên điện thoại, bạn chọn phần nào cho xem.
+- Hồ sơ riêng cho từng người, có ngày giỗ sắp tới.
+- Lịch tháng có cả ngày dương, ngày âm và can chi.
+- Dán link vào Zalo, Facebook hiện sẵn tên họ, giới thiệu và ảnh do chính bạn thiết kế.
+- Trung tâm chia sẻ: mọi link và mã QR của dòng họ ở một chỗ, gia hạn hay thu hồi chỉ một chạm.
 
-👉 Bạn cần làm gì?
+Bạn cần làm gì?
 
 Nếu bạn quản lý gia phả:
 1. Vào dòng họ → **Tất cả tính năng** → **Chia sẻ** để xem mọi link đang có.
@@ -59,8 +59,8 @@ Nếu bạn quản lý gia phả:
 Nếu bạn nhận được link:
 • Mở link, bấm **Cây gia phả**, chọn người mình biết để xem hồ sơ. Muốn góp thêm câu chuyện, bấm **Cùng góp**.
 
-Mỗi người giữ một mảnh, ghép lại thành câu chuyện của cả dòng họ. ❤️
+Mỗi người giữ một mảnh, ghép lại thành câu chuyện của cả dòng họ.
 
-🔗 https://giapha.thaohk.com
+https://giapha.thaohk.com
 
 #DongHoViet #GiaPha #CaHoCungXem
