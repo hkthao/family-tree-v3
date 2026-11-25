@@ -1076,6 +1076,9 @@ export type Database = {
           public_show_graves: boolean
           public_show_heritage: boolean
           public_show_tree: boolean
+          share_og_path: string | null
+          share_og_style: string | null
+          share_og_updated_at: string | null
           share_sections: string[]
           updated_at: string
           visibility: string
@@ -1107,6 +1110,9 @@ export type Database = {
           public_show_graves?: boolean
           public_show_heritage?: boolean
           public_show_tree?: boolean
+          share_og_path?: string | null
+          share_og_style?: string | null
+          share_og_updated_at?: string | null
           share_sections?: string[]
           updated_at?: string
           visibility?: string
@@ -1138,6 +1144,9 @@ export type Database = {
           public_show_graves?: boolean
           public_show_heritage?: boolean
           public_show_tree?: boolean
+          share_og_path?: string | null
+          share_og_style?: string | null
+          share_og_updated_at?: string | null
           share_sections?: string[]
           updated_at?: string
           visibility?: string

@@ -102,3 +102,26 @@ và **bỏ/sửa khối nginx cũ** đang chuyển `/khoe/:token` sang `khoe-og.
 ## robots.txt phải cho bot xem trước link vào /share/ và /khoe/
 
 Facebook (và vài mạng khác) tôn trọng `robots.txt`: nếu `User-agent: *` chặn `/share/` thì bài đăng link chỉ hiện **mỗi tên miền**, không ảnh, không tiêu đề — kể cả khi nginx/og-post trả OG đúng. `public/robots.txt` có nhóm riêng cho các bot xem trước link (facebookexternalhit, Facebot, Twitterbot, Slackbot, TelegramBot, LinkedInBot, WhatsApp, Discordbot, ZaloBot) cho phép `/share/` và `/khoe/`; công cụ tìm kiếm vẫn bị chặn. Sau khi deploy, dán lại link vào https://developers.facebook.com/tools/debug/ → "Scrape Again" để Facebook bỏ bản đã nhớ.
+
+## Ảnh xem trước của TRANG CHỦ dòng họ (kind=clan)
+
+Link gốc `/share/<mã>` và `/xem/clans/<id>` dùng `og-post?kind=clan`. Admin thiết kế ảnh 1200×630 ở **Trung tâm chia sẻ → "Ảnh xem trước khi chia sẻ"**
+(chọn kiểu trong `src/lib/cards/clanOgStyles.ts`; app dựng JPEG, lưu `card-shares/<clan>/clan-og-<ts>.jpg`, ghi `clans.share_og_path/_style/_updated_at`,
+migration `20261126160000`). Chưa thiết kế → function trả thẻ chung của ứng dụng (không lộ tên dòng họ). Đã thiết kế → `og:title` "Gia phả <tên>",
+mô tả cắt từ giới thiệu dòng họ, `og:image` là ảnh đã lưu (`?v=` đổi mỗi lần lưu). Cổng: link còn hiệu lực + loại link xem được cây; link riêng luôn `noindex`.
+Cần biến `CARD_IMAGE_BASE` (hoặc mặc định `<SUPABASE_URL>/storage/v1/object/public/card-shares`) giống `og-khoe`.
+
+```nginx
+location ~ "^/share/(?<tok>[A-Za-z0-9_-]+)/?$" {
+    if ($is_share_bot = 0) { rewrite ^ /index.html last; }
+    proxy_pass http://<EDGE_FUNCTIONS_UPSTREAM>/functions/v1/og-post?kind=clan&token=$tok;
+    proxy_set_header apikey <SUPABASE_ANON_KEY>;
+    proxy_set_header Authorization "Bearer <SUPABASE_ANON_KEY>";
+}
+location ~ "^/xem/clans/(?<cid>[0-9a-fA-F-]{36})/?$" {
+    if ($is_share_bot = 0) { rewrite ^ /index.html last; }
+    proxy_pass http://<EDGE_FUNCTIONS_UPSTREAM>/functions/v1/og-post?kind=clan&clan=$cid;
+    proxy_set_header apikey <SUPABASE_ANON_KEY>;
+    proxy_set_header Authorization "Bearer <SUPABASE_ANON_KEY>";
+}
+```

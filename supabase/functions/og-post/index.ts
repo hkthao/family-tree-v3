@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
       siteOrigin,
       defaultImage: Deno.env.get("OG_IMAGE") ?? `${siteOrigin}/icons/og-banner.png`,
       siteName: Deno.env.get("OG_SITE_NAME") ?? "Dòng Họ Việt",
+      cardImageBase: Deno.env.get("CARD_IMAGE_BASE") ?? `${SUPABASE_URL}/storage/v1/object/public/card-shares`,
     },
   );
   if (r.status !== 200) return notFound();

@@ -1395,6 +1395,10 @@ msgstr "Ảnh vẫn nằm ở Google Photos / Drive — nhớ để chế độ 
 msgid "Ảnh vector (SVG)"
 msgstr "Ảnh vector (SVG)"
 
+#: src/components/ClanOgPanel.tsx
+msgid "Ảnh xem trước khi chia sẻ"
+msgstr "Ảnh xem trước khi chia sẻ"
+
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Ảnh:"
 msgstr "Ảnh:"
@@ -3984,6 +3988,10 @@ msgstr "chưa dùng"
 msgid "Chưa dùng"
 msgstr "Chưa dùng"
 
+#: src/components/ClanOgPanel.tsx
+msgid "Chưa dựng được ảnh."
+msgstr "Chưa dựng được ảnh."
+
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Chưa gắn người nào. Bấm Sửa để thêm."
 msgstr "Chưa gắn người nào. Bấm Sửa để thêm."
@@ -4992,6 +5000,10 @@ msgstr "Đã lưu"
 msgid "Đã lưu — link chia sẻ sẽ hiện các phần đã chọn"
 msgstr "Đã lưu — link chia sẻ sẽ hiện các phần đã chọn"
 
+#: src/components/ClanOgPanel.tsx
+msgid "Đã lưu ảnh chia sẻ"
+msgstr "Đã lưu ảnh chia sẻ"
+
 #: src/components/BoardPostForm.tsx
 msgid "Đã lưu bài"
 msgstr "Đã lưu bài"
@@ -5120,6 +5132,10 @@ msgstr "Đã nhập từ Excel"
 #: src/pages/admin/PodcastPage.tsx
 msgid "Đã nối Trang {0}"
 msgstr "Đã nối Trang {0}"
+
+#: src/components/ClanOgPanel.tsx
+msgid "Đã quay về ảnh chung của ứng dụng"
+msgstr "Đã quay về ảnh chung của ứng dụng"
 
 #: src/components/community/ContributeLinkPanel.tsx
 #: src/components/community/QuestionPanel.tsx
@@ -5726,6 +5742,14 @@ msgstr "Đang đồng bộ…"
 msgid "Đang dùng"
 msgstr "Đang dùng"
 
+#: src/components/ClanOgPanel.tsx
+msgid "Đang dùng ảnh chung"
+msgstr "Đang dùng ảnh chung"
+
+#: src/components/ClanOgPanel.tsx
+msgid "Đang dùng ảnh riêng"
+msgstr "Đang dùng ảnh riêng"
+
 #: src/components/share/ShareTree.tsx
 msgid "Đang dựng cây 3D…"
 msgstr "Đang dựng cây 3D…"
@@ -5841,6 +5865,7 @@ msgstr "Đang loại…"
 
 #: src/components/BoardPostForm.tsx
 #: src/components/BookTextsSection.tsx
+#: src/components/ClanOgPanel.tsx
 #: src/components/community/ApplyMemoryPanel.tsx
 #: src/components/CriticalBanner.tsx
 #: src/components/NotificationBell.tsx
@@ -6057,6 +6082,7 @@ msgstr "đang tải…"
 #: src/components/BranchesSection.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/ClanApiTokensTab.tsx
+#: src/components/ClanOgPanel.tsx
 #: src/components/community/PersonMemoriesSection.tsx
 #: src/components/ExistingPersonPicker.tsx
 #: src/components/HeritagePhotosSection.tsx
@@ -7379,6 +7405,10 @@ msgstr "Dùng {0}"
 msgid "Dừng & nghe lại"
 msgstr "Dừng & nghe lại"
 
+#: src/components/ClanOgPanel.tsx
+msgid "Dùng ảnh chung"
+msgstr "Dùng ảnh chung"
+
 #: src/components/community/ApplyMemoryPanel.tsx
 msgid "Dùng ảnh của đóng góp này làm ảnh chân dung trên cây và hồ sơ."
 msgstr "Dùng ảnh của đóng góp này làm ảnh chân dung trên cây và hồ sơ."
@@ -7543,6 +7573,10 @@ msgstr "Email, mật khẩu, theme, QR đăng nhập sang máy khác."
 #: src/pages/admin/Health.tsx
 msgid "Email/SMS thất bại"
 msgstr "Email/SMS thất bại"
+
+#: src/components/ClanOgPanel.tsx
+msgid "Facebook nhớ ảnh cũ: bấm \"Scrape Again\" ở công cụ gỡ lỗi chia sẻ của Facebook để thấy ảnh mới."
+msgstr "Facebook nhớ ảnh cũ: bấm \"Scrape Again\" ở công cụ gỡ lỗi chia sẻ của Facebook để thấy ảnh mới."
 
 #: src/components/PhotoUploadField.tsx
 msgid "File khá lớn — đang nén, có thể mất vài giây"
@@ -8484,6 +8518,10 @@ msgstr "Hiện hướng dẫn 3 bước"
 #: src/lib/queries/restingPlaces.ts
 msgid "Hiện hữu"
 msgstr "Hiện hữu"
+
+#: src/components/ClanOgPanel.tsx
+msgid "Hiện khi dán link trang chủ dòng họ lên Facebook, Zalo… Chưa lưu thì link chỉ hiện ảnh chung của ứng dụng."
+msgstr "Hiện khi dán link trang chủ dòng họ lên Facebook, Zalo… Chưa lưu thì link chỉ hiện ảnh chung của ứng dụng."
 
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/Memories.tsx
@@ -9707,6 +9745,7 @@ msgstr "Không gắn với ai (mốc chung của dòng họ)"
 msgid "Không gia hạn được"
 msgstr "Không gia hạn được"
 
+#: src/components/ClanOgPanel.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Không gỡ được"
 msgstr "Không gỡ được"
@@ -9814,6 +9853,10 @@ msgstr "Không lấy được vị trí (cần cấp quyền)"
 #: src/pages/MyFeedback.tsx
 msgid "Không lưu được"
 msgstr "Không lưu được"
+
+#: src/components/ClanOgPanel.tsx
+msgid "Không lưu được ảnh"
+msgstr "Không lưu được ảnh"
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Không lưu được ghi âm"
@@ -10245,6 +10288,10 @@ msgstr "Kiểm tra token"
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Kiểu"
 msgstr "Kiểu"
+
+#: src/components/ClanOgPanel.tsx
+msgid "Kiểu ảnh"
+msgstr "Kiểu ảnh"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Kiểu bục"
@@ -11127,6 +11174,10 @@ msgstr "Lưu & thêm người nữa"
 #: src/pages/clan/NewPerson.tsx
 msgid "Lưu & thêm nữa"
 msgstr "Lưu & thêm nữa"
+
+#: src/components/ClanOgPanel.tsx
+msgid "Lưu ảnh chia sẻ"
+msgstr "Lưu ảnh chia sẻ"
 
 #: src/components/QrCodeModal.tsx
 msgid "Lưu ảnh QR"
@@ -18719,10 +18770,10 @@ msgstr "Xem tài khoản"
 
 #: src/components/NotificationBell.tsx
 #: src/pages/site/SiteHome.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Xem tất cả"
 msgstr "Xem tất cả"
 
-#: src/pages/site/SiteHome.tsx
 #: src/pages/site/SitePost.tsx
 msgid "Xem tất cả bài viết"
 msgstr "Xem tất cả bài viết"

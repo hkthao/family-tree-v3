@@ -112,3 +112,38 @@ describe("renderOgPost", () => {
     expect(r).toEqual({ status: 404 });
   });
 });
+
+describe("renderOgPost kind=clan (trang chủ dòng họ)", () => {
+  const env: OgEnv = { ...ENV, cardImageBase: "https://files.example/card-shares" };
+  const runClan = (tables: Tables, params: { token?: string | null; clan?: string | null } = {}) =>
+    renderOgPost(fakeSb(tables), { token: "tok", clan: null, id: null, kind: "clan", ...params }, env);
+
+  it("đã thiết kế ảnh: tên + mô tả + ảnh OG 1200×630 có ?v= để Facebook làm mới", async () => {
+    const r = await runClan({
+      share_links: { single: live },
+      clans: { single: { name: "Họ Huỳnh", description: "Dòng họ ở **Bình Định**.", share_og_path: "c1/clan-og-1.jpg", share_og_updated_at: "2026-11-25T10:00:00Z" } },
+    });
+    expect(r.status).toBe(200);
+    if (r.status !== 200) return;
+    expect(r.noindex).toBe(true);
+    expect(r.html).toContain('property="og:title" content="Gia phả Họ Huỳnh"');
+    expect(r.html).toContain("https://files.example/card-shares/c1/clan-og-1.jpg?v=");
+    expect(r.html).toContain('property="og:image:width" content="1200"');
+    expect(r.html).toContain('property="og:url" content="https://app.example/share/tok"');
+  });
+
+  it("chưa thiết kế ảnh: thẻ chung, KHÔNG lộ tên dòng họ", async () => {
+    const r = await runClan({ share_links: { single: live }, clans: { single: { name: "Họ Huỳnh", description: "bí mật", share_og_path: null } } });
+    expect(r.status).toBe(200);
+    if (r.status !== 200) return;
+    expect(r.html).not.toContain("Họ Huỳnh");
+    expect(r.html).not.toContain("bí mật");
+    expect(r.html).toContain("https://app.example/icons/og-banner.png");
+  });
+
+  it("link hỏng / loại link không xem được cây / thiếu cả token lẫn clan → 404", async () => {
+    expect((await runClan({ share_links: { single: { ...live, is_revoked: true } }, clans: { single: {} } })).status).toBe(404);
+    expect((await runClan({ share_links: { single: { ...live, scope: "single_person" } }, clans: { single: {} } })).status).toBe(404);
+    expect((await runClan({}, { token: null, clan: null })).status).toBe(404);
+  });
+});

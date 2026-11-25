@@ -1,3 +1,4 @@
+import { ClanOgPanel } from "@/components/ClanOgPanel";
 import { t } from "@lingui/core/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -234,6 +235,8 @@ export default function ShareHub() {
           sub={t`trong 7 ngày`}
         />
       </div>
+
+      <ClanOgPanel clan={clan} />
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-b">
         <div

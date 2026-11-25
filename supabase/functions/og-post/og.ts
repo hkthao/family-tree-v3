@@ -19,13 +19,15 @@ export interface OgEnv {
   /** Ảnh chung khi bài không có ảnh bìa. */
   defaultImage: string;
   siteName: string;
+  /** Gốc URL công khai của bucket card-shares (ảnh OG dòng họ); thiếu thì dùng ảnh chung. */
+  cardImageBase?: string;
 }
 
 export interface OgParams {
   token: string | null;
   clan: string | null;
   id: string | null;
-  /** "person": thẻ cho hồ sơ một người (`id` là id người); mặc định là bài Bảng tin. */
+  /** "person": hồ sơ một người (`id` là id người); "clan": trang chủ dòng họ (không cần id); mặc định là bài Bảng tin. */
   kind?: string | null;
 }
 
@@ -122,8 +124,60 @@ async function renderOgPerson(sb: Sb, params: OgParams, env: OgEnv): Promise<OgR
   };
 }
 
+/** Địa chỉ trang chủ dòng họ trong ứng dụng. */
+export function clanPageUrl(origin: string, p: { token: string | null; clan: string | null }): string {
+  const base = p.token ? `/share/${encodeURIComponent(p.token)}` : `/xem/clans/${encodeURIComponent(p.clan ?? "")}`;
+  return `${origin.replace(/\/+$/, "")}${base}`;
+}
+
+/**
+ * Thẻ chia sẻ cho TRANG CHỦ dòng họ. Cổng như các thẻ khác (link hợp lệ + loại link xem được cây). Chỉ khi admin ĐÃ thiết kế
+ * ảnh chia sẻ (clans.share_og_path) mới lộ tên + mô tả + ảnh dòng họ; chưa thiết kế → thẻ chung của ứng dụng, y như trước.
+ * Link hỏng / thu hồi → 404 (nginx cho bot vào trang 404, người thật không đi qua đây).
+ */
+async function renderOgClan(sb: Sb, params: OgParams, env: OgEnv): Promise<OgResult> {
+  const { token, clan } = params;
+  const access = await resolveShareAccess(sb, token, clan);
+  if (!access.ok || !SITE_SCOPES.includes(access.link.scope)) return { status: 404 };
+  const { data: c } = await sb.from("clans").select("name, description, share_og_path, share_og_updated_at").eq("id", access.link.clan_id).maybeSingle();
+  const path = (c?.share_og_path as string | null) ?? null;
+  const url = clanPageUrl(env.siteOrigin, { token, clan });
+  if (!c || !path || !env.cardImageBase) {
+    return {
+      status: 200,
+      noindex: !!token,
+      html: buildOgHtml({
+        title: env.siteName,
+        description: "Gia phả dòng họ trên " + env.siteName,
+        image: env.defaultImage,
+        url,
+        siteName: env.siteName,
+        noindex: !!token,
+        type: "website",
+      }),
+    };
+  }
+  const v = c.share_og_updated_at ? `?v=${encodeURIComponent(String(Date.parse(c.share_og_updated_at as string) || ""))}` : "";
+  const name = (c.name as string) || env.siteName;
+  return {
+    status: 200,
+    noindex: !!token,
+    html: buildOgHtml({
+      title: `Gia phả ${name}`,
+      description: postExcerpt((c.description as string | null) ?? "", 200) || `Xem gia phả, ngày giỗ và những câu chuyện của ${name}.`,
+      image: `${env.cardImageBase.replace(/\/+$/, "")}/${path}${v}`,
+      url,
+      siteName: env.siteName,
+      noindex: !!token,
+      type: "website",
+      imageSize: { w: 1200, h: 630 },
+    }),
+  };
+}
+
 export async function renderOgPost(sb: Sb, params: OgParams, env: OgEnv): Promise<OgResult> {
   const { token, clan, id } = params;
+  if (params.kind === "clan") return !token && !clan ? { status: 404 } : renderOgClan(sb, params, env);
   if (!id || !UUID.test(id) || (!token && !clan)) return { status: 404 };
   if (params.kind === "person") return renderOgPerson(sb, params, env);
   const access = await resolveShareAccess(sb, token, clan);
