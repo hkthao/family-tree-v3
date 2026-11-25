@@ -115,8 +115,8 @@ export default function SitePost() {
           </Suspense>
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center gap-2 border-y py-4">
-          <span className="mr-1 text-sm text-muted-foreground">{t`Chia sẻ bài này`}</span>
+        <div className="mt-8 flex flex-wrap items-center gap-2 border-y py-4 max-sm:[&>*]:flex-1">
+          <span className="mr-1 hidden text-sm text-muted-foreground sm:inline">{t`Chia sẻ bài này`}</span>
           {canNativeShare && (
             <Button
               size="sm"
@@ -169,7 +169,7 @@ export default function SitePost() {
                 <div className="text-xs text-muted-foreground">
                   ← {t`Bài trước`}
                 </div>
-                <div className="clan-name line-clamp-2 break-words font-semibold">
+                <div className="clan-name line-clamp-1 break-words font-semibold sm:line-clamp-2">
                   {post.prev.title}
                 </div>
               </Link>
@@ -182,7 +182,7 @@ export default function SitePost() {
                 <div className="text-xs text-muted-foreground">
                   {t`Bài sau`} →
                 </div>
-                <div className="clan-name line-clamp-2 break-words font-semibold">
+                <div className="clan-name line-clamp-1 break-words font-semibold sm:line-clamp-2">
                   {post.next.title}
                 </div>
               </Link>
