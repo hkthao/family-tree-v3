@@ -1096,7 +1096,7 @@ export default function Tree() {
               this.querySelector(".card-body")?.appendChild(inlaw);
             }
 
-            // Thẻ của CHÍNH người đang đăng nhập (đã được xác thực): viền vàng + nhãn "Tôi".
+            // Thẻ của CHÍNH người đang đăng nhập (đã được xác thực): nhãn "Tôi".
             this.querySelector(".me-mark")?.remove();
             if (personId && myPersonIdRef.current === personId) {
               const me = document.createElementNS(
@@ -1109,8 +1109,6 @@ export default function Tree() {
               const mx = tall ? (hasInlawBadge ? 28 : 6) : 10;
               const my = tall ? 6 : cardH - 15;
               me.innerHTML = `
-                <rect x="1.5" y="1.5" width="${cardW - 3}" height="${cardH - 3}"
-                      rx="8" fill="none" stroke="#C8962E" stroke-width="3" />
                 <rect x="${mx}" y="${my}" width="30" height="15" rx="7.5"
                       fill="#C8962E" stroke="#FBF7F0" stroke-width="1" />
                 <text x="${mx + 15}" y="${my + 11}" text-anchor="middle"
@@ -1489,9 +1487,14 @@ export default function Tree() {
                 id="tree-focal"
                 icon={<IconUser />}
                 value={focal ?? ""}
-                onChange={(v) =>
-                  v && setFocal(v === ME_OPTION && myPersonId ? myPersonId : v)
-                }
+                onChange={(v) => {
+                  // Dòng đầu "Chọn thuỷ tổ làm trung tâm" (giá trị rỗng) = về Thuỷ tổ mặc định.
+                  if (!v) {
+                    if (defaultFocal) setFocal(defaultFocal);
+                    return;
+                  }
+                  setFocal(v === ME_OPTION && myPersonId ? myPersonId : v);
+                }}
                 options={focalOptions}
                 emptyLabel={t`Chọn thuỷ tổ làm trung tâm`}
                 filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
