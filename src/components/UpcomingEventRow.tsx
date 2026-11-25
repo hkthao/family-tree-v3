@@ -126,8 +126,8 @@ export function UpcomingEventRow({
         {wrap(
           <>
             <div className="flex items-start justify-between gap-2">
-              <div className="flex-shrink-0 w-12 text-center rounded-md bg-muted/40 py-1">
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div className="flex-shrink-0 w-12 text-center rounded-md bg-primary/15 text-primary py-1">
+                <div className="text-[10px] uppercase tracking-wide text-primary/80">
                   Th {month}
                 </div>
                 <div className="text-2xl font-semibold leading-none">{day}</div>
