@@ -2,8 +2,10 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { IconArrowLeft, IconArrowRight } from "@/components/icons";
+import { SidePanel } from "@/components/SidePanel";
 import {
   formatCanChiShort,
+  formatLunarDate,
   getCanChiForSolarDate,
   solarStringToLunar,
 } from "@/lib/lunarDate";
@@ -104,6 +106,7 @@ export function EventsCalendar({
     return d;
   });
   const [selected, setSelected] = useState<string | null>(todayIso);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   const eventsByDay = useMemo(() => {
     const m = new Map<string, UpcomingEvent[]>();
@@ -133,6 +136,9 @@ export function EventsCalendar({
   }, [view]);
 
   const dayEvents = selected ? (eventsByDay.get(selected) ?? []) : [];
+  const selectedLunar = selected
+    ? formatLunarDate(solarStringToLunar(selected))
+    : undefined;
 
   return (
     <div className="space-y-4">
@@ -207,7 +213,10 @@ export function EventsCalendar({
               <button
                 key={i}
                 type="button"
-                onClick={() => setSelected(iso)}
+                onClick={() => {
+                  setSelected(iso);
+                  setPanelOpen(true);
+                }}
                 aria-pressed={isSelected}
                 aria-label={`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`}
                 className={`relative flex min-h-[3.75rem] flex-col items-center px-1 pb-1 pt-0.5 text-left sm:min-h-[5.25rem] ${
@@ -278,61 +287,65 @@ export function EventsCalendar({
         </span>
       </div>
 
-      {/* Selected day's events */}
-      {selected && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium">
-            {formatDateHeader(selected, todayIso)}
-          </h4>
-          {dayEvents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t`Không có sự kiện ngày này.`}
-            </p>
-          ) : (
-            <ul className="space-y-1.5">
-              {dayEvents.map((e) => {
-                const cc = getCanChiForSolarDate(e.date);
-                const inner = (
-                  <div className="flex items-center gap-3 px-3 py-2 rounded-md border bg-card hover:border-primary transition-colors">
-                    <span
-                      className={`h-2 w-2 rounded-full ${kindColor(e.kind)} shrink-0`}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate">{e.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {kindLabel(e.kind)}
-                        {cc ? ` · ${formatCanChiShort(cc)}` : ""}
-                      </p>
-                    </div>
+      {/* Chi tiết ngày bấm: ngăn kéo bên phải (không đẩy trang dài ra, dễ đọc trên điện thoại). */}
+      <SidePanel
+        open={panelOpen && !!selected}
+        onClose={() => setPanelOpen(false)}
+        title={selected ? formatDateHeader(selected, todayIso) : ""}
+        subtitle={selectedLunar}
+        guard={false}
+      >
+        {dayEvents.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t`Không có sự kiện ngày này.`}
+          </p>
+        ) : (
+          <ul className="space-y-1.5">
+            {dayEvents.map((e) => {
+              const cc = getCanChiForSolarDate(e.date);
+              const inner = (
+                <div className="flex items-center gap-3 px-3 py-2 rounded-md border bg-card hover:border-primary transition-colors">
+                  <span
+                    className={`h-2 w-2 rounded-full ${kindColor(e.kind)} shrink-0`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">{e.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {kindLabel(e.kind)}
+                      {cc ? ` · ${formatCanChiShort(cc)}` : ""}
+                    </p>
                   </div>
-                );
-                return (
-                  <li key={e.key}>
-                    {e.eventId && onOpenEvent && !readOnly ? (
-                      <button
-                        type="button"
-                        onClick={() => onOpenEvent(e.eventId!)}
-                        className="block w-full text-left"
-                      >
-                        {inner}
-                      </button>
-                    ) : e.personId && !readOnly ? (
-                      <Link
-                        to={`/clans/${clanId}/people/${e.personId}`}
-                        className="block"
-                      >
-                        {inner}
-                      </Link>
-                    ) : (
-                      inner
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      )}
+                </div>
+              );
+              return (
+                <li key={e.key}>
+                  {e.eventId && onOpenEvent && !readOnly ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPanelOpen(false);
+                        onOpenEvent(e.eventId!);
+                      }}
+                      className="block w-full text-left"
+                    >
+                      {inner}
+                    </button>
+                  ) : e.personId && !readOnly ? (
+                    <Link
+                      to={`/clans/${clanId}/people/${e.personId}`}
+                      className="block"
+                    >
+                      {inner}
+                    </Link>
+                  ) : (
+                    inner
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </SidePanel>
     </div>
   );
 }
