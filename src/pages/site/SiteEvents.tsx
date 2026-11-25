@@ -29,21 +29,37 @@ export default function SiteEvents() {
 
   return (
     <div className="container max-w-6xl py-8 md:py-10">
-      <SitePageHead title={t`Sự kiện & giỗ`} intro={t`Ngày giỗ và các dịp chung của dòng họ, tính theo âm lịch.`} />
+      <SitePageHead
+        title={t`Sự kiện & giỗ`}
+        intro={t`Ngày giỗ và các dịp chung của dòng họ, tính theo âm lịch.`}
+      />
       <div className="mb-5 flex gap-2">
-        <Button size="sm" className="px-3 text-sm" variant={view === "calendar" ? "default" : "outline"} onClick={() => setView("calendar")}>
+        <Button
+          size="sm"
+          className="px-3 text-sm"
+          variant={view === "calendar" ? "default" : "outline"}
+          onClick={() => setView("calendar")}
+        >
           <IconCalendar className="mr-1.5 h-4 w-4" />
           {t`Lịch`}
         </Button>
-        <Button size="sm" className="px-3 text-sm" variant={view === "list" ? "default" : "outline"} onClick={() => setView("list")}>
+        <Button
+          size="sm"
+          className="px-3 text-sm"
+          variant={view === "list" ? "default" : "outline"}
+          onClick={() => setView("list")}
+        >
           <IconList className="mr-1.5 h-4 w-4" />
           {t`Danh sách`}
         </Button>
       </div>
       {view === "calendar" ? (
-        <EventsCalendar events={upcoming} clanId="" readOnly />
+        // Card bao quanh như các trang khác (Bảng tin, Di sản…): lịch + chú thích + danh sách hôm nay nằm trong một khung.
+        <div className="rounded-2xl border bg-card p-4 md:p-6">
+          <EventsCalendar events={upcoming} clanId="" readOnly />
+        </div>
       ) : upcoming.length === 0 ? (
-        <p className="py-12 text-center text-muted-foreground">{t`Chưa có sự kiện hoặc ngày giỗ nào.`}</p>
+        <p className="rounded-2xl border bg-card py-12 text-center text-muted-foreground">{t`Chưa có sự kiện hoặc ngày giỗ nào.`}</p>
       ) : (
         <UpcomingEventList events={upcoming} clanId="" readOnly view="grid" />
       )}
