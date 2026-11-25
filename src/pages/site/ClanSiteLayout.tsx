@@ -168,7 +168,7 @@ export function ClanSiteLayout({ children }: { children: ReactNode }) {
               title={name}
             >
               <AppLogo size={28} className="shrink-0 rounded" />
-              <span className="truncate">{name}</span>
+              <span className="line-clamp-2 break-words text-left leading-tight max-sm:text-base">{name}</span>
             </Link>
 
             <nav
