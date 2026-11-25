@@ -128,8 +128,8 @@ export default function SiteHome() {
 
   return (
     <>
-      <section className="border-b bg-card">
-        <div className="container flex max-w-6xl flex-wrap items-center gap-x-10 gap-y-8 py-12">
+      <section className="max-sm:px-4 max-sm:pt-4 sm:border-b sm:bg-card">
+        <div className="container flex max-w-6xl flex-wrap items-center gap-x-10 gap-y-8 py-12 max-sm:max-w-none max-sm:gap-y-6 max-sm:rounded-2xl max-sm:border max-sm:bg-card max-sm:p-5">
           <div className="min-w-0 flex-[1_1_30rem]">
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">{t`Gia phả dòng họ`}</div>
             <h1 className="clan-name my-3 break-words text-[clamp(1.875rem,5vw,3.25rem)] font-bold leading-tight [text-wrap:balance]">
