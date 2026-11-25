@@ -122,7 +122,7 @@ export function UpcomingEventRow({
   // ── Card dọc (chế độ lưới) ──────────────────────────────────────
   if (variant === "card") {
     return (
-      <div className="flex h-full flex-col gap-2 p-4 rounded-xl border bg-card shadow-sm hover:border-primary transition-colors">
+      <div className="flex h-full flex-col gap-2 p-3 sm:p-4 rounded-xl border bg-card shadow-sm hover:border-primary transition-colors">
         {wrap(
           <>
             <div className="flex items-start justify-between gap-2">
@@ -138,7 +138,7 @@ export function UpcomingEventRow({
                 {countdown}
               </span>
             </div>
-            <p className="font-semibold leading-snug line-clamp-2">
+            <p className="text-sm sm:text-base font-semibold leading-snug line-clamp-2">
               {event.title}
             </p>
             <div>
@@ -147,7 +147,7 @@ export function UpcomingEventRow({
                 {event.subtitle ? ` • ${event.subtitle}` : ""}
               </p>
               {canChi && (
-                <p className="text-xs text-muted-foreground/80 truncate">
+                <p className="hidden sm:block text-xs text-muted-foreground/80 truncate">
                   {formatCanChiShort(canChi)}
                 </p>
               )}

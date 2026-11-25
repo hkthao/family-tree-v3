@@ -188,7 +188,7 @@ export default function SiteHome() {
         {on("board") && !!posts.data?.items.length && (
           <Block
             title={t`Bảng tin`}
-            more={{ page: "board", label: t`Xem tất cả bài viết` }}
+            more={{ page: "board", label: t`Xem tất cả` }}
           >
             <Grid>
               {posts.data.items.map((p) => (

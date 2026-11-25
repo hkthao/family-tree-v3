@@ -43,7 +43,7 @@ export function SiteNotices() {
   };
 
   return (
-    <div className="container max-w-6xl space-y-2 pt-2 print-hide sm:pt-3">
+    <div className="container max-w-6xl space-y-2 pb-3 pt-2 print-hide sm:pt-3">
       {open && (
         <div
           role="note"
