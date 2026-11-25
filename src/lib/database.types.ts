@@ -2093,6 +2093,7 @@ export type Database = {
           resolved_at: string | null
           resolved_by: string | null
           status: Database["public"]["Enums"]["feedback_status"]
+          submitter_ip_hash: string | null
           user_agent: string | null
           user_id: string | null
         }
@@ -2112,6 +2113,7 @@ export type Database = {
           resolved_at?: string | null
           resolved_by?: string | null
           status?: Database["public"]["Enums"]["feedback_status"]
+          submitter_ip_hash?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -2131,6 +2133,7 @@ export type Database = {
           resolved_at?: string | null
           resolved_by?: string | null
           status?: Database["public"]["Enums"]["feedback_status"]
+          submitter_ip_hash?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -4988,6 +4991,10 @@ export type Database = {
       }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
       cancel_export_job: { Args: { p_id: string }; Returns: undefined }
+      card_shares_object_clan_member: {
+        Args: { object_name: string }
+        Returns: boolean
+      }
       claim_export_job: { Args: { p_worker: string }; Returns: Json }
       clan_community_summary: { Args: { p_clan_id: string }; Returns: Json }
       clan_map_stats: {
