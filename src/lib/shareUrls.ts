@@ -17,6 +17,13 @@ export interface ShareLinkRef {
 /** Gốc đường dẫn của một link: `/share/<token>`. */
 export const shareBase = (token: string): string => `/share/${token}`;
 
+/**
+ * Địa chỉ NGẮN của trang chủ dòng họ qua link token: `/s/<token>`. Dùng làm link chia sẻ chính của link cây vì Facebook từng ghi nhớ
+ * robots.txt chặn `/share/` và không chịu quét đường dẫn đó; `/s/` quét được. nginx chuyển người thật sang `/share/<token>`,
+ * ứng dụng cũng có route /s/:token làm dự phòng; các link /share/<token> đã gửi / đã in vẫn dùng bình thường.
+ */
+export const shortShareBase = (token: string): string => `/s/${token}`;
+
 /** Đường dẫn tới một mục menu của trang dòng họ qua link token, tuỳ chọn id và query. */
 export function shareTokenPath(token: string, page: SitePageKey, id?: string, query?: Record<string, string | null | undefined>): string {
   const qs = new URLSearchParams();
@@ -40,7 +47,7 @@ export function shareLinkPath(l: ShareLinkRef): string {
     case "contribute":
       return shareTokenPath(l.token, "contribute");
     default:
-      return shareBase(l.token);
+      return shortShareBase(l.token);
   }
 }
 

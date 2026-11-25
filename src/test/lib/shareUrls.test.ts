@@ -13,16 +13,16 @@ describe("shareLinkPath: mỗi loại link dẫn vào đúng mục menu", () => 
     expect(shareLinkPath({ token: "t", scope: "resting_place", root_resting_place_id: "g1" })).toBe("/share/t/mo-phan/g1");
     expect(shareLinkPath({ token: "t", scope: "heritage_item", root_heritage_item_id: "h1" })).toBe("/share/t/di-san/h1");
     expect(shareLinkPath({ token: "t", scope: "contribute" })).toBe("/share/t/cung-gop");
-    expect(shareLinkPath({ token: "t", scope: "tree_view" })).toBe("/share/t");
+    expect(shareLinkPath({ token: "t", scope: "tree_view" })).toBe("/s/t");
   });
 
   it("thiếu id gốc thì về trang chủ của link (không tạo đường dẫn hỏng)", () => {
     expect(shareLinkPath({ token: "t", scope: "single_person" })).toBe("/share/t");
-    expect(shareLinkPath({ token: "t", scope: "lạ" })).toBe("/share/t");
+    expect(shareLinkPath({ token: "t", scope: "lạ" })).toBe("/s/t");
   });
 
   it("url đầy đủ bỏ dấu / thừa ở gốc; link mời góp và câu hỏi giữ tab=gop cho màn cũ", () => {
-    expect(shareLinkUrl(`${O}/`, { token: "t", scope: "tree_view" })).toBe(`${O}/share/t`);
+    expect(shareLinkUrl(`${O}/`, { token: "t", scope: "tree_view" })).toBe(`${O}/s/t`);
     expect(contributeUrl(O, "t")).toBe(`${O}/share/t/cung-gop?tab=gop`);
     expect(contributeUrl(O, "t", "p1")).toBe(`${O}/share/t/cung-gop?tab=gop&p=p1`);
     expect(questionUrl(O, "t", "q1")).toBe(`${O}/share/t/cung-gop?tab=gop&q=q1`);

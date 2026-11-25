@@ -5153,10 +5153,6 @@ msgstr "Đã sao chép liên kết."
 msgid "Đã sao chép link"
 msgstr "Đã sao chép link"
 
-#: src/pages/clan/ShareHub.tsx
-msgid "Đã sao chép link cho Facebook."
-msgstr "Đã sao chép link cho Facebook."
-
 #: src/components/community/InviteCardDialog.tsx
 msgid "Đã sao chép tin nhắn"
 msgstr "Đã sao chép tin nhắn"
@@ -7424,10 +7420,6 @@ msgstr "Dùng cặp này"
 #: src/components/ApiTokenPanels.tsx
 msgid "Dùng gần nhất"
 msgstr "Dùng gần nhất"
-
-#: src/pages/clan/ShareHub.tsx
-msgid "Dùng khi đăng lên Facebook nếu link thường không hiện ảnh. Người mở vẫn vào đúng trang này."
-msgstr "Dùng khi đăng lên Facebook nếu link thường không hiện ảnh. Người mở vẫn vào đúng trang này."
 
 #: src/pages/admin/Health.tsx
 msgid "Dung lượng"
@@ -9916,7 +9908,6 @@ msgid "Không nối được"
 msgstr "Không nối được"
 
 #: src/pages/clan/ShareHub.tsx
-#: src/pages/clan/ShareHub.tsx
 #: src/pages/KhoeCard.tsx
 #: src/pages/site/SitePerson.tsx
 #: src/pages/site/SitePost.tsx
@@ -10789,10 +10780,6 @@ msgstr "Link mời không hợp lệ"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Link nằm ở đâu"
 msgstr "Link nằm ở đâu"
-
-#: src/pages/clan/ShareHub.tsx
-msgid "Link ngắn cho Facebook"
-msgstr "Link ngắn cho Facebook"
 
 #: src/components/community/InviteCardDialog.tsx
 msgid "Link ở bình luận"
@@ -14101,10 +14088,6 @@ msgstr "Sao chép liên kết"
 #: src/pages/clan/Memories.tsx
 msgid "Sao chép link"
 msgstr "Sao chép link"
-
-#: src/pages/clan/ShareHub.tsx
-msgid "Sao chép link cho Facebook"
-msgstr "Sao chép link cho Facebook"
 
 #: src/components/panel/PanelHost.tsx
 #: src/pages/clan/NewPerson.tsx

@@ -130,7 +130,7 @@ location ~ "^/xem/clans/(?<cid>[0-9a-fA-F-]{36})/?$" {
 
 Facebook giữ `robots.txt` cũ rất lâu: nếu từng chặn `/share/` thì dù đã sửa, Debugger vẫn báo 403 mà KHÔNG gửi yêu cầu nào tới máy chủ. Đường dẫn
 ngắn `/s/<mã>` không nằm trong `robots.txt` cũ nên quét được ngay. Bot → `og-post?kind=clan&alias=1` (og:url trỏ `/s/<mã>`); người thật → 302 sang `/share/<mã>`.
-Trung tâm chia sẻ → chi tiết link cây → "Link ngắn cho Facebook" sao chép địa chỉ này.
+`shareLinkPath` (src/lib/shareUrls.ts) trả `/s/<mã>` làm link CHÍNH của link cây (Trung tâm chia sẻ, nút sao chép, QR) — người dùng chỉ có một link, dán lên Facebook là chạy. Route `/s/:token` trong ứng dụng là dự phòng cho nginx; link `/share/<mã>` cũ vẫn mở bình thường. Bài viết / hồ sơ người (`/share/<mã>/bang-tin|nguoi/…`) vẫn dùng `/share/…` (Facebook sẽ quét được sau khi tự làm mới robots.txt).
 
 ```nginx
 location ~ "^/s/(?<ref>[A-Za-z0-9_-]+)/?$" {
