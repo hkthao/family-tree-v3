@@ -323,7 +323,7 @@ describe("part=person (hồ sơ người)", () => {
 });
 
 describe("part=graves", () => {
-  it("không chọn toạ độ / địa chỉ, và chỉ liệt kê người ĐÃ MẤT", async () => {
+  it("không chọn toạ độ / địa chỉ, và chỉ liệt kê người ĐÃ MẤT, chưa bị xoá mềm", async () => {
     const data = [
       {
         id: "g1",
@@ -335,6 +335,7 @@ describe("part=graves", () => {
         resting_place_occupants: [
           { person: { full_name: "Trần Thừa", is_living: false } },
           { person: { full_name: "Người còn sống", is_living: true } },
+          { person: { full_name: "Người đã xoá mềm", is_living: false, deleted_at: "2026-01-01" } },
         ],
       },
     ];

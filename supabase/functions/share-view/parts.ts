@@ -441,7 +441,7 @@ async function graves(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
   let query = ctx.sb
     .from("resting_places")
     .select(
-      "id, kind, name, location_name, status, built_year, resting_place_occupants(person:persons(full_name, is_living))",
+      "id, kind, name, location_name, status, built_year, resting_place_occupants(person:persons(full_name, is_living, deleted_at))",
       { count: "exact" },
     )
     .eq("clan_id", ctx.clanId)
@@ -461,7 +461,7 @@ async function graves(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
       // deno-lint-ignore no-explicit-any
       .map((o: any) => o.person)
       // deno-lint-ignore no-explicit-any
-      .filter((p: any) => p && !p.is_living)
+      .filter((p: any) => p && !p.is_living && !p.deleted_at)
       // deno-lint-ignore no-explicit-any
       .map((p: any) => p.full_name),
   }));
@@ -531,7 +531,7 @@ async function searchIndex(ctx: PartCtx): Promise<PartResult> {
       (async () => {
         const { data } = await ctx.sb
           .from("resting_places")
-          .select("id, name, resting_place_occupants(person:persons(full_name, is_living))")
+          .select("id, name, resting_place_occupants(person:persons(full_name, is_living, deleted_at))")
           .eq("clan_id", ctx.clanId)
           .is("deleted_at", null)
           .limit(SEARCH_CAP);
@@ -541,7 +541,7 @@ async function searchIndex(ctx: PartCtx): Promise<PartResult> {
             // deno-lint-ignore no-explicit-any
             .map((o: any) => o.person)
             // deno-lint-ignore no-explicit-any
-            .filter((p: any) => p && !p.is_living)
+            .filter((p: any) => p && !p.is_living && !p.deleted_at)
             // deno-lint-ignore no-explicit-any
             .map((p: any) => p.full_name)
             .join(", ");

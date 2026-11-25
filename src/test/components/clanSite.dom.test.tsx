@@ -320,6 +320,19 @@ describe("Bảng tin và trang đọc bài", () => {
     expect(fetchSitePost).toHaveBeenCalledWith({ token: "tok" }, "p1");
   });
 
+  it("nút Facebook chỉ có ở trang dòng họ CÔNG KHAI; link riêng (token) không đẩy chìa khoá lên Facebook", async () => {
+    const post = { id: "p1", type: "notice", title: "Họp họ", body: "x", pinned: false, created_at: "2026-11-20T00:00:00Z", updated_at: "2026-11-20T00:00:00Z", read_minutes: 1, prev: null, next: null };
+    fetchSitePost.mockResolvedValue(post);
+    renderAt("/share/tok/bang-tin/p1?site=1");
+    await screen.findByRole("heading", { level: 1, name: "Họp họ" });
+    expect(screen.queryByRole("link", { name: "Facebook" })).toBeNull();
+    expect(screen.getByRole("button", { name: /Sao chép liên kết/ })).toBeInTheDocument();
+    cleanup();
+    renderAt("/xem/clans/c1/bang-tin/p1?site=1");
+    await screen.findByRole("heading", { level: 1, name: "Họp họ" });
+    expect(screen.getByRole("link", { name: "Facebook" })).toBeInTheDocument();
+  });
+
   it("bài không còn: báo rõ và có nút về Bảng tin", async () => {
     const { SitePartError } = await import("@/lib/queries/site-parts");
     fetchSitePost.mockRejectedValue(new SitePartError("x", 404));
