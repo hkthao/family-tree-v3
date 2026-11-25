@@ -36,6 +36,7 @@ import {
   type ClanPostType,
 } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
+import { postDisplayTitle, postExcerpt } from "@/lib/postMarkdown";
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
@@ -272,10 +273,10 @@ function PostRow({
         className="block p-3 transition-colors hover:bg-muted/40"
       >
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium">{post.title || post.body}</p>
+          <p className="truncate font-medium">{post.title || postDisplayTitle(null, post.body)}</p>
           {post.title && (
             <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
-              {post.body}
+              {postExcerpt(post.body, 240)}
             </p>
           )}
           <p className="mt-0.5 text-xs text-muted-foreground/80">

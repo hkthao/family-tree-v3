@@ -266,13 +266,13 @@ export function NotificationBell() {
                         </span>
                         {isOpen ? (
                           <span className="mt-1 block whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
-                            {row.body}
+                            {(row.body ?? "").replace(/(\*\*|__)/g, "")}
                           </span>
                         ) : (
                           // Thu gọn: mỗi ý (dòng) nằm trên một dòng riêng, tối đa 4 dòng không tính dòng trống,
                           // dòng dài cắt bằng "…". Dồn thành một đoạn thì không còn thấy cấu trúc bullet.
                           <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
-                            {previewLines(row.body, 4).map((line, i) => (
+                            {previewLines((row.body ?? "").replace(/(\*\*|__)/g, ""), 4).map((line, i) => (
                               <span key={i} className="block truncate">
                                 {line}
                               </span>

@@ -250,7 +250,7 @@ export default function TimelineDetail() {
             <ActionArea>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button
-                className="flex-1"
+                className="w-full sm:w-auto sm:flex-1"
                 disabled={!!exporting || chosen.length === 0}
                 onClick={() => doExport("pdf")}
               >
@@ -258,7 +258,7 @@ export default function TimelineDetail() {
                 {exporting === "pdf" ? t`Đang tạo PDF…` : t`Tải file PDF`}
               </Button>
               <Button
-                className="flex-1"
+                className="w-full sm:w-auto sm:flex-1"
                 variant="outline"
                 disabled={!!exporting || chosen.length === 0}
                 onClick={() => doExport("png")}

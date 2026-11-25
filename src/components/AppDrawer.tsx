@@ -16,6 +16,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { CheckUpdateButton } from "@/components/CheckUpdateButton";
+import { ForceRefreshButton } from "@/components/ForceRefreshButton";
 import {
   isItemActive,
   sectionBadge,
@@ -279,6 +280,7 @@ export function AppDrawer({ open, onClose }: Props) {
             <ShareAppQrButton />
             <CheckUpdateButton compact />
           </div>
+          <ForceRefreshButton />
           {profile ? (
             <div className="flex items-center gap-3">
               <Link

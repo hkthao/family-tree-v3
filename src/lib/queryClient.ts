@@ -70,3 +70,13 @@ export async function clearAllCache(): Promise<void> {
   queryClient.clear();
   await persister.removeClient();
 }
+
+/**
+ * Làm mới cưỡng bức: bỏ TOÀN BỘ cache (bộ nhớ + IndexedDB) rồi tải lại trang để mọi truy vấn lấy dữ liệu mới.
+ * Dùng khi dữ liệu được thêm từ nơi khác (MCP, người khác nhập) mà máy này còn giữ cache tới 24 giờ — trước đây
+ * phải đăng xuất rồi đăng nhập lại mới thấy. KHÔNG đăng xuất: phiên đăng nhập nằm ngoài cache này.
+ */
+export async function forceRefreshAll(): Promise<void> {
+  await clearAllCache();
+  window.location.reload();
+}
