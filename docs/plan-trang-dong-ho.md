@@ -132,7 +132,9 @@ Còn thiếu / chưa làm:
 - Triển khai prod (bước 7) và bật mặc định: migration gộp cờ, edge function `share-view` + `og-post` (+ `SITE_ORIGIN`), nginx; hiện website tắt mặc định (`?site=1`), màn Share cũ chạy song song.
 - **Đã bổ sung (25/11/2026):** `SiteNotices` — lưu ý "Thông tin nhạy cảm đã được ẩn" (đóng được, dùng chung khoá nhớ với màn Share cũ) và, với dòng họ công khai, nút "Đăng nhập để xem đầy đủ & cùng vun đắp"; không hiện ở link tập trung (QR / thiệp).
 - **Đã quyết BỎ (25/11/2026):** bình luận dưới bài viết và loại đóng góp "Sửa thông tin" riêng cho khách. Khách muốn sửa / bổ sung thông tin thì viết thẳng vào **Câu chuyện** (form Cùng góp có dòng gợi ý này), người quản lý xem và cập nhật; không nhập form có cấu trúc.
-- Chưa kiểm: link token giới hạn cây con, dòng họ rất đông người, cỡ tablet (768–1024), sitemap cho các trang con công khai, ESLint (cấu hình của repo đang lỗi).
+- **Đã kiểm (25/11/2026):** máy tính bảng 768 / 820 / 1024px (8 trang, không tràn ngang, không lỗi console); link token giới hạn cây con (tree_view + root_person_id: payload chỉ còn người gốc + con cháu + vợ/chồng, `part=person` ngoài phạm vi → 404; lưu ý các mục cấp dòng họ như mộ phần / bảng vàng / di sản vẫn là của cả họ theo khoá `share_sections`, đúng như màn Share cũ); dòng họ 5000 người (home / cây / hồ sơ tải ~1 giây, payload 1,7 MB, không lỗi).
+- **Lỗi tìm thấy và đã sửa khi kiểm:** share-view đọc `persons` / `families` một lần nên PostgREST cắt âm thầm ở `max_rows` = 1000 → dòng họ trên 1000 người mất người ở cây chia sẻ (cả màn cũ lẫn mới) và tính sai phạm vi cây con. Nay phân trang (`share-view/paging.ts`, test `shareViewPaging.test.ts`; chốt 50.000 hàng).
+- **Còn lại:** sitemap cho các trang con công khai (cần quyết đưa những họ nào vào), ESLint (cấu hình repo đang lỗi).
 
 ## 6d. Trang hồ sơ người — thiết kế lại thành tiểu sử cá nhân (25/11/2026)
 

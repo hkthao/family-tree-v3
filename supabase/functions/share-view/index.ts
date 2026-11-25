@@ -18,6 +18,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { resolveShareAccess } from "./access.ts";
 import { subtreeScope } from "./scope.ts";
 import { loadKhoe } from "./khoe.ts";
+import { fetchAllRows } from "./paging.ts";
 import { handlePart, loadHeritageItem } from "./parts.ts";
 import { buildShareSections } from "./sections.ts";
 
@@ -31,7 +32,6 @@ const isExternalPhoto = (p: string | null | undefined): p is string =>
 /** Bỏ origin khỏi signed URL (xem giải thích ở bước 5) — client tự ghép VITE_SUPABASE_URL. */
 const stripOrigin = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
 
-
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -44,7 +44,8 @@ const RATE_PER_MINUTE_PARTS = 240;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
 };
 
@@ -130,7 +131,9 @@ Deno.serve(async (req) => {
   });
 
   // ---- 1. Rate limit ----
-  const windowStart = new Date(Math.floor(Date.now() / 60_000) * 60_000).toISOString();
+  const windowStart = new Date(
+    Math.floor(Date.now() / 60_000) * 60_000,
+  ).toISOString();
   // Atomic-ish bump: upsert with on-conflict increment via raw SQL would
   // be nicer, but supabase-js lacks that; do a select-then-update which
   // is good enough for a soft limit.
@@ -153,13 +156,19 @@ Deno.serve(async (req) => {
       .from("share_view_rate")
       .insert({ ip, window_start: windowStart, request_count: 1 });
     // Opportunistic GC on the cold path.
-    sb.rpc("prune_share_view_rate").then(() => {/* fire-and-forget */});
+    sb.rpc("prune_share_view_rate").then(() => {
+      /* fire-and-forget */
+    });
   }
 
   // ---- 1b. Thiệp khoe: không qua share_links (bảng card_shares) ----
   if (khoeToken) {
     const r = await loadKhoe(sb, khoeToken);
-    return json(r.body, { status: r.status, headers: r.status === 200 ? { "Cache-Control": "public, max-age=60" } : {} });
+    return json(r.body, {
+      status: r.status,
+      headers:
+        r.status === 200 ? { "Cache-Control": "public, max-age=60" } : {},
+    });
   }
 
   // ---- 2. Resolve context: share TOKEN, hoặc CLAN công khai (không token) — access.ts ----
@@ -180,7 +189,8 @@ Deno.serve(async (req) => {
   // ---- part=…: các lần gọi theo phần cho trang dòng họ (parts.ts). Chỉ scope tree_view (link token xem cây hoặc
   // trang công khai); link QR mộ / di sản / một người giữ giao diện cũ.
   if (part) {
-    if (!SITE_SCOPES.includes(link.scope)) return err("Link này không hỗ trợ trang dòng họ.", 403);
+    if (!SITE_SCOPES.includes(link.scope))
+      return err("Link này không hỗ trợ trang dòng họ.", 403);
     const r = await handlePart(
       {
         sb,
@@ -191,8 +201,11 @@ Deno.serve(async (req) => {
         rootPersonId: link.root_person_id,
         sign: async (paths) => {
           const m = new Map<string, string>();
-          const { data: signed } = await sb.storage.from("person-photos").createSignedUrls([...new Set(paths)], 3600);
-          for (const s of signed ?? []) if (s.signedUrl && s.path) m.set(s.path, stripOrigin(s.signedUrl));
+          const { data: signed } = await sb.storage
+            .from("person-photos")
+            .createSignedUrls([...new Set(paths)], 3600);
+          for (const s of signed ?? [])
+            if (s.signedUrl && s.path) m.set(s.path, stripOrigin(s.signedUrl));
           return m;
         },
       },
@@ -202,7 +215,8 @@ Deno.serve(async (req) => {
     return json(r.body, {
       status: r.status,
       // Link có thể bị thu hồi: chỉ cache ngắn.
-      headers: r.status === 200 ? { "Cache-Control": "public, max-age=60" } : {},
+      headers:
+        r.status === 200 ? { "Cache-Control": "public, max-age=60" } : {},
     });
   }
 
@@ -225,35 +239,59 @@ Deno.serve(async (req) => {
     );
     let photo_urls: string[] = [];
     if (!hidePhotos && photos.length > 0) {
-      const inBucket = photos.filter((p: { path: string }) => !isExternalPhoto(p.path));
+      const inBucket = photos.filter(
+        (p: { path: string }) => !isExternalPhoto(p.path),
+      );
       const signedByPath = new Map<string, string>();
       if (inBucket.length > 0) {
         const { data: signed } = await sb.storage
           .from("person-photos")
-          .createSignedUrls(inBucket.map((p: { path: string }) => p.path), 3600);
+          .createSignedUrls(
+            inBucket.map((p: { path: string }) => p.path),
+            3600,
+          );
         for (const s of signed ?? []) {
-          if (s.signedUrl && s.path) signedByPath.set(s.path, stripOrigin(s.signedUrl));
+          if (s.signedUrl && s.path)
+            signedByPath.set(s.path, stripOrigin(s.signedUrl));
         }
       }
       photo_urls = photos
-        .map((p: { path: string }) => (isExternalPhoto(p.path) ? p.path : signedByPath.get(p.path)))
+        .map((p: { path: string }) =>
+          isExternalPhoto(p.path) ? p.path : signedByPath.get(p.path),
+        )
         .filter((u: string | undefined): u is string => !!u);
     }
     // deno-lint-ignore no-explicit-any
     const occupants = ((rp as any).resting_place_occupants ?? [])
-      .map((o: { note: string | null; person: { full_name: string; gender: string; is_living: boolean } | null }) => {
-        if (!o.person) return null;
-        return {
-          full_name: o.person.is_living ? "(Người đang sống)" : o.person.full_name,
-          gender: o.person.gender,
-          is_living: o.person.is_living,
-          note: o.note,
-        };
-      })
+      .map(
+        (o: {
+          note: string | null;
+          person: {
+            full_name: string;
+            gender: string;
+            is_living: boolean;
+          } | null;
+        }) => {
+          if (!o.person) return null;
+          return {
+            full_name: o.person.is_living
+              ? "(Người đang sống)"
+              : o.person.full_name,
+            gender: o.person.gender,
+            is_living: o.person.is_living,
+            note: o.note,
+          };
+        },
+      )
       .filter(Boolean);
 
     // deno-lint-ignore no-explicit-any
-    const { resting_place_occupants: _o, resting_place_photos: _p, deleted_at: _d, ...rpFields } = rp as any;
+    const {
+      resting_place_occupants: _o,
+      resting_place_photos: _p,
+      deleted_at: _d,
+      ...rpFields
+    } = rp as any;
     return json({
       clan_id: link.clan_id,
       scope: "resting_place",
@@ -264,7 +302,12 @@ Deno.serve(async (req) => {
   // ---- scope='heritage_item': QR di sản → trả thẳng nội dung mục di sản
   // + ảnh + ghi âm (signed url) + người liên quan (che tên người còn sống).
   if (link.scope === "heritage_item" && link.root_heritage_item_id) {
-    const r = await loadHeritageItem(sb, link.root_heritage_item_id, null, hidePhotos);
+    const r = await loadHeritageItem(
+      sb,
+      link.root_heritage_item_id,
+      null,
+      hidePhotos,
+    );
     if (r.status !== 200) return json(r.body, { status: r.status });
     return json({
       clan_id: link.clan_id,
@@ -276,17 +319,26 @@ Deno.serve(async (req) => {
   // ---- 3. Fetch persons + families ----
   const personSelect =
     "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_order, birth_date, birth_date_precision, death_date, death_date_precision, photo_path, courtesy_name, posthumous_name, nickname, birth_place, burial_place, bio, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day";
-  const { data: persons, error: pErr } = await sb
-    .from("persons")
-    .select(personSelect)
-    .eq("clan_id", link.clan_id)
-    .is("deleted_at", null);
+  // Phân trang: PostgREST cắt âm thầm ở max_rows (1000) nên họ đông hơn sẽ mất người ở cây chia sẻ (paging.ts).
+  const { data: persons, error: pErr } = await fetchAllRows((a, b) =>
+    sb
+      .from("persons")
+      .select(personSelect)
+      .eq("clan_id", link.clan_id)
+      .is("deleted_at", null)
+      .order("id")
+      .range(a, b),
+  );
   if (pErr) return err(pErr.message, 500);
-  const { data: families, error: fErr } = await sb
-    .from("families")
-    .select("id, husband_id, wife_id, spouse_order, created_at")
-    .eq("clan_id", link.clan_id)
-    .is("deleted_at", null);
+  const { data: families, error: fErr } = await fetchAllRows((a, b) =>
+    sb
+      .from("families")
+      .select("id, husband_id, wife_id, spouse_order, created_at")
+      .eq("clan_id", link.clan_id)
+      .is("deleted_at", null)
+      .order("id")
+      .range(a, b),
+  );
   if (fErr) return err(fErr.message, 500);
 
   let scopedPersons = (persons ?? []) as PersonRow[];
@@ -310,7 +362,9 @@ Deno.serve(async (req) => {
     // both parents are included so the card can render names.
     if (focal.birth_family_id) {
       familiesKept.add(focal.birth_family_id);
-      const birthFam = scopedFamilies.find((f) => f.id === focal.birth_family_id);
+      const birthFam = scopedFamilies.find(
+        (f) => f.id === focal.birth_family_id,
+      );
       if (birthFam) {
         if (birthFam.husband_id) kept.add(birthFam.husband_id);
         if (birthFam.wife_id) kept.add(birthFam.wife_id);
@@ -342,7 +396,11 @@ Deno.serve(async (req) => {
     scopedFamilies = scopedFamilies.filter((f) => familiesKept.has(f.id));
   } else if (link.root_person_id) {
     // Default tree_view scope with subtree: focal + all descendants and the families connecting them (scope.ts).
-    const { kept, familiesKept } = subtreeScope(scopedPersons, scopedFamilies, link.root_person_id);
+    const { kept, familiesKept } = subtreeScope(
+      scopedPersons,
+      scopedFamilies,
+      link.root_person_id,
+    );
     scopedPersons = scopedPersons.filter((p) => kept.has(p.id));
     scopedFamilies = scopedFamilies.filter((f) => familiesKept.has(f.id));
   }
@@ -368,7 +426,8 @@ Deno.serve(async (req) => {
         .filter((p) => p.photo_path)
         .map((p) => p.photo_path as string);
   const photoUrlByPath = new Map<string, string>();
-  for (const p of allPhotoPaths) if (isExternalPhoto(p)) photoUrlByPath.set(p, p);
+  for (const p of allPhotoPaths)
+    if (isExternalPhoto(p)) photoUrlByPath.set(p, p);
   const bucketPhotoPaths = allPhotoPaths.filter((p) => !isExternalPhoto(p));
   if (bucketPhotoPaths.length > 0) {
     const { data: signed } = await sb.storage
@@ -454,7 +513,9 @@ Deno.serve(async (req) => {
   // deno-lint-ignore no-explicit-any
   let restingPlaces: any[] = [];
   if (includeExtras) {
-    const deceasedIds = scopedPersons.filter((p) => !p.is_living).map((p) => p.id);
+    const deceasedIds = scopedPersons
+      .filter((p) => !p.is_living)
+      .map((p) => p.id);
     if (deceasedIds.length > 0) {
       const { data: occ } = await sb
         .from("resting_place_occupants")
@@ -483,7 +544,8 @@ Deno.serve(async (req) => {
           .from("person-photos")
           .createSignedUrls([...photoPaths], 3600);
         for (const row of signed ?? []) {
-          if (row.signedUrl && row.path) signedMap.set(row.path, stripOrigin(row.signedUrl));
+          if (row.signedUrl && row.path)
+            signedMap.set(row.path, stripOrigin(row.signedUrl));
         }
       }
       restingPlaces = [...byId.values()].map((rp) => {
@@ -494,7 +556,9 @@ Deno.serve(async (req) => {
         return {
           ...rest,
           photo_urls: photos
-            .map((ph: { path: string }) => (isExternalPhoto(ph.path) ? ph.path : signedMap.get(ph.path)))
+            .map((ph: { path: string }) =>
+              isExternalPhoto(ph.path) ? ph.path : signedMap.get(ph.path),
+            )
             .filter((u: string | undefined): u is string => !!u),
         };
       });
@@ -535,12 +599,17 @@ Deno.serve(async (req) => {
   // (visibility share), và kể về người ĐÃ MẤT trong phạm vi link (hoặc ký ức chung của họ).
   // Client gửi ?visit=1 một lần / phiên trình duyệt để đếm lượt ghé.
   if (url.searchParams.get("visit") === "1") {
-    await sb.rpc("bump_clan_visit", { p_clan_id: link.clan_id, p_source: "share" });
+    await sb.rpc("bump_clan_visit", {
+      p_clan_id: link.clan_id,
+      p_source: "share",
+    });
   }
   const { data: communityStats } = await sb.rpc("clan_public_community_stats", {
     p_clan_id: link.clan_id,
   });
-  const deceasedInScope = new Set(scopedPersons.filter((p) => !p.is_living).map((p) => p.id));
+  const deceasedInScope = new Set(
+    scopedPersons.filter((p) => !p.is_living).map((p) => p.id),
+  );
   const { data: memRows } = await sb
     .from("person_memories")
     .select(
@@ -561,20 +630,27 @@ Deno.serve(async (req) => {
     .filter((p): p is string => !!p);
   const memSigned = new Map<string, string>();
   if (memPaths.length > 0) {
-    const { data: signed } = await sb.storage.from("person-photos").createSignedUrls(memPaths, 3600);
+    const { data: signed } = await sb.storage
+      .from("person-photos")
+      .createSignedUrls(memPaths, 3600);
     for (const row of signed ?? []) {
-      if (row.signedUrl && row.path) memSigned.set(row.path, stripOrigin(row.signedUrl));
+      if (row.signedUrl && row.path)
+        memSigned.set(row.path, stripOrigin(row.signedUrl));
     }
   }
   // Ảnh "đây là ai?": khung khuôn mặt. Khách chỉ thấy TÊN khi đã xác nhận; gợi ý chưa duyệt chỉ
   // thấy số lượng (plan §11, câu 8). Người còn sống đã xác nhận vẫn hiện tên (như cây chia sẻ).
-  const identifyIds = memAllowed.filter((m) => m.identify).map((m) => m.id as string);
+  const identifyIds = memAllowed
+    .filter((m) => m.identify)
+    .map((m) => m.id as string);
   // deno-lint-ignore no-explicit-any
   const facesByMemory = new Map<string, any[]>();
   if (identifyIds.length > 0) {
     const { data: faces } = await sb
       .from("photo_faces")
-      .select("id, memory_id, box_x, box_y, box_w, box_h, status, suggested_name, suggested_note, person:persons(full_name)")
+      .select(
+        "id, memory_id, box_x, box_y, box_w, box_h, status, suggested_name, suggested_note, person:persons(full_name)",
+      )
       .in("memory_id", identifyIds)
       .neq("status", "rejected")
       .order("created_at", { ascending: true });
@@ -615,7 +691,9 @@ Deno.serve(async (req) => {
     kind: m.kind,
     body: m.body,
     // Tệp trong bucket → URL ký; link ngoài (https) → dùng thẳng.
-    media_url: m.media_path ? (memSigned.get(m.media_path) ?? null) : (m.external_url ?? null),
+    media_url: m.media_path
+      ? (memSigned.get(m.media_path) ?? null)
+      : (m.external_url ?? null),
     is_external: !m.media_path && !!m.external_url,
     identify: !!m.identify,
     question_id: m.question_id ?? null,
@@ -631,27 +709,35 @@ Deno.serve(async (req) => {
   // Link tự tạm dừng vì nhận quá nhiều (có thể bị lộ) → trang vẫn xem được, chỉ ẩn phần góp.
   // Tab "Tổng quan" của link chia sẻ: các phần admin chọn (clans.share_sections). Chỉ cho link token
   // (trang xem công khai /xem/clans/… giữ public_show_* riêng).
-  const shareSections = token && link.scope !== "single_person"
-    ? await buildShareSections(
-        {
-          sb,
-          clanId: link.clan_id,
-          hidePhotos,
-          sign: async (paths) => {
-            const m = new Map<string, string>();
-            const { data: signed } = await sb.storage.from("person-photos").createSignedUrls([...new Set(paths)], 3600);
-            for (const r of signed ?? []) if (r.signedUrl && r.path) m.set(r.path, stripOrigin(r.signedUrl));
-            return m;
+  const shareSections =
+    token && link.scope !== "single_person"
+      ? await buildShareSections(
+          {
+            sb,
+            clanId: link.clan_id,
+            hidePhotos,
+            sign: async (paths) => {
+              const m = new Map<string, string>();
+              const { data: signed } = await sb.storage
+                .from("person-photos")
+                .createSignedUrls([...new Set(paths)], 3600);
+              for (const r of signed ?? [])
+                if (r.signedUrl && r.path)
+                  m.set(r.path, stripOrigin(r.signedUrl));
+              return m;
+            },
           },
-        },
-        (clanRow?.share_sections as string[] | null) ?? [],
-        scopedPersons,
-        generationOffset,
-      )
-    : {};
+          (clanRow?.share_sections as string[] | null) ?? [],
+          scopedPersons,
+          generationOffset,
+        )
+      : {};
 
   const canContribute =
-    !!token && link.scope !== "resting_place" && link.scope !== "heritage_item" && !link.contrib_paused_at;
+    !!token &&
+    link.scope !== "resting_place" &&
+    link.scope !== "heritage_item" &&
+    !link.contrib_paused_at;
 
   return json({
     clan_id: link.clan_id,
@@ -667,7 +753,9 @@ Deno.serve(async (req) => {
     },
     scope: link.scope,
     // Các khoá share_sections đang bật — trang dòng họ dựng menu từ đây (cả link token lẫn trang công khai).
-    site_sections: SITE_SCOPES.includes(link.scope) ? ((clanRow?.share_sections as string[] | null) ?? []) : undefined,
+    site_sections: SITE_SCOPES.includes(link.scope)
+      ? ((clanRow?.share_sections as string[] | null) ?? [])
+      : undefined,
     generation_offset: generationOffset,
     persons: masked,
     families: scopedFamilies,

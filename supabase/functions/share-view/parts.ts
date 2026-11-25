@@ -6,7 +6,13 @@
  * Không import Deno-only nên test được bằng vitest với client giả.
  */
 
-import { firstImageUrl, postDisplayTitle, postExcerpt, readMinutes } from "../_shared/vendor/postMarkdown.ts";
+import {
+  firstImageUrl,
+  postDisplayTitle,
+  postExcerpt,
+  readMinutes,
+} from "../_shared/vendor/postMarkdown.ts";
+import { fetchAllRows } from "./paging.ts";
 import { subtreeScope } from "./scope.ts";
 
 // deno-lint-ignore no-explicit-any
@@ -29,18 +35,31 @@ export interface PartCtx {
 export type PartResult = { status: number; body: unknown };
 
 const ok = (body: unknown): PartResult => ({ status: 200, body });
-const fail = (status: number, error: string): PartResult => ({ status, body: { error } });
+const fail = (status: number, error: string): PartResult => ({
+  status,
+  body: { error },
+});
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const POST_TYPES = ["news", "event", "birth", "death", "notice"];
 const HERITAGE_CATEGORIES = ["place", "custom", "story", "artifact"];
 const KINDS = ["grave", "ashes_temple", "columbarium", "scattered", "other"];
-const HONOR_CATEGORIES = ["donation_money", "donation_labor", "academic", "other"];
+const HONOR_CATEGORIES = [
+  "donation_money",
+  "donation_labor",
+  "academic",
+  "other",
+];
 
-const isExternal = (p: string | null | undefined): p is string => !!p && p.startsWith("https://");
+const isExternal = (p: string | null | undefined): p is string =>
+  !!p && p.startsWith("https://");
 const stripOrigin = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
 
-export function parsePaging(q: URLSearchParams, defPer: number, maxPer: number) {
+export function parsePaging(
+  q: URLSearchParams,
+  defPer: number,
+  maxPer: number,
+) {
   const int = (v: string | null, d: number) => {
     const n = Number.parseInt(v ?? "", 10);
     return Number.isFinite(n) && n > 0 ? n : d;
@@ -52,7 +71,11 @@ export function parsePaging(q: URLSearchParams, defPer: number, maxPer: number) 
 
 const off = () => fail(404, "Mục này không được chia sẻ.");
 
-export async function handlePart(ctx: PartCtx, part: string, q: URLSearchParams): Promise<PartResult> {
+export async function handlePart(
+  ctx: PartCtx,
+  part: string,
+  q: URLSearchParams,
+): Promise<PartResult> {
   const on = (k: string) => ctx.sections.includes(k);
   switch (part) {
     case "posts":
@@ -98,76 +121,213 @@ const PERSON_COLS =
 async function person(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
   const id = q.get("id") ?? "";
   if (!UUID.test(id)) return fail(400, "id không hợp lệ.");
-  const { data: p, error } = await ctx.sb.from("persons").select(PERSON_COLS).eq("id", id).eq("clan_id", ctx.clanId).is("deleted_at", null).maybeSingle();
+  const { data: p, error } = await ctx.sb
+    .from("persons")
+    .select(PERSON_COLS)
+    .eq("id", id)
+    .eq("clan_id", ctx.clanId)
+    .is("deleted_at", null)
+    .maybeSingle();
   if (error) return fail(500, error.message);
   if (!p) return fail(404, "Không tìm thấy người này.");
   if (ctx.rootPersonId) {
-    const [{ data: ps }, { data: fs }] = await Promise.all([
-      ctx.sb.from("persons").select("id, birth_family_id").eq("clan_id", ctx.clanId).is("deleted_at", null),
-      ctx.sb.from("families").select("id, husband_id, wife_id").eq("clan_id", ctx.clanId).is("deleted_at", null),
+    // Phân trang (paging.ts): họ đông hơn max_rows mà đọc một lần sẽ tính sai phạm vi cây con.
+    const [ps, fs] = await Promise.all([
+      fetchAllRows<{ id: string; birth_family_id: string | null }>((a, b) =>
+        ctx.sb
+          .from("persons")
+          .select("id, birth_family_id")
+          .eq("clan_id", ctx.clanId)
+          .is("deleted_at", null)
+          .order("id")
+          .range(a, b),
+      ),
+      fetchAllRows<{
+        id: string;
+        husband_id: string | null;
+        wife_id: string | null;
+      }>((a, b) =>
+        ctx.sb
+          .from("families")
+          .select("id, husband_id, wife_id")
+          .eq("clan_id", ctx.clanId)
+          .is("deleted_at", null)
+          .order("id")
+          .range(a, b),
+      ),
     ]);
-    if (!subtreeScope(ps ?? [], fs ?? [], ctx.rootPersonId).kept.has(id)) return fail(404, "Không tìm thấy người này.");
+    if (ps.error || fs.error)
+      return fail(500, "Không đọc được dữ liệu dòng họ.");
+    if (!subtreeScope(ps.data, fs.data, ctx.rootPersonId).kept.has(id))
+      return fail(404, "Không tìm thấy người này.");
   }
-  if (p.is_living) return ok({ living: true, id: p.id, full_name: p.full_name, generation: p.generation });
+  if (p.is_living)
+    return ok({
+      living: true,
+      id: p.id,
+      full_name: p.full_name,
+      generation: p.generation,
+    });
 
   const on = (k: string) => ctx.sections.includes(k);
   const profile = !!ctx.publicChannel || on("profiles");
   const base = { living: false, id: p.id, profile };
   const detail = profile
     ? {
-        courtesy_name: p.courtesy_name, posthumous_name: p.posthumous_name, nickname: p.nickname,
-        birth_place: p.birth_place, burial_place: p.burial_place, bio: p.bio,
-        birth_lunar: { year: p.birth_lunar_year, month: p.birth_lunar_month, day: p.birth_lunar_day },
-        death_lunar: { year: p.death_lunar_year, month: p.death_lunar_month, day: p.death_lunar_day },
+        courtesy_name: p.courtesy_name,
+        posthumous_name: p.posthumous_name,
+        nickname: p.nickname,
+        birth_place: p.birth_place,
+        burial_place: p.burial_place,
+        bio: p.bio,
+        birth_lunar: {
+          year: p.birth_lunar_year,
+          month: p.birth_lunar_month,
+          day: p.birth_lunar_day,
+        },
+        death_lunar: {
+          year: p.death_lunar_year,
+          month: p.death_lunar_month,
+          day: p.death_lunar_day,
+        },
       }
     : {};
 
   const [milestones, posts, heritage, graves] = await Promise.all([
     profile
-      ? ctx.sb.from("clan_timeline_milestones").select("year, era, title, body").eq("clan_id", ctx.clanId).eq("person_id", id).order("year", { ascending: true }).order("sort_order", { ascending: true }).limit(50)
+      ? ctx.sb
+          .from("clan_timeline_milestones")
+          .select("year, era, title, body")
+          .eq("clan_id", ctx.clanId)
+          .eq("person_id", id)
+          .order("year", { ascending: true })
+          .order("sort_order", { ascending: true })
+          .limit(50)
       : null,
     on("board")
-      ? ctx.sb.from("clan_posts").select("id, type, title, body, created_at").eq("clan_id", ctx.clanId).eq("person_id", id).eq("status", "published").order("created_at", { ascending: false }).limit(6)
+      ? ctx.sb
+          .from("clan_posts")
+          .select("id, type, title, body, created_at")
+          .eq("clan_id", ctx.clanId)
+          .eq("person_id", id)
+          .eq("status", "published")
+          .order("created_at", { ascending: false })
+          .limit(6)
       : null,
     on("heritage")
-      ? ctx.sb.from("heritage_people").select("role_note, item:heritage_items(id, category, title, status, deleted_at)").eq("clan_id", ctx.clanId).eq("person_id", id)
+      ? ctx.sb
+          .from("heritage_people")
+          .select(
+            "role_note, item:heritage_items(id, category, title, status, deleted_at)",
+          )
+          .eq("clan_id", ctx.clanId)
+          .eq("person_id", id)
       : null,
     on("graves")
-      ? ctx.sb.from("resting_place_occupants").select("place:resting_places(id, kind, name, location_name, status, deleted_at)").eq("clan_id", ctx.clanId).eq("person_id", id)
+      ? ctx.sb
+          .from("resting_place_occupants")
+          .select(
+            "place:resting_places(id, kind, name, location_name, status, deleted_at)",
+          )
+          .eq("clan_id", ctx.clanId)
+          .eq("person_id", id)
       : null,
   ]);
   return ok({
     ...base,
     ...detail,
-    milestones: ((milestones?.data ?? []) as { year: number; era: string | null; title: string; body: string | null }[]).map((m) => ({ year: m.year, era: m.era, title: m.title, body: m.body })),
+    milestones: (
+      (milestones?.data ?? []) as {
+        year: number;
+        era: string | null;
+        title: string;
+        body: string | null;
+      }[]
+    ).map((m) => ({ year: m.year, era: m.era, title: m.title, body: m.body })),
     // deno-lint-ignore no-explicit-any
-    posts: ((posts?.data ?? []) as any[]).map((x) => ({ id: x.id, type: x.type, title: postDisplayTitle(x.title, x.body), created_at: x.created_at })),
-    heritage: ((heritage?.data ?? []) as { role_note: string | null; item: { id: string; category: string; title: string; status: string; deleted_at: string | null } | null }[])
+    posts: ((posts?.data ?? []) as any[]).map((x) => ({
+      id: x.id,
+      type: x.type,
+      title: postDisplayTitle(x.title, x.body),
+      created_at: x.created_at,
+    })),
+    heritage: (
+      (heritage?.data ?? []) as {
+        role_note: string | null;
+        item: {
+          id: string;
+          category: string;
+          title: string;
+          status: string;
+          deleted_at: string | null;
+        } | null;
+      }[]
+    )
       .filter((h) => h.item && !h.item.deleted_at && h.item.status === "active")
-      .map((h) => ({ id: h.item!.id, category: h.item!.category, title: h.item!.title, role_note: h.role_note })),
-    graves: ((graves?.data ?? []) as { place: { id: string; kind: string; name: string | null; location_name: string | null; status: string; deleted_at: string | null } | null }[])
+      .map((h) => ({
+        id: h.item!.id,
+        category: h.item!.category,
+        title: h.item!.title,
+        role_note: h.role_note,
+      })),
+    graves: (
+      (graves?.data ?? []) as {
+        place: {
+          id: string;
+          kind: string;
+          name: string | null;
+          location_name: string | null;
+          status: string;
+          deleted_at: string | null;
+        } | null;
+      }[]
+    )
       .filter((g) => g.place && !g.place.deleted_at)
-      .map((g) => ({ id: g.place!.id, kind: g.place!.kind, name: g.place!.name, location_name: g.place!.location_name, status: g.place!.status })),
+      .map((g) => ({
+        id: g.place!.id,
+        kind: g.place!.kind,
+        name: g.place!.name,
+        location_name: g.place!.location_name,
+        status: g.place!.status,
+      })),
   });
 }
 
 // ─── Bản đồ: CHỈ số đếm theo tỉnh (không địa chỉ, không tên người) ─────
 
 async function mapCounts(ctx: PartCtx): Promise<PartResult> {
-  const [{ data: addr }, { data: graves }, { data: provs }] = await Promise.all([
-    ctx.sb.from("person_addresses").select("province_code").eq("clan_id", ctx.clanId).eq("country", "VN").not("province_code", "is", null),
-    ctx.sb.from("resting_places").select("province_code").eq("clan_id", ctx.clanId).is("deleted_at", null).not("province_code", "is", null),
-    ctx.sb.from("vn_provinces").select("code, name"),
-  ]);
+  const [{ data: addr }, { data: graves }, { data: provs }] = await Promise.all(
+    [
+      ctx.sb
+        .from("person_addresses")
+        .select("province_code")
+        .eq("clan_id", ctx.clanId)
+        .eq("country", "VN")
+        .not("province_code", "is", null),
+      ctx.sb
+        .from("resting_places")
+        .select("province_code")
+        .eq("clan_id", ctx.clanId)
+        .is("deleted_at", null)
+        .not("province_code", "is", null),
+      ctx.sb.from("vn_provinces").select("code, name"),
+    ],
+  );
   const count = (rows: { province_code: string }[] | null) => {
     const m: Record<string, number> = {};
-    for (const r of rows ?? []) m[r.province_code] = (m[r.province_code] ?? 0) + 1;
+    for (const r of rows ?? [])
+      m[r.province_code] = (m[r.province_code] ?? 0) + 1;
     return m;
   };
   return ok({
     people: count(addr),
     graves: count(graves),
-    province_names: Object.fromEntries(((provs ?? []) as { code: string; name: string }[]).map((p) => [p.code, p.name])),
+    province_names: Object.fromEntries(
+      ((provs ?? []) as { code: string; name: string }[]).map((p) => [
+        p.code,
+        p.name,
+      ]),
+    ),
   });
 }
 
@@ -192,8 +352,12 @@ async function mosaic(ctx: PartCtx): Promise<PartResult> {
     .limit(150);
   // deno-lint-ignore no-explicit-any
   const rows = (tiles ?? []) as any[];
-  const paths = rows.map((t) => t.photo_path).filter((p: string) => p && !isExternal(p));
-  const signed = paths.length ? await ctx.sign(paths) : new Map<string, string>();
+  const paths = rows
+    .map((t) => t.photo_path)
+    .filter((p: string) => p && !isExternal(p));
+  const signed = paths.length
+    ? await ctx.sign(paths)
+    : new Map<string, string>();
   return ok({
     mosaic: {
       title: m.title,
@@ -203,7 +367,9 @@ async function mosaic(ctx: PartCtx): Promise<PartResult> {
       tiles: rows.map((t) => ({
         position: t.position,
         caption: t.caption,
-        photo_url: isExternal(t.photo_path) ? t.photo_path : (signed.get(t.photo_path) ?? null),
+        photo_url: isExternal(t.photo_path)
+          ? t.photo_path
+          : (signed.get(t.photo_path) ?? null),
       })),
     },
   });
@@ -213,7 +379,11 @@ async function mosaic(ctx: PartCtx): Promise<PartResult> {
 
 async function info(ctx: PartCtx): Promise<PartResult> {
   const [{ data: clan }, { data: book }] = await Promise.all([
-    ctx.sb.from("clans").select("description").eq("id", ctx.clanId).maybeSingle(),
+    ctx.sb
+      .from("clans")
+      .select("description")
+      .eq("id", ctx.clanId)
+      .maybeSingle(),
     ctx.sb
       .from("clan_book_texts")
       .select("origin_place, ancestral_hall, ancestor_anniversary, chief_name")
@@ -234,7 +404,8 @@ async function info(ctx: PartCtx): Promise<PartResult> {
 async function posts(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
   const { page, per, from, to } = parsePaging(q, 10, 30);
   const type = q.get("type");
-  if (type && !POST_TYPES.includes(type)) return fail(400, "type không hợp lệ.");
+  if (type && !POST_TYPES.includes(type))
+    return fail(400, "type không hợp lệ.");
   let query = ctx.sb
     .from("clan_posts")
     .select("id, type, title, body, pinned, created_at", { count: "exact" })
@@ -278,15 +449,25 @@ async function post(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
       .select("id, title, body")
       .eq("clan_id", ctx.clanId)
       .eq("status", "published");
-    const { data } = await (dir === "older"
-      ? base.lt("created_at", p.created_at).order("created_at", { ascending: false })
-      : base.gt("created_at", p.created_at).order("created_at", { ascending: true })
+    const { data } = await (
+      dir === "older"
+        ? base
+            .lt("created_at", p.created_at)
+            .order("created_at", { ascending: false })
+        : base
+            .gt("created_at", p.created_at)
+            .order("created_at", { ascending: true })
     )
       .limit(1)
       .maybeSingle();
-    return data ? { id: data.id, title: postDisplayTitle(data.title, data.body) } : null;
+    return data
+      ? { id: data.id, title: postDisplayTitle(data.title, data.body) }
+      : null;
   };
-  const [prev, next] = await Promise.all([neighbour("older"), neighbour("newer")]);
+  const [prev, next] = await Promise.all([
+    neighbour("older"),
+    neighbour("newer"),
+  ]);
   return ok({
     id: p.id,
     type: p.type,
@@ -306,7 +487,9 @@ async function post(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
 async function events(ctx: PartCtx): Promise<PartResult> {
   const { data, error } = await ctx.sb
     .from("events")
-    .select("id, title, event_type, date_solar, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id, notes")
+    .select(
+      "id, title, event_type, date_solar, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id, notes",
+    )
     .eq("clan_id", ctx.clanId)
     .limit(500);
   if (error) return fail(500, error.message);
@@ -315,10 +498,14 @@ async function events(ctx: PartCtx): Promise<PartResult> {
 
 // ─── Di sản ────────────────────────────────────────────────────────
 
-async function heritageList(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
+async function heritageList(
+  ctx: PartCtx,
+  q: URLSearchParams,
+): Promise<PartResult> {
   const { page, per, from, to } = parsePaging(q, 12, 30);
   const category = q.get("category");
-  if (category && !HERITAGE_CATEGORIES.includes(category)) return fail(400, "category không hợp lệ.");
+  if (category && !HERITAGE_CATEGORIES.includes(category))
+    return fail(400, "category không hợp lệ.");
   let query = ctx.sb
     .from("heritage_items")
     .select(
@@ -329,12 +516,20 @@ async function heritageList(ctx: PartCtx, q: URLSearchParams): Promise<PartResul
     .eq("status", "active")
     .is("deleted_at", null);
   if (category) query = query.eq("category", category);
-  const { data, count, error } = await query.order("sort", { ascending: true }).range(from, to);
+  const { data, count, error } = await query
+    .order("sort", { ascending: true })
+    .range(from, to);
   if (error) return fail(500, error.message);
   // deno-lint-ignore no-explicit-any
   const rows = (data ?? []) as any[];
-  const paths = ctx.hidePhotos ? [] : rows.map((r) => r.cover?.path).filter((p: string | null) => p && !isExternal(p));
-  const signed = paths.length ? await ctx.sign(paths) : new Map<string, string>();
+  const paths = ctx.hidePhotos
+    ? []
+    : rows
+        .map((r) => r.cover?.path)
+        .filter((p: string | null) => p && !isExternal(p));
+  const signed = paths.length
+    ? await ctx.sign(paths)
+    : new Map<string, string>();
   const items = rows.map((r) => ({
     id: r.id,
     category: r.category,
@@ -374,24 +569,43 @@ export async function loadHeritageItem(
     )
     .eq("id", itemId)
     .maybeSingle();
-  if (!hi || hi.deleted_at || (clanId && hi.clan_id !== clanId) || (activeOnly && hi.status !== "active")) {
+  if (
+    !hi ||
+    hi.deleted_at ||
+    (clanId && hi.clan_id !== clanId) ||
+    (activeOnly && hi.status !== "active")
+  ) {
     return fail(404, "Mục di sản không còn.");
   }
 
-  type MediaRow = { kind: string; path: string | null; external_url: string | null; duration_sec: number | null; sort: number };
-  const media = [...(hi.heritage_media ?? [])].sort((a: MediaRow, b: MediaRow) => a.sort - b.sort) as MediaRow[];
+  type MediaRow = {
+    kind: string;
+    path: string | null;
+    external_url: string | null;
+    duration_sec: number | null;
+    sort: number;
+  };
+  const media = [...(hi.heritage_media ?? [])].sort(
+    (a: MediaRow, b: MediaRow) => a.sort - b.sort,
+  ) as MediaRow[];
   const photoItems = media.filter((m) => m.kind === "photo");
   const audioItems = media.filter((m) => m.kind === "audio");
   const videoItems = media.filter((m) => m.kind === "video");
   // Chỉ ký URL cho file trong bucket; link ngoài dùng thẳng. Ảnh chịu cờ ẩn ảnh; audio/video luôn cho phép.
-  const toSign = [...(hidePhotos ? [] : photoItems), ...audioItems].filter((m) => !!m.path);
+  const toSign = [...(hidePhotos ? [] : photoItems), ...audioItems].filter(
+    (m) => !!m.path,
+  );
   const signedMap = new Map<string, string>();
   if (toSign.length > 0) {
     const { data: signed } = await sb.storage
       .from("person-photos")
-      .createSignedUrls(toSign.map((m) => m.path as string), 3600);
+      .createSignedUrls(
+        toSign.map((m) => m.path as string),
+        3600,
+      );
     (signed ?? []).forEach((s: { signedUrl?: string }, i: number) => {
-      if (s.signedUrl) signedMap.set(toSign[i].path as string, stripOrigin(s.signedUrl));
+      if (s.signedUrl)
+        signedMap.set(toSign[i].path as string, stripOrigin(s.signedUrl));
     });
   }
   // Link ngoài chỉ chấp nhận https (phòng XSS/mixed-content), khớp client.
@@ -403,32 +617,68 @@ export async function loadHeritageItem(
       return undefined;
     }
   };
-  const srcOf = (m: MediaRow): string | undefined => safeExt(m.external_url) ?? (m.path ? signedMap.get(m.path) : undefined);
+  const srcOf = (m: MediaRow): string | undefined =>
+    safeExt(m.external_url) ?? (m.path ? signedMap.get(m.path) : undefined);
   const photo_urls = hidePhotos ? [] : photoItems.map(srcOf).filter(Boolean);
-  const audios = audioItems.map((m) => ({ url: srcOf(m), duration_sec: m.duration_sec })).filter((a) => !!a.url);
-  const videos = videoItems.map((m) => ({ url: safeExt(m.external_url) })).filter((v) => !!v.url);
+  const audios = audioItems
+    .map((m) => ({ url: srcOf(m), duration_sec: m.duration_sec }))
+    .filter((a) => !!a.url);
+  const videos = videoItems
+    .map((m) => ({ url: safeExt(m.external_url) }))
+    .filter((v) => !!v.url);
   const people = (hi.heritage_people ?? [])
-    .map((l: { role_note: string | null; person: { full_name: string; gender: string; is_living: boolean } | null }) => {
-      if (!l.person) return null;
-      return {
-        full_name: l.person.is_living ? "(Người đang sống)" : l.person.full_name,
-        gender: l.person.gender,
-        role_note: l.role_note,
-      };
-    })
+    .map(
+      (l: {
+        role_note: string | null;
+        person: {
+          full_name: string;
+          gender: string;
+          is_living: boolean;
+        } | null;
+      }) => {
+        if (!l.person) return null;
+        return {
+          full_name: l.person.is_living
+            ? "(Người đang sống)"
+            : l.person.full_name,
+          gender: l.person.gender,
+          role_note: l.role_note,
+        };
+      },
+    )
     .filter(Boolean);
-  const { heritage_media: _m, heritage_people: _pp, deleted_at: _d, status: _st, ...fields } = hi;
+  const {
+    heritage_media: _m,
+    heritage_people: _pp,
+    deleted_at: _d,
+    status: _st,
+    ...fields
+  } = hi;
   return ok({ ...fields, photo_urls, audios, videos, people });
 }
 
-async function heritageOne(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
+async function heritageOne(
+  ctx: PartCtx,
+  q: URLSearchParams,
+): Promise<PartResult> {
   const id = q.get("id") ?? "";
   if (!UUID.test(id)) return fail(400, "id không hợp lệ.");
-  const r = await loadHeritageItem(ctx.sb, id, ctx.clanId, ctx.hidePhotos, true);
+  const r = await loadHeritageItem(
+    ctx.sb,
+    id,
+    ctx.clanId,
+    ctx.hidePhotos,
+    true,
+  );
   if (r.status !== 200) return r;
   // Trang dòng họ không trả toạ độ / địa chỉ chi tiết (khác link QR di sản).
   // deno-lint-ignore no-explicit-any
-  const { latitude: _la, longitude: _lo, address: _ad, ...safe } = r.body as any;
+  const {
+    latitude: _la,
+    longitude: _lo,
+    address: _ad,
+    ...safe
+  } = r.body as any;
   return ok(safe);
 }
 
@@ -447,7 +697,9 @@ async function graves(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
     .eq("clan_id", ctx.clanId)
     .is("deleted_at", null);
   if (kind) query = query.eq("kind", kind);
-  const { data, count, error } = await query.order("created_at", { ascending: true }).range(from, to);
+  const { data, count, error } = await query
+    .order("created_at", { ascending: true })
+    .range(from, to);
   if (error) return fail(500, error.message);
   // deno-lint-ignore no-explicit-any
   const items = ((data ?? []) as any[]).map((g) => ({
@@ -473,10 +725,13 @@ async function graves(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
 async function honor(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
   const { page, per, from, to } = parsePaging(q, 12, 30);
   const category = q.get("category");
-  if (category && !HONOR_CATEGORIES.includes(category)) return fail(400, "category không hợp lệ.");
+  if (category && !HONOR_CATEGORIES.includes(category))
+    return fail(400, "category không hợp lệ.");
   let query = ctx.sb
     .from("honor_entries")
-    .select("id, honoree_name, category, amount, note, occurred_on", { count: "exact" })
+    .select("id, honoree_name, category, amount, note, occurred_on", {
+      count: "exact",
+    })
     .eq("clan_id", ctx.clanId)
     .is("deleted_at", null);
   if (category) query = query.eq("category", category);
@@ -485,7 +740,12 @@ async function honor(ctx: PartCtx, q: URLSearchParams): Promise<PartResult> {
     .order("sort", { ascending: true })
     .range(from, to);
   if (error) return fail(500, error.message);
-  return ok({ items: data ?? [], page, per, total: count ?? (data ?? []).length });
+  return ok({
+    items: data ?? [],
+    page,
+    per,
+    total: count ?? (data ?? []).length,
+  });
 }
 
 // ─── Chỉ mục tìm kiếm (gọn, tải lười) ──────────────────────────────
@@ -507,7 +767,12 @@ async function searchIndex(ctx: PartCtx): Promise<PartResult> {
           .order("created_at", { ascending: false })
           .limit(SEARCH_CAP);
         // deno-lint-ignore no-explicit-any
-        for (const p of (data ?? []) as any[]) out.push({ kind: "post", id: p.id, title: postDisplayTitle(p.title, p.body) });
+        for (const p of (data ?? []) as any[])
+          out.push({
+            kind: "post",
+            id: p.id,
+            title: postDisplayTitle(p.title, p.body),
+          });
       })(),
     );
   }
@@ -522,7 +787,8 @@ async function searchIndex(ctx: PartCtx): Promise<PartResult> {
           .is("deleted_at", null)
           .limit(SEARCH_CAP);
         // deno-lint-ignore no-explicit-any
-        for (const h of (data ?? []) as any[]) out.push({ kind: "heritage", id: h.id, title: h.title });
+        for (const h of (data ?? []) as any[])
+          out.push({ kind: "heritage", id: h.id, title: h.title });
       })(),
     );
   }
@@ -531,7 +797,9 @@ async function searchIndex(ctx: PartCtx): Promise<PartResult> {
       (async () => {
         const { data } = await ctx.sb
           .from("resting_places")
-          .select("id, name, resting_place_occupants(person:persons(full_name, is_living, deleted_at))")
+          .select(
+            "id, name, resting_place_occupants(person:persons(full_name, is_living, deleted_at))",
+          )
           .eq("clan_id", ctx.clanId)
           .is("deleted_at", null)
           .limit(SEARCH_CAP);
@@ -545,7 +813,12 @@ async function searchIndex(ctx: PartCtx): Promise<PartResult> {
             // deno-lint-ignore no-explicit-any
             .map((p: any) => p.full_name)
             .join(", ");
-          out.push({ kind: "grave", id: g.id, title: g.name ?? who, ...(g.name && who ? { sub: who } : {}) });
+          out.push({
+            kind: "grave",
+            id: g.id,
+            title: g.name ?? who,
+            ...(g.name && who ? { sub: who } : {}),
+          });
         }
       })(),
     );
@@ -560,7 +833,8 @@ async function searchIndex(ctx: PartCtx): Promise<PartResult> {
           .is("deleted_at", null)
           .limit(SEARCH_CAP);
         // deno-lint-ignore no-explicit-any
-        for (const h of (data ?? []) as any[]) out.push({ kind: "honor", id: h.id, title: h.honoree_name });
+        for (const h of (data ?? []) as any[])
+          out.push({ kind: "honor", id: h.id, title: h.honoree_name });
       })(),
     );
   }
