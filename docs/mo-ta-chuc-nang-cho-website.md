@@ -88,7 +88,6 @@
 | **An toàn dữ liệu** | Phân quyền từng dòng họ ở tầng cơ sở dữ liệu, sao lưu định kỳ, nhật ký thay đổi, ẩn người sống, bạn tự quyết ai xem / sửa. | ✅ |
 | **Kết nối AI (MCP)** | Cho Claude, ChatGPT… đọc và (nếu được cấp quyền) ghi vào gia phả: tra cứu, soạn tiểu sử có nguồn, thêm mốc dòng thời gian, liên kết dòng họ. Ba gói quyền: chỉ đọc / đề xuất / ghi. Người dùng cấp và thu hồi được. | ✅ |
 | **Trợ giúp** | Hướng dẫn từng tính năng (~30 bài), video, Sổ tay, Góp ý / báo lỗi, "Có gì mới". | ✅ |
-| **Zalo Mini App** | Xem gia phả ngay trong Zalo. | ⏸ tạm dừng |
 | **Trợ lý AI trong app** | Đã gỡ; thay bằng Kết nối AI (MCP) ở trên. | ✅ đã thay |
 
 ---
@@ -144,7 +143,7 @@
 
 **Cẩn trọng nội dung:**
 - **Lời chứng thực trên landing hiện tại** (ông Nguyễn Văn Phúc, bà Trần Thị Lan…) cần xác minh là người thật và đã đồng ý; nếu là mẫu thì phải bỏ hoặc ghi rõ — có rủi ro pháp lý và Google không ưa đánh giá giả.
-- Chỉ nói những gì ở cột trạng thái ✅. Đừng nhắc Cây bản mệnh, Zalo Mini App hay "AI trợ lý trong app".
+- Chỉ nói những gì ở cột trạng thái ✅. Đừng nhắc Cây bản mệnh hay "AI trợ lý trong app".
 - "Sao lưu định kỳ", "miễn phí để bắt đầu", "chữ to nút lớn" là cam kết — kiểm lại trước khi đăng.
 - Gia phả lịch sử: ghi nguồn trích dẫn, tránh khẳng định tuyệt đối ở chỗ sử liệu còn tranh luận.
 

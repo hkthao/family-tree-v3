@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { CaptchaNotice } from "@/components/CaptchaNotice";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useToast } from "@/components/Toast";
@@ -464,17 +465,20 @@ export function MemoryForm(props: Props) {
 
       {/* Ảnh tập thể chưa rõ ai: nhờ cả nhà khoanh mặt, ghi tên (P2). Chỉ thành viên, chỉ ảnh tải lên
           (link Google Photos / Drive không vẽ khung lên được). */}
-      {PHOTO_IDENTIFY_ENABLED && kind === "photo" && mediaSource === "file" && !isGuest && (
-        <label className="flex cursor-pointer items-start gap-2 text-sm">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-4 w-4 accent-primary"
-            checked={identify}
-            onChange={(e) => setIdentify(e.target.checked)}
-          />
-          <span>{t`Nhờ cả nhà nhận diện người trong ảnh (ai cũng khoanh mặt, ghi tên được; người quản lý xác nhận)`}</span>
-        </label>
-      )}
+      {PHOTO_IDENTIFY_ENABLED &&
+        kind === "photo" &&
+        mediaSource === "file" &&
+        !isGuest && (
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 accent-primary"
+              checked={identify}
+              onChange={(e) => setIdentify(e.target.checked)}
+            />
+            <span>{t`Nhờ cả nhà nhận diện người trong ảnh (ai cũng khoanh mặt, ghi tên được; người quản lý xác nhận)`}</span>
+          </label>
+        )}
 
       {isInfo && (
         <div className="space-y-3">
@@ -623,6 +627,12 @@ export function MemoryForm(props: Props) {
               {t`Trên điện thoại: bấm 🎤 trên bàn phím rồi nói, máy tự chuyển thành chữ.`}
             </p>
           )}
+          {/* Khách không có form "Sửa thông tin" riêng: góp ý sửa / bổ sung thông tin cũng viết ngay trong câu chuyện. */}
+          {kind === "story" && !answerMode && isGuest && (
+            <p className="text-xs text-muted-foreground">
+              {t`Thấy thông tin trong gia phả chưa đúng hoặc còn thiếu (ngày sinh, nơi ở, tên…)? Cứ viết vào đây, người quản lý họ sẽ xem và cập nhật.`}
+            </p>
+          )}
         </div>
       )}
 
@@ -754,6 +764,7 @@ export function MemoryForm(props: Props) {
         </Alert>
       )}
 
+      {isGuest && <CaptchaNotice />}
       <FormActions>
         {props.onCancel && (
           <Button type="button" variant="outline" onClick={props.onCancel}>

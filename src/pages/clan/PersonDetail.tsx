@@ -1,4 +1,5 @@
 import { CollapsibleCard } from "@/components/CollapsibleCard";
+import { shareLinkUrl } from "@/lib/shareUrls";
 import { CollapsibleBio } from "@/components/BioText";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -76,6 +77,7 @@ import { track } from "@/lib/analytics";
 import { formatPartialDate } from "@/lib/partialDate";
 import { computeLifespanYears, lifespanLabel } from "@/lib/lifespan";
 import { listPostsForPerson } from "@/lib/queries/clan_posts";
+import { postExcerpt } from "@/lib/postMarkdown";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   getPersonRelationships,
@@ -301,7 +303,7 @@ export default function PersonDetail({
       toast.error(t`Không tạo được QR`, { description: (e as Error).message }),
   });
   const qrUrl = qrM.data
-    ? `${window.location.origin}/share/${qrM.data.token}`
+    ? shareLinkUrl(window.location.origin, qrM.data)
     : "";
 
   if (!clanId || !personId) return null;
@@ -1286,8 +1288,8 @@ function RelatedPostsSection({
             >
               {p.title ?? (p.type === "death" ? t`Cáo phó` : t`Tin`)}
             </Link>
-            <p className="text-sm text-muted-foreground line-clamp-2 whitespace-pre-line">
-              {p.body}
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {postExcerpt(p.body, 240)}
             </p>
             <time
               className="text-xs text-muted-foreground tabular-nums"

@@ -17,6 +17,8 @@ export interface PublishKhoeInput {
   clanId: string;
   personId?: string | null;
   blob: Blob;
+  /** Ảnh xem trước 1200×630 (JPEG) cho Zalo / Facebook; có thì og-khoe dùng thay ảnh thiệp gốc. */
+  ogBlob?: Blob | null;
   title: string;
   subtitle?: string | null;
   /** Số ngày sống của link (tối đa 90 = 3 tháng). */
@@ -39,6 +41,14 @@ export async function publishKhoeCard(input: PublishKhoeInput): Promise<void> {
     .upload(path, input.blob, { contentType: "image/png", upsert: true });
   if (up.error) throw new Error(up.error.message);
 
+  // Ảnh OG là phần phụ: lỗi tải lên thì thiệp vẫn lưu (og-khoe rơi về ảnh thiệp gốc), không làm hỏng chia sẻ.
+  let ogPath: string | null = null;
+  if (input.ogBlob) {
+    const p = `${input.clanId}/${input.token}-og.jpg`;
+    const o = await supabase.storage.from(BUCKET).upload(p, input.ogBlob, { contentType: "image/jpeg", upsert: true });
+    if (!o.error) ogPath = p;
+  }
+
   const expiresAt = new Date(
     Date.now() + input.ttlDays * 86_400_000,
   ).toISOString();
@@ -49,6 +59,7 @@ export async function publishKhoeCard(input: PublishKhoeInput): Promise<void> {
       person_id: input.personId ?? null,
       created_by: uid,
       image_path: path,
+      og_image_path: ogPath,
       title: input.title,
       subtitle: input.subtitle ?? null,
       expires_at: expiresAt,

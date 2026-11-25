@@ -29,9 +29,8 @@ export interface ClanDetail {
   /** Người xem công khai (đăng nhập, không phải thành viên) được xem phần nào.
    *  Chỉ có hiệu lực khi visibility='public'. */
   public_show_tree: boolean;
-  public_show_heritage: boolean;
-  public_show_graves: boolean;
-  public_show_events: boolean;
+  /** Các phần cho xem ngoài cây (clans.share_sections): với dòng họ công khai là phần người xem công khai đọc được. */
+  share_sections: string[];
   max_persons: number;
   max_users: number;
   data_version: number;
@@ -66,7 +65,7 @@ export async function getClanDetail(
     client
       .from("clans")
       .select(
-        "id, name, description, visibility, kind, historical_category, avatar_frame, hide_living_for_nonmembers, hide_photos_in_share, display_death_details, display_living_full_dob, generation_offset, public_show_tree, public_show_heritage, public_show_graves, public_show_events, max_persons, max_users, data_version, owner_id, disabled_features",
+        "id, name, description, visibility, kind, historical_category, avatar_frame, hide_living_for_nonmembers, hide_photos_in_share, display_death_details, display_living_full_dob, generation_offset, public_show_tree, share_sections, max_persons, max_users, data_version, owner_id, disabled_features",
       )
       .eq("id", clanId)
       .maybeSingle(),

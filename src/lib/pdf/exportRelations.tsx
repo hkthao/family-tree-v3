@@ -3,6 +3,7 @@ import { pdf } from "@react-pdf/renderer";
 import { makeQrDataUrl } from "@/lib/cards/exportCard";
 import { RelationsPdf } from "@/lib/pdf/RelationsPdf";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
+import { shareLinkUrl } from "@/lib/shareUrls";
 import { getOrCreateTreeShareLink } from "@/lib/queries/share-links";
 import type { RelationsReport } from "@/lib/relations";
 
@@ -24,7 +25,7 @@ export async function buildRelationsPdf(
   let coverQrDataUri: string | undefined;
   try {
     const link = await getOrCreateTreeShareLink(clan.id);
-    const url = `${window.location.origin}/share/${link.token}`;
+    const url = shareLinkUrl(window.location.origin, link);
     coverQrDataUri = (await makeQrDataUrl(url, "#00000000")) ?? undefined;
   } catch {
     /* không có QR */

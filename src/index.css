@@ -620,3 +620,17 @@ html[data-bg="on"] aside.bg-background {
   opacity: 1;
   cursor: default;
 }
+
+/* Bài viết Markdown (Bảng tin dòng họ): Tailwind preflight bỏ dấu đầu dòng của danh sách → trả lại. */
+.wmde-markdown ul:not(.contains-task-list) { list-style: disc; padding-left: 1.5rem; }
+.wmde-markdown ol { list-style: decimal; padding-left: 1.5rem; }
+.wmde-markdown ul ul { list-style: circle; }
+
+/* Bài viết dài trên trang dòng họ: căn đều hai bên cho gọn (chỉ đoạn văn và mục danh sách; tiêu đề, bảng, trích dẫn giữ nguyên). */
+.site-prose .wmde-markdown p,
+.site-prose .wmde-markdown li { text-align: justify; }
+
+/* Huy hiệu reCAPTCHA ẩn đi vì mỗi biểu mẫu của khách đã có dòng thông báo bắt buộc của Google (components/CaptchaNotice). */
+.grecaptcha-badge {
+  visibility: hidden;
+}

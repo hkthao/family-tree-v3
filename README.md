@@ -27,7 +27,6 @@ Thiết kế chi tiết ở [`plan.md`](./plan.md) (kiến trúc, schema, RLS, d
 - **Cộng đồng dòng họ**: bảng tin, đóng góp có duyệt, thông gia, Sổ tay Văn hoá (`/so-tay`), di sản, phòng ký ức, share-link.
 - **Quản trị**: phân quyền theo dòng họ, audit log + khôi phục, trang quản trị nền tảng.
 - **Kết nối AI (MCP)**: Claude / ChatGPT / client MCP tra cứu và chỉnh sửa gia phả qua OAuth 2.1 hoặc token cá nhân; quyền thật không vượt quá vai trò của người cấp. Xem [`docs/mcp-ket-noi-ai.md`](./docs/mcp-ket-noi-ai.md).
-- **Zalo Mini App**: ứng dụng xem gia phả trong Zalo, nằm ở [`zalo/`](./zalo).
 
 Trợ lý AI chat trong app đã được gỡ; AI ngoài dùng đường MCP ở trên.
 
@@ -112,9 +111,8 @@ src/
 supabase/
   config.toml     cấu hình local
   migrations/     SQL forward-only, prefix timestamp
-  functions/      Edge Functions (thông báo, share, đóng góp, Zalo, …) + _shared/
+  functions/      Edge Functions (thông báo, share, đóng góp, …) + _shared/
 mcp-server/       máy chủ MCP + OAuth 2.1 (Node, build bằng build.mjs)
-zalo/             Zalo Mini App (app riêng, chung repo)
 landing/          trang giới thiệu tĩnh + hướng dẫn
 deploy/           compose + nginx mẫu cho máy chủ MCP / Umami
 scripts/          seed, migrate, build landing, kiểm tra giao diện

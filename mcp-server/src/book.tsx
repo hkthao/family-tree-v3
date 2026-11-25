@@ -270,7 +270,7 @@ export async function sweepExports(admin: SupabaseClient): Promise<number> {
   let removed = 0;
   const { data: dirs } = await admin.storage.from(BUCKET).list("", { limit: 1000 });
   for (const dir of dirs ?? []) {
-    if (dir.id) continue; // chỉ thư mục (id người dùng); bỏ qua file lẻ ở gốc (do Mini App Zalo quản lý)
+    if (dir.id) continue; // chỉ thư mục (id người dùng); bỏ qua file lẻ ở gốc
     const { data: files } = await admin.storage.from(BUCKET).list(dir.name, { limit: 1000 });
     const old = (files ?? []).filter((f) => f.name.startsWith("mcp-") && f.updated_at && new Date(f.updated_at).getTime() < cutoff).map((f) => `${dir.name}/${f.name}`);
     if (old.length) {

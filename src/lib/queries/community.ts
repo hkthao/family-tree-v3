@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { getCaptchaToken } from "@/lib/recaptcha";
+import { contributeUrl, questionUrl } from "@/lib/shareUrls";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
@@ -460,8 +462,7 @@ export async function revokeContributeLink(id: string, client: Client = defaultC
 }
 
 export function contributeLinkUrl(token: string, personId?: string | null): string {
-  const base = `${window.location.origin}/share/${token}?tab=gop`;
-  return personId ? `${base}&p=${personId}` : base;
+  return contributeUrl(window.location.origin, token, personId);
 }
 
 // ─── Khách góp qua link (edge function) ─────────────────────────
@@ -545,6 +546,8 @@ export async function submitGuestMemory(
   fd.set("guest_key", guestKey());
   fd.set("website", input.website ?? "");
   fd.set("elapsed_ms", String(Math.round(input.elapsed_ms)));
+  const captcha = await getCaptchaToken(input.question_id ? "guest_answer" : "guest_memory");
+  if (captcha) fd.set("captcha_token", captcha);
   if (input.question_id) fd.set("question_id", input.question_id);
   if (input.external_url) fd.set("external_url", input.external_url);
   else if (input.file) fd.set("file", input.file, input.file_name ?? "file");
@@ -671,7 +674,7 @@ export async function deleteQuestion(id: string, client: Client = defaultClient)
 
 /** Link trả lời một câu hỏi: trang chia sẻ mở thẳng tab Cùng góp với câu hỏi đó. */
 export function questionLinkUrl(token: string, questionId: string): string {
-  return `${window.location.origin}/share/${token}?tab=gop&q=${questionId}`;
+  return questionUrl(window.location.origin, token, questionId);
 }
 
 // ─── P2: Ảnh "đây là ai?" ───────────────────────────────────────
@@ -795,6 +798,8 @@ export async function submitGuestFace(
   fd.set("guest_key", guestKey());
   fd.set("website", input.website ?? "");
   fd.set("elapsed_ms", String(Math.round(input.elapsed_ms)));
+  const captcha = await getCaptchaToken("guest_face");
+  if (captcha) fd.set("captcha_token", captcha);
   const base = import.meta.env.VITE_SUPABASE_URL;
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const res = await fetch(`${base}/functions/v1/community-submit`, {

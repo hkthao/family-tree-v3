@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { CaptchaNotice } from "@/components/CaptchaNotice";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -50,7 +51,11 @@ const CATEGORIES: Array<{
     hint: msg`Hỏi cách dùng, hỏi về dữ liệu…`,
   },
   { value: "other", label: msg`Khác`, hint: msg`Mọi thứ khác.` },
-]) as unknown as Array<{ value: FeedbackCategory; label: string; hint: string }>;
+]) as unknown as Array<{
+  value: FeedbackCategory;
+  label: string;
+  hint: string;
+}>;
 
 export default function Contact() {
   const toast = useToast();
@@ -58,6 +63,9 @@ export default function Contact() {
   const [contact, setContact] = useState("");
   const [category, setCategory] = useState<FeedbackCategory>("idea");
   const [sent, setSent] = useState(false);
+  // Chống bot cho khách chưa đăng nhập: ô bẫy (người thật không thấy) + thời gian điền form.
+  const [trap, setTrap] = useState("");
+  const openedAt = useRef(Date.now());
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -66,6 +74,8 @@ export default function Contact() {
         category,
         contact: contact.trim() || null,
         pageUrl: typeof window === "undefined" ? null : window.location.href,
+        website: trap,
+        elapsedMs: Date.now() - openedAt.current,
       }),
     onSuccess: () => {
       toast.success(t`Đã gửi liên hệ`, {
@@ -74,6 +84,7 @@ export default function Contact() {
       setMessage("");
       setContact("");
       setSent(true);
+      openedAt.current = Date.now();
     },
     onError: (e) =>
       toast.error(t`Không gửi được`, { description: (e as Error).message }),
@@ -119,6 +130,23 @@ export default function Contact() {
         )}
 
         <form onSubmit={onSubmit} className="space-y-5">
+          {/* Bẫy bot: ẩn khỏi người thật (và trình đọc màn hình); bot điền hết ô thì bị bỏ qua. */}
+          <div
+            aria-hidden="true"
+            className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+          >
+            <label>
+              Website
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                value={trap}
+                onChange={(e) => setTrap(e.target.value)}
+              />
+            </label>
+          </div>
           <fieldset className="space-y-2">
             <legend className="text-base font-medium">{t`Loại phản hồi`}</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -183,6 +211,7 @@ export default function Contact() {
             </p>
           </div>
 
+          <CaptchaNotice />
           <FormActions>
             <Button asChild variant="outline">
               <Link to="/clans">{t`Quay lại`}</Link>

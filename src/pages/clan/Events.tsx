@@ -463,6 +463,7 @@ export default function Events() {
           onClose={() => setCardEvt(null)}
           clanName={clan.name}
           shareUrl=""
+          clanId={clan.id}
           initialTitle={cardEvt.title}
           initialExcerpt={cardEvt.subtitle ?? ""}
           dateText={upcomingDateText(cardEvt)}

@@ -31,9 +31,6 @@ describe("queries: clan-book texts + tạo dòng họ đủ thông tin", () => {
         display_death_details: true,
         display_living_full_dob: true,
         public_show_tree: false,
-        public_show_heritage: false,
-        public_show_graves: true,
-        public_show_events: false,
       },
       user.id,
       user.client,
@@ -41,7 +38,7 @@ describe("queries: clan-book texts + tạo dòng họ đủ thông tin", () => {
     const { data, error } = await user.client
       .from("clans")
       .select(
-        "visibility, generation_offset, hide_photos_in_share, display_death_details, display_living_full_dob, public_show_tree, public_show_heritage, public_show_graves, public_show_events",
+        "visibility, generation_offset, hide_photos_in_share, display_death_details, display_living_full_dob, public_show_tree",
       )
       .eq("id", id)
       .single();
@@ -53,9 +50,6 @@ describe("queries: clan-book texts + tạo dòng họ đủ thông tin", () => {
       display_death_details: true,
       display_living_full_dob: true,
       public_show_tree: false,
-      public_show_heritage: false,
-      public_show_graves: true,
-      public_show_events: false,
     });
   });
 

@@ -96,6 +96,7 @@ const NewPerson = lazy(() => import("@/pages/clan/NewPerson"));
 const People = lazy(() => import("@/pages/clan/People"));
 const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
 const QrExport = lazy(() => import("@/pages/clan/QrExport"));
+const ShareHub = lazy(() => import("@/pages/clan/ShareHub"));
 const Settings = lazy(() => import("@/pages/clan/Settings"));
 const AiConnect = lazy(() => import("@/pages/clan/AiConnect"));
 const BookInfo = lazy(() => import("@/pages/clan/BookInfo"));
@@ -109,7 +110,7 @@ const InlawsConfirm = lazy(() => import("@/pages/InlawsConfirm"));
 const Login = lazy(() => import("@/pages/Login"));
 const NewClan = lazy(() => import("@/pages/NewClan"));
 const MyFeedback = lazy(() => import("@/pages/MyFeedback"));
-const Share = lazy(() => import("@/pages/Share"));
+const ClanSiteRoot = lazy(() => import("@/pages/site/ClanSiteRoot"));
 const KhoeCard = lazy(() => import("@/pages/KhoeCard"));
 const JoinClan = lazy(() => import("@/pages/JoinClan"));
 const ConnectAiAuthorize = lazy(() => import("@/pages/ConnectAiAuthorize"));
@@ -149,14 +150,14 @@ export default function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/share/:token" element={<Share />} />
+              <Route path="/share/:token/*" element={<ClanSiteRoot />} />
               {/* Xem trước CÔNG KHAI dòng họ (không cần đăng nhập) — RequireAuth đưa
             khách chưa đăng nhập từ /clans/:id sang đây. */}
-              <Route path="/xem/clans/:clanId" element={<Share />} />
+              <Route path="/xem/clans/:clanId/*" element={<ClanSiteRoot />} />
               {/* Đích của nút "Xem thử" bên landing — tự phân giải dòng họ mẫu
             để trang tĩnh không phải hard-code UUID. */}
               <Route path="/xem/demo" element={<DemoRedirect />} />
-              <Route path="/khoe/:token" element={<KhoeCard />} />
+              <Route path="/khoe/:token/*" element={<KhoeCard />} />
               <Route path="/join/:token" element={<JoinClan />} />
               {/* OAuth: ChatGPT/Claude chuyển người dùng tới đây để bấm "Cho phép" kết nối AI. */}
               <Route
@@ -407,6 +408,7 @@ export default function App() {
                 <Route path="merge" element={<Merge />} />
                 <Route path="audit" element={<Audit />} />
                 <Route path="qr-export" element={<QrExport />} />
+                <Route path="chia-se" element={<ShareHub />} />
                 <Route path="my-lineage" element={<MyLineage />} />
                 <Route path="today" element={<TodayRedirect />} />
                 <Route path="xem-ngay" element={<GoodDays />} />

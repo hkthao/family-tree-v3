@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { getCaptchaToken } from "@/lib/recaptcha";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
@@ -194,6 +195,7 @@ export async function submitGuestContribution(
   const base = import.meta.env.VITE_SUPABASE_URL;
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const url = `${base}/functions/v1/submit-contribution`;
+  const captcha_token = await getCaptchaToken("guest_contribution");
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -201,7 +203,7 @@ export async function submitGuestContribution(
       apikey: anon,
       Authorization: `Bearer ${anon}`,
     },
-    body: JSON.stringify(input),
+    body: JSON.stringify(captcha_token ? { ...input, captcha_token } : input),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

@@ -34,9 +34,7 @@ const clan = {
   isPlatformAdmin: false,
   disabled_features: [],
   public_show_tree: true,
-  public_show_events: true,
-  public_show_graves: true,
-  public_show_heritage: true,
+  share_sections: ["events", "graves", "heritage"],
 } as unknown as ClanDetail;
 
 const admin = { is_platform_admin: true } as unknown as MyProfile;
@@ -151,6 +149,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Thông tin & Sổ gia phả",
       "Xuất QR cá nhân",
       "Xuất / nhập dữ liệu",
+      "Chia sẻ",
       "Cài đặt dòng họ",
       "Kết nối AI",
       "Chi (nhánh)",
@@ -176,6 +175,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Thông tin & Sổ gia phả",
       "Xuất QR cá nhân",
       "Xuất / nhập dữ liệu",
+      "Chia sẻ",
       "Cài đặt dòng họ",
       "Kết nối AI",
       "Chi (nhánh)",
@@ -246,7 +246,7 @@ describe("buildSections — nhóm của dòng họ", () => {
     const viewer = { ...clan, myRole: "viewer" } as unknown as ClanDetail;
     const work = build({ clan: viewer }).find((x) => x.id === "clan-work")!;
     const labels = work.items.map((i) => i.label);
-    for (const adminOnly of ["Thành viên", "Liên kết dòng họ", "Thông tin & Sổ gia phả", "Xuất QR cá nhân", "Xuất / nhập dữ liệu", "Cài đặt dòng họ", "Kết nối AI"]) {
+    for (const adminOnly of ["Thành viên", "Liên kết dòng họ", "Thông tin & Sổ gia phả", "Xuất QR cá nhân", "Xuất / nhập dữ liệu", "Chia sẻ", "Cài đặt dòng họ", "Kết nối AI"]) {
       expect(labels).not.toContain(adminOnly);
     }
   });

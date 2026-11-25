@@ -463,12 +463,59 @@ export async function deleteEvent(c: Ctx, a: Args): Promise<string> {
 export async function getClanInfo(c: Ctx): Promise<string> {
   const { data, error } = await c.db
     .from("clans")
-    .select("id, name, description, visibility, person_count, generation_offset, created_at, updated_at, display_death_details, display_living_full_dob, hide_living_for_nonmembers")
+    .select("id, name, description, visibility, public_show_tree, share_sections, person_count, generation_offset, created_at, updated_at, display_death_details, display_living_full_dob, hide_living_for_nonmembers")
     .eq("id", c.clanId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new UserError("Không đọc được thông tin dòng họ.");
   return JSON.stringify(data, null, 2);
+}
+
+// ─── CHIA SẺ (chỉ đọc) ───────────────────────────────────────────────────
+
+const SHARE_KIND: Record<string, string> = { tree_view: "tree", single_person: "person", resting_place: "grave", heritage_item: "heritage", contribute: "contribute" };
+const DAY_MS = 86_400_000;
+
+function shareStatus(expiresAt: string, revoked: boolean): "revoked" | "expired" | "expiring" | "active" {
+  if (revoked) return "revoked";
+  const left = new Date(expiresAt).getTime() - Date.now();
+  if (left <= 0) return "expired";
+  return left <= 7 * DAY_MS ? "expiring" : "active";
+}
+
+/**
+ * Tổng quan những gì dòng họ đã chia sẻ ra ngoài (link cây, QR người / mộ / di sản, link mời góp, thiệp khoe) — giống
+ * Trung tâm chia sẻ trong app nhưng CHỈ ĐỌC. CỐ Ý không trả token hay đường dẫn: link chia sẻ là bí mật (ai giữ là mở được),
+ * và không có tool tạo / gia hạn / thu hồi — để người làm trong app. Quyền thật do RLS: chỉ admin dòng họ thấy link chia sẻ;
+ * thiệp khoe thì thành viên thấy.
+ */
+export async function listShareLinks(c: Ctx, a: Args): Promise<string> {
+  const only = a.active_only === true;
+  const [links, cards] = await Promise.all([
+    c.db
+      .from("share_links")
+      .select("id, scope, root_person_id, root_resting_place_id, root_heritage_item_id, recipient_label, expires_at, is_revoked, created_at, person:persons!share_links_root_person_id_fkey(full_name), place:resting_places!share_links_root_resting_place_id_fkey(name), item:heritage_items!share_links_root_heritage_item_id_fkey(title)")
+      .eq("clan_id", c.clanId)
+      .order("created_at", { ascending: false })
+      .limit(200),
+    c.db.from("card_shares").select("id, title, subtitle, expires_at, created_at, view_count").eq("clan_id", c.clanId).order("created_at", { ascending: false }).limit(200),
+  ]);
+  if (links.error) throw new Error(links.error.message);
+  if (cards.error) throw new Error(cards.error.message);
+  type Row = { kind: string; target: string; status: string; expires_at: string; created_at: string; views?: number };
+  const rows: Row[] = [];
+  for (const l of (links.data ?? []) as unknown as { scope: string; recipient_label: string | null; expires_at: string; is_revoked: boolean; created_at: string; person: { full_name: string } | null; place: { name: string | null } | null; item: { title: string } | null }[]) {
+    const kind = SHARE_KIND[l.scope];
+    if (!kind) continue;
+    rows.push({ kind, target: l.person?.full_name ?? l.place?.name ?? l.item?.title ?? l.recipient_label ?? "", status: shareStatus(l.expires_at, l.is_revoked), expires_at: l.expires_at, created_at: l.created_at });
+  }
+  for (const k of (cards.data ?? []) as { title: string; expires_at: string; created_at: string; view_count: number }[]) {
+    rows.push({ kind: "card", target: k.title, status: shareStatus(k.expires_at, false), expires_at: k.expires_at, created_at: k.created_at, views: k.view_count });
+  }
+  const shown = rows.filter((r) => !only || r.status === "active" || r.status === "expiring").sort((x, y) => y.created_at.localeCompare(x.created_at)).slice(0, MAX_LIST * 2);
+  if (!shown.length) return only ? "Không có link chia sẻ nào đang hoạt động (hoặc chủ token không đủ quyền xem)." : "Chưa có link chia sẻ nào (hoặc chủ token không đủ quyền xem).";
+  const lines = shown.map((r) => `${r.kind} · ${r.target || "—"} · ${r.status} · hết hạn ${r.expires_at.slice(0, 10)}${r.views !== undefined ? ` · ${r.views} lượt xem` : ""}`);
+  return `${shown.length} mục (không kèm token / đường dẫn):\n${lines.join("\n")}`;
 }
 
 /**
@@ -755,6 +802,7 @@ export const OPS: Record<string, (c: Ctx, a: Args) => Promise<string>> = {
   update_event: updateEvent,
   delete_event: deleteEvent,
   get_clan_info: (c) => getClanInfo(c),
+  list_share_links: listShareLinks,
   update_clan_info: updateClanInfo,
   get_book_texts: (c) => getBookTexts(c),
   export_clan_book: exportClanBook,

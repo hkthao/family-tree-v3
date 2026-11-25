@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import { getCaptchaToken } from "@/lib/recaptcha";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
@@ -18,6 +19,10 @@ export interface SubmitFeedbackInput {
   clanId?: string | null;
   /** location.href at submit time — DB tự sanitize → page_path. */
   pageUrl?: string | null;
+  /** Khách (chưa đăng nhập): thời gian đã điền form (ms) — máy chủ chặn gửi tức thì (bot). */
+  elapsedMs?: number;
+  /** Khách: ô bẫy bot, người thật luôn để trống. */
+  website?: string;
 }
 
 /**
@@ -39,6 +44,37 @@ export async function submitFeedback(
     typeof navigator === "undefined" ? null : navigator.userAgent;
   // Vite substitutes these at build time — see vite.config.ts.
   const appVersion = `${__APP_VERSION__}+${__APP_COMMIT__}`;
+
+  // Khách chưa đăng nhập đi qua function (captcha + bẫy bot + trần tốc độ); quyền INSERT của anon đã thu hồi.
+  if (!userId) {
+    const captcha_token = await getCaptchaToken("feedback");
+    const base = import.meta.env.VITE_SUPABASE_URL;
+    const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const res = await fetch(`${base}/functions/v1/feedback-submit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: anon,
+        Authorization: `Bearer ${anon}`,
+      },
+      body: JSON.stringify({
+        message: input.message,
+        category: input.category ?? "other",
+        contact: input.contact ?? null,
+        clan_id: input.clanId ?? null,
+        page_url: input.pageUrl ?? null,
+        app_version: appVersion,
+        website: input.website ?? "",
+        elapsed_ms: Math.round(input.elapsedMs ?? 0),
+        ...(captcha_token ? { captcha_token } : {}),
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error ?? `feedback-submit (${res.status})`);
+    }
+    return;
+  }
 
   const { error } = await client.from("feedback").insert({
     user_id: userId,
@@ -219,10 +255,7 @@ export async function updateFeedback(
       payload.resolved_by = null;
     }
   }
-  const { error } = await client
-    .from("feedback")
-    .update(payload)
-    .eq("id", id);
+  const { error } = await client.from("feedback").update(payload).eq("id", id);
   if (error) throw new Error(error.message);
 }
 

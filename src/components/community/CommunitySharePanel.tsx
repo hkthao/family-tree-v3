@@ -47,6 +47,7 @@ export function CommunitySharePanel({
   initialQuestionId,
   fixedPersonId,
   mode = "gop",
+  embedded = false,
 }: {
   community: ShareViewCommunity;
   persons: ShareViewPerson[];
@@ -59,6 +60,8 @@ export function CommunitySharePanel({
   /** "gop" = tab Cùng góp (đóng góp thường); "hoi" = tab Hỏi & trả lời (câu hỏi + câu trả lời). */
   mode?: "gop" | "hoi";
   fixedPersonId?: string | null;
+  /** Nằm trong khung trang khác (trang dòng họ): không tự bọc `container`, không tự vẽ khối chào (trang đó vẽ riêng). */
+  embedded?: boolean;
 }) {
   const [personId, setPersonId] = useState<string>(() => {
     if (fixedPersonId) return fixedPersonId;
@@ -116,8 +119,8 @@ export function CommunitySharePanel({
   );
 
   return (
-    <div className="container max-w-6xl space-y-4 py-4">
-      <section className="space-y-1 rounded-xl border border-primary/30 bg-primary/5 p-3">
+    <div className={embedded ? "space-y-4" : "container max-w-6xl space-y-4 py-4"}>
+      <section className={embedded ? "hidden" : "space-y-1 rounded-xl border border-primary/30 bg-primary/5 p-3"}>
         <h2 className="font-semibold">
           {community.recipient_label
             ? isHoi

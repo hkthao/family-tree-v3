@@ -83,6 +83,9 @@ jobs:
             VITE_VAPID_PUBLIC_KEY=${{ secrets.VITE_VAPID_PUBLIC_KEY }}
             VITE_UMAMI_URL=${{ secrets.VITE_UMAMI_URL }}
             VITE_UMAMI_WEBSITE_ID=${{ secrets.VITE_UMAMI_WEBSITE_ID }}
+            VITE_RECAPTCHA_SITE_KEY=${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
+            # "1" = trang dòng họ nhiều trang là mặc định (cờ ?site=1 vẫn ghi đè từng người). Để trống = màn Share cũ.
+            VITE_CLAN_SITE=${{ secrets.VITE_CLAN_SITE }}
             GITHUB_SHA=${{ github.sha }}
           # Buildx cache via GH Actions registry for warmer
           # subsequent builds (mostly the node_modules layer).

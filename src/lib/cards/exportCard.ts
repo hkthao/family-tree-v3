@@ -1,4 +1,4 @@
-import { toBlob } from "html-to-image";
+import { toBlob, toJpeg } from "html-to-image";
 
 /**
  * Tải ảnh từ URL (signed URL của Supabase) rồi chuyển sang data URL.
@@ -54,6 +54,15 @@ export async function nodeToPngBlob(node: HTMLElement, width: number, height: nu
   });
   if (!blob) throw new Error("Không tạo được ảnh thiệp.");
   return blob;
+}
+
+/**
+ * Xuất node thành JPEG (ảnh xem trước OG: nhẹ, ~100–150 KB vì dung lượng server có hạn). Nền đặc nên không cần trong suốt.
+ */
+export async function nodeToJpegBlob(node: HTMLElement, width: number, height: number, quality = 0.82): Promise<Blob> {
+  const dataUrl = await toJpeg(node, { width, height, pixelRatio: 1, cacheBust: true, quality, backgroundColor: "#1a1612" });
+  const res = await fetch(dataUrl);
+  return res.blob();
 }
 
 export type ShareResult = "shared" | "downloaded" | "cancelled";

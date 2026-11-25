@@ -1,4 +1,5 @@
 import { currentIntlTag } from "@/lib/i18n";
+import { shareLinkUrl } from "@/lib/shareUrls";
 import { useMutation } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
@@ -56,8 +57,7 @@ export function ShareTreeButton({ clanId, clanName, compact, trigger }: Props) {
     if (!linkM.data && !linkM.isPending) linkM.mutate();
   }
 
-  const token = linkM.data?.token;
-  const shareUrl = token ? `${window.location.origin}/share/${token}` : "";
+  const shareUrl = linkM.data ? shareLinkUrl(window.location.origin, linkM.data) : "";
   const shareTitle = t`Gia phả ${clanName}`;
   const shareText = t`Xem gia phả họ ${clanName} (link chỉ-đọc):`;
   const expiresAt = linkM.data?.expires_at

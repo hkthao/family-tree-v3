@@ -14,7 +14,6 @@ nút lớn). Production: <https://giapha.thaohk.com>.
 - **i18n**: Lingui; tiếng Việt là gốc (có fallback), tiếng Anh dịch trước. Chuỗi mới bọc bằng `t` rồi chạy
   `npm run i18n:extract`, điền bản `en` cho hết trước khi commit.
 - **Kết nối AI**: máy chủ MCP riêng ở `mcp-server/` (OAuth 2.1 + token `gpt_`). Trợ lý AI chat trong app **đã gỡ**.
-- **Zalo Mini App**: app riêng trong `zalo/`, chung repo. Chỉ xem; không có admin / phân quyền.
 
 ## Việc phải làm TAY khi deploy (CI không làm)
 
@@ -37,7 +36,6 @@ Cấu hình `verify_jwt` ở `supabase/config.toml`. Nhóm chính:
 | Thông báo | `notify-events`, `weekly-digest`, `push-action`, `send-test-push`, `calendar-feed` |
 | Quản trị / nhập | `admin-action`, `giapha-import` |
 | Podcast | `sync-podcast` |
-| Zalo | `zalo-auth`, `zalo-link`, `zalo-webhook` |
 
 Function không đăng nhập (`verify_jwt = false`) phải tự kiểm quyền bên trong. Thêm function mới thì thêm cả mục vào
 `config.toml`, nếu không gateway sẽ chặn khách.
@@ -54,7 +52,6 @@ Function không đăng nhập (`verify_jwt = false`) phải tự kiểm quyền 
 | Ảnh đại gia đình ghép mảnh | `docs/plan-anh-dai-gia-dinh-ghep-manh.md` |
 | Gia phả dòng họ lịch sử (vua chúa) | `docs/plan-gia-pha-vua-chua.md` |
 | Đa ngôn ngữ | `docs/plan-da-ngon-ngu.md`, `docs/glossary-i18n.md` |
-| Zalo Mini App | `docs/plan-zalo-mini-app.md` |
 | In ấn phả đồ / phả ký | `docs/plan-in-an-pha-do-pha-ky.md` |
 | Ngăn kéo (side panel) cho form | `docs/plan-side-panel-ux.md` |
 | Design system | `docs/design-language.md` |
@@ -85,8 +82,7 @@ node mcp-server/build.mjs    # build thử máy chủ MCP
 - **Schema**: migration forward-only, prefix timestamp; sửa schema/policy phải kèm test RLS.
 - **Dữ liệu tách khỏi code**: dữ liệu gia phả lịch sử và bài Sổ tay nằm ở repo riêng `family-tree-data`, không commit
   vào repo này.
-- **UI**: chức năng đồng nhất giữa web và Zalo, nhưng bố cục Zalo làm lại cho điện thoại; giữ icon, phông, màu rượu vang
-  của web. Trang cấp cao dùng `max-w-4xl py-6 px-4 space-y-6`; nút mặc định size default, icon `h-4 w-4 mr-1.5`.
+- **UI**: giữ icon, phông, màu rượu vang của web. Trang cấp cao dùng `max-w-4xl py-6 px-4 space-y-6`; nút mặc định size default, icon `h-4 w-4 mr-1.5`.
 - **Email**: HTML dựng inline trong edge function (như `notify-events`), không dùng React Email.
 - **Nhập số lượng lớn** (dòng họ lịch sử): làm theo lô nhẹ để không nghẽn server; audit/version/RLS đã tối ưu, log chỉ
   giữ 30 ngày.
@@ -101,7 +97,6 @@ node mcp-server/build.mjs    # build thử máy chủ MCP
   người ngoài nhập có thể cài lệnh điều khiển AI. Màn "Cho phép" hiện host nhận mã và cảnh báo nếu không phải ứng dụng
   AI quen thuộc (`KNOWN_AI_HOSTS` trong `ConnectAiAuthorize.tsx`).
 - **Cây bản mệnh**: không cần chăm sóc, vẽ procedural bằng Three.js.
-- **Zalo**: Zalo chặn IP ngoài Việt Nam nên `zalo-auth` gọi Graph API vòng qua máy web trong nước.
 
 ## Việc còn mở (gợi ý)
 

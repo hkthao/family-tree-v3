@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { shareLinkUrl } from "@/lib/shareUrls";
 import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -309,7 +310,7 @@ export default function HeritageDetail({
       toast.error(t`Không tạo được QR`, { description: (e as Error).message }),
   });
   const qrUrl = qrM.data
-    ? `${window.location.origin}/share/${qrM.data.token}`
+    ? shareLinkUrl(window.location.origin, qrM.data)
     : "";
 
   if (isLoading) return <p className="text-muted-foreground">{t`Đang tải…`}</p>;
@@ -877,6 +878,7 @@ export default function HeritageDetail({
         onClose={() => setCardOpen(false)}
         clanName={clan.name}
         shareUrl={qrUrl}
+        clanId={clan.id}
         initialTitle={item.title}
         initialExcerpt={cardExcerpt}
         photoUrls={cardPhotoUrls}

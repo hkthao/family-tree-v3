@@ -22,6 +22,7 @@ import {
   IconQrCode,
   IconScroll,
   IconSettings,
+  IconShare2,
   IconShield,
   IconSparkles,
   IconTree,
@@ -359,9 +360,9 @@ export function buildSections(
     const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
     const isMember = clan.myRole !== null || clan.isPlatformAdmin;
     const canTree = isMember || clan.public_show_tree;
-    const canEvents = isMember || clan.public_show_events;
-    const canGraves = isMember || clan.public_show_graves;
-    const canHeritage = isMember || clan.public_show_heritage;
+    const canEvents = isMember || clan.share_sections.includes("events");
+    const canGraves = isMember || clan.share_sections.includes("graves");
+    const canHeritage = isMember || clan.share_sections.includes("heritage");
     const feat = (k: ClanFeatureKey) =>
       isFeatureEnabled(clan.disabled_features, k);
 
@@ -559,6 +560,12 @@ export function buildSections(
           icon: <IconDownload className={ic} />,
         },
       );
+      workItems.push({
+        to: `/clans/${clanId}/chia-se`,
+        label: t`Chia sẻ`,
+        hint: t`Mọi liên kết và mã QR của dòng họ: tạo, gia hạn, thu hồi.`,
+        icon: <IconShare2 className={ic} />,
+      });
       workItems.push({
         to: `/clans/${clanId}/settings`,
         label: t`Cài đặt dòng họ`,

@@ -241,6 +241,8 @@ export interface ShareViewPayload {
   heritage?: ShareViewHeritageListItem[];
   /** Tab Tổng quan của link chia sẻ — các phần admin chọn. */
   sections?: ShareViewSections;
+  /** Các khoá `clans.share_sections` đang bật (chỉ scope tree_view) — dựng menu trang dòng họ. */
+  site_sections?: string[];
   /** Đóng góp cộng đồng (docs/plan-dong-gop-cong-dong.md). Thiếu khi function chưa cập nhật. */
   community?: ShareViewCommunity;
 }

@@ -1,4 +1,5 @@
 import { currentIntlTag } from "@/lib/i18n";
+import { postExcerpt } from "@/lib/postMarkdown";
 import { IconPin } from "@/components/icons";
 import { PanelLink } from "@/components/panel/PanelLink";
 
@@ -93,7 +94,7 @@ export function ClanPostCard({
         )}
 
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">
-          {post.body}
+          {postExcerpt(post.body, 240)}
         </p>
 
         <div className="mt-auto pt-3 flex items-center gap-2 flex-wrap text-xs">

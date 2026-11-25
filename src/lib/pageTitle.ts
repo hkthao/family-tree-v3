@@ -65,6 +65,11 @@ export const ROUTE_META: RouteMeta[] = lazyMessages([
   },
   { pattern: "/xem/demo", title: msg`Xem thử gia phả mẫu` },
   {
+    pattern: "/xem/clans/:clanId/*",
+    title: msg`Gia phả dòng họ`,
+    description: msg`Xem trang dòng họ công khai: bảng tin, cây gia phả, ngày giỗ và di sản.`,
+  },
+  {
     pattern: "/xem/clans/:clanId",
     title: msg`Gia phả dòng họ`,
     description: msg`Xem cây gia phả công khai của dòng họ: các đời, ngày giỗ và thông tin thành viên.`,
@@ -93,8 +98,14 @@ export const ROUTE_META: RouteMeta[] = lazyMessages([
     title: msg`Cây gia phả được chia sẻ`,
     noindex: true,
   },
+  {
+    pattern: "/share/:token/*",
+    title: msg`Cây gia phả được chia sẻ`,
+    noindex: true,
+  },
   { pattern: "/join/:token", title: msg`Lời mời vào dòng họ`, noindex: true },
   { pattern: "/khoe/:token", title: msg`Thiệp gia phả`, noindex: true },
+  { pattern: "/khoe/:token/*", title: msg`Thiệp gia phả`, noindex: true },
   {
     pattern: "/inlaws/confirm/:token",
     title: msg`Xác nhận liên kết dòng họ`,

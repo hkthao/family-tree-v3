@@ -1,4 +1,5 @@
 import { currentIntlTag } from "@/lib/i18n";
+import { shareLinkUrl } from "@/lib/shareUrls";
 import {
   keepPreviousData,
   useMutation,
@@ -252,7 +253,7 @@ function ShareLinkItem({
       ? { label: t`Đã hết hạn`, tone: "muted" as const }
       : { label: t`Hoạt động`, tone: "accent" as const };
 
-  const shareUrl = `${window.location.origin}/share/${link.token}`;
+  const shareUrl = shareLinkUrl(window.location.origin, link);
 
   async function copyToClipboard() {
     try {

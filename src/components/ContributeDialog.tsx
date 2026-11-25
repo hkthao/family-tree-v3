@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { CaptchaNotice } from "@/components/CaptchaNotice";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -601,6 +602,7 @@ export function ContributeDialog({
                 </Alert>
               )}
 
+              {isGuest && <CaptchaNotice className="mt-3 text-xs text-muted-foreground" />}
               <FormActions className="mt-3">
                 <Button variant="outline" size="sm" onClick={onClose}>
                   {t`Huỷ`}

@@ -23,10 +23,6 @@ msgstr " — {0}/{1} người"
 msgid " — đơn thân"
 msgstr " — đơn thân"
 
-#: src/pages/CustomsForm.tsx
-msgid " — xem lại rồi Lưu."
-msgstr " — xem lại rồi Lưu."
-
 #. placeholder {0}: isAuthor ? t`bạn` : post.author_id.slice(0, 8)
 #: src/pages/clan/Board.tsx
 msgid " · {0}"
@@ -211,10 +207,6 @@ msgstr "— phóng to / thu nhỏ"
 msgid ", {0} thiếu giới tính"
 msgstr ", {0} thiếu giới tính"
 
-#: src/pages/CustomsForm.tsx
-msgid ", {metaCount} thông tin"
-msgstr ", {metaCount} thông tin"
-
 #: src/pages/clan/HeritageDetail.tsx
 msgid ": tải ảnh lên, bấm \"Chia sẻ\" → \"Bất kỳ ai có liên kết\", rồi copy link. (Hoặc dùng dịch vụ ảnh có link trực tiếp như imgur.com.)"
 msgstr ": tải ảnh lên, bấm \"Chia sẻ\" → \"Bất kỳ ai có liên kết\", rồi copy link. (Hoặc dùng dịch vụ ảnh có link trực tiếp như imgur.com.)"
@@ -323,11 +315,6 @@ msgstr "(không có chi)"
 #: src/components/RecentActivityPanel.tsx
 msgid "(không tên)"
 msgstr "(không tên)"
-
-#: src/pages/CustomsImport.tsx
-#: src/pages/CustomsImport.tsx
-msgid "(không tiêu đề)"
-msgstr "(không tiêu đề)"
 
 #: src/pages/clan/Memories.tsx
 msgid "(một đoạn ghi âm)"
@@ -489,6 +476,11 @@ msgstr "{0} lượt ghé thăm"
 msgid "{0} lượt góp"
 msgstr "{0} lượt góp"
 
+#. placeholder {0}: item.views
+#: src/pages/clan/ShareHub.tsx
+msgid "{0} lượt xem"
+msgstr "{0} lượt xem"
+
 #. placeholder {0}: i.count
 #: src/pages/clan/TimelineList.tsx
 msgid "{0} mốc"
@@ -544,8 +536,10 @@ msgstr "{0} người an nghỉ"
 msgid "{0} người đã góp"
 msgstr "{0} người đã góp"
 
+#. placeholder {0}: mosaic.data.tiles.length
 #. placeholder {0}: sections.mosaic.tiles.length
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "{0} người đã góp mảnh ảnh"
 msgstr "{0} người đã góp mảnh ảnh"
 
@@ -569,6 +563,13 @@ msgstr "{0} ơi, cả nhà nhờ bạn đóng góp chuyện ông bà, ảnh cũ"
 #: src/components/ui/date-picker.tsx
 msgid "{0} phút"
 msgstr "{0} phút"
+
+#. placeholder {0}: post.read_minutes
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SitePost.tsx
+msgid "{0} phút đọc"
+msgstr "{0} phút đọc"
 
 #. placeholder {0}: clan.person_count
 #. placeholder {0}: clan.person_count.toLocaleString("vi-VN")
@@ -745,6 +746,7 @@ msgstr "{n} đóng góp"
 
 #: src/components/MapOverviewCard.tsx
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "{n} người"
 msgstr "{n} người"
 
@@ -823,8 +825,6 @@ msgid "← Người trước"
 msgstr "← Người trước"
 
 #: src/pages/CustomsDetail.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
 msgid "← Sổ tay Văn hoá"
 msgstr "← Sổ tay Văn hoá"
 
@@ -861,6 +861,18 @@ msgstr "+ Thêm mới"
 msgid "+{grow} tháng này"
 msgstr "+{grow} tháng này"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "+1 năm"
+msgstr "+1 năm"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "+1 tháng"
+msgstr "+1 tháng"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "+3 tháng"
+msgstr "+3 tháng"
+
 #. placeholder {0}: fmtDuration(rec.seconds)
 #. placeholder {1}: fmtDuration(rec.maxSeconds)
 #: src/pages/clan/HeritageDetail.tsx
@@ -872,13 +884,6 @@ msgstr "<0/>Đang ghi… {0} / {1}"
 #: src/pages/clan/Todo.tsx
 msgid "<0>{0}</0> / {1} người có đủ năm sinh và quan hệ cha/mẹ. Cùng nhau bổ sung để kéo lên 100%."
 msgstr "<0>{0}</0> / {1} người có đủ năm sinh và quan hệ cha/mẹ. Cùng nhau bổ sung để kéo lên 100%."
-
-#. placeholder {0}: p.title || t`(không tiêu đề)`
-#. placeholder {1}: p.sections.length
-#. placeholder {2}: p.faq.length
-#: src/pages/CustomsImport.tsx
-msgid "<0>{0}</0><1> · {1} đoạn · {2} câu hỏi</1>"
-msgstr "<0>{0}</0><1> · {1} đoạn · {2} câu hỏi</1>"
 
 #: src/pages/clan/Kinship.tsx
 msgid "<0>{fromName}</0> gọi <1>{toName}</1> là"
@@ -950,10 +955,6 @@ msgstr "✓ Đã khôi phục"
 msgid "✓ Nên làm"
 msgstr "✓ Nên làm"
 
-#: src/pages/CustomsImport.tsx
-msgid "✓ sẽ tạo"
-msgstr "✓ sẽ tạo"
-
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "✕ Nên tránh"
@@ -972,6 +973,7 @@ msgid "🖼 Ảnh → Google Drive / Google Photos"
 msgstr "🖼 Ảnh → Google Drive / Google Photos"
 
 #: src/components/ApiTokenPanels.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "1 năm"
 msgstr "1 năm"
 
@@ -984,6 +986,7 @@ msgid "1 người"
 msgstr "1 người"
 
 #: src/components/ShareCardDialog.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "1 tháng"
 msgstr "1 tháng"
 
@@ -1034,6 +1037,7 @@ msgstr "3 ngày trước"
 
 #: src/components/ShareCardDialog.tsx
 #: src/pages/clan/GoodDays.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "3 tháng"
 msgstr "3 tháng"
 
@@ -1230,10 +1234,18 @@ msgstr "Ảnh"
 msgid "Ảnh + tin nhắn mời người thân góp"
 msgstr "Ảnh + tin nhắn mời người thân góp"
 
+#: src/pages/site/SitePerson.tsx
+msgid "Anh chị em"
+msgstr "Anh chị em"
+
 #. placeholder {0}: siblings.length
 #: src/pages/clan/Relations.tsx
 msgid "Anh chị em ({0})"
 msgstr "Anh chị em ({0})"
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Ảnh chụp ngày trước — kèm vài dòng cho biết chụp ở đâu, có những ai."
+msgstr "Ảnh chụp ngày trước — kèm vài dòng cho biết chụp ở đâu, có những ai."
 
 #: src/components/community/MemoryForm.tsx
 msgid "Ảnh chụp ở đâu, có những ai…"
@@ -1265,6 +1277,10 @@ msgstr "Ảnh đại diện (tuỳ chọn)"
 msgid "Ảnh đại gia đình"
 msgstr "Ảnh đại gia đình"
 
+#: src/components/BoardPostForm.tsx
+msgid "Ảnh đầu tiên (dán địa chỉ https) sẽ làm ảnh bìa bài trên trang dòng họ."
+msgstr "Ảnh đầu tiên (dán địa chỉ https) sẽ làm ảnh bìa bài trên trang dòng họ."
+
 #: src/components/community/MemoryCard.tsx
 msgid "Ảnh đóng góp"
 msgstr "Ảnh đóng góp"
@@ -1284,6 +1300,7 @@ msgstr "Ảnh ghép"
 #: src/components/ShareSectionsCard.tsx
 #: src/lib/clanFeatures.ts
 #: src/lib/nextSteps.ts
+#: src/pages/site/SiteHome.tsx
 msgid "Ảnh ghép đại gia đình"
 msgstr "Ảnh ghép đại gia đình"
 
@@ -1303,14 +1320,6 @@ msgstr "Ảnh hưởng Trung Hoa"
 #: src/components/gallery/GalleryScene.tsx
 msgid "Ảnh kỷ niệm"
 msgstr "Ảnh kỷ niệm"
-
-#: src/pages/CustomsForm.tsx
-msgid "Ảnh minh hoạ (https://…, tuỳ chọn)"
-msgstr "Ảnh minh hoạ (https://…, tuỳ chọn)"
-
-#: src/pages/CustomsForm.tsx
-msgid "Ảnh minh hoạ trong đoạn phải là https://…"
-msgstr "Ảnh minh hoạ trong đoạn phải là https://…"
 
 #: src/lib/quickCatalog.tsx
 msgid "Ảnh mời cả nhà góp"
@@ -1373,6 +1382,10 @@ msgstr "Ảnh trước"
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Ảnh tư liệu theo thời kỳ"
 msgstr "Ảnh tư liệu theo thời kỳ"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Ảnh và tên trên thiệp sẽ công khai tới khi hết hạn; bạn có thể gỡ sớm."
+msgstr "Ảnh và tên trên thiệp sẽ công khai tới khi hết hạn; bạn có thể gỡ sớm."
 
 #: src/components/community/MemoryForm.tsx
 msgid "Ảnh vẫn nằm ở Google Photos / Drive — nhớ để chế độ \"ai có link đều xem được\"."
@@ -1492,13 +1505,17 @@ msgstr "Bài chờ duyệt từ thành viên. Bấm \"Duyệt\" để đăng, ho
 msgid "Bài liên quan"
 msgstr "Bài liên quan"
 
-#: src/pages/CustomsForm.tsx
-msgid "Bài liên quan (tuỳ chọn)"
-msgstr "Bài liên quan (tuỳ chọn)"
+#: src/pages/site/SitePost.tsx
+msgid "Bài sau"
+msgstr "Bài sau"
 
 #: src/components/BoardPostForm.tsx
 msgid "Bài sẽ chuyển vào hàng chờ duyệt. Admin của dòng họ sẽ kiểm tra và quyết định đăng hay không."
 msgstr "Bài sẽ chuyển vào hàng chờ duyệt. Admin của dòng họ sẽ kiểm tra và quyết định đăng hay không."
+
+#: src/pages/site/SitePost.tsx
+msgid "Bài trước"
+msgstr "Bài trước"
 
 #: src/lib/tree/canvasModel.ts
 msgid "Bài vị"
@@ -1509,9 +1526,18 @@ msgstr "Bài vị"
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/BoardPostEdit.tsx
 #: src/pages/Docs.tsx
+#: src/pages/site/SiteSearch.tsx
 #: src/pages/Videos.tsx
 msgid "Bài viết"
 msgstr "Bài viết"
+
+#: src/pages/site/SitePerson.tsx
+msgid "Bài viết & di sản liên quan"
+msgstr "Bài viết & di sản liên quan"
+
+#: src/pages/site/SitePost.tsx
+msgid "Bài viết này không còn."
+msgstr "Bài viết này không còn."
 
 #: src/pages/clan/Heritage.tsx
 msgid "Bấm 'Thêm' để ghi lại tục lệ, từ đường, giai thoại đầu tiên của họ."
@@ -1758,6 +1784,7 @@ msgstr "Bản đồ"
 #: src/lib/nextSteps.ts
 #: src/lib/pageTitle.ts
 #: src/pages/clan/MapStats.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Bản đồ dòng họ"
 msgstr "Bản đồ dòng họ"
 
@@ -1793,6 +1820,10 @@ msgstr "Bạn là gì của {who}?"
 msgid "Bạn muốn đóng góp về ai?"
 msgstr "Bạn muốn đóng góp về ai?"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Bạn muốn khoe điều gì?"
+msgstr "Bạn muốn khoe điều gì?"
+
 #: src/pages/Contact.tsx
 msgid "Bạn muốn nói gì?"
 msgstr "Bạn muốn nói gì?"
@@ -1801,9 +1832,17 @@ msgstr "Bạn muốn nói gì?"
 msgid "Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận."
 msgstr "Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận."
 
+#: src/pages/site/SitePerson.tsx
+msgid "Bạn nhớ điều gì về người này? Góp một câu chuyện →"
+msgstr "Bạn nhớ điều gì về người này? Góp một câu chuyện →"
+
 #: src/components/community/MemoryForm.tsx
 msgid "Bạn nhớ gì về {who}?"
 msgstr "Bạn nhớ gì về {who}?"
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Bạn nhớ một câu chuyện, có một tấm ảnh cũ, hay thấy thông tin nào chưa đúng? Góp một chút nhé — chỉ vài phút, không cần đăng ký."
+msgstr "Bạn nhớ một câu chuyện, có một tấm ảnh cũ, hay thấy thông tin nào chưa đúng? Góp một chút nhé — chỉ vài phút, không cần đăng ký."
 
 #: src/components/SubscriptionSettings.tsx
 msgid "Bạn sẽ không nhận email nhắc nữa."
@@ -1835,6 +1874,10 @@ msgstr "Bằng link"
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/BoardPostEdit.tsx
 #: src/pages/clan/BoardPostNew.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteHome.tsx
+#: src/pages/site/SitePost.tsx
 msgid "Bảng tin"
 msgstr "Bảng tin"
 
@@ -1844,6 +1887,7 @@ msgid "Bảng tin dòng họ"
 msgstr "Bảng tin dòng họ"
 
 #: src/lib/quickCatalog.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Bảng vàng"
 msgstr "Bảng vàng"
 
@@ -1853,6 +1897,9 @@ msgstr "Bảng vàng"
 #: src/lib/navModel.tsx
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/HonorBook.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteHome.tsx
+#: src/pages/site/SiteHonor.tsx
 msgid "Bảng vàng công đức"
 msgstr "Bảng vàng công đức"
 
@@ -2086,10 +2133,6 @@ msgstr "Bỏ điểm uốn"
 msgid "Bỏ ghim"
 msgstr "Bỏ ghim"
 
-#: src/pages/CustomsForm.tsx
-msgid "Bỏ liên kết"
-msgstr "Bỏ liên kết"
-
 #: src/components/CollapsibleFilters.tsx
 #: src/components/FilterDrawer.tsx
 msgid "Bộ lọc & tuỳ chọn"
@@ -2199,6 +2242,10 @@ msgstr "cả dòng họ"
 msgid "Cả dòng họ"
 msgstr "Cả dòng họ"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Cả dòng họ · trang chủ"
+msgstr "Cả dòng họ · trang chủ"
+
 #. placeholder {0}: i.title
 #: src/pages/clan/TimelineList.tsx
 msgid "Cả dòng họ {0}"
@@ -2232,7 +2279,12 @@ msgstr "Cả họ tiễn đưa một người đã có công vun đắp cho gia 
 msgid "Cả năm"
 msgstr "Cả năm"
 
+#: src/pages/site/SiteContribute.tsx
+msgid "Cả nhà cùng đóng góp chuyện ông bà"
+msgstr "Cả nhà cùng đóng góp chuyện ông bà"
+
 #: src/components/community/CommunitySharePanel.tsx
+#: src/pages/site/SiteContribute.tsx
 msgid "Cả nhà cùng hỏi, ông bà cùng kể"
 msgstr "Cả nhà cùng hỏi, ông bà cùng kể"
 
@@ -2277,6 +2329,10 @@ msgstr "Cả xóm kéo đến xem chung chiếc ti vi đầu tiên của nhà."
 #: src/components/ShareSectionsCard.tsx
 msgid "Các bài đã đăng mới nhất (tin vui, thông báo)."
 msgstr "Các bài đã đăng mới nhất (tin vui, thông báo)."
+
+#: src/components/cards/CardSteps.tsx
+msgid "Các bước"
+msgstr "Các bước"
 
 #: src/components/community/CommunitySharePanel.tsx
 msgid "Các câu trả lời"
@@ -2538,6 +2594,7 @@ msgstr "Cáo phó"
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/AnnouncementDetail.tsx
+#: src/pages/Customs.tsx
 msgid "Cập nhật"
 msgstr "Cập nhật"
 
@@ -2633,7 +2690,6 @@ msgstr "Cấu hình, share links, xuất dữ liệu, xoá dòng họ."
 #: src/components/community/QuestionPanel.tsx
 #: src/pages/admin/Feedback.tsx
 #: src/pages/Contact.tsx
-#: src/pages/CustomsForm.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Câu hỏi"
 msgstr "Câu hỏi"
@@ -2654,10 +2710,6 @@ msgstr "Câu hỏi quá ngắn"
 msgid "Câu hỏi thường gặp"
 msgstr "Câu hỏi thường gặp"
 
-#: src/pages/CustomsForm.tsx
-msgid "Câu hỏi thường gặp (tuỳ chọn)"
-msgstr "Câu hỏi thường gặp (tuỳ chọn)"
-
 #: src/components/community/MemoryForm.tsx
 msgid "Câu trả lời"
 msgstr "Câu trả lời"
@@ -2665,10 +2717,6 @@ msgstr "Câu trả lời"
 #: src/components/community/CommunitySharePanel.tsx
 msgid "Câu trả lời cho câu hỏi này"
 msgstr "Câu trả lời cho câu hỏi này"
-
-#: src/pages/CustomsForm.tsx
-msgid "Câu trả lời…"
-msgstr "Câu trả lời…"
 
 #: src/pages/clan/TreeCanvases.tsx
 msgid "cây"
@@ -2693,10 +2741,13 @@ msgstr "Cây 3D"
 #: src/components/share/ShareOverview.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Cây gia phả"
 msgstr "Cây gia phả"
 
@@ -2710,6 +2761,7 @@ msgid "Cây gia phả & Danh bạ"
 msgstr "Cây gia phả & Danh bạ"
 
 #: src/lib/pageTitle.ts
+#: src/lib/pageTitle.ts
 msgid "Cây gia phả được chia sẻ"
 msgstr "Cây gia phả được chia sẻ"
 
@@ -2721,7 +2773,7 @@ msgstr "Cây gia phả luôn có. Áp dụng cho mọi link chia sẻ của dòn
 msgid "Cây gia phả tương tác"
 msgstr "Cây gia phả tương tác"
 
-#: src/pages/Share.tsx
+#: src/components/share/ShareTree.tsx
 msgid "Cây gia phả tương tác (chỉ xem)"
 msgstr "Cây gia phả tương tác (chỉ xem)"
 
@@ -2759,6 +2811,7 @@ msgstr "Cha mất"
 #: src/components/PersonRelationsQuick.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Cha mẹ"
 msgstr "Cha mẹ"
 
@@ -2807,6 +2860,14 @@ msgstr "Chào {0}! Cả nhà muốn hỏi bạn"
 #: src/components/community/CommunitySharePanel.tsx
 msgid "Chào {0}! Cả nhà nhờ bạn đóng góp giúp"
 msgstr "Chào {0}! Cả nhà nhờ bạn đóng góp giúp"
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Chào {hello}! Cả nhà muốn hỏi bạn"
+msgstr "Chào {hello}! Cả nhà muốn hỏi bạn"
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Chào {hello}! Cả nhà nhờ bạn đóng góp giúp"
+msgstr "Chào {hello}! Cả nhà nhờ bạn đóng góp giúp"
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Chào mừng"
@@ -2884,7 +2945,6 @@ msgstr "Chép lệnh"
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/InviteLinkCard.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/pages/clan/Inlaws.tsx
@@ -2897,10 +2957,6 @@ msgstr "Chép link"
 #: src/components/ShareCardDialog.tsx
 msgid "Chép link để dán vào Zalo/Facebook"
 msgstr "Chép link để dán vào Zalo/Facebook"
-
-#: src/components/ShareCardDialog.tsx
-msgid "Chép link khoe:"
-msgstr "Chép link khoe:"
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "chép link trên thanh địa chỉ (dạng"
@@ -2981,7 +3037,7 @@ msgstr "Chỉ đọc"
 msgid "Chỉ đường"
 msgstr "Chỉ đường"
 
-#: src/pages/Share.tsx
+#: src/components/SharedHeritageCard.tsx
 msgid "Chỉ đường →"
 msgstr "Chỉ đường →"
 
@@ -3004,6 +3060,10 @@ msgstr "Chỉ hiện 50 người đầu — gõ tên để thu hẹp."
 #: src/pages/clan/TimelineList.tsx
 msgid "Chỉ hiện những thành viên chưa có dòng thời gian riêng."
 msgstr "Chỉ hiện những thành viên chưa có dòng thời gian riêng."
+
+#: src/pages/site/SiteGraves.tsx
+msgid "Chỉ hiện nơi an nghỉ của người đã mất. Địa chỉ chi tiết và toạ độ không công khai trên trang này."
+msgstr "Chỉ hiện nơi an nghỉ của người đã mất. Địa chỉ chi tiết và toạ độ không công khai trên trang này."
 
 #: src/components/PersonAddressCard.tsx
 msgid "Chỉ hiện ở hồ sơ người này, không vẽ lên bản đồ."
@@ -3049,14 +3109,6 @@ msgstr "Chỉ quản trị dòng họ mới kết nối được AI. Tài khoả
 #: src/pages/clan/BookInfo.tsx
 msgid "Chỉ quản trị dòng họ sửa được tên và mô tả; bạn sửa được phần sổ gia phả bên dưới."
 msgstr "Chỉ quản trị dòng họ sửa được tên và mô tả; bạn sửa được phần sổ gia phả bên dưới."
-
-#: src/pages/CustomsImport.tsx
-msgid "Chỉ quản trị nền tảng được nhập Sổ tay."
-msgstr "Chỉ quản trị nền tảng được nhập Sổ tay."
-
-#: src/pages/CustomsForm.tsx
-msgid "Chỉ quản trị nền tảng được sửa Sổ tay."
-msgstr "Chỉ quản trị nền tảng được sửa Sổ tay."
 
 #: src/pages/MyFeedback.tsx
 msgid "Chỉ quản trị xem được; không hiện cho người khác trong họ."
@@ -3109,18 +3161,27 @@ msgstr "Chỉ xoá được tỉnh không còn xã/phường và chưa ai dùng 
 msgid "Chia cắt ở vĩ tuyến 17"
 msgstr "Chia cắt ở vĩ tuyến 17"
 
+#: src/components/cards/CardSteps.tsx
 #: src/components/community/InviteCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareTreeButton.tsx
+#: src/lib/navModel.tsx
 #: src/lib/quickCatalog.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/CustomsDetail.tsx
+#: src/pages/KhoeCard.tsx
+#: src/pages/site/SitePost.tsx
 msgid "Chia sẻ"
 msgstr "Chia sẻ"
 
 #: src/components/ShareAppQrButton.tsx
 msgid "Chia sẻ app qua mã QR"
 msgstr "Chia sẻ app qua mã QR"
+
+#: src/pages/site/SitePost.tsx
+msgid "Chia sẻ bài này"
+msgstr "Chia sẻ bài này"
 
 #: src/components/ShareTreeButton.tsx
 msgid "Chia sẻ cây"
@@ -3141,6 +3202,10 @@ msgstr "Chia sẻ cây với họ hàng"
 #: src/lib/quickCatalog.tsx
 msgid "Chia sẻ gia phả"
 msgstr "Chia sẻ gia phả"
+
+#: src/pages/site/SitePerson.tsx
+msgid "Chia sẻ hồ sơ"
+msgstr "Chia sẻ hồ sơ"
 
 #: src/components/InviteLinkCard.tsx
 #: src/components/InviteLinkCard.tsx
@@ -3174,6 +3239,10 @@ msgstr "Chiến trận"
 #: src/components/gallery/GalleryScene.tsx
 msgid "Chỉnh hiện vật 3D"
 msgstr "Chỉnh hiện vật 3D"
+
+#: src/components/CaptchaNotice.tsx
+msgid "Chính sách quyền riêng tư"
+msgstr "Chính sách quyền riêng tư"
 
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
@@ -3217,10 +3286,6 @@ msgstr "Cho Claude, ChatGPT… làm việc với gia phả; xem và thu hồi k�
 msgid "Cho Claude, ChatGPT… tra cứu và cập nhật gia phả bằng đúng quyền của bạn. Xem và thu hồi mọi kết nối của dòng họ."
 msgstr "Cho Claude, ChatGPT… tra cứu và cập nhật gia phả bằng đúng quyền của bạn. Xem và thu hồi mọi kết nối của dòng họ."
 
-#: src/pages/CustomsDetail.tsx
-msgid "chờ duyệt"
-msgstr "chờ duyệt"
-
 #: src/components/community/PersonMemoriesSection.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
@@ -3228,9 +3293,6 @@ msgstr "chờ duyệt"
 #: src/pages/clan/Contributions.tsx
 #: src/pages/clan/Memories.tsx
 #: src/pages/clan/Memories.tsx
-#: src/pages/Customs.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
 msgid "Chờ duyệt"
 msgstr "Chờ duyệt"
 
@@ -3316,11 +3378,6 @@ msgstr "Chọn cả trang này ({count})"
 msgid "Chọn câu hỏi · bấm Trả lời · viết (hoặc bấm 🎤 trên bàn phím để nói) · bấm Gửi. Không cần đăng ký."
 msgstr "Chọn câu hỏi · bấm Trả lời · viết (hoặc bấm 🎤 trên bàn phím để nói) · bấm Gửi. Không cần đăng ký."
 
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
-msgid "Chọn chủ đề"
-msgstr "Chọn chủ đề"
-
 #: src/pages/clan/Todo.tsx
 msgid "Chọn để xử lý hàng loạt"
 msgstr "Chọn để xử lý hàng loạt"
@@ -3328,14 +3385,6 @@ msgstr "Chọn để xử lý hàng loạt"
 #: src/pages/clan/Kinship.tsx
 msgid "Chọn đủ hai người để xem kết quả."
 msgstr "Chọn đủ hai người để xem kết quả."
-
-#: src/pages/CustomsImport.tsx
-msgid "Chọn file .md (có thể chọn nhiều)…"
-msgstr "Chọn file .md (có thể chọn nhiều)…"
-
-#: src/pages/CustomsForm.tsx
-msgid "Chọn file .md…"
-msgstr "Chọn file .md…"
 
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Chọn gia phả, sự kiện, mộ phần hoặc di sản (không bắt buộc)"
@@ -3361,6 +3410,10 @@ msgstr "Chọn hình từ thư viện, dán link ảnh hoặc dùng biểu tư�
 msgid "Chọn khổ giấy"
 msgstr "Chọn khổ giấy"
 
+#: src/components/cards/CardSteps.tsx
+msgid "Chọn kiểu"
+msgstr "Chọn kiểu"
+
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó."
 msgstr "Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó."
@@ -3381,9 +3434,14 @@ msgstr "Chọn loại bài"
 msgid "Chọn loại thông tin hiện ở chi tiết ngày."
 msgstr "Chọn loại thông tin hiện ở chi tiết ngày."
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Chọn loại, đích và thời hạn"
+msgstr "Chọn loại, đích và thời hạn"
+
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
 #: src/components/BookTextsSection.tsx
+#: src/components/ShareCardDialog.tsx
 msgid "Chọn mẫu"
 msgstr "Chọn mẫu"
 
@@ -3400,6 +3458,11 @@ msgstr "Chọn màu bất kỳ"
 msgid "Chọn mẫu nền"
 msgstr "Chọn mẫu nền"
 
+#: src/components/community/InviteCardDialog.tsx
+#: src/components/ShareCardDialog.tsx
+msgid "Chọn mẫu ở cột ảnh thu nhỏ bên cạnh ảnh xem trước."
+msgstr "Chọn mẫu ở cột ảnh thu nhỏ bên cạnh ảnh xem trước."
+
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Chọn mẫu rồi chỉ cần nhập năm. Bạn vẫn sửa được chữ và hình bên dưới."
 msgstr "Chọn mẫu rồi chỉ cần nhập năm. Bạn vẫn sửa được chữ và hình bên dưới."
@@ -3411,6 +3474,10 @@ msgstr "Chọn một ảnh"
 #: src/components/community/CommunitySharePanel.tsx
 msgid "Chọn một câu hỏi ở trên rồi bấm \"Trả lời\"."
 msgstr "Chọn một câu hỏi ở trên rồi bấm \"Trả lời\"."
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Chọn một câu hỏi, bấm Trả lời rồi viết (hoặc nói bằng micro trên bàn phím điện thoại). Không cần đăng ký."
+msgstr "Chọn một câu hỏi, bấm Trả lời rồi viết (hoặc nói bằng micro trên bàn phím điện thoại). Không cần đăng ký."
 
 #: src/components/McpGuidePanel.tsx
 msgid "Chọn một hoặc nhiều dòng họ và quyền cho AI, bấm \"Cho phép\""
@@ -3497,8 +3564,8 @@ msgstr "Chọn thành viên"
 msgid "Chọn thời kỳ"
 msgstr "Chọn thời kỳ"
 
+#: src/components/share/ShareTree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
 msgid "Chọn thuỷ tổ làm trung tâm"
 msgstr "Chọn thuỷ tổ làm trung tâm"
 
@@ -3548,16 +3615,6 @@ msgstr "Chọn việc và khoảng thời gian, hệ thống liệt kê sẵn nh
 msgid "Chồng"
 msgstr "Chồng"
 
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
-msgid "Chủ đề"
-msgstr "Chủ đề"
-
-#: src/pages/CustomsImport.tsx
-msgid "Chủ đề (áp dụng cho tất cả)"
-msgstr "Chủ đề (áp dụng cho tất cả)"
-
 #: src/lib/timeline/eras.ts
 msgid "Chữ Nôm phát triển"
 msgstr "Chữ Nôm phát triển"
@@ -3573,10 +3630,6 @@ msgstr "Chữ Quốc ngữ hình thành"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Chú thích (tuỳ chọn)"
 msgstr "Chú thích (tuỳ chọn)"
-
-#: src/pages/CustomsForm.tsx
-msgid "Chú thích ảnh (tuỳ chọn)"
-msgstr "Chú thích ảnh (tuỳ chọn)"
 
 #: src/components/ApiTokenPanels.tsx
 msgid "Chủ token"
@@ -3618,6 +3671,10 @@ msgstr "Chưa có {unit} nào có khu vực"
 msgid "Chưa có {unit} nào ở tỉnh này."
 msgstr "Chưa có {unit} nào ở tỉnh này."
 
+#: src/pages/site/SiteHonor.tsx
+msgid "Chưa có ai được vinh danh."
+msgstr "Chưa có ai được vinh danh."
+
 #: src/pages/clan/Members.tsx
 msgid "Chưa có ai khác"
 msgstr "Chưa có ai khác"
@@ -3651,6 +3708,10 @@ msgstr "Chưa có bài viết nào"
 #: src/pages/clan/Board.tsx
 msgid "Chưa có bài viết nào trong bảng tin."
 msgstr "Chưa có bài viết nào trong bảng tin."
+
+#: src/pages/site/SiteBoard.tsx
+msgid "Chưa có bài viết nào."
+msgstr "Chưa có bài viết nào."
 
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Chưa có bình luận."
@@ -3758,6 +3819,7 @@ msgid "Chưa có góp ý nào"
 msgstr "Chưa có góp ý nào"
 
 #: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Chưa có liên kết nào"
 msgstr "Chưa có liên kết nào"
 
@@ -3789,9 +3851,17 @@ msgstr "Chưa có mốc nào. Kể câu chuyện dòng họ qua các thế hệ 
 msgid "Chưa có mục di sản nào"
 msgstr "Chưa có mục di sản nào"
 
+#: src/pages/site/SiteHeritage.tsx
+msgid "Chưa có mục di sản nào."
+msgstr "Chưa có mục di sản nào."
+
 #: src/components/HistoricalClansSection.tsx
 msgid "Chưa có mục lịch sử"
 msgstr "Chưa có mục lịch sử"
+
+#: src/pages/site/SiteGraves.tsx
+msgid "Chưa có nơi an nghỉ nào."
+msgstr "Chưa có nơi an nghỉ nào."
 
 #: src/pages/Customs.tsx
 msgid "Chưa có nội dung"
@@ -3804,6 +3874,10 @@ msgstr "Chưa có phòng ký ức"
 #: src/pages/Share.tsx
 msgid "Chưa có sự kiện hay ngày giỗ."
 msgstr "Chưa có sự kiện hay ngày giỗ."
+
+#: src/pages/site/SiteEvents.tsx
+msgid "Chưa có sự kiện hoặc ngày giỗ nào."
+msgstr "Chưa có sự kiện hoặc ngày giỗ nào."
 
 #: src/pages/clan/Events.tsx
 msgid "Chưa có sự kiện tuỳ chỉnh nào."
@@ -3959,10 +4033,6 @@ msgstr "Chưa lưu được thông tin sổ gia phả"
 msgid "Chưa nhận được"
 msgstr "Chưa nhận được"
 
-#: src/pages/CustomsForm.tsx
-msgid "Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'."
-msgstr "Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'."
-
 #: src/components/PersonRelationsQuick.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Chưa nhập cha mẹ"
@@ -3979,6 +4049,10 @@ msgstr "Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi n�
 #: src/components/OtherParentPicker.tsx
 msgid "Chưa rõ / không ghi"
 msgstr "Chưa rõ / không ghi"
+
+#: src/pages/KhoeCard.tsx
+msgid "Chưa tải được thiệp. Hãy thử lại sau ít phút."
+msgstr "Chưa tải được thiệp. Hãy thử lại sau ít phút."
 
 #: src/components/community/QuestionPanel.tsx
 msgid "Chưa tạo được"
@@ -4023,6 +4097,10 @@ msgstr "Chuyện chung của dòng họ"
 #: src/pages/clan/Memories.tsx
 msgid "Chuyện chung của họ"
 msgstr "Chuyện chung của họ"
+
+#: src/pages/site/SiteBoard.tsx
+msgid "Chuyện của dòng họ: tin vui, thông báo và những ghi chép do người quản lý họ soạn."
+msgstr "Chuyện của dòng họ: tin vui, thông báo và những ghi chép do người quản lý họ soạn."
 
 #: src/components/HomeCustomizeDrawer.tsx
 msgid "Chuyển lên"
@@ -4213,8 +4291,10 @@ msgid "Con"
 msgstr "Con"
 
 #. placeholder {0}: event.daysUntil
+#. placeholder {0}: upcoming.daysUntil
 #: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Còn {0} ngày"
 msgstr "Còn {0} ngày"
 
@@ -4231,6 +4311,7 @@ msgstr "Con cả"
 #: src/components/PersonRelationsQuick.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Con cái"
 msgstr "Con cái"
 
@@ -4256,6 +4337,7 @@ msgstr "Con cháu khắp nơi về họp mặt, cùng tưởng nhớ tổ tiên.
 
 #: src/components/MapOverviewCard.tsx
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Con cháu nhiều nhất ở"
 msgstr "Con cháu nhiều nhất ở"
 
@@ -4379,8 +4461,6 @@ msgstr "công khai"
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/Clans.tsx
 #: src/pages/Clans.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
 msgid "Công khai"
 msgstr "Công khai"
 
@@ -4404,6 +4484,10 @@ msgstr "Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
 msgid "Của dòng họ"
 msgstr "Của dòng họ"
 
+#: src/components/CaptchaNotice.tsx
+msgid "của Google."
+msgstr "của Google."
+
 #: src/pages/Clans.tsx
 msgid "Của tôi"
 msgstr "Của tôi"
@@ -4412,12 +4496,20 @@ msgstr "Của tôi"
 msgid "Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng loạt rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên tự, ảnh, nơi sinh…) không được mang theo."
 msgstr "Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng loạt rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên tự, ảnh, nơi sinh…) không được mang theo."
 
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Cùng đóng góp"
+msgstr "Cùng đóng góp"
+
 #: src/components/community/CommunitySharePanel.tsx
 msgid "Cùng đóng góp câu chuyện của gia đình"
 msgstr "Cùng đóng góp câu chuyện của gia đình"
 
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteContribute.tsx
+#: src/pages/site/SiteContribute.tsx
+#: src/pages/site/SiteContribute.tsx
 msgid "Cùng góp"
 msgstr "Cùng góp"
 
@@ -4611,10 +4703,6 @@ msgstr "Đã chọn {count} {unit}"
 msgid "Đã chọn <0>{0}</0> người"
 msgstr "Đã chọn <0>{0}</0> người"
 
-#: src/pages/CustomsImport.tsx
-msgid "Đã có bài cùng tên"
-msgstr "Đã có bài cùng tên"
-
 #: src/components/QuickActionsCard.tsx
 #: src/components/RefreshButton.tsx
 msgid "Đã có dữ liệu mới"
@@ -4726,10 +4814,6 @@ msgstr "Đã được xử lý lúc"
 msgid "Đã duyệt"
 msgstr "Đã duyệt"
 
-#: src/pages/CustomsDetail.tsx
-msgid "Đã duyệt — bài đã công khai"
-msgstr "Đã duyệt — bài đã công khai"
-
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Đã duyệt — cây gia phả đã cập nhật"
 msgstr "Đã duyệt — cây gia phả đã cập nhật"
@@ -4765,9 +4849,17 @@ msgstr "Đã ghi nhận"
 msgid "Đã ghim"
 msgstr "Đã ghim"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Đã gia hạn"
+msgstr "Đã gia hạn"
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Đã gỡ liên kết"
 msgstr "Đã gỡ liên kết"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Đã gỡ thiệp"
+msgstr "Đã gỡ thiệp"
 
 #: src/pages/clan/Merge.tsx
 msgid "Đã gộp xong"
@@ -4830,6 +4922,7 @@ msgid "Đã gửi, chờ người quản lý xác nhận"
 msgstr "Đã gửi, chờ người quản lý xác nhận"
 
 #: src/components/ShareLinksSection.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Đã hết hạn"
 msgstr "Đã hết hạn"
 
@@ -4892,7 +4985,6 @@ msgstr "Đã loại khỏi danh sách"
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/CustomsDetail.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Đã lưu"
 msgstr "Đã lưu"
 
@@ -4974,6 +5066,8 @@ msgstr "đã mất"
 #: src/components/PersonFormFields.tsx
 #: src/components/PersonFormFields.tsx
 #: src/components/QuickAddSheet.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Đã mất"
 msgstr "Đã mất"
 
@@ -4996,12 +5090,6 @@ msgstr "Đã nhân bản"
 #: src/pages/clan/Import.tsx
 msgid "Đã nhập"
 msgstr "Đã nhập"
-
-#. placeholder {0}: secs.length
-#. placeholder {1}: parsed.faq.length
-#: src/pages/CustomsForm.tsx
-msgid "Đã nhập {0} đoạn, {1} câu hỏi"
-msgstr "Đã nhập {0} đoạn, {1} câu hỏi"
 
 #. placeholder {0}: res.personsCreated
 #. placeholder {1}: res.familiesCreated
@@ -5037,6 +5125,13 @@ msgstr "Đã nối Trang {0}"
 #: src/components/community/QuestionPanel.tsx
 msgid "Đã sao chép"
 msgstr "Đã sao chép"
+
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/KhoeCard.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePost.tsx
+msgid "Đã sao chép liên kết."
+msgstr "Đã sao chép liên kết."
 
 #: src/pages/clan/Memories.tsx
 msgid "Đã sao chép link"
@@ -5096,17 +5191,6 @@ msgstr "Đã tạm dừng — có thể tiếp tục sau."
 msgid "Đã tạm tắt theo dõi"
 msgstr "Đã tạm tắt theo dõi"
 
-#. placeholder {0}: res.created.length
-#. placeholder {0}: result.created.length
-#: src/pages/CustomsImport.tsx
-#: src/pages/CustomsImport.tsx
-msgid "Đã tạo {0} bài."
-msgstr "Đã tạo {0} bài."
-
-#: src/pages/CustomsForm.tsx
-msgid "Đã tạo bài"
-msgstr "Đã tạo bài"
-
 #: src/pages/clan/NewPerson.tsx
 msgid "Đã tạo bản sao"
 msgstr "Đã tạo bản sao"
@@ -5118,6 +5202,10 @@ msgstr "Đã tạo cây mới"
 #: src/pages/NewClan.tsx
 msgid "Đã tạo dòng họ"
 msgstr "Đã tạo dòng họ"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Đã tạo liên kết"
+msgstr "Đã tạo liên kết"
 
 #: src/components/ShareLinksSection.tsx
 msgid "Đã tạo link chia sẻ"
@@ -5257,6 +5345,8 @@ msgstr "Đã thêm. Tiếp tục…"
 #: src/components/apiTokenMeta.ts
 #: src/components/ShareLinksSection.tsx
 #: src/pages/clan/Memories.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Đã thu hồi"
 msgstr "Đã thu hồi"
 
@@ -5266,6 +5356,7 @@ msgstr "Đã thu hồi liên kết"
 
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Đã thu hồi link"
 msgstr "Đã thu hồi link"
 
@@ -5354,10 +5445,6 @@ msgstr "Đã xoá {deleted} xã/phường"
 msgid "Đã xoá ảnh"
 msgstr "Đã xoá ảnh"
 
-#: src/pages/CustomsDetail.tsx
-msgid "Đã xoá bài"
-msgstr "Đã xoá bài"
-
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đã xoá bố cục"
 msgstr "Đã xoá bố cục"
@@ -5380,6 +5467,7 @@ msgid "Đã xoá góp ý"
 msgstr "Đã xoá góp ý"
 
 #: src/components/ShareLinksSection.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Đã xoá link"
 msgstr "Đã xoá link"
 
@@ -5443,8 +5531,8 @@ msgstr "Đã xuất {0}"
 msgid "Đã xuất {0} thẻ QR"
 msgstr "Đã xuất {0} thẻ QR"
 
+#: src/components/share/ShareTree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
 msgid "Đã xuất ảnh cây gia phả."
 msgstr "Đã xuất ảnh cây gia phả."
 
@@ -5475,10 +5563,6 @@ msgstr "Đặc khu"
 #: src/lib/timeline/eras.ts
 msgid "Đại dịch Covid-19 (2020)"
 msgstr "Đại dịch Covid-19 (2020)"
-
-#: src/pages/CustomsForm.tsx
-msgid "Dán <0>thân Markdown</0>: <1>#</1> Tiêu đề · đoạn mở đầu là mô tả ngắn · mỗi <2>##</2> là một đoạn · <3>![chú thích](https://…)</3> làm ảnh minh hoạ · đoạn <4>## Câu hỏi thường gặp</4> với các <5>###</5> thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới."
-msgstr "Dán <0>thân Markdown</0>: <1>#</1> Tiêu đề · đoạn mở đầu là mô tả ngắn · mỗi <2>##</2> là một đoạn · <3>![chú thích](https://…)</3> làm ảnh minh hoạ · đoạn <4>## Câu hỏi thường gặp</4> với các <5>###</5> thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới."
 
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Dán đường dẫn ảnh (bắt đầu bằng https://). Ảnh đặt ở trang khác có thể bị ẩn đi nếu họ xoá hoặc không cho dùng — nên chọn ảnh bạn có quyền dùng."
@@ -5518,10 +5602,6 @@ msgstr "Dán link gia phả (vd <0>https://vietnamgiapha.com/XemGiaPha/1691/giap
 msgid "Dán link https://… vào đây"
 msgstr "Dán link https://… vào đây"
 
-#: src/pages/CustomsImport.tsx
-msgid "Dán nhiều bài, mỗi bài bắt đầu bằng <0>#</0> Tiêu đề. Trong mỗi bài: đoạn mở đầu là mô tả ngắn, mỗi <1>##</1> là một đoạn,<2> ![chú thích](https://…)</2> làm ảnh minh hoạ, đoạn<3> ## Câu hỏi thường gặp</3> với các <4>###</4> thành FAQ. Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong lần nhập này."
-msgstr "Dán nhiều bài, mỗi bài bắt đầu bằng <0>#</0> Tiêu đề. Trong mỗi bài: đoạn mở đầu là mô tả ngắn, mỗi <1>##</1> là một đoạn,<2> ![chú thích](https://…)</2> làm ảnh minh hoạ, đoạn<3> ## Câu hỏi thường gặp</3> với các <4>###</4> thành FAQ. Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong lần nhập này."
-
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định"
 msgstr "Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định"
@@ -5543,7 +5623,9 @@ msgid "Đăng"
 msgstr "Đăng"
 
 #. placeholder {0}: fmt(row.published_at)
+#. placeholder {0}: formatPostDate(post.created_at)
 #: src/pages/admin/Announcements.tsx
+#: src/pages/site/SitePost.tsx
 msgid "Đăng {0}"
 msgstr "Đăng {0}"
 
@@ -5607,6 +5689,10 @@ msgstr "Đang chờ tới lượt…"
 msgid "Đang chọn…"
 msgstr "Đang chọn…"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Đang chuẩn bị link mời góp…"
+msgstr "Đang chuẩn bị link mời góp…"
+
 #: src/pages/Login.tsx
 msgid "Đang chuyển tới Google…"
 msgstr "Đang chuyển tới Google…"
@@ -5640,7 +5726,7 @@ msgstr "Đang đồng bộ…"
 msgid "Đang dùng"
 msgstr "Đang dùng"
 
-#: src/pages/Share.tsx
+#: src/components/share/ShareTree.tsx
 msgid "Đang dựng cây 3D…"
 msgstr "Đang dựng cây 3D…"
 
@@ -5690,6 +5776,10 @@ msgstr "Đang hiển thị {depth} đời quanh người làm tâm."
 #: src/pages/clan/Tree.tsx
 msgid "Đang hiển thị tất cả các đời."
 msgstr "Đang hiển thị tất cả các đời."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Đang hoạt động"
+msgstr "Đang hoạt động"
 
 #: src/pages/admin/Announcements.tsx
 msgid "Đăng khi bấm Lưu. Để trống lịch đăng và bỏ chọn = lưu nháp."
@@ -5782,7 +5872,6 @@ msgstr "Đang loại…"
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/Settings.tsx
-#: src/pages/CustomsForm.tsx
 #: src/pages/ResetPassword.tsx
 msgid "Đang lưu…"
 msgstr "Đang lưu…"
@@ -5830,6 +5919,7 @@ msgstr "Đang nhận mảnh"
 #: src/pages/Login.tsx
 #: src/pages/Login.tsx
 #: src/pages/Signup.tsx
+#: src/pages/site/ClanSiteLayout.tsx
 msgid "Đăng nhập"
 msgstr "Đăng nhập"
 
@@ -5846,6 +5936,7 @@ msgid "Đăng nhập để xác nhận"
 msgstr "Đăng nhập để xác nhận"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đăng nhập để xem đầy đủ & cùng vun đắp"
 msgstr "Đăng nhập để xem đầy đủ & cùng vun đắp"
 
@@ -5958,6 +6049,7 @@ msgstr "đang tải…"
 
 #: src/App.tsx
 #: src/components/admin/ApiTokensAdminTab.tsx
+#: src/components/BoardPostForm.tsx
 #: src/components/BranchesSection.tsx
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/ClanApiTokensTab.tsx
@@ -5996,6 +6088,7 @@ msgstr "đang tải…"
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardModeration.tsx
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/BoardPostEdit.tsx
 #: src/pages/clan/Branches.tsx
 #: src/pages/clan/Cemeteries.tsx
@@ -6030,6 +6123,7 @@ msgstr "đang tải…"
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/RestingPlaces.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/clan/TimelineDetail.tsx
 #: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/Todo.tsx
@@ -6038,11 +6132,15 @@ msgstr "đang tải…"
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/Customs.tsx
 #: src/pages/CustomsDetail.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
 #: src/pages/KhoeCard.tsx
 #: src/pages/MyFeedback.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteHeritageItem.tsx
+#: src/pages/site/SiteListParts.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePost.tsx
+#: src/pages/site/SitePost.tsx
 msgid "Đang tải…"
 msgstr "Đang tải…"
 
@@ -6075,7 +6173,7 @@ msgstr "Đang tạo PDF…"
 #: src/components/ShareLinksSection.tsx
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 #: src/pages/clan/InlawsNew.tsx
-#: src/pages/CustomsImport.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/NewClan.tsx
 #: src/pages/Signup.tsx
 msgid "Đang tạo…"
@@ -6111,6 +6209,8 @@ msgstr "Đang theo dõi sự kiện dòng họ"
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/InlawsConfirm.tsx
+#: src/pages/site/SiteSearch.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Đang tìm…"
 msgstr "Đang tìm…"
 
@@ -6168,12 +6268,12 @@ msgstr "Đăng xuất"
 
 #: src/components/CsvExportButton.tsx
 #: src/components/GedcomButtons.tsx
+#: src/components/share/ShareTree.tsx
 #: src/lib/pdf/exportStageLabel.ts
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/TreeCanvas.tsx
-#: src/pages/Share.tsx
 msgid "Đang xuất…"
 msgstr "Đang xuất…"
 
@@ -6232,6 +6332,7 @@ msgstr "Danh mục mộ phần, nghĩa trang."
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/Clans.tsx
+#: src/pages/site/SiteEvents.tsx
 msgid "Danh sách"
 msgstr "Danh sách"
 
@@ -6323,6 +6424,10 @@ msgstr "Đặt tên và vài thông tin cơ bản — tạo xong là dòng họ 
 #: src/components/McpGuidePanel.tsx
 msgid "Đặt tên, dán địa chỉ kết nối rồi bấm Continue"
 msgstr "Đặt tên, dán địa chỉ kết nối rồi bấm Continue"
+
+#: src/pages/site/SitePerson.tsx
+msgid "Dấu mốc cuộc đời"
+msgstr "Dấu mốc cuộc đời"
 
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
@@ -6488,9 +6593,19 @@ msgstr "Di cư, lập nghiệp nơi mới"
 #: src/lib/queries/mapStats.ts
 #: src/lib/quickCatalog.tsx
 #: src/lib/timeline/suggestions.ts
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteHeritageItem.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Di sản"
 msgstr "Di sản"
+
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Di sản & tư liệu"
+msgstr "Di sản & tư liệu"
 
 #: src/pages/Share.tsx
 msgid "Di sản & Văn hoá"
@@ -6500,7 +6615,6 @@ msgstr "Di sản & Văn hoá"
 msgid "Di sản của dòng họ"
 msgstr "Di sản của dòng họ"
 
-#: src/components/ClanFormFields.tsx
 #: src/components/share/ShareOverview.tsx
 #: src/lib/clanFeatures.ts
 #: src/lib/navModel.tsx
@@ -6510,6 +6624,8 @@ msgstr "Di sản của dòng họ"
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/HeritageForm.tsx
+#: src/pages/site/SiteHeritage.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Di sản dòng họ"
 msgstr "Di sản dòng họ"
 
@@ -6521,15 +6637,19 @@ msgstr "Di sản liên quan"
 msgid "Di sản văn hoá"
 msgstr "Di sản văn hoá"
 
+#: src/components/ClanFormFields.tsx
+msgid "Di sản, Mộ phần, Sự kiện, Bảng tin… chọn ở thẻ \"Trang dòng họ hiển thị gì\" trong Cài đặt dòng họ (áp cho cả người xem công khai lẫn link chia sẻ)."
+msgstr "Di sản, Mộ phần, Sự kiện, Bảng tin… chọn ở thẻ \"Trang dòng họ hiển thị gì\" trong Cài đặt dòng họ (áp cho cả người xem công khai lẫn link chia sẻ)."
+
 #: src/lib/clanFeatures.ts
 msgid "Di sản, văn hoá, hiện vật."
 msgstr "Di sản, văn hoá, hiện vật."
 
+#: src/components/SharedHeritageCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
-#: src/pages/Share.tsx
 msgid "Địa chỉ"
 msgstr "Địa chỉ"
 
@@ -6585,10 +6705,6 @@ msgstr "Điện thoại, mạng xã hội giúp con cháu xa nhà vẫn gần nh
 msgid "Điện thoại:"
 msgstr "Điện thoại:"
 
-#: src/pages/CustomsForm.tsx
-msgid "Điền vào form"
-msgstr "Điền vào form"
-
 #: src/components/AppDrawer.tsx
 msgid "Điều hướng"
 msgstr "Điều hướng"
@@ -6600,6 +6716,10 @@ msgstr "Điều hướng chính"
 #: src/components/AppDrawer.tsx
 msgid "Điều khoản"
 msgstr "Điều khoản"
+
+#: src/components/CaptchaNotice.tsx
+msgid "Điều khoản dịch vụ"
+msgstr "Điều khoản dịch vụ"
 
 #: src/pages/clan/Import.tsx
 msgid "Định dạng .xlsx hoặc .csv. Các cột:"
@@ -6652,10 +6772,6 @@ msgstr "Đỏ son viền vàng"
 msgid "Độ tin cậy"
 msgstr "Độ tin cậy"
 
-#: src/pages/CustomsForm.tsx
-msgid "Độ tin cậy (1–5)"
-msgstr "Độ tin cậy (1–5)"
-
 #: src/pages/clan/Tree.tsx
 msgid "Đỗ Việt Nguyễn"
 msgstr "Đỗ Việt Nguyễn"
@@ -6706,14 +6822,20 @@ msgstr "Đọc danh sách Trang"
 msgid "Độc lập và kháng chiến chống Pháp"
 msgstr "Độc lập và kháng chiến chống Pháp"
 
+#: src/pages/site/SitePost.tsx
+msgid "Đọc tiếp"
+msgstr "Đọc tiếp"
+
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/InlawsConfirm.tsx
 msgid "Đổi"
 msgstr "Đổi"
 
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "đời"
 msgstr "đời"
 
@@ -6726,6 +6848,8 @@ msgstr "Đời"
 #. placeholder {0}: g.gen
 #. placeholder {0}: gen - (data?.generation_offset ?? 0)
 #: src/components/InlawFamilyCard.tsx
+#: src/components/share/ShareTree.tsx
+#: src/components/share/ShareTree.tsx
 #: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
@@ -6740,8 +6864,8 @@ msgstr "Đời"
 #: src/pages/clan/Todo.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
-#: src/pages/Share.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Đời {0}"
 msgstr "Đời {0}"
 
@@ -6749,6 +6873,12 @@ msgstr "Đời {0}"
 #: src/pages/clan/People.tsx
 msgid "Đời {dispGen}"
 msgstr "Đời {dispGen}"
+
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePerson.tsx
+msgid "Đời {gen}"
+msgstr "Đời {gen}"
 
 #: src/lib/timeline/computeClanTimeline.ts
 msgid "Đời {gen} bắt đầu"
@@ -6844,10 +6974,6 @@ msgstr "Đời từ"
 msgid "Đổi từ khoá hoặc bộ lọc trong Tuỳ chọn."
 msgstr "Đổi từ khoá hoặc bộ lọc trong Tuỳ chọn."
 
-#: src/pages/CustomsForm.tsx
-msgid "Đối tượng áp dụng"
-msgstr "Đối tượng áp dụng"
-
 #: src/lib/timeline/templates.ts
 msgid "Đón con đầu lòng"
 msgstr "Đón con đầu lòng"
@@ -6883,17 +7009,16 @@ msgstr "Đơn vị này đang được dùng trong địa chỉ thành viên."
 #: src/components/QrScannerModal.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
-#: src/components/ShareCardDialog.tsx
 #: src/components/SidePanel.tsx
 #: src/components/SidePanel.tsx
 #: src/components/Toast.tsx
 #: src/pages/admin/PodcastPage.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/CustomsForm.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đóng"
 msgstr "Đóng"
 
@@ -7013,6 +7138,10 @@ msgstr "Đóng góp về ai?"
 msgid "Đóng góp về một người"
 msgstr "Đóng góp về một người"
 
+#: src/pages/site/SitePerson.tsx
+msgid "Đóng góp về người này"
+msgstr "Đóng góp về người này"
+
 #: src/pages/admin/Clans.tsx
 #: src/pages/admin/GiaPha.tsx
 #: src/pages/Clans.tsx
@@ -7033,6 +7162,8 @@ msgstr "dòng họ"
 #: src/pages/Clans.tsx
 #: src/pages/Contact.tsx
 #: src/pages/NewClan.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Dòng họ"
 msgstr "Dòng họ"
 
@@ -7141,6 +7272,7 @@ msgid "Dòng Họ Việt"
 msgstr "Dòng Họ Việt"
 
 #: src/components/AppDrawer.tsx
+#: src/pages/site/ClanSiteLayout.tsx
 msgid "Đóng menu"
 msgstr "Đóng menu"
 
@@ -7193,6 +7325,7 @@ msgstr "Dòng thời gian dòng họ"
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Đóng thông báo"
 msgstr "Đóng thông báo"
 
@@ -7305,6 +7438,15 @@ msgstr "Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng t
 msgid "Đường cong"
 msgstr "Đường cong"
 
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/site/SitePerson.tsx
+msgid "Đường dẫn"
+msgstr "Đường dẫn"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Đường dẫn trang để gửi người thân:"
+msgstr "Đường dẫn trang để gửi người thân:"
+
 #: src/components/CalendarDateInput.tsx
 #: src/pages/clan/Events.tsx
 msgid "Dương lịch"
@@ -7336,13 +7478,8 @@ msgstr "Đường về Thuỷ tổ của bạn"
 
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Memories.tsx
-#: src/pages/CustomsDetail.tsx
 msgid "Duyệt"
 msgstr "Duyệt"
-
-#: src/pages/CustomsDetail.tsx
-msgid "Duyệt & công khai"
-msgstr "Duyệt & công khai"
 
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Duyệt + áp dụng"
@@ -7465,8 +7602,9 @@ msgstr "GEDCOM, CSV — đem dữ liệu đi hoặc nạp từ phần mềm khá
 msgid "Ghi âm"
 msgstr "Ghi âm"
 
+#: src/components/SharedHeritageCard.tsx
 #: src/pages/clan/HeritageDetail.tsx
-#: src/pages/Share.tsx
+#: src/pages/site/SiteHeritageItem.tsx
 msgid "Ghi âm kể chuyện"
 msgstr "Ghi âm kể chuyện"
 
@@ -7517,14 +7655,6 @@ msgstr "Ghi chú: {0}"
 msgid "Ghi công đức"
 msgstr "Ghi công đức"
 
-#: src/pages/CustomsForm.tsx
-msgid "Ghi đè"
-msgstr "Ghi đè"
-
-#: src/pages/CustomsForm.tsx
-msgid "Ghi đè nội dung hiện tại?"
-msgstr "Ghi đè nội dung hiện tại?"
-
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/ClanFund.tsx
 msgid "Ghi giao dịch"
@@ -7564,6 +7694,8 @@ msgstr "Ghi từ thôn/xã/huyện đến tỉnh theo địa danh hành chính �
 
 #: src/components/share/ShareOverview.tsx
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteBoard.tsx
 msgid "Ghim"
 msgstr "Ghim"
 
@@ -7607,6 +7739,10 @@ msgstr "Gia đình sắm được chiếc xe đầu tiên, đi lại đỡ vất
 msgid "Gia đình trải qua mất mát, phải rời nhà lánh nạn."
 msgstr "Gia đình trải qua mất mát, phải rời nhà lánh nạn."
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Gia hạn"
+msgstr "Gia hạn"
+
 #: src/lib/timeline/eras.ts
 msgid "Gia Long lên ngôi, đóng đô ở Huế (1802)"
 msgstr "Gia Long lên ngôi, đóng đô ở Huế (1802)"
@@ -7622,6 +7758,7 @@ msgstr "Gia phả"
 #. placeholder {0}: data.clan_name
 #: src/pages/Share.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/ClanSiteLayout.tsx
 msgid "Gia phả {0}"
 msgstr "Gia phả {0}"
 
@@ -7641,12 +7778,18 @@ msgid "Gia phả {clanName}"
 msgstr "Gia phả {clanName}"
 
 #: src/lib/pageTitle.ts
+#: src/lib/pageTitle.ts
+#: src/pages/site/SiteHome.tsx
 msgid "Gia phả dòng họ"
 msgstr "Gia phả dòng họ"
 
 #: src/pages/admin/GiaPha.tsx
 msgid "Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau — tiến độ được lưu trên máy chủ."
 msgstr "Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau — tiến độ được lưu trên máy chủ."
+
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Gia phả, bảng tin và những câu chuyện của dòng họ — để con cháu ở xa vẫn biết đường về."
+msgstr "Gia phả, bảng tin và những câu chuyện của dòng họ — để con cháu ở xa vẫn biết đường về."
 
 #: src/lib/queries/heritage.ts
 msgid "Giai thoại / công trạng"
@@ -7729,6 +7872,7 @@ msgid "Giờ hoàng đạo (tốt)"
 msgstr "Giờ hoàng đạo (tốt)"
 
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Giỗ tổ"
 msgstr "Giỗ tổ"
 
@@ -7778,6 +7922,10 @@ msgstr "Giới hạn số dòng họ"
 msgid "Giới hạn tài khoản"
 msgstr "Giới hạn tài khoản"
 
+#: src/pages/CustomsDetail.tsx
+msgid "Giới thiệu"
+msgstr "Giới thiệu"
+
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
@@ -7792,6 +7940,7 @@ msgstr "Giới hạn tài khoản"
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Giới tính"
 msgstr "Giới tính"
 
@@ -7811,6 +7960,10 @@ msgstr "Giữ nguyên Authentication; ở OAuth client chọn \"Register automat
 #: src/components/gallery/GalleryScene.tsx
 msgid "Gỗ"
 msgstr "Gỗ"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Gỡ"
+msgstr "Gỡ"
 
 #: src/components/McpGuidePanel.tsx
 msgid "Gõ \"@\" rồi chọn plugin; nên nói rõ tên plugin trong câu hỏi. Với thao tác ghi, kiểm tra nội dung trước khi xác nhận."
@@ -7862,11 +8015,19 @@ msgstr "Gõ để tìm thời đại"
 msgid "Gõ để tìm thời kỳ"
 msgstr "Gõ để tìm thời kỳ"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Gõ để tìm…"
+msgstr "Gõ để tìm…"
+
 #. placeholder {0}: wipeClan.name
 #. placeholder {1}: wipeClan.person_count
 #: src/pages/admin/GiaPha.tsx
 msgid "Gõ đúng tên dòng họ <0>“{0}”</0> để xác nhận xoá {1} người:"
 msgstr "Gõ đúng tên dòng họ <0>“{0}”</0> để xác nhận xoá {1} người:"
+
+#: src/pages/site/SiteSearch.tsx
+msgid "Gõ ít nhất 2 ký tự để tìm người trong cây, bài viết, di sản, mộ phần, bảng vàng và các trang của dòng họ."
+msgstr "Gõ ít nhất 2 ký tự để tìm người trong cây, bài viết, di sản, mộ phần, bảng vàng và các trang của dòng họ."
 
 #: src/pages/clan/Merge.tsx
 msgid "Gõ ít nhất 2 ký tự để tìm theo tên."
@@ -7902,10 +8063,6 @@ msgstr "Gõ năm"
 msgid "Gõ năm, tên hoặc nguồn (sự kiện, mộ, di sản…) để tìm"
 msgstr "Gõ năm, tên hoặc nguồn (sự kiện, mộ, di sản…) để tìm"
 
-#: src/pages/CustomsForm.tsx
-msgid "Gõ tên bài để tìm & thêm liên kết…"
-msgstr "Gõ tên bài để tìm & thêm liên kết…"
-
 #: src/pages/clan/MyLineage.tsx
 msgid "Gõ tên của bạn trong gia phả…"
 msgstr "Gõ tên của bạn trong gia phả…"
@@ -7924,6 +8081,7 @@ msgstr "Gõ tên để lọc (không cần dấu)"
 #: src/components/community/FaceTagger.tsx
 #: src/components/community/QuestionPanel.tsx
 #: src/components/community/QuestionPanel.tsx
+#: src/components/share/ShareTree.tsx
 #: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/Memories.tsx
@@ -7931,7 +8089,6 @@ msgstr "Gõ tên để lọc (không cần dấu)"
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
 msgid "Gõ tên để tìm (không cần dấu)"
 msgstr "Gõ tên để tìm (không cần dấu)"
 
@@ -7951,6 +8108,14 @@ msgstr "Gõ tên mẫu để tìm"
 msgid "Gõ tháng"
 msgstr "Gõ tháng"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Gỡ thiệp"
+msgstr "Gỡ thiệp"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Gỡ thiệp này ngay?"
+msgstr "Gỡ thiệp này ngay?"
+
 #: src/pages/Customs.tsx
 msgid "Gõ tình huống cũng được — vd \"nhà mới\", \"có em bé\"…"
 msgstr "Gõ tình huống cũng được — vd \"nhà mới\", \"có em bé\"…"
@@ -7966,10 +8131,6 @@ msgstr "Gợi ý — bạn chỉ cần lần lượt trả lời:"
 #: src/components/HomeCustomizeDrawer.tsx
 msgid "Gợi ý bước tiếp theo"
 msgstr "Gợi ý bước tiếp theo"
-
-#: src/pages/CustomsForm.tsx
-msgid "Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực hiện · Nên / kiêng kỵ · Biến thể vùng miền."
-msgstr "Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực hiện · Nên / kiêng kỵ · Biến thể vùng miền."
 
 #. placeholder {0}: link.person_b_name_hint
 #: src/pages/clan/Inlaws.tsx
@@ -7998,6 +8159,10 @@ msgstr "Gộp"
 #: src/pages/clan/Merge.tsx
 msgid "Gộp \"{0}\" vào \"{1}\"?"
 msgstr "Gộp \"{0}\" vào \"{1}\"?"
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Góp ảnh cũ"
+msgstr "Góp ảnh cũ"
 
 #: src/components/community/CommunityCard.tsx
 msgid "góp một câu chuyện"
@@ -8077,6 +8242,10 @@ msgstr "Gửi bình luận"
 msgid "Gửi câu trả lời"
 msgstr "Gửi câu trả lời"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Gửi cho ai (ghi chú riêng của bạn)"
+msgstr "Gửi cho ai (ghi chú riêng của bạn)"
+
 #: src/components/community/ContributeLinkPanel.tsx
 msgid "Gửi cho ai? (không bắt buộc)"
 msgstr "Gửi cho ai? (không bắt buộc)"
@@ -8092,10 +8261,6 @@ msgstr "Gửi đề xuất"
 #: src/components/community/MemoryForm.tsx
 msgid "Gửi đóng góp"
 msgstr "Gửi đóng góp"
-
-#: src/components/ShareCardDialog.tsx
-msgid "Gửi đường dẫn trang:"
-msgstr "Gửi đường dẫn trang:"
 
 #: src/components/BoardPostForm.tsx
 msgid "Gửi duyệt"
@@ -8253,6 +8418,7 @@ msgstr "Hệ thống chưa có dòng họ nào để gắn liên kết."
 #: src/components/ApiTokenPanels.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/clan/Memories.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Hết hạn"
 msgstr "Hết hạn"
 
@@ -8273,6 +8439,10 @@ msgstr "hết hạn {0}"
 #: src/pages/admin/Announcements.tsx
 msgid "Hết hạn {0}"
 msgstr "Hết hạn {0}"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Hết hạn / thu hồi"
+msgstr "Hết hạn / thu hồi"
 
 #: src/components/ExistingPersonPicker.tsx
 msgid "Hiện {cap} / {totalMatched} kết quả — gõ thêm để thu hẹp."
@@ -8378,12 +8548,17 @@ msgid "Hiệu lực (ngày)"
 msgstr "Hiệu lực (ngày)"
 
 #: src/components/HeritagePhotosSection.tsx
+#: src/components/SharedHeritageCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
-#: src/pages/Share.tsx
+#: src/pages/site/SiteHeritageItem.tsx
 msgid "Hình ảnh"
 msgstr "Hình ảnh"
+
+#: src/pages/site/SitePerson.tsx
+msgid "Hình ảnh & tư liệu"
+msgstr "Hình ảnh & tư liệu"
 
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Hình minh hoạ"
@@ -8444,6 +8619,8 @@ msgid "Họ sẽ không hiện trong Việc cần làm nữa và không tính v�
 msgstr "Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa."
 
 #: src/pages/clan/People.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteTree.tsx
 msgid "Hồ sơ"
 msgstr "Hồ sơ"
 
@@ -8477,6 +8654,10 @@ msgstr "Hồ sơ đầy đủ {percent}%, {withGaps} người còn thiếu thôn
 #: src/pages/clan/Import.tsx
 msgid "Hồ sơ mới có chỗ chưa đầy đủ — bấm <0>Việc cần làm</0> để bổ sung dần."
 msgstr "Hồ sơ mới có chỗ chưa đầy đủ — bấm <0>Việc cần làm</0> để bổ sung dần."
+
+#: src/components/ShareSectionsCard.tsx
+msgid "Hồ sơ người đã mất"
+msgstr "Hồ sơ người đã mất"
 
 #: src/lib/pageTitle.ts
 msgid "Hồ sơ thành viên"
@@ -8573,6 +8754,7 @@ msgid "Hoàng tộc"
 msgstr "Hoàng tộc"
 
 #: src/components/ShareLinksSection.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Hoạt động"
 msgstr "Hoạt động"
 
@@ -8599,6 +8781,7 @@ msgid "Hỏi {0}"
 msgstr "Hỏi {0}"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteContribute.tsx
 msgid "Hỏi & trả lời"
 msgstr "Hỏi & trả lời"
 
@@ -8640,6 +8823,7 @@ msgstr "Hỏi về ai? (không bắt buộc)"
 #: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/lib/pageTitle.ts
+#: src/pages/site/SitePerson.tsx
 msgid "Hôm nay"
 msgstr "Hôm nay"
 
@@ -8827,8 +9011,6 @@ msgstr "Huỷ"
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/TimelineList.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
 #: src/pages/NewClan.tsx
 msgid "Hủy"
 msgstr "Hủy"
@@ -8896,6 +9078,10 @@ msgstr "Ít nhất 8 ký tự."
 #: src/components/community/InviteCardDialog.tsx
 msgid "Kể chuyện"
 msgstr "Kể chuyện"
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Kể chuyện ông bà"
+msgstr "Kể chuyện ông bà"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Kể lại bằng lời của bạn… (có thể dùng nút micro trên bàn phím điện thoại để đọc cho máy ghi)"
@@ -9013,6 +9199,11 @@ msgstr "Khách gửi qua link luôn chờ duyệt cho tới khi đã được du
 msgid "Khách qua link"
 msgstr "Khách qua link"
 
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Khám phá"
+msgstr "Khám phá"
+
 #: src/lib/timeline/eras.ts
 msgid "Kháng chiến chống Mỹ"
 msgstr "Kháng chiến chống Mỹ"
@@ -9047,6 +9238,10 @@ msgstr "Khổ giấy"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
 msgstr "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
+
+#: src/components/ShareCardDialog.tsx
+msgid "Khổ thiệp"
+msgstr "Khổ thiệp"
 
 #: src/lib/timeline/eras.ts
 msgid "Khoa cử, bia tiến sĩ"
@@ -9293,6 +9488,11 @@ msgstr "Không có góp ý nào khớp"
 msgid "Không có kết quả"
 msgstr "Không có kết quả"
 
+#. placeholder {0}: q.trim()
+#: src/pages/site/SiteSearch.tsx
+msgid "Không có kết quả cho \"{0}\"."
+msgstr "Không có kết quả cho \"{0}\"."
+
 #: src/components/GlobalSearch.tsx
 msgid "Không có kết quả cho \"{debounced}\"."
 msgstr "Không có kết quả cho \"{debounced}\"."
@@ -9304,6 +9504,10 @@ msgstr "Không có kết quả khớp."
 #: src/pages/clan/Kinship.tsx
 msgid "Không có kết quả."
 msgstr "Không có kết quả."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Không có liên kết phù hợp"
+msgstr "Không có liên kết phù hợp"
 
 #: src/pages/clan/Import.tsx
 msgid "Không có lỗi hay cảnh báo. Bạn có thể nhập ngay."
@@ -9484,7 +9688,6 @@ msgid "không được lưu lại"
 msgstr "không được lưu lại"
 
 #: src/pages/clan/ContributionDetail.tsx
-#: src/pages/CustomsDetail.tsx
 msgid "Không duyệt được"
 msgstr "Không duyệt được"
 
@@ -9495,6 +9698,10 @@ msgstr "Không gắn người cụ thể"
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Không gắn với ai (mốc chung của dòng họ)"
 msgstr "Không gắn với ai (mốc chung của dòng họ)"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Không gia hạn được"
+msgstr "Không gia hạn được"
 
 #: src/pages/clan/PersonDetail.tsx
 msgid "Không gỡ được"
@@ -9653,6 +9860,13 @@ msgstr "Không nhớ năm dương?"
 msgid "Không nối được"
 msgstr "Không nối được"
 
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/KhoeCard.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePost.tsx
+msgid "Không sao chép được liên kết."
+msgstr "Không sao chép được liên kết."
+
 #: src/components/community/ContributeLinkPanel.tsx
 #: src/components/community/QuestionPanel.tsx
 msgid "Không sao chép được, hãy chọn và sao chép bằng tay"
@@ -9666,6 +9880,14 @@ msgstr "Không tải được"
 msgid "Không tải được ảnh"
 msgstr "Không tải được ảnh"
 
+#: src/pages/site/SitePost.tsx
+msgid "Không tải được bài viết."
+msgstr "Không tải được bài viết."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Không tải được danh sách chia sẻ."
+msgstr "Không tải được danh sách chia sẻ."
+
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Không tải được danh sách:"
 msgstr "Không tải được danh sách:"
@@ -9674,10 +9896,15 @@ msgstr "Không tải được danh sách:"
 msgid "Không tải được dữ liệu"
 msgstr "Không tải được dữ liệu"
 
+#: src/pages/site/SiteHeritageItem.tsx
+msgid "Không tải được mục di sản."
+msgstr "Không tải được mục di sản."
+
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/NewClan.tsx
 msgid "Không tạo được"
@@ -9699,6 +9926,10 @@ msgstr "Không tạo được link chia sẻ"
 #: src/components/community/InviteImageButton.tsx
 msgid "Không tạo được link mời góp"
 msgstr "Không tạo được link mời góp"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Không tạo được link mời góp. Hãy thử lại sau."
+msgstr "Không tạo được link mời góp. Hãy thử lại sau."
 
 #: src/components/QrSignInButton.tsx
 msgid "Không tạo được mã QR"
@@ -9765,6 +9996,10 @@ msgstr "Không thêm được ảnh"
 msgid "Không thu hồi được"
 msgstr "Không thu hồi được"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Không thực hiện được"
+msgstr "Không thực hiện được"
+
 #: src/pages/admin/Users.tsx
 msgid "Không thuộc dòng họ nào."
 msgstr "Không thuộc dòng họ nào."
@@ -9830,6 +10065,10 @@ msgstr "Không tìm thấy mốc này (có thể đã bị xoá)."
 msgid "Không tìm thấy ngày đẹp phù hợp trong khoảng này."
 msgstr "Không tìm thấy ngày đẹp phù hợp trong khoảng này."
 
+#: src/pages/site/SitePerson.tsx
+msgid "Không tìm thấy người này trong cây."
+msgstr "Không tìm thấy người này trong cây."
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Không tìm thấy người này."
 msgstr "Không tìm thấy người này."
@@ -9843,11 +10082,13 @@ msgid "Không tìm thấy thông báo này. Có thể đã hết hạn hoặc b�
 msgstr "Không tìm thấy thông báo này. Có thể đã hết hạn hoặc bị xoá."
 
 #: src/pages/Share.tsx
+#: src/pages/site/FocusPage.tsx
 msgid "Không tìm thấy thông tin người này."
 msgstr "Không tìm thấy thông tin người này."
 
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Không tìm thấy."
 msgstr "Không tìm thấy."
 
@@ -9895,10 +10136,10 @@ msgstr "Không xác nhận được"
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvases.tsx
-#: src/pages/CustomsDetail.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Không xoá được"
 msgstr "Không xoá được"
@@ -9930,7 +10171,7 @@ msgstr "Không xuất được"
 msgid "Không xuất được ảnh. Thử lại hoặc dùng chức năng In."
 msgstr "Không xuất được ảnh. Thử lại hoặc dùng chức năng In."
 
-#: src/pages/Share.tsx
+#: src/components/share/ShareTree.tsx
 msgid "Không xuất được ảnh. Thử lại sau."
 msgstr "Không xuất được ảnh. Thử lại sau."
 
@@ -10054,6 +10295,10 @@ msgstr "kinship-picker-{0}-input"
 msgid "Kỵ"
 msgstr "Kỵ"
 
+#: src/pages/site/SitePerson.tsx
+msgid "Ký ức gia đình"
+msgstr "Ký ức gia đình"
+
 #. placeholder {0}: focalPerson.full_name
 #: src/components/ContributeDialog.tsx
 msgid "Là con của {0}"
@@ -10062,6 +10307,10 @@ msgstr "Là con của {0}"
 #: src/components/ContributeDialog.tsx
 msgid "Là vợ / chồng"
 msgstr "Là vợ / chồng"
+
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Làm bằng Dòng Họ Việt"
+msgstr "Làm bằng Dòng Họ Việt"
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Làm lại (Ctrl+Shift+Z)"
@@ -10109,8 +10358,8 @@ msgstr "Làng xã"
 msgid "Làng, xã, thành phố…"
 msgstr "Làng, xã, thành phố…"
 
+#: src/components/SharedHeritageCard.tsx
 #: src/pages/clan/HeritageDetail.tsx
-#: src/pages/Share.tsx
 msgid "Lập / xây năm"
 msgstr "Lập / xây năm"
 
@@ -10199,9 +10448,13 @@ msgstr "Lễ, tết ngày này"
 #: src/components/QuickAddSheet.tsx
 #: src/components/RelationshipGroup.tsx
 #: src/pages/clan/HeritageForm.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Lên"
 msgstr "Lên"
+
+#: src/components/site/ScrollTopButton.tsx
+#: src/components/site/ScrollTopButton.tsx
+msgid "Lên đầu trang"
+msgstr "Lên đầu trang"
 
 #. placeholder {0}: lineage.steps.length
 #: src/pages/clan/MyLineage.tsx
@@ -10213,6 +10466,7 @@ msgid "Lên lịch"
 msgstr "Lên lịch"
 
 #: src/pages/clan/Events.tsx
+#: src/pages/site/SiteEvents.tsx
 msgid "Lịch"
 msgstr "Lịch"
 
@@ -10239,6 +10493,10 @@ msgstr "Lịch đăng"
 #: src/lib/nextSteps.ts
 msgid "Lịch giỗ trên điện thoại"
 msgstr "Lịch giỗ trên điện thoại"
+
+#: src/components/ShareSectionsCard.tsx
+msgid "Lịch giỗ và các dịp chung của dòng họ (họp họ, lễ tiết)."
+msgstr "Lịch giỗ và các dịp chung của dòng họ (họp họ, lễ tiết)."
 
 #: src/components/HomeCustomizeDrawer.tsx
 msgid "Lịch hôm nay"
@@ -10305,6 +10563,10 @@ msgstr "Liên kết — bấm để xem"
 msgid "Liên kết chéo giữa các dòng họ (thông gia, họ tổ, họ hậu duệ, họ hàng)."
 msgstr "Liên kết chéo giữa các dòng họ (thông gia, họ tổ, họ hậu duệ, họ hàng)."
 
+#: src/pages/KhoeCard.tsx
+msgid "Liên kết còn {left} ngày"
+msgstr "Liên kết còn {left} ngày"
+
 #: src/lib/clanFeatures.ts
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
@@ -10322,6 +10584,10 @@ msgstr "Liên kết dòng họ"
 #: src/pages/admin/Health.tsx
 msgid "Liên kết dòng họ chờ"
 msgstr "Liên kết dòng họ chờ"
+
+#: src/pages/KhoeCard.tsx
+msgid "Liên kết hết hạn trong hôm nay"
+msgstr "Liên kết hết hạn trong hôm nay"
 
 #: src/components/QuickActionsCard.tsx
 #: src/lib/quickCatalog.tsx
@@ -10373,14 +10639,6 @@ msgstr "Link ảnh"
 msgid "Link ảnh (https://…)"
 msgstr "Link ảnh (https://…)"
 
-#: src/pages/CustomsForm.tsx
-msgid "Link ảnh bìa (https)"
-msgstr "Link ảnh bìa (https)"
-
-#: src/pages/CustomsForm.tsx
-msgid "Link ảnh bìa phải là https://…"
-msgstr "Link ảnh bìa phải là https://…"
-
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Link ảnh chưa đúng: cần bắt đầu bằng https:// và không có dấu cách."
 msgstr "Link ảnh chưa đúng: cần bắt đầu bằng https:// và không có dấu cách."
@@ -10388,6 +10646,10 @@ msgstr "Link ảnh chưa đúng: cần bắt đầu bằng https:// và không c
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Link ảnh phải bắt đầu bằng https://"
 msgstr "Link ảnh phải bắt đầu bằng https://"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Link cây"
+msgstr "Link cây"
 
 #: src/components/ShareLinksSection.tsx
 msgid "Link cây gia phả"
@@ -10404,10 +10666,6 @@ msgstr "Link chỉ xem, không cần đăng nhập"
 #: src/pages/clan/Settings.tsx
 msgid "Link chia sẻ"
 msgstr "Link chia sẻ"
-
-#: src/components/ShareSectionsCard.tsx
-msgid "Link chia sẻ hiển thị gì"
-msgstr "Link chia sẻ hiển thị gì"
 
 #: src/pages/clan/Memories.tsx
 msgid "Link chung"
@@ -10429,6 +10687,10 @@ msgstr "Link cũ ngừng hoạt động; bạn cần đăng ký lại lịch b�
 msgid "Link đã gửi"
 msgstr "Link đã gửi"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Link đang hoạt động"
+msgstr "Link đang hoạt động"
+
 #: src/pages/admin/GiaPha.tsx
 msgid "Link gia phả"
 msgstr "Link gia phả"
@@ -10442,6 +10704,10 @@ msgstr "Link hết hạn ngày {0}. Quản lý / thu hồi sớm trong <0>Cài �
 msgid "Link khoe có hạn"
 msgstr "Link khoe có hạn"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Link khoe để dán vào Zalo/Facebook:"
+msgstr "Link khoe để dán vào Zalo/Facebook:"
+
 #: src/components/community/MemoryForm.tsx
 msgid "Link không hợp lệ (phải bắt đầu bằng https://)"
 msgstr "Link không hợp lệ (phải bắt đầu bằng https://)"
@@ -10452,6 +10718,7 @@ msgstr "Link mời"
 
 #: src/components/community/ContributeLinkPanel.tsx
 #: src/pages/clan/Memories.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Link mời góp"
 msgstr "Link mời góp"
 
@@ -10478,6 +10745,10 @@ msgstr "Link trả lời"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Link trong bài viết"
 msgstr "Link trong bài viết"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Link và mã QR đã in sẽ không mở được nữa, không khôi phục lại được."
+msgstr "Link và mã QR đã in sẽ không mở được nữa, không khôi phục lại được."
 
 #: src/lib/queries/restingPlaces.ts
 msgid "Lô – hàng – số"
@@ -10532,6 +10803,8 @@ msgstr "Loại khỏi danh sách (không hiện ở đây nữa)"
 
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Loại liên kết"
 msgstr "Loại liên kết"
 
@@ -10548,11 +10821,16 @@ msgstr "Loại phản hồi"
 msgid "Loại sự kiện"
 msgstr "Loại sự kiện"
 
+#: src/components/ShareCardDialog.tsx
+msgid "Loại thiệp"
+msgstr "Loại thiệp"
+
 #: src/pages/clan/MapStats.tsx
 msgid "Loại trừ người đã mất"
 msgstr "Loại trừ người đã mất"
 
 #: src/pages/clan/Board.tsx
+#: src/pages/site/SiteBoard.tsx
 msgid "Lọc bài viết"
 msgstr "Lọc bài viết"
 
@@ -10569,6 +10847,7 @@ msgid "Lọc danh sách"
 msgstr "Lọc danh sách"
 
 #: src/pages/clan/Heritage.tsx
+#: src/pages/site/SiteHeritage.tsx
 msgid "Lọc di sản"
 msgstr "Lọc di sản"
 
@@ -10655,6 +10934,8 @@ msgstr "Lọc theo hình thức"
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/Memories.tsx
 #: src/pages/MyFeedback.tsx
+#: src/pages/site/SiteGraves.tsx
+#: src/pages/site/SiteHonor.tsx
 msgid "Lọc theo loại"
 msgstr "Lọc theo loại"
 
@@ -10790,6 +11071,14 @@ msgstr "Lưới"
 msgid "Lượt ghé tuần này"
 msgstr "Lượt ghé tuần này"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Lượt xem"
+msgstr "Lượt xem"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Lượt xem thiệp khoe"
+msgstr "Lượt xem thiệp khoe"
+
 #: src/components/BranchesSection.tsx
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/QuickAddSheet.tsx
@@ -10817,7 +11106,6 @@ msgstr "Lượt ghé tuần này"
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/CustomsDetail.tsx
-#: src/pages/CustomsForm.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Lưu"
 msgstr "Lưu"
@@ -10939,6 +11227,8 @@ msgstr "Mã mời sẽ không dùng được nữa. Có thể tạo mã mới."
 
 #: src/components/QrCodeModal.tsx
 #: src/components/QrCodeModal.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/clan/TimelineDetail.tsx
 msgid "Mã QR"
 msgstr "Mã QR"
@@ -11101,6 +11391,11 @@ msgstr "Mẹ nuôi: "
 msgid "Mẹ:"
 msgstr "Mẹ:"
 
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Menu dòng họ"
+msgstr "Menu dòng họ"
+
 #. placeholder {0}: title === "Giữ lại" ? "winner" : "loser"
 #: src/pages/clan/Merge.tsx
 msgid "merge-picker-{0}-input"
@@ -11160,6 +11455,15 @@ msgstr "Mở ChatGPT trên web → Plugins (chatgpt.com/plugins)"
 msgid "Mở chế độ di chuyển cây"
 msgstr "Mở chế độ di chuyển cây"
 
+#. placeholder {0}: i.title
+#: src/pages/clan/ShareHub.tsx
+msgid "Mở chi tiết {0}"
+msgstr "Mở chi tiết {0}"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Mở chi tiết và mã QR"
+msgstr "Mở chi tiết và mã QR"
+
 #: src/components/McpGuidePanel.tsx
 msgid "Mở Claude (claude.ai hoặc ứng dụng máy tính) → Customize → Connectors"
 msgstr "Mở Claude (claude.ai hoặc ứng dụng máy tính) → Customize → Connectors"
@@ -11206,6 +11510,7 @@ msgstr "Mở lịch & xem chi tiết ngày này"
 
 #: src/components/AppHeader.tsx
 #: src/components/ClanLayout.tsx
+#: src/pages/site/ClanSiteLayout.tsx
 msgid "Mở menu"
 msgstr "Mở menu"
 
@@ -11223,6 +11528,9 @@ msgstr "Mở Mộ phần & tro cốt → sửa từng nơi và chọn Tỉnh / X
 #: src/lib/queries/mapStats.ts
 #: src/lib/quickCatalog.tsx
 #: src/lib/timeline/suggestions.ts
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Mộ phần"
 msgstr "Mộ phần"
 
@@ -11232,7 +11540,6 @@ msgstr "Mộ phần"
 msgid "Mộ phần / tro cốt"
 msgstr "Mộ phần / tro cốt"
 
-#: src/components/ClanFormFields.tsx
 #: src/components/share/ShareOverview.tsx
 #: src/components/ShareSectionsCard.tsx
 #: src/lib/clanFeatures.ts
@@ -11244,6 +11551,9 @@ msgstr "Mộ phần / tro cốt"
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/RestingPlaces.tsx
 #: src/pages/clan/RestingPlaces.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteGraves.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Mộ phần & tro cốt"
 msgstr "Mộ phần & tro cốt"
 
@@ -11306,7 +11616,6 @@ msgid "Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả
 msgstr "Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
 
 #: src/components/timeline/TimelineMilestoneForm.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Mô tả ngắn"
 msgstr "Mô tả ngắn"
 
@@ -11434,6 +11743,8 @@ msgid "Mỗi dòng thời gian là một poster: của cả dòng họ hoặc c�
 msgstr "Mỗi dòng thời gian là một poster: của cả dòng họ hoặc của từng thành viên. Bấm vào một dòng để xem poster."
 
 #: src/components/community/PersonMemoriesSection.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Mời góp"
 msgstr "Mời góp"
 
@@ -11458,6 +11769,14 @@ msgstr "Mới khởi tạo (<5)"
 msgid "Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm."
 msgstr "Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm."
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Mọi liên kết và mã QR của dòng họ ở một nơi. Chỉ quản trị viên thấy trang này."
+msgstr "Mọi liên kết và mã QR của dòng họ ở một nơi. Chỉ quản trị viên thấy trang này."
+
+#: src/lib/navModel.tsx
+msgid "Mọi liên kết và mã QR của dòng họ: tạo, gia hạn, thu hồi."
+msgstr "Mọi liên kết và mã QR của dòng họ: tạo, gia hạn, thu hồi."
+
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/HonorBook.tsx
@@ -11470,10 +11789,6 @@ msgstr "Mọi loại"
 #: src/pages/Changelog.tsx
 msgid "Mọi mức độ"
 msgstr "Mọi mức độ"
-
-#: src/pages/CustomsForm.tsx
-msgid "Mỗi mục gồm 1 câu hỏi và câu trả lời ngắn gọn."
-msgstr "Mỗi mục gồm 1 câu hỏi và câu trả lời ngắn gọn."
 
 #: src/pages/Account.tsx
 msgid "Mỗi ngày 1 và ngày 15 âm lịch, app gửi email nhắc thắp hương. Áp dụng cho tài khoản này, không phụ thuộc dòng họ nào."
@@ -11519,6 +11834,7 @@ msgstr "Mời người khác đóng góp (gửi link, không cần tài khoản)
 msgid "Mời người thân đóng góp"
 msgstr "Mời người thân đóng góp"
 
+#: src/components/ShareCardDialog.tsx
 #: src/pages/clan/Memories.tsx
 msgid "Mời người thân góp"
 msgstr "Mời người thân góp"
@@ -11645,6 +11961,14 @@ msgstr "Một kỷ niệm về cụ"
 msgid "Một kỷ niệm, món ăn hay nấu, câu hay dặn, công việc ngày trước…"
 msgstr "Một kỷ niệm, món ăn hay nấu, câu hay dặn, công việc ngày trước…"
 
+#: src/pages/site/SiteContribute.tsx
+msgid "Một kỷ niệm, một câu nói, một thói quen của người đã khuất."
+msgstr "Một kỷ niệm, một câu nói, một thói quen của người đã khuất."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Một người"
+msgstr "Một người"
+
 #: src/lib/queries/person-links.ts
 msgid "Một người vừa thuộc dòng họ này vừa thuộc dòng họ kia (vd con gái họ này làm dâu họ kia)."
 msgstr "Một người vừa thuộc dòng họ này vừa thuộc dòng họ kia (vd con gái họ này làm dâu họ kia)."
@@ -11664,10 +11988,6 @@ msgstr "Một trang lớn chứa cả cây (mặc định)"
 msgid "mục"
 msgstr "mục"
 
-#: src/pages/CustomsForm.tsx
-msgid "Mức bắt buộc"
-msgstr "Mức bắt buộc"
-
 #: src/pages/clan/MapStats.tsx
 msgid "mục di sản"
 msgstr "mục di sản"
@@ -11675,6 +11995,10 @@ msgstr "mục di sản"
 #: src/components/panel/PanelHost.tsx
 msgid "Mục di sản"
 msgstr "Mục di sản"
+
+#: src/pages/site/SiteHeritageItem.tsx
+msgid "Mục di sản này không còn."
+msgstr "Mục di sản này không còn."
 
 #: src/pages/clan/ClanFund.tsx
 msgid "Mục đích (tuỳ chọn)"
@@ -11720,6 +12044,10 @@ msgstr "Mùng 5 tháng Năm — giết sâu bọ."
 msgid "Mùng 9 tháng Chín — lên cao, mừng thọ người già."
 msgstr "Mùng 9 tháng Chín — lên cao, mừng thọ người già."
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Muốn đổi phần nào của dòng họ được hiện ra ngoài? Vào Cài đặt dòng họ › Trang dòng họ hiển thị gì."
+msgstr "Muốn đổi phần nào của dòng họ được hiện ra ngoài? Vào Cài đặt dòng họ › Trang dòng họ hiển thị gì."
+
 #: src/pages/clan/Tree.tsx
 msgid "Muốn xem thêm, mở"
 msgstr "Muốn xem thêm, mở"
@@ -11756,6 +12084,8 @@ msgstr "Muốn xem thêm, mở"
 #: src/pages/InlawsConfirm.tsx
 #: src/pages/InlawsConfirm.tsx
 #: src/pages/InlawsConfirm.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Nam"
 msgstr "Nam"
 
@@ -11771,10 +12101,12 @@ msgid "Nam – Bắc triều đối đầu"
 msgstr "Nam – Bắc triều đối đầu"
 
 #. placeholder {0}: day.canChi.year
+#. placeholder {0}: h.built_year
 #. placeholder {0}: info.canChi.year
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/GoodDays.tsx
+#: src/pages/site/SiteHeritageItem.tsx
 msgid "Năm {0}"
 msgstr "Năm {0}"
 
@@ -12015,6 +12347,7 @@ msgstr "Ngày Giải phóng miền Nam"
 #: src/components/UpcomingEventRow.tsx
 #: src/pages/clan/GoodDays.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Ngày giỗ"
 msgstr "Ngày giỗ"
 
@@ -12027,9 +12360,17 @@ msgstr "Ngày giỗ (âm lịch)"
 msgid "Ngày giỗ không hợp lệ"
 msgstr "Ngày giỗ không hợp lệ"
 
+#: src/pages/site/SitePerson.tsx
+msgid "Ngày giỗ sắp tới"
+msgstr "Ngày giỗ sắp tới"
+
 #: src/components/BookMetaFields.tsx
 msgid "Ngày giỗ tổ"
 msgstr "Ngày giỗ tổ"
+
+#: src/pages/site/SiteEvents.tsx
+msgid "Ngày giỗ và các dịp chung của dòng họ, tính theo âm lịch."
+msgstr "Ngày giỗ và các dịp chung của dòng họ, tính theo âm lịch."
 
 #: src/components/CalendarFeedPanel.tsx
 msgid "Ngày giỗ, sinh nhật và sự kiện của dòng họ vào Google / Apple Calendar"
@@ -12058,6 +12399,7 @@ msgstr "Ngày mai"
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Ngày mất"
 msgstr "Ngày mất"
 
@@ -12088,6 +12430,7 @@ msgstr "ngày sinh"
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Ngày sinh"
 msgstr "Ngày sinh"
 
@@ -12102,7 +12445,6 @@ msgid "Ngày sinh (tuỳ chọn)"
 msgstr "Ngày sinh (tuỳ chọn)"
 
 #: src/components/ApiTokenPanels.tsx
-#: src/pages/Customs.tsx
 msgid "Ngày tạo"
 msgstr "Ngày tạo"
 
@@ -12111,6 +12453,7 @@ msgid "Ngày tham gia"
 msgstr "Ngày tham gia"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Ngày tháng, nơi chốn của người còn sống không hiển thị ở bản xem này."
 msgstr "Ngày tháng, nơi chốn của người còn sống không hiển thị ở bản xem này."
 
@@ -12183,6 +12526,10 @@ msgstr "Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ ph
 msgid "Nghĩa trang, xã, tỉnh — vd: nghĩa trang làng Đông Sơn"
 msgstr "Nghĩa trang, xã, tỉnh — vd: nghĩa trang làng Đông Sơn"
 
+#: src/components/ShareSectionsCard.tsx
+msgid "Ngoài cây gia phả, chọn các phần cho người ngoài họ xem. Áp cho link chia sẻ (/share/…) và, với dòng họ ở chế độ Công khai, cả người xem công khai: Di sản, Mộ phần, Sự kiện bỏ tick là ẩn với mọi người ngoài họ. Mặc định không chia sẻ thêm gì."
+msgstr "Ngoài cây gia phả, chọn các phần cho người ngoài họ xem. Áp cho link chia sẻ (/share/…) và, với dòng họ ở chế độ Công khai, cả người xem công khai: Di sản, Mộ phần, Sự kiện bỏ tick là ẩn với mọi người ngoài họ. Mặc định không chia sẻ thêm gì."
+
 #: src/components/BookTextsSection.tsx
 msgid "Ngoại phả"
 msgstr "Ngoại phả"
@@ -12221,6 +12568,8 @@ msgstr "Ngũ hành {0}"
 #: src/pages/clan/MapStats.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/QrExport.tsx
+#: src/pages/site/SiteHome.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "người"
 msgstr "người"
 
@@ -12234,6 +12583,8 @@ msgstr "người"
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Người"
 msgstr "Người"
 
@@ -12243,6 +12594,7 @@ msgstr "Người A"
 
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/site/SiteGraves.tsx
 msgid "Người an nghỉ"
 msgstr "Người an nghỉ"
 
@@ -12309,6 +12661,10 @@ msgstr "người còn thiếu thông tin"
 msgid "Người đã mất: hiện ngày giỗ và tuổi thọ"
 msgstr "Người đã mất: hiện ngày giỗ và tuổi thọ"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Người đang giữ link sẽ không mở được nữa."
+msgstr "Người đang giữ link sẽ không mở được nữa."
+
 #. placeholder {0}: root.year
 #: src/lib/timeline/computeClanTimeline.ts
 msgid "Người đầu dòng, sinh năm {0}."
@@ -12366,9 +12722,10 @@ msgid "Người gửi"
 msgstr "Người gửi"
 
 #: src/components/EventDetailDialog.tsx
+#: src/components/SharedHeritageCard.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/HeritageDetail.tsx
-#: src/pages/Share.tsx
+#: src/pages/site/SiteHeritageItem.tsx
 msgid "Người liên quan"
 msgstr "Người liên quan"
 
@@ -12380,9 +12737,29 @@ msgstr "Người liên quan trong họ (tuỳ chọn)"
 msgid "Người lớn tuổi"
 msgstr "Người lớn tuổi"
 
-#: src/components/ShareSectionsCard.tsx
-msgid "Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt \"Hiển thị & quyền xem\" riêng."
-msgstr "Người mở link chia sẻ (/share/…) thấy tab Tổng quan gồm cây gia phả và các phần bạn chọn dưới đây. Mặc định không chia sẻ thêm gì. Trang xem công khai dùng cài đặt \"Hiển thị & quyền xem\" riêng."
+#: src/pages/clan/ShareHub.tsx
+msgid "Người mở link chỉ thấy hồ sơ của người này và người thân gần, không thấy phần còn lại của dòng họ."
+msgstr "Người mở link chỉ thấy hồ sơ của người này và người thân gần, không thấy phần còn lại của dòng họ."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Người mở link chỉ thấy mục di sản này."
+msgstr "Người mở link chỉ thấy mục di sản này."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Người mở link chỉ thấy tấm thiệp. Thiệp hết hạn sẽ tự được dọn."
+msgstr "Người mở link chỉ thấy tấm thiệp. Thiệp hết hạn sẽ tự được dọn."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Người mở link chỉ thấy thông tin nơi an nghỉ này."
+msgstr "Người mở link chỉ thấy thông tin nơi an nghỉ này."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Người mở link có thể gửi ký ức, câu trả lời; mọi đóng góp chờ bạn duyệt."
+msgstr "Người mở link có thể gửi ký ức, câu trả lời; mọi đóng góp chờ bạn duyệt."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Người mở link thấy cây gia phả và các mục dòng họ đã bật hiển thị; người còn sống luôn được ẩn."
+msgstr "Người mở link thấy cây gia phả và các mục dòng họ đã bật hiển thị; người còn sống luôn được ẩn."
 
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
@@ -12448,9 +12825,17 @@ msgstr "Người nhận xem được thêm (tick là lưu ngay):"
 msgid "Người ở nước ngoài không được tính vào bản đồ tỉnh."
 msgstr "Người ở nước ngoài không được tính vào bản đồ tỉnh."
 
+#: src/pages/site/SitePerson.tsx
+msgid "Người quản lý dòng họ chưa mở phần tiểu sử chi tiết cho đường dẫn này."
+msgstr "Người quản lý dòng họ chưa mở phần tiểu sử chi tiết cho đường dẫn này."
+
 #: src/components/community/CommunitySharePanel.tsx
 msgid "Người quản lý dòng họ sẽ xem rồi đưa vào gia phả. Tên bạn được ghi là người đóng góp."
 msgstr "Người quản lý dòng họ sẽ xem rồi đưa vào gia phả. Tên bạn được ghi là người đóng góp."
+
+#: src/pages/site/SiteContribute.tsx
+msgid "Người quản lý dòng họ sẽ xem trước khi đăng; tên bạn được ghi là người đóng góp."
+msgstr "Người quản lý dòng họ sẽ xem trước khi đăng; tên bạn được ghi là người đóng góp."
 
 #: src/components/PersonNavButtons.tsx
 msgid "Người sau →"
@@ -12462,6 +12847,7 @@ msgstr "Người sống: hiện đầy đủ ngày-tháng-năm sinh"
 
 #: src/components/community/CommunityCard.tsx
 #: src/components/community/CommunitySharePanel.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Người thân"
 msgstr "Người thân"
 
@@ -12498,10 +12884,6 @@ msgstr "Nguồn"
 msgid "Nguồn ảnh"
 msgstr "Nguồn ảnh"
 
-#: src/pages/CustomsForm.tsx
-msgid "Nguồn gốc (chọn nhiều)"
-msgstr "Nguồn gốc (chọn nhiều)"
-
 #: src/pages/clan/Branches.tsx
 msgid "Nguồn gốc, đời tách chi…"
 msgstr "Nguồn gốc, đời tách chi…"
@@ -12514,10 +12896,6 @@ msgstr "Nguồn gốc: {0}"
 #: src/components/timeline/TimelineMilestoneForm.tsx
 msgid "Nguồn hình"
 msgstr "Nguồn hình"
-
-#: src/pages/CustomsForm.tsx
-msgid "Nguồn tham khảo"
-msgstr "Nguồn tham khảo"
 
 #: src/pages/CustomsDetail.tsx
 msgid "Nguồn:"
@@ -12564,10 +12942,6 @@ msgstr "Nhà Lý"
 #: src/lib/timeline/eras.ts
 msgid "Nhà Mạc và Lê Trung hưng"
 msgstr "Nhà Mạc và Lê Trung hưng"
-
-#: src/pages/CustomsForm.tsx
-msgid "nhà mới, chuyển nhà, tân gia"
-msgstr "nhà mới, chuyển nhà, tân gia"
 
 #: src/lib/timeline/eras.ts
 msgid "Nhà Nguyễn độc lập"
@@ -12642,20 +13016,9 @@ msgstr "Nhanh & an toàn — không cần nhớ mật khẩu."
 msgid "Nhánh nghi sót"
 msgstr "Nhánh nghi sót"
 
-#: src/pages/CustomsDetail.tsx
-msgid "nháp"
-msgstr "nháp"
-
 #: src/pages/admin/Announcements.tsx
-#: src/pages/Customs.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
 msgid "Nháp"
 msgstr "Nháp"
-
-#: src/lib/pageTitle.ts
-msgid "Nhập bài Sổ tay"
-msgstr "Nhập bài Sổ tay"
 
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvas.tsx
@@ -12688,18 +13051,9 @@ msgstr "Nhập GEDCOM"
 msgid "Nhập gia phả"
 msgstr "Nhập gia phả"
 
-#: src/components/panel/CustomsPanelHost.tsx
-#: src/pages/CustomsImport.tsx
-msgid "Nhập hàng loạt từ Markdown"
-msgstr "Nhập hàng loạt từ Markdown"
-
 #: src/pages/ResetPassword.tsx
 msgid "Nhập lại mật khẩu"
 msgstr "Nhập lại mật khẩu"
-
-#: src/pages/Customs.tsx
-msgid "Nhập Markdown"
-msgstr "Nhập Markdown"
 
 #: src/pages/ResetPassword.tsx
 msgid "Nhập mật khẩu mới cho tài khoản"
@@ -12737,10 +13091,6 @@ msgstr "Nhập thì người này hiện trên Bản đồ của dòng họ."
 #: src/pages/clan/Tree.tsx
 msgid "Nhập từ Excel"
 msgstr "Nhập từ Excel"
-
-#: src/pages/CustomsForm.tsx
-msgid "Nhập từ Markdown"
-msgstr "Nhập từ Markdown"
 
 #: src/pages/admin/GiaPha.tsx
 msgid "Nhập từ vietnamgiapha.com"
@@ -12872,6 +13222,7 @@ msgstr "nơi an nghỉ"
 #: src/components/panel/PanelHost.tsx
 #: src/lib/queries/restingPlaces.ts
 #: src/pages/clan/MapStats.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Nơi an nghỉ"
 msgstr "Nơi an nghỉ"
 
@@ -12881,6 +13232,10 @@ msgstr "Nơi an nghỉ"
 msgid "Nơi an nghỉ của {0}."
 msgstr "Nơi an nghỉ của {0}."
 
+#: src/pages/site/SiteGraves.tsx
+msgid "Nơi an nghỉ của các bậc tiền nhân trong dòng họ, để con cháu biết đường về thăm viếng."
+msgstr "Nơi an nghỉ của các bậc tiền nhân trong dòng họ, để con cháu biết đường về thăm viếng."
+
 #: src/lib/navModel.tsx
 msgid "Nơi an nghỉ của các cụ, chỉ đường."
 msgstr "Nơi an nghỉ của các cụ, chỉ đường."
@@ -12888,6 +13243,11 @@ msgstr "Nơi an nghỉ của các cụ, chỉ đường."
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ."
 msgstr "Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ."
+
+#. placeholder {0}: Object.keys(map.data.graves).length
+#: src/pages/site/SiteHome.tsx
+msgid "Nơi an nghỉ của tiền nhân ở {0} tỉnh, thành."
+msgstr "Nơi an nghỉ của tiền nhân ở {0} tỉnh, thành."
 
 #: src/components/EventDetailDialog.tsx
 msgid "Nơi an nghỉ liên quan"
@@ -12903,6 +13263,7 @@ msgstr "Nơi an nghỉ liên quan"
 #: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Nơi an táng"
 msgstr "Nơi an táng"
 
@@ -12927,10 +13288,6 @@ msgstr "Nối dòng họ này với dòng họ khác qua một thành viên: th�
 msgid "Nội dung"
 msgstr "Nội dung"
 
-#: src/pages/CustomsForm.tsx
-msgid "Nội dung (chia đoạn có tiêu đề)"
-msgstr "Nội dung (chia đoạn có tiêu đề)"
-
 #: src/components/ContributeDialog.tsx
 msgid "Nội dung bổ sung tiểu sử"
 msgstr "Nội dung bổ sung tiểu sử"
@@ -12940,7 +13297,6 @@ msgid "Nội dung chung về phong tục – nghi lễ Việt Nam từ Sổ tay 
 msgstr "Nội dung chung về phong tục – nghi lễ Việt Nam từ Sổ tay Văn hoá của hệ thống."
 
 #: src/pages/clan/HeritageForm.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Nội dung đoạn này…"
 msgstr "Nội dung đoạn này…"
 
@@ -12998,6 +13354,7 @@ msgstr "Nơi rải tro"
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Nơi sinh"
 msgstr "Nơi sinh"
 
@@ -13066,6 +13423,8 @@ msgstr "Notify thất bại (tổng)"
 #: src/pages/InlawsConfirm.tsx
 #: src/pages/InlawsConfirm.tsx
 #: src/pages/InlawsConfirm.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Nữ"
 msgstr "Nữ"
 
@@ -13086,9 +13445,9 @@ msgstr "Ô chữ"
 msgid "Ở cuối"
 msgstr "Ở cuối"
 
+#: src/components/SharedHeritageCard.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/HeritageForm.tsx
-#: src/pages/Share.tsx
 msgid "Ở đâu"
 msgstr "Ở đâu"
 
@@ -13125,19 +13484,10 @@ msgstr "pg_cron chưa cài hoặc chưa có job nào — local dev là bình th�
 msgid "Phả ký"
 msgstr "Phả ký"
 
-#: src/pages/CustomsForm.tsx
-msgid "Phạm vi"
-msgstr "Phạm vi"
-
 #. placeholder {0}: CUSTOM_SCOPE_LABEL[entry.scope]
 #: src/pages/CustomsDetail.tsx
 msgid "Phạm vi: {0}"
 msgstr "Phạm vi: {0}"
-
-#. placeholder {0}: i + 1
-#: src/pages/CustomsDetail.tsx
-msgid "Phần {0}"
-msgstr "Phần {0}"
 
 #: src/pages/clan/MapStats.tsx
 msgid "Phân bố {unit} theo tỉnh"
@@ -13150,6 +13500,11 @@ msgstr "Phản hồi cho người gửi (người gửi sẽ thấy)"
 #: src/pages/admin/Feedback.tsx
 msgid "Phân loại"
 msgstr "Phân loại"
+
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteListParts.tsx
+msgid "Phân trang"
+msgstr "Phân trang"
 
 #: src/lib/timeline/eras.ts
 msgid "Pháp đánh Đà Nẵng (1858)"
@@ -13310,6 +13665,7 @@ msgstr "QR · {0}"
 
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "QR cá nhân"
 msgstr "QR cá nhân"
 
@@ -13317,6 +13673,27 @@ msgstr "QR cá nhân"
 #: src/components/ShareLinksSection.tsx
 msgid "QR cá nhân · {0}"
 msgstr "QR cá nhân · {0}"
+
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
+msgid "QR di sản"
+msgstr "QR di sản"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "QR in ra nên để dài; link gửi tạm thì chọn ngắn."
+msgstr "QR in ra nên để dài; link gửi tạm thì chọn ngắn."
+
+#: src/pages/clan/ShareHub.tsx
+msgid "QR mộ"
+msgstr "QR mộ"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "QR người"
+msgstr "QR người"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "QR tại mộ"
+msgstr "QR tại mộ"
 
 #: src/pages/clan/Memories.tsx
 msgid "Qua đề xuất đã duyệt"
@@ -13332,6 +13709,7 @@ msgstr "Qua link"
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Quan hệ"
 msgstr "Quan hệ"
 
@@ -13435,6 +13813,7 @@ msgstr "Quang Trung đại phá quân Thanh (1789)"
 #: src/components/AppHeader.tsx
 #: src/components/AppHeader.tsx
 #: src/components/BackLink.tsx
+#: src/components/cards/CardSteps.tsx
 #: src/components/ClanLayout.tsx
 #: src/components/ClanLayout.tsx
 #: src/pages/Contact.tsx
@@ -13454,6 +13833,7 @@ msgid "Quay về tự động"
 msgstr "Quay về tự động"
 
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Quê gốc"
 msgstr "Quê gốc"
 
@@ -13639,6 +14019,16 @@ msgstr "Sao {0} · Trực {1}"
 msgid "Sao chép {0}"
 msgstr "Sao chép {0}"
 
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/KhoeCard.tsx
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePost.tsx
+msgid "Sao chép liên kết"
+msgstr "Sao chép liên kết"
+
+#: src/components/ShareCardDialog.tsx
 #: src/pages/clan/Memories.tsx
 #: src/pages/clan/Memories.tsx
 msgid "Sao chép link"
@@ -13658,6 +14048,19 @@ msgstr "Sao chép thành người mới"
 #: src/components/community/InviteCardDialog.tsx
 msgid "Sao chép tin nhắn"
 msgstr "Sao chép tin nhắn"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Sắp hết hạn"
+msgstr "Sắp hết hạn"
+
+#. placeholder {0}: Math.max(days, 0)
+#: src/pages/clan/ShareHub.tsx
+msgid "Sắp hết hạn ({0} ngày)"
+msgstr "Sắp hết hạn ({0} ngày)"
+
+#: src/pages/site/SiteHome.tsx
+msgid "Sắp tới trong họ"
+msgstr "Sắp tới trong họ"
 
 #: src/pages/clan/Branches.tsx
 #: src/pages/clan/Branches.tsx
@@ -13740,6 +14143,7 @@ msgstr "Sinh"
 #. placeholder {0}: peek.birth_year
 #: src/components/InlawFamilyCard.tsx
 #: src/components/InlawMiniTree.tsx
+#: src/components/share/ShareTree.tsx
 #: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
@@ -13748,7 +14152,6 @@ msgstr "Sinh"
 #: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/InlawsConfirm.tsx
-#: src/pages/Share.tsx
 msgid "sinh {0}"
 msgstr "sinh {0}"
 
@@ -13953,7 +14356,6 @@ msgid "sự kiện"
 msgstr "sự kiện"
 
 #: src/components/BoardPostForm.tsx
-#: src/components/ClanFormFields.tsx
 #: src/components/ClanLayout.tsx
 #: src/components/ClanPostCard.tsx
 #: src/components/EventDetailDialog.tsx
@@ -13970,10 +14372,14 @@ msgstr "sự kiện"
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/GoodDays.tsx
+#: src/pages/site/postUi.tsx
 msgid "Sự kiện"
 msgstr "Sự kiện"
 
+#: src/components/ShareSectionsCard.tsx
 #: src/pages/Share.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SiteEvents.tsx
 msgid "Sự kiện & giỗ"
 msgstr "Sự kiện & giỗ"
 
@@ -14014,24 +14420,14 @@ msgstr "Sự kiện tuỳ chỉnh"
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
-#: src/pages/CustomsDetail.tsx
 msgid "Sửa"
 msgstr "Sửa"
 
 #: src/components/panel/PanelHost.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/BoardPostEdit.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Sửa bài"
 msgstr "Sửa bài"
-
-#: src/components/panel/CustomsPanelHost.tsx
-msgid "Sửa bài phong tục"
-msgstr "Sửa bài phong tục"
-
-#: src/lib/pageTitle.ts
-msgid "Sửa bài Sổ tay"
-msgstr "Sửa bài Sổ tay"
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Sửa bức ảnh"
@@ -14125,6 +14521,7 @@ msgstr "Sửa thành viên"
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Tree.tsx
+#: src/pages/site/SiteContribute.tsx
 msgid "Sửa thông tin"
 msgstr "Sửa thông tin"
 
@@ -14202,6 +14599,7 @@ msgstr "Tách nhiều trang A4 theo đời"
 #: src/components/ShareCardDialog.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/KhoeCard.tsx
 msgid "Tải ảnh"
 msgstr "Tải ảnh"
 
@@ -14293,6 +14691,10 @@ msgstr "Tải lại trang để tiếp tục. Nếu lỗi lặp lại, báo cho 
 msgid "Tài liệu dài nên chia thành từng đoạn có tiêu đề (vd \"Lời nói đầu\", \"Chúc thư\", \"Phụ lục\"…) — người đọc sẽ thấy mục lục và gập/mở từng đoạn, đỡ ngợp. Để trống nếu chỉ dùng ô Nội dung ở trên."
 msgstr "Tài liệu dài nên chia thành từng đoạn có tiêu đề (vd \"Lời nói đầu\", \"Chúc thư\", \"Phụ lục\"…) — người đọc sẽ thấy mục lục và gập/mở từng đoạn, đỡ ngợp. Để trống nếu chỉ dùng ô Nội dung ở trên."
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Tải mã QR"
+msgstr "Tải mã QR"
+
 #: src/pages/clan/Tree.tsx
 msgid "Tải PDF"
 msgstr "Tải PDF"
@@ -14317,10 +14719,6 @@ msgstr "Tạm dừng — nhận quá nhiều"
 msgid "Tạm tắt"
 msgstr "Tạm tắt"
 
-#: src/pages/KhoeCard.tsx
-msgid "Tấm thiệp này có thể đã hết hạn chia sẻ hoặc đã bị gỡ."
-msgstr "Tấm thiệp này có thể đã hết hạn chia sẻ hoặc đã bị gỡ."
-
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 #: src/pages/admin/Announcements.tsx
 #: src/pages/admin/GiaPha.tsx
@@ -14331,11 +14729,6 @@ msgstr "Tạo"
 #: src/pages/clan/Memories.tsx
 msgid "tạo {0}"
 msgstr "tạo {0}"
-
-#. placeholder {0}: importable.length
-#: src/pages/CustomsImport.tsx
-msgid "Tạo {0} bài"
-msgstr "Tạo {0} bài"
 
 #: src/components/RecordDates.tsx
 msgid "Tạo {created}"
@@ -14424,12 +14817,27 @@ msgid "Tạo dòng thời gian riêng cho một thành viên. Sau đó thêm cá
 msgstr "Tạo dòng thời gian riêng cho một thành viên. Sau đó thêm các mốc trong đời người đó."
 
 #: src/pages/KhoeCard.tsx
-msgid "Tạo gia phả dòng họ của bạn"
-msgstr "Tạo gia phả dòng họ của bạn"
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Tạo gia phả cho họ bạn"
+msgstr "Tạo gia phả cho họ bạn"
 
 #: src/pages/Share.tsx
 msgid "Tạo gia phả miễn phí"
 msgstr "Tạo gia phả miễn phí"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Tạo liên kết"
+msgstr "Tạo liên kết"
+
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
+msgid "Tạo liên kết mới"
+msgstr "Tạo liên kết mới"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Tạo link cây, mã QR cho một người, mộ phần, di sản hoặc link mời người thân cùng góp."
+msgstr "Tạo link cây, mã QR cho một người, mộ phần, di sản hoặc link mời người thân cùng góp."
 
 #: src/components/ShareTreeButton.tsx
 msgid "Tạo link chia sẻ và gửi qua Zalo / Facebook / Email…"
@@ -14572,6 +14980,11 @@ msgstr "Tắt bớt tính năng phụ để menu gọn hơn cho dòng họ này.
 #: src/components/HistoricalClansSection.tsx
 #: src/components/NotificationBell.tsx
 #: src/pages/admin/Feedback.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteGraves.tsx
+#: src/pages/site/SiteHeritage.tsx
+#: src/pages/site/SiteHonor.tsx
 msgid "Tất cả"
 msgstr "Tất cả"
 
@@ -14593,6 +15006,10 @@ msgstr "Tất cả chi"
 msgid "Tất cả đã đầy đủ ✓"
 msgstr "Tất cả đã đầy đủ ✓"
 
+#: src/pages/site/SiteHome.tsx
+msgid "Tất cả di sản"
+msgstr "Tất cả di sản"
+
 #: src/pages/clan/People.tsx
 msgid "Tất cả đời"
 msgstr "Tất cả đời"
@@ -14610,6 +15027,10 @@ msgstr "Tất cả ngày tốt"
 msgid "tất cả người và quan hệ gia đình"
 msgstr "tất cả người và quan hệ gia đình"
 
+#: src/pages/site/SiteHome.tsx
+msgid "Tất cả nơi an nghỉ"
+msgstr "Tất cả nơi an nghỉ"
+
 #: src/pages/Clans.tsx
 msgid "Tất cả quy mô"
 msgstr "Tất cả quy mô"
@@ -14621,12 +15042,17 @@ msgstr "Tất cả quy mô"
 #: src/lib/pageTitle.ts
 #: src/pages/clan/ClanMenu.tsx
 #: src/pages/clan/ClanMenu.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Tất cả tính năng"
 msgstr "Tất cả tính năng"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tất cả tỉnh/thành"
 msgstr "Tất cả tỉnh/thành"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Tất cả trạng thái"
+msgstr "Tất cả trạng thái"
 
 #: src/pages/clan/Tree.tsx
 msgid "Tắt chế độ di chuyển cây để cuộn trang"
@@ -14758,10 +15184,6 @@ msgstr "Tên gần giống"
 msgid "Tên gọi (tuỳ chọn)"
 msgstr "Tên gọi (tuỳ chọn)"
 
-#: src/pages/CustomsForm.tsx
-msgid "Tên gọi khác (cách nhau bởi dấu phẩy)"
-msgstr "Tên gọi khác (cách nhau bởi dấu phẩy)"
-
 #: src/components/PersonFormFields.tsx
 msgid "Tên gọi khác, nơi sinh, ngày mất, an táng, tiểu sử."
 msgstr "Tên gọi khác, nơi sinh, ngày mất, an táng, tiểu sử."
@@ -14783,6 +15205,7 @@ msgstr "Tên hiển thị trong dòng họ và các sự kiện. Không phải e
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Tên húy"
 msgstr "Tên húy"
 
@@ -14818,6 +15241,7 @@ msgstr "Tên thuỵ"
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Tên thụy"
 msgstr "Tên thụy"
 
@@ -14830,6 +15254,7 @@ msgstr "Tên token"
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Tên tự"
 msgstr "Tên tự"
 
@@ -14905,6 +15330,11 @@ msgstr "Thả vào canvas"
 msgid "Thái thượng hoàng"
 msgstr "Thái thượng hoàng"
 
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/ClanSiteLayout.tsx
+msgid "Tham gia"
+msgstr "Tham gia"
+
 #: src/pages/JoinClan.tsx
 msgid "Tham gia dòng họ"
 msgstr "Tham gia dòng họ"
@@ -14943,10 +15373,6 @@ msgstr "Thẳng / gấp khúc"
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Tháng âm"
 msgstr "Tháng âm"
-
-#: src/pages/CustomsForm.tsx
-msgid "Tháng âm lịch (1–12)"
-msgstr "Tháng âm lịch (1–12)"
 
 #: src/lib/tree/canvasModel.ts
 msgid "Thẳng có mũi tên"
@@ -15049,6 +15475,10 @@ msgstr "Thay đổi chưa lưu ở cây hiện tại sẽ không được giữ.
 msgid "Thấy dong-ho-viet ở trạng thái connected là xong."
 msgstr "Thấy dong-ho-viet ở trạng thái connected là xong."
 
+#: src/pages/site/SiteContribute.tsx
+msgid "Thấy ngày tháng hay tên chưa đúng? Báo để người quản lý họ xem lại."
+msgstr "Thấy ngày tháng hay tên chưa đúng? Báo để người quản lý họ xem lại."
+
 #: src/components/BookTextsSection.tsx
 msgid "Thay nội dung đang có bằng mẫu?"
 msgstr "Thay nội dung đang có bằng mẫu?"
@@ -15056,6 +15486,10 @@ msgstr "Thay nội dung đang có bằng mẫu?"
 #: src/components/community/MemoryForm.tsx
 msgid "Thấy thông tin trong gia phả bị sai hoặc thiếu? Sửa ô cần sửa — người quản lý dòng họ sẽ đối chiếu rồi mới cập nhật."
 msgstr "Thấy thông tin trong gia phả bị sai hoặc thiếu? Sửa ô cần sửa — người quản lý dòng họ sẽ đối chiếu rồi mới cập nhật."
+
+#: src/components/community/MemoryForm.tsx
+msgid "Thấy thông tin trong gia phả chưa đúng hoặc còn thiếu (ngày sinh, nơi ở, tên…)? Cứ viết vào đây, người quản lý họ sẽ xem và cập nhật."
+msgstr "Thấy thông tin trong gia phả chưa đúng hoặc còn thiếu (ngày sinh, nơi ở, tên…)? Cứ viết vào đây, người quản lý họ sẽ xem và cập nhật."
 
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/People.tsx
@@ -15117,7 +15551,6 @@ msgstr "Thẻ: Ngang"
 #: src/pages/clan/RestingPlaceForm.tsx
 #: src/pages/clan/RestingPlaces.tsx
 #: src/pages/clan/RestingPlaces.tsx
-#: src/pages/Customs.tsx
 msgid "Thêm"
 msgstr "Thêm"
 
@@ -15147,26 +15580,9 @@ msgstr "Thêm ảnh chân dung"
 msgid "Thêm app vào màn hình chính"
 msgstr "Thêm app vào màn hình chính"
 
-#: src/pages/Customs.tsx
-msgid "Thêm bài"
-msgstr "Thêm bài"
-
-#: src/components/panel/CustomsPanelHost.tsx
-#: src/pages/CustomsForm.tsx
-msgid "Thêm bài phong tục"
-msgstr "Thêm bài phong tục"
-
-#: src/lib/pageTitle.ts
-msgid "Thêm bài Sổ tay"
-msgstr "Thêm bài Sổ tay"
-
 #: src/pages/clan/TimelineDetail.tsx
 msgid "Thêm các mốc nổi bật từ gia phả"
 msgstr "Thêm các mốc nổi bật từ gia phả"
-
-#: src/pages/CustomsForm.tsx
-msgid "Thêm câu hỏi"
-msgstr "Thêm câu hỏi"
 
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/AddParent.tsx
@@ -15216,7 +15632,6 @@ msgid "Thêm di sản"
 msgstr "Thêm di sản"
 
 #: src/pages/clan/HeritageForm.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Thêm đoạn"
 msgstr "Thêm đoạn"
 
@@ -15429,12 +15844,35 @@ msgstr "Thích bài gốc"
 #: src/components/UpcomingEventRow.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/HeritageDetail.tsx
+#: src/pages/site/ClanSiteLayout.tsx
 msgid "Thiệp"
 msgstr "Thiệp"
 
+#: src/pages/KhoeCard.tsx
+msgid "Thiệp chia sẻ từ {clanName}"
+msgstr "Thiệp chia sẻ từ {clanName}"
+
+#: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
 msgid "Thiệp gia phả"
 msgstr "Thiệp gia phả"
+
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
+msgid "Thiệp khoe"
+msgstr "Thiệp khoe"
+
+#: src/components/ShareCardDialog.tsx
+msgid "Thiệp khoe / giới thiệu"
+msgstr "Thiệp khoe / giới thiệu"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Thiệp khoe tối đa 90 ngày kể từ lúc gia hạn."
+msgstr "Thiệp khoe tối đa 90 ngày kể từ lúc gia hạn."
+
+#: src/pages/KhoeCard.tsx
+msgid "Thiệp này đã hết hạn hoặc đã được người chia sẻ gỡ xuống. Hãy nhờ người gửi chia sẻ lại cho bạn."
+msgstr "Thiệp này đã hết hạn hoặc đã được người chia sẻ gỡ xuống. Hãy nhờ người gửi chia sẻ lại cho bạn."
 
 #: src/pages/clan/MemoryRoom.tsx
 msgid "Thiết bị không hỗ trợ 3D. Thêm ảnh cho phòng để xem ở dạng danh sách."
@@ -15502,14 +15940,6 @@ msgstr "Thiếu năm sinh/mất"
 msgid "Thiếu thông tin"
 msgstr "Thiếu thông tin"
 
-#: src/pages/CustomsImport.tsx
-msgid "Thiếu tiêu đề (dòng '# ')"
-msgstr "Thiếu tiêu đề (dòng '# ')"
-
-#: src/pages/CustomsForm.tsx
-msgid "Thiếu tiêu đề."
-msgstr "Thiếu tiêu đề."
-
 #: src/components/ContributeDialog.tsx
 msgid "Thiếu token chia sẻ"
 msgstr "Thiếu token chia sẻ"
@@ -15524,12 +15954,12 @@ msgstr "Thờ cúng & tín ngưỡng"
 
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
+#: src/components/share/ShareTree.tsx
+#: src/components/share/ShareTree.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
-#: src/pages/Share.tsx
 msgid "Thoát toàn màn hình"
 msgstr "Thoát toàn màn hình"
 
@@ -15553,10 +15983,6 @@ msgstr "Thời chuyển đổi số"
 msgid "Thời điểm"
 msgstr "Thời điểm"
 
-#: src/pages/CustomsForm.tsx
-msgid "Thời điểm (mô tả)"
-msgstr "Thời điểm (mô tả)"
-
 #: src/lib/timeline/eras.ts
 msgid "Thời Đổi Mới"
 msgstr "Thời Đổi Mới"
@@ -15564,6 +15990,10 @@ msgstr "Thời Đổi Mới"
 #: src/pages/admin/Feedback.tsx
 msgid "Thời gian"
 msgstr "Thời gian"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Thời hạn"
+msgstr "Thời hạn"
 
 #: src/components/HistoricalClansSection.tsx
 msgid "Thời kỳ: cũ → mới"
@@ -15602,6 +16032,7 @@ msgstr "thông báo"
 #: src/pages/AnnouncementDetail.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/site/postUi.tsx
 msgid "Thông báo"
 msgstr "Thông báo"
 
@@ -15639,11 +16070,11 @@ msgstr "Thống nhất đất nước"
 msgid "Thống nhất ngày 30/4/1975"
 msgstr "Thống nhất ngày 30/4/1975"
 
+#: src/components/SharedHeritageCard.tsx
 #: src/components/SharedRestingPlaceCard.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
-#: src/pages/Share.tsx
 msgid "Thông tin"
 msgstr "Thông tin"
 
@@ -15664,8 +16095,13 @@ msgstr "Thông tin chính"
 
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Thông tin cơ bản"
 msgstr "Thông tin cơ bản"
+
+#: src/pages/site/SitePerson.tsx
+msgid "Thông tin của người đang sống được ẩn để bảo vệ quyền riêng tư."
+msgstr "Thông tin của người đang sống được ẩn để bảo vệ quyền riêng tư."
 
 #: src/pages/clan/Memories.tsx
 msgid "Thông tin đóng góp"
@@ -15688,6 +16124,7 @@ msgid "Thông tin người"
 msgstr "Thông tin người"
 
 #: src/pages/Share.tsx
+#: src/pages/site/SiteNotices.tsx
 msgid "Thông tin nhạy cảm đã được ẩn"
 msgstr "Thông tin nhạy cảm đã được ẩn"
 
@@ -15765,6 +16202,10 @@ msgstr "Thử bỏ bớt từ khoá."
 msgid "Thử bỏ bớt từ khoá. Dòng họ riêng tư không hiện trong tab Cộng đồng."
 msgstr "Thử bỏ bớt từ khoá. Dòng họ riêng tư không hiện trong tab Cộng đồng."
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Thử đổi loại hoặc trạng thái đang lọc."
+msgstr "Thử đổi loại hoặc trạng thái đang lọc."
+
 #: src/pages/admin/Feedback.tsx
 msgid "Thử đổi trạng thái hoặc bỏ bớt từ khoá."
 msgstr "Thử đổi trạng thái hoặc bỏ bớt từ khoá."
@@ -15808,6 +16249,8 @@ msgstr "Thu gọn tất cả"
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/Memories.tsx
+#: src/pages/clan/ShareHub.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Thu hồi"
 msgstr "Thu hồi"
 
@@ -15833,6 +16276,7 @@ msgid "Thu hồi link lịch?"
 msgstr "Thu hồi link lịch?"
 
 #: src/pages/clan/Memories.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Thu hồi link này?"
 msgstr "Thu hồi link này?"
 
@@ -15842,6 +16286,7 @@ msgid "Thu hồi token \"{0}\"?"
 msgstr "Thu hồi token \"{0}\"?"
 
 #: src/components/ErrorState.tsx
+#: src/pages/KhoeCard.tsx
 msgid "Thử lại"
 msgstr "Thử lại"
 
@@ -15885,6 +16330,10 @@ msgstr "Thứ tự trong năm"
 msgid "Thư viện hình (tranh minh hoạ)"
 msgstr "Thư viện hình (tranh minh hoạ)"
 
+#: src/pages/site/SitePerson.tsx
+msgid "Thuộc đời"
+msgstr "Thuộc đời"
+
 #: src/pages/admin/Users.tsx
 msgid "Thuộc dòng họ"
 msgstr "Thuộc dòng họ"
@@ -15898,6 +16347,7 @@ msgid "Thuỷ mặc"
 msgstr "Thuỷ mặc"
 
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "thuỷ tổ"
 msgstr "thuỷ tổ"
 
@@ -15968,6 +16418,14 @@ msgstr "Tiếp tục với {label}"
 msgid "Tiếp tục với Google"
 msgstr "Tiếp tục với Google"
 
+#: src/components/cards/CardSteps.tsx
+msgid "Tiếp: Chia sẻ"
+msgstr "Tiếp: Chia sẻ"
+
+#: src/components/cards/CardSteps.tsx
+msgid "Tiếp: Tuỳ chỉnh"
+msgstr "Tiếp: Tuỳ chỉnh"
+
 #. placeholder {0}: day.tietKhi
 #. placeholder {0}: info.tietKhi
 #: src/components/TodayHubCard.tsx
@@ -15980,10 +16438,10 @@ msgstr "Tiết {0}"
 msgid "Tiết khí"
 msgstr "Tiết khí"
 
+#: src/components/BoardPostForm.tsx
 #: src/components/ShareCardDialog.tsx
 #: src/components/timeline/TimelineMilestoneForm.tsx
 #: src/pages/admin/Announcements.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Tiêu đề"
 msgstr "Tiêu đề"
 
@@ -15994,10 +16452,6 @@ msgstr "Tiêu đề (tuỳ chọn)"
 #: src/pages/admin/PodcastPage.tsx
 msgid "Tiêu đề đã sửa tay"
 msgstr "Tiêu đề đã sửa tay"
-
-#: src/pages/CustomsForm.tsx
-msgid "Tiêu đề đoạn"
-msgstr "Tiêu đề đoạn"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Tiêu đề đoạn (vd Lời nói đầu)"
@@ -16011,22 +16465,23 @@ msgstr "Tiêu đề lớn"
 msgid "Tiêu đề tập"
 msgstr "Tiêu đề tập"
 
-#: src/pages/CustomsForm.tsx
-msgid "Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằng nội dung Markdown."
-msgstr "Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằng nội dung Markdown."
-
 #: src/components/ContributionDiffView.tsx
 #: src/components/PersonFormFields.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Memories.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Tiểu sử"
 msgstr "Tiểu sử"
 
 #: src/components/ContributionDiffView.tsx
 msgid "Tiểu sử sau khi duyệt"
 msgstr "Tiểu sử sau khi duyệt"
+
+#: src/components/ShareSectionsCard.tsx
+msgid "Tiểu sử, tên hiệu, ngày âm, nơi sinh / an táng và dấu mốc cuộc đời của người đã mất (người còn sống luôn được ẩn)."
+msgstr "Tiểu sử, tên hiệu, ngày âm, nơi sinh / an táng và dấu mốc cuộc đời của người đã mất (người còn sống luôn được ẩn)."
 
 #: src/pages/clan/Heritage.tsx
 msgid "Tìm bài phong tục"
@@ -16063,6 +16518,10 @@ msgstr "Tìm công đức"
 #: src/pages/clan/Heritage.tsx
 msgid "Tìm di sản"
 msgstr "Tìm di sản"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Tìm đích"
+msgstr "Tìm đích"
 
 #: src/pages/clan/Contributions.tsx
 #: src/pages/clan/Memories.tsx
@@ -16114,10 +16573,13 @@ msgstr "Tìm góp ý"
 #: src/components/GlobalSearch.tsx
 #: src/components/HeaderActions.tsx
 #: src/pages/clan/ClanMenu.tsx
+#: src/pages/site/SiteSearch.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Tìm kiếm"
 msgstr "Tìm kiếm"
 
 #: src/components/GlobalSearch.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Tìm kiếm (Ctrl/⌘ + K)"
 msgstr "Tìm kiếm (Ctrl/⌘ + K)"
 
@@ -16188,8 +16650,8 @@ msgstr "Tìm người để gắn mốc"
 msgid "Tìm người dùng theo tên hoặc email"
 msgstr "Tìm người dùng theo tên hoặc email"
 
+#: src/components/share/ShareTree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
 msgid "Tìm người làm trung tâm"
 msgstr "Tìm người làm trung tâm"
 
@@ -16209,6 +16671,10 @@ msgstr "Tìm người trong họ"
 #: src/components/OverviewSearch.tsx
 msgid "Tìm người trong họ (gõ không dấu cũng được)…"
 msgstr "Tìm người trong họ (gõ không dấu cũng được)…"
+
+#: src/pages/site/SiteSearch.tsx
+msgid "Tìm người, bài viết, di sản, mộ phần…"
+msgstr "Tìm người, bài viết, di sản, mộ phần…"
 
 #: src/components/GlobalSearch.tsx
 msgid "Tìm người, mộ phần, di sản, hướng dẫn, quy định…"
@@ -16269,6 +16735,7 @@ msgstr "Tìm theo quỹ, mục đích, ghi chú, số tiền…"
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/clan/MyLineage.tsx
 #: src/pages/clan/People.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/InlawsConfirm.tsx
 msgid "Tìm theo tên"
 msgstr "Tìm theo tên"
@@ -16355,6 +16822,7 @@ msgstr "Tìm theo tên, mô tả…"
 
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/QrExport.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Tìm theo tên…"
 msgstr "Tìm theo tên…"
 
@@ -16464,6 +16932,14 @@ msgstr "Tìm, thêm, sửa người trong họ."
 msgid "Tin"
 msgstr "Tin"
 
+#: src/pages/site/postUi.tsx
+msgid "Tin buồn"
+msgstr "Tin buồn"
+
+#: src/pages/site/postUi.tsx
+msgid "Tin chung"
+msgstr "Tin chung"
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Tin liên quan"
 msgstr "Tin liên quan"
@@ -16501,6 +16977,10 @@ msgstr "Tin tức, tin vui, thông báo chung của họ."
 #: src/lib/navModel.tsx
 msgid "Tin tức, tư liệu, ký ức và nơi chốn của dòng họ."
 msgstr "Tin tức, tư liệu, ký ức và nơi chốn của dòng họ."
+
+#: src/pages/site/postUi.tsx
+msgid "Tin vui"
+msgstr "Tin vui"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tỉnh / Thành"
@@ -16781,6 +17261,10 @@ msgstr "Tổng quan dòng họ"
 msgid "Tòng quân, lên đường nhập ngũ"
 msgstr "Tòng quân, lên đường nhập ngũ"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "tổng từ trước đến nay"
+msgstr "tổng từ trước đến nay"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "tốt"
 msgstr "tốt"
@@ -16836,6 +17320,10 @@ msgstr "Trả lời câu khác"
 msgid "Trần"
 msgstr "Trần"
 
+#: src/pages/site/SiteSearch.tsx
+msgid "Trang"
+msgstr "Trang"
+
 #: src/components/gallery/GalleryScene.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Trắng"
@@ -16850,6 +17338,11 @@ msgstr "Trang 'Việc cần làm' tự dò chỗ thiếu năm sinh / cha mẹ �
 msgid "Trang cá nhân"
 msgstr "Trang cá nhân"
 
+#: src/pages/site/ClanSiteLayout.tsx
+#: src/pages/site/SitePerson.tsx
+msgid "Trang chủ"
+msgstr "Trang chủ"
+
 #. placeholder {0}: clan.name
 #: src/pages/clan/Dashboard.tsx
 msgid "Trang chủ của {0}."
@@ -16859,12 +17352,22 @@ msgstr "Trang chủ của {0}."
 msgid "Trang chủ của dòng họ."
 msgstr "Trang chủ của dòng họ."
 
-#: src/pages/KhoeCard.tsx
-msgid "Trang này được tạo từ<0>Dòng Họ Việt</0> — nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của dòng họ."
-msgstr "Trang này được tạo từ<0>Dòng Họ Việt</0> — nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của dòng họ."
+#: src/components/ShareSectionsCard.tsx
+msgid "Trang dòng họ hiển thị gì"
+msgstr "Trang dòng họ hiển thị gì"
+
+#: src/pages/site/SitePerson.tsx
+msgid "Trang này chỉ hiện thông tin công khai của người đã mất. Người còn sống chỉ hiện tên và đời, các thông tin khác được ẩn."
+msgstr "Trang này chỉ hiện thông tin công khai của người đã mất. Người còn sống chỉ hiện tên và đời, các thông tin khác được ẩn."
+
+#: src/components/CaptchaNotice.tsx
+msgid "Trang này được bảo vệ bởi reCAPTCHA; áp dụng"
+msgstr "Trang này được bảo vệ bởi reCAPTCHA; áp dụng"
 
 #: src/components/Pagination.tsx
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteListParts.tsx
 msgid "Trang sau"
 msgstr "Trang sau"
 
@@ -16877,8 +17380,7 @@ msgstr "Trang sơ đồ cây"
 #: src/pages/clan/Memories.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
-#: src/pages/CustomsForm.tsx
-#: src/pages/CustomsImport.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Trạng thái"
 msgstr "Trạng thái"
 
@@ -16900,6 +17402,8 @@ msgstr "Trang trống hoàn toàn"
 
 #: src/components/Pagination.tsx
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteBoard.tsx
+#: src/pages/site/SiteListParts.tsx
 msgid "Trang trước"
 msgstr "Trang trước"
 
@@ -16914,6 +17418,11 @@ msgstr "Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này."
 #: src/lib/timeline/themes.ts
 msgid "Tre xanh"
 msgstr "Tre xanh"
+
+#. placeholder {0}: stats.total
+#: src/pages/clan/ShareHub.tsx
+msgid "trên {0} link đã tạo"
+msgstr "trên {0} link đã tạo"
 
 #: src/lib/tipCatalogue.ts
 msgid "Trên cây gia phả, người đầu tiên cần thêm là Thuỷ tổ (đời 1)."
@@ -16934,6 +17443,10 @@ msgstr "Trên iOS, để nhận thông báo đẩy, cần"
 #: src/lib/tipCatalogue.ts
 msgid "Trên trang cây, bấm 'Chia sẻ' để tạo link người trong họ xem được."
 msgstr "Trên trang cây, bấm 'Chia sẻ' để tạo link người trong họ xem được."
+
+#: src/pages/site/SiteHonor.tsx
+msgid "Tri ân những người đã góp công, góp của và làm rạng danh dòng họ."
+msgstr "Tri ân những người đã góp công, góp của và làm rạng danh dòng họ."
 
 #: src/components/HistoricalPersonSections.tsx
 msgid "Trị vì & tước hiệu"
@@ -16991,6 +17504,10 @@ msgstr "trở xuống"
 msgid "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
 msgstr "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
 
+#: src/pages/clan/ShareHub.tsx
+msgid "trong 7 ngày"
+msgstr "trong 7 ngày"
+
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Trong bài này"
 msgstr "Trong bài này"
@@ -17019,6 +17536,10 @@ msgstr "Trực & việc nên/kiêng"
 msgid "Trực hệ"
 msgstr "Trực hệ"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Trung tâm chia sẻ"
+msgstr "Trung tâm chia sẻ"
+
 #: src/pages/clan/Merge.tsx
 msgid "Trùng tên"
 msgstr "Trùng tên"
@@ -17026,10 +17547,6 @@ msgstr "Trùng tên"
 #: src/pages/clan/Merge.tsx
 msgid "Trùng tên + năm sinh"
 msgstr "Trùng tên + năm sinh"
-
-#: src/pages/CustomsImport.tsx
-msgid "Trùng tên trong danh sách dán"
-msgstr "Trùng tên trong danh sách dán"
 
 #: src/components/Pagination.tsx
 #: src/pages/clan/Audit.tsx
@@ -17053,6 +17570,7 @@ msgid "Trưởng chi (tuỳ chọn)"
 msgstr "Trưởng chi (tuỳ chọn)"
 
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Trưởng họ"
 msgstr "Trưởng họ"
 
@@ -17110,12 +17628,17 @@ msgid "Từ dòng họ:"
 msgstr "Từ dòng họ:"
 
 #: src/components/share/ShareOverview.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Từ đường"
 msgstr "Từ đường"
 
 #: src/lib/queries/heritage.ts
 msgid "Từ đường / đền / chùa"
 msgstr "Từ đường / đền / chùa"
+
+#: src/pages/site/SiteHeritage.tsx
+msgid "Từ đường, tục lệ, giai thoại và kỷ vật được lưu giữ qua các đời."
+msgstr "Từ đường, tục lệ, giai thoại và kỷ vật được lưu giữ qua các đời."
 
 #: src/components/ShareSectionsCard.tsx
 msgid "Từ đường, tục lệ, giai thoại, kỷ vật (kèm ảnh bìa)."
@@ -17130,6 +17653,7 @@ msgid "Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá 
 msgstr "Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
 
 #: src/components/GlobalSearch.tsx
+#: src/pages/site/SiteSearch.tsx
 msgid "Từ khoá tìm kiếm"
 msgstr "Từ khoá tìm kiếm"
 
@@ -17181,6 +17705,7 @@ msgstr "Tưởng nhớ"
 msgid "Tưởng nhớ những người đã khuất"
 msgstr "Tưởng nhớ những người đã khuất"
 
+#: src/components/cards/CardSteps.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Tuỳ chỉnh"
@@ -17205,6 +17730,7 @@ msgstr "Tuỳ chỉnh trang chủ"
 #: src/components/HeaderActions.tsx
 #: src/components/HeaderActions.tsx
 #: src/components/PersonAddressCard.tsx
+#: src/components/share/ShareTree.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
@@ -17216,7 +17742,6 @@ msgstr "Tuỳ chỉnh trang chủ"
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/TreeCanvas.tsx
-#: src/pages/Share.tsx
 msgid "Tuỳ chọn"
 msgstr "Tuỳ chọn"
 
@@ -17232,9 +17757,9 @@ msgstr "Tuỳ chọn bức ảnh"
 msgid "Tuỳ chọn canvas"
 msgstr "Tuỳ chọn canvas"
 
+#: src/components/share/ShareTree.tsx
+#: src/components/share/ShareTree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
-#: src/pages/Share.tsx
 msgid "Tuỳ chọn cây"
 msgstr "Tuỳ chọn cây"
 
@@ -17299,6 +17824,10 @@ msgstr "user này"
 #: src/components/QuickAddSheet.tsx
 msgid "Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
 msgstr "Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+
+#: src/components/CaptchaNotice.tsx
+msgid "và"
+msgstr "và"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"
@@ -17388,10 +17917,6 @@ msgstr "vd: 15"
 msgid "vd: 1975"
 msgstr "vd: 1975"
 
-#: src/pages/CustomsForm.tsx
-msgid "vd: 23 tháng Chạp"
-msgstr "vd: 23 tháng Chạp"
-
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/clan/Mosaics.tsx
 msgid "VD: 24 (tối đa 150)"
@@ -17478,10 +18003,6 @@ msgstr "Vd: Đỗ Thị B, sinh 1975, quê Hà Nội"
 msgid "Vd: Đóng góp giỗ tổ / Mua vật liệu"
 msgstr "Vd: Đóng góp giỗ tổ / Mua vật liệu"
 
-#: src/pages/CustomsForm.tsx
-msgid "vd: gia đình chuyển đến nhà mới"
-msgstr "vd: gia đình chuyển đến nhà mới"
-
 #: src/components/ClanFormFields.tsx
 msgid "Vd: Họ Nguyễn Hữu"
 msgstr "Vd: Họ Nguyễn Hữu"
@@ -17505,10 +18026,6 @@ msgstr "Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ
 #: src/pages/clan/HeritageForm.tsx
 msgid "vd: Lệ giỗ Tổ mùng 10 tháng Giêng"
 msgstr "vd: Lệ giỗ Tổ mùng 10 tháng Giêng"
-
-#: src/pages/CustomsForm.tsx
-msgid "vd: Lễ nhập trạch (về nhà mới)"
-msgstr "vd: Lễ nhập trạch (về nhà mới)"
 
 #: src/lib/queries/restingPlaces.ts
 msgid "vd: Lô B, hàng 3, số 12"
@@ -17644,13 +18161,17 @@ msgstr "Về {0}"
 msgid "Về {personName}"
 msgstr "Về {personName}"
 
+#: src/pages/site/SitePost.tsx
+msgid "Về Bảng tin"
+msgstr "Về Bảng tin"
+
+#: src/pages/site/SitePerson.tsx
+msgid "Về cây gia phả"
+msgstr "Về cây gia phả"
+
 #: src/pages/ForgotPassword.tsx
 msgid "Về đăng nhập"
 msgstr "Về đăng nhập"
-
-#: src/pages/CustomsImport.tsx
-msgid "Về danh sách"
-msgstr "Về danh sách"
 
 #: src/pages/clan/InlawsNew.tsx
 msgid "Về danh sách liên kết"
@@ -17659,6 +18180,10 @@ msgstr "Về danh sách liên kết"
 #: src/pages/clan/Cemeteries.tsx
 msgid "Về danh sách mộ phần"
 msgstr "Về danh sách mộ phần"
+
+#: src/pages/site/SiteHeritageItem.tsx
+msgid "Về Di sản"
+msgstr "Về Di sản"
 
 #: src/components/TodayHubCard.tsx
 msgid "Về hôm nay"
@@ -17679,6 +18204,7 @@ msgid "Về Thuỷ tổ"
 msgstr "Về Thuỷ tổ"
 
 #: src/pages/JoinClan.tsx
+#: src/pages/KhoeCard.tsx
 msgid "Về trang chủ"
 msgstr "Về trang chủ"
 
@@ -17691,6 +18217,10 @@ msgstr "vĩ độ"
 #: src/components/ApiTokenPanels.tsx
 msgid "Ví dụ: Claude trên laptop"
 msgstr "Ví dụ: Claude trên laptop"
+
+#: src/pages/clan/ShareHub.tsx
+msgid "Ví dụ: Cô Ba"
+msgstr "Ví dụ: Cô Ba"
 
 #: src/components/community/CommunitySharePanel.tsx
 #: src/components/community/MemoryForm.tsx
@@ -17729,8 +18259,13 @@ msgstr "Vị trí hũ (ngăn/tầng/số)"
 msgid "Vị trí trên bản đồ (tuỳ chọn)"
 msgstr "Vị trí trên bản đồ (tuỳ chọn)"
 
+#: src/pages/site/SiteHeritageItem.tsx
+#: src/pages/site/SiteHeritageItem.tsx
+msgid "Video"
+msgstr "Video"
+
+#: src/components/SharedHeritageCard.tsx
 #: src/pages/clan/HeritageDetail.tsx
-#: src/pages/Share.tsx
 msgid "Video di sản"
 msgstr "Video di sản"
 
@@ -17793,8 +18328,8 @@ msgid "Viết thông báo hiện cho toàn bộ người dùng."
 msgstr "Viết thông báo hiện cho toàn bộ người dùng."
 
 #: src/components/BoardPostForm.tsx
-msgid "Viết tin cho cả họ đọc…"
-msgstr "Viết tin cho cả họ đọc…"
+msgid "Viết tin cho cả họ đọc… (hỗ trợ Markdown: ## tiêu đề, - danh sách, > trích dẫn, ![ảnh](https://…))"
+msgstr "Viết tin cho cả họ đọc… (hỗ trợ Markdown: ## tiêu đề, - danh sách, > trích dẫn, ![ảnh](https://…))"
 
 #: src/pages/clan/HonorBook.tsx
 msgid "Vinh danh đóng góp hoặc thành tích của con cháu dòng họ."
@@ -17821,6 +18356,7 @@ msgstr "Vợ"
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/site/SitePerson.tsx
 msgid "Vợ / chồng"
 msgstr "Vợ / chồng"
 
@@ -17889,13 +18425,8 @@ msgstr "vừa xong"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Vùng miền"
 msgstr "Vùng miền"
-
-#: src/pages/CustomsImport.tsx
-msgid "Vùng miền (áp dụng cho tất cả)"
-msgstr "Vùng miền (áp dụng cho tất cả)"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Vuông (đăng tường)"
@@ -18064,6 +18595,8 @@ msgstr "Xem cây + đề xuất bổ sung (bạn duyệt mới vào cây). An to
 
 #: src/components/share/ShareOverview.tsx
 #: src/lib/nextSteps.ts
+#: src/pages/KhoeCard.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Xem cây gia phả"
 msgstr "Xem cây gia phả"
 
@@ -18103,6 +18636,10 @@ msgstr "Xem dòng thời gian"
 msgid "Xem gia phả họ {clanName} (link chỉ-đọc):"
 msgstr "Xem gia phả họ {clanName} (link chỉ-đọc):"
 
+#: src/pages/site/SiteTree.tsx
+msgid "Xem hồ sơ"
+msgstr "Xem hồ sơ"
+
 #. placeholder {0}: formatDuration(tutorial.duration)
 #: src/components/HelpVideoButton.tsx
 msgid "Xem hướng dẫn {0}"
@@ -18112,13 +18649,17 @@ msgstr "Xem hướng dẫn {0}"
 msgid "Xem JSON diff trước/sau"
 msgstr "Xem JSON diff trước/sau"
 
+#: src/pages/site/SiteHome.tsx
+msgid "Xem lịch"
+msgstr "Xem lịch"
+
 #: src/pages/clan/GoodDays.tsx
 msgid "Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn."
 msgstr "Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn."
 
-#: src/components/ClanFormFields.tsx
-msgid "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết)."
-msgstr "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết)."
+#: src/pages/site/SitePerson.tsx
+msgid "Xem lịch giỗ"
+msgstr "Xem lịch giỗ"
 
 #: src/components/UpcomingEventRow.tsx
 #: src/components/UpcomingEventRow.tsx
@@ -18159,10 +18700,6 @@ msgstr "Xem nhật ký →"
 msgid "Xem nhật ký thay đổi"
 msgstr "Xem nhật ký thay đổi"
 
-#: src/components/ClanFormFields.tsx
-msgid "Xem nơi an nghỉ, người an nghỉ và ảnh mộ."
-msgstr "Xem nơi an nghỉ, người an nghỉ và ảnh mộ."
-
 #. placeholder {0}: person.name
 #: src/components/TreeFolderView.tsx
 msgid "Xem riêng nhánh {0}"
@@ -18177,8 +18714,14 @@ msgid "Xem tài khoản"
 msgstr "Xem tài khoản"
 
 #: src/components/NotificationBell.tsx
+#: src/pages/site/SiteHome.tsx
 msgid "Xem tất cả"
 msgstr "Xem tất cả"
+
+#: src/pages/site/SiteHome.tsx
+#: src/pages/site/SitePost.tsx
+msgid "Xem tất cả bài viết"
+msgstr "Xem tất cả bài viết"
 
 #: src/components/community/CommunityCard.tsx
 msgid "Xem tất cả đóng góp →"
@@ -18216,12 +18759,12 @@ msgstr "Xem toàn bộ lịch →"
 
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
+#: src/components/share/ShareTree.tsx
+#: src/components/share/ShareTree.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
-#: src/pages/Share.tsx
-#: src/pages/Share.tsx
 msgid "Xem toàn màn hình"
 msgstr "Xem toàn màn hình"
 
@@ -18229,6 +18772,10 @@ msgstr "Xem toàn màn hình"
 #: src/pages/clan/Audit.tsx
 msgid "Xem trang chi tiết"
 msgstr "Xem trang chi tiết"
+
+#: src/lib/pageTitle.ts
+msgid "Xem trang dòng họ công khai: bảng tin, cây gia phả, ngày giỗ và di sản."
+msgstr "Xem trang dòng họ công khai: bảng tin, cây gia phả, ngày giỗ và di sản."
 
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Xem trang người đã được cập nhật →"
@@ -18238,15 +18785,10 @@ msgstr "Xem trang người đã được cập nhật →"
 msgid "Xem trang người liên quan →"
 msgstr "Xem trang người liên quan →"
 
-#. placeholder {0}: preview.length
-#. placeholder {1}: importable.length
-#: src/pages/CustomsImport.tsx
-msgid "Xem trước — {0} bài, {1} sẽ được tạo"
-msgstr "Xem trước — {0} bài, {1} sẽ được tạo"
-
-#: src/components/ClanFormFields.tsx
-msgid "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
-msgstr "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
+#: src/pages/site/SitePerson.tsx
+#: src/pages/site/SitePerson.tsx
+msgid "Xem trên cây"
+msgstr "Xem trên cây"
 
 #: src/lib/navModel.tsx
 msgid "Xem và khám phá cây các đời."
@@ -18301,13 +18843,12 @@ msgstr "Xem việc"
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/clan/ShareHub.tsx
 #: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/TimelineList.tsx
 #: src/pages/clan/TreeCanvas.tsx
 #: src/pages/clan/TreeCanvases.tsx
 #: src/pages/clan/TreeCanvases.tsx
-#: src/pages/CustomsDetail.tsx
-#: src/pages/CustomsDetail.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Xoá"
 msgstr "Xoá"
@@ -18368,10 +18909,6 @@ msgstr "Xoá ảnh của người này?"
 msgid "Xoá ảnh thất bại"
 msgstr "Xoá ảnh thất bại"
 
-#: src/pages/CustomsDetail.tsx
-msgid "Xoá bài này?"
-msgstr "Xoá bài này?"
-
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Xoá bản ghi mộ phần / tro cốt (không xoá hồ sơ người)."
 msgstr "Xoá bản ghi mộ phần / tro cốt (không xoá hồ sơ người)."
@@ -18388,10 +18925,6 @@ msgstr "Xoá bức \"{0}\"?"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Xoá cả ảnh và ghi âm kèm theo."
 msgstr "Xoá cả ảnh và ghi âm kèm theo."
-
-#: src/pages/CustomsForm.tsx
-msgid "Xoá câu hỏi"
-msgstr "Xoá câu hỏi"
 
 #. placeholder {0}: branch.name
 #. placeholder {0}: panel.branch.name
@@ -18415,7 +18948,6 @@ msgid "Xoá để thử lại"
 msgstr "Xoá để thử lại"
 
 #: src/pages/clan/HeritageForm.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Xoá đoạn"
 msgstr "Xoá đoạn"
 
@@ -18455,6 +18987,10 @@ msgstr "Xoá giao dịch {0}?"
 msgid "Xoá góp ý này?"
 msgstr "Xoá góp ý này?"
 
+#: src/pages/clan/ShareHub.tsx
+msgid "Xoá hẳn"
+msgstr "Xoá hẳn"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Xoá hiện vật 3D này?"
 msgstr "Xoá hiện vật 3D này?"
@@ -18474,6 +19010,7 @@ msgid "Xoá link"
 msgstr "Xoá link"
 
 #: src/components/ShareLinksSection.tsx
+#: src/pages/clan/ShareHub.tsx
 msgid "Xoá link này vĩnh viễn?"
 msgstr "Xoá link này vĩnh viễn?"
 
@@ -18592,11 +19129,11 @@ msgstr "Xuất / nhập GEDCOM"
 msgid "Xuất ảnh cây (PNG / SVG)"
 msgstr "Xuất ảnh cây (PNG / SVG)"
 
-#: src/pages/Share.tsx
+#: src/components/share/ShareTree.tsx
 msgid "Xuất ảnh cây (PNG)"
 msgstr "Xuất ảnh cây (PNG)"
 
-#: src/pages/Share.tsx
+#: src/components/share/ShareTree.tsx
 msgid "Xuất ảnh cây đang hiển thị (PNG)"
 msgstr "Xuất ảnh cây đang hiển thị (PNG)"
 
@@ -18684,7 +19221,6 @@ msgstr "Xưng hô"
 #: src/components/QuickAddSheet.tsx
 #: src/components/RelationshipGroup.tsx
 #: src/pages/clan/HeritageForm.tsx
-#: src/pages/CustomsForm.tsx
 msgid "Xuống"
 msgstr "Xuống"
 

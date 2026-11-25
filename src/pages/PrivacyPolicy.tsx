@@ -114,6 +114,16 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
+        <Section title="Chống thư rác (reCAPTCHA)">
+          <p>
+            Các biểu mẫu dành cho khách chưa đăng nhập (gửi kỷ niệm, trả lời câu hỏi, đề xuất sửa thông tin qua link chia sẻ) dùng{" "}
+            <b>Google reCAPTCHA</b> để phân biệt người thật với chương trình tự động. Khi bạn gửi, trình duyệt gửi cho Google một số
+            thông tin kỹ thuật (địa chỉ IP, dữ liệu trình duyệt, cookie của Google) để Google chấm điểm; chúng tôi chỉ nhận điểm đó,
+            không gửi nội dung gia phả cho Google. Việc này áp dụng Chính sách quyền riêng tư và Điều khoản dịch vụ của Google.
+            Người đã đăng nhập không bị kiểm tra khi dùng các biểu mẫu của thành viên.
+          </p>
+        </Section>
+
         <Section title="Email">
           <p>
             Email nhắc giỗ, thông báo đóng góp và bản tin tuần được gửi thẳng từ
