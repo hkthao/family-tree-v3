@@ -94,6 +94,8 @@ export async function handlePart(
       return on("honor") ? honor(ctx, q) : off();
     case "info":
       return on("info") ? info(ctx) : off();
+    case "stats":
+      return stats(ctx);
     case "map":
       return on("map") ? mapCounts(ctx) : off();
     case "person":
@@ -396,6 +398,33 @@ async function info(ctx: PartCtx): Promise<PartResult> {
     ancestral_hall: book?.ancestral_hall ?? null,
     ancestor_anniversary: book?.ancestor_anniversary ?? null,
     chief_name: book?.chief_name ?? null,
+  });
+}
+
+/**
+ * Số liệu CẢ dòng họ cho đầu trang chủ (tổng số người, đời lớn nhất). Payload cây của link có `root_person_id` chỉ chứa
+ * cây con (người gốc + con cháu + vợ/chồng) nên đếm từ payload ra thấp hơn số thật. Chỉ trả hai con số tổng hợp, không lộ ai.
+ */
+async function stats(ctx: PartCtx): Promise<PartResult> {
+  const [{ count, error }, { data: top }] = await Promise.all([
+    ctx.sb
+      .from("persons")
+      .select("id", { count: "exact", head: true })
+      .eq("clan_id", ctx.clanId)
+      .is("deleted_at", null),
+    ctx.sb
+      .from("persons")
+      .select("generation")
+      .eq("clan_id", ctx.clanId)
+      .is("deleted_at", null)
+      .not("generation", "is", null)
+      .order("generation", { ascending: false })
+      .limit(1),
+  ]);
+  if (error) return fail(500, error.message);
+  return ok({
+    total: count ?? 0,
+    max_generation: (top?.[0]?.generation as number | null) ?? null,
   });
 }
 

@@ -41,6 +41,7 @@ export async function tryServerExport(
     detail: options.detail,
     treePerPage: options.treePerPage,
     treeSinglePage: options.treeSinglePage ?? true,
+    treeUnlinked: options.treeUnlinked ?? false,
     watermark: options.watermark === null ? "none" : (options.watermark ?? "phoenix"),
     coverQrDataUri: qr,
   };

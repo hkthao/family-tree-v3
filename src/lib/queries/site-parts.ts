@@ -108,6 +108,12 @@ export const fetchSitePosts = (a: SiteAccess, p: { page?: number; per?: number; 
 
 export const fetchSitePost = (a: SiteAccess, id: string) => fetchSitePart<SitePost>(a, "post", { id });
 
+/** Số liệu cả dòng họ (payload cây của link có phạm vi chỉ chứa cây con nên không đếm được từ đó). */
+export interface SiteStats {
+  total: number;
+  max_generation: number | null;
+}
+
 export interface SiteInfo {
   description: string | null;
   origin_place: string | null;
@@ -151,6 +157,7 @@ export const siteAssetUrl = (u: string | null | undefined): string | null =>
   !u ? null : u.startsWith("/") ? `${import.meta.env.VITE_SUPABASE_URL}${u}` : u;
 
 export const fetchSiteInfo = (a: SiteAccess) => fetchSitePart<SiteInfo>(a, "info");
+export const fetchSiteStats = (a: SiteAccess) => fetchSitePart<SiteStats>(a, "stats");
 
 export const fetchSiteHeritage = async (a: SiteAccess, p: { page?: number; per?: number; category?: string } = {}) => {
   const r = await fetchSitePart<SitePage<SiteHeritageItem>>(a, "heritage", p);

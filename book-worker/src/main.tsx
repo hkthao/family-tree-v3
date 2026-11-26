@@ -66,6 +66,7 @@ function sanitizeOptions(o: Record<string, unknown>) {
       detail: bool("detail", true),
       treePerPage: typeof tpp === "number" ? tpp : undefined,
       treeSinglePage: bool("treeSinglePage", true),
+      treeUnlinked: bool("treeUnlinked", false),
       watermark: wm === "none" ? undefined : (wm as "phoenix" | "dragon"),
     },
     qr,

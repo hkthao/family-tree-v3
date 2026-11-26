@@ -20,6 +20,8 @@ export interface ExportClanBookOptions {
   /** Vẽ cả sơ đồ trên MỘT trang khổ tự tính (mặc định); false = tách
    *  nhiều trang A4 theo đời. */
   treeSinglePage?: boolean;
+  /** Kèm thành viên chưa gắn vào cây ở cuối sơ đồ (mặc định false). */
+  treeUnlinked?: boolean;
   /** Hình nền mờ in chìm dưới mọi trang. Bỏ trống = phượng (mặc định);
    *  null = không có hình nền. */
   watermark?: BookWatermarkId | null;
@@ -79,6 +81,7 @@ export async function buildClanBookPdf(
     include: {
       ...includeOptions,
       treeSinglePage: options.treeSinglePage ?? true,
+      treeUnlinked: options.treeUnlinked ?? false,
       watermark:
         options.watermark === undefined
           ? DEFAULT_WATERMARK

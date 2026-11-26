@@ -23,6 +23,7 @@ import {
   fetchSiteHeritage,
   fetchSiteHonor,
   fetchSiteInfo,
+  fetchSiteStats,
   fetchSiteMap,
   fetchSiteMosaic,
   fetchSitePosts,
@@ -46,10 +47,30 @@ export default function SiteHome() {
   const gens = data.persons
     .map((p) => p.generation)
     .filter((g): g is number => g != null);
-  const generations = gens.length
-    ? Math.max(...gens) - (data.generation_offset ?? 0)
-    : null;
-  const root = data.persons.find((p) => p.is_root && !p.is_living);
+  const offset = data.generation_offset ?? 0;
+  // Thuỷ tổ: người được đánh dấu is_root (kể cả khi chưa ghi ngày mất); chưa đánh dấu thì lấy người đời nhỏ nhất, ưu tiên nam rồi
+  // người sinh sớm nhất — cùng cách cây gia phả chọn người ở giữa, để trang chủ không hiện "—" khi cây vẫn có người đầu dòng.
+  const root =
+    data.persons.find((p) => p.is_root) ??
+    [...data.persons]
+      .filter((p) => p.generation != null)
+      .sort(
+        (a, b) =>
+          (a.generation as number) - (b.generation as number) ||
+          Number(b.gender === "M") - Number(a.gender === "M") ||
+          (a.birth_date ?? "9999").localeCompare(b.birth_date ?? "9999"),
+      )[0];
+
+  // Số liệu cả dòng họ từ máy chủ. Chưa có (đang tải / máy chủ chưa hỗ trợ) thì dùng tạm số trong payload cây.
+  const stats = useQuery({
+    queryKey: ["site", key, "stats"],
+    queryFn: () => fetchSiteStats(access),
+    retry: false,
+  });
+  const total = stats.data?.total ?? data.persons.length;
+  const maxGen =
+    stats.data?.max_generation ?? (gens.length ? Math.max(...gens) : null);
+  const generations = maxGen != null ? maxGen - offset : null;
 
   const info = useQuery({
     queryKey: ["site", key, "info"],
@@ -148,7 +169,7 @@ export default function SiteHome() {
             </Button>
           </div>
           <div className="grid w-full max-w-md flex-[1_1_20rem] grid-cols-3 gap-2.5">
-            <Stat value={String(data.persons.length)} label={t`người`} />
+            <Stat value={String(total)} label={t`người`} />
             <Stat
               value={generations != null ? String(generations) : "—"}
               label={t`đời`}

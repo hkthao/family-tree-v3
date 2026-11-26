@@ -2111,6 +2111,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const [open, setOpen] = useState(false);
   const [perPage, setPerPage] = useState(24);
   const [folderTree, setFolderTree] = useState(true);
+  const [treeUnlinked, setTreeUnlinked] = useState(false);
   const [singlePage, setSinglePage] = useState(true);
   const [watermark, setWatermark] = useState<BookWatermarkId | "">("phoenix");
 
@@ -2126,6 +2127,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         treePerPage: perPage,
         treeSinglePage: singlePage,
         folderTree,
+        treeUnlinked,
         watermark: watermark || null,
         onProgress: setStage,
       });
@@ -2208,6 +2210,24 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
               </Select>
             </>
           )}
+          <label className="flex items-start gap-2 pt-1 text-sm">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 accent-primary"
+              checked={treeUnlinked}
+              onChange={(e) => setTreeUnlinked(e.target.checked)}
+            />
+            <span>
+              {t`Kèm cả thành viên chưa gắn vào cây`}
+              <span className="block text-[11px] leading-relaxed text-muted-foreground">
+                <Trans>
+                  Những người chưa nối được tới Thuỷ tổ (chưa có cha mẹ trong
+                  cây) sẽ xếp rời ở cuối sơ đồ. Mặc định tắt cho cây gọn đẹp;
+                  danh bạ trong sổ vẫn có đủ mọi người.
+                </Trans>
+              </span>
+            </span>
+          </label>
           <label className="flex items-start gap-2 pt-1 text-sm">
             <input
               type="checkbox"

@@ -476,6 +476,8 @@ interface Props {
     treePerPage?: number;
     /** Vẽ CẢ sơ đồ trên một trang khổ tự tính thay vì tách nhiều trang A4. */
     treeSinglePage?: boolean;
+    /** Kèm cả thành viên huyết thống CHƯA GẮN vào cây (không nối được tới Thuỷ tổ) như gốc phụ ở cuối sơ đồ. Mặc định tắt cho sơ đồ gọn. */
+    treeUnlinked?: boolean;
     /** Hình nền mờ in chìm dưới mọi trang; bỏ trống = không có. */
     watermark?: BookWatermarkId;
     /** Mục lục, lời nói đầu, phả ký, phả hệ theo đời, ngoại phả, phụ khảo (mặc định có). */
@@ -677,10 +679,14 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
     treeRoots.push(r);
     addSubtree(r.id);
   }
-  for (const p of bloodlineSorted) {
-    if (treeCovered.has(p.id)) continue;
-    treeRoots.push(p);
-    addSubtree(p.id);
+  // Người huyết thống không nối được tới Thuỷ tổ: chỉ vẽ khi bật `treeUnlinked` (mặc định tắt — họ rơi rớt ở cuối sơ đồ làm cây kém đẹp).
+  // Danh bạ vẫn liệt kê đủ mọi người.
+  if (include?.treeUnlinked ?? false) {
+    for (const p of bloodlineSorted) {
+      if (treeCovered.has(p.id)) continue;
+      treeRoots.push(p);
+      addSubtree(p.id);
+    }
   }
 
   // Cây thư mục: cùng bộ gốc với sơ đồ, nên hai trang không bao giờ lệch

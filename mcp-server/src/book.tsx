@@ -180,6 +180,7 @@ export async function exportClanBook(c: Ctx, a: Record<string, unknown>): Promis
     detail: bool("detail", true),
     treePerPage: a.tree_per_page as number | undefined,
     treeSinglePage: bool("tree_single_page", true),
+    treeUnlinked: bool("tree_unlinked", false),
     watermark: wm === "none" ? undefined : (wm as "phoenix" | "dragon"),
   };
 

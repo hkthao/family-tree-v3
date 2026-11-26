@@ -310,6 +310,7 @@ export const MCP_TOOLS: McpToolSpec[] = [
       detail: { type: "boolean", description: "Include per-person detail pages, default true" },
       tree_per_page: { type: "integer", minimum: 4, maximum: 60, description: "Max members per diagram page" },
       tree_single_page: { type: "boolean", description: "Draw the whole diagram on one page, default true" },
+      tree_unlinked: { type: "boolean", description: "Also draw members not attached to the tree (no path to the founder) at the end of the diagram, default false" },
       watermark: { type: "string", enum: ["phoenix", "dragon", "none"], description: "Faint background image, default phoenix" },
     }),
   },
