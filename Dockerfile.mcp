@@ -8,6 +8,7 @@ COPY mcp-server ./mcp-server
 # Mã dựng sổ PDF của FE (src/lib/pdf, src/lib/queries…) được gộp vào bundle — xem mcp-server/build.mjs.
 COPY src ./src
 COPY supabase/functions/_shared ./supabase/functions/_shared
+COPY supabase/functions/publish-so-tay ./supabase/functions/publish-so-tay
 RUN node mcp-server/build.mjs
 
 FROM node:22-alpine
